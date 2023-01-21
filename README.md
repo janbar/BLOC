@@ -1,3 +1,6 @@
+[![build-ubuntu](https://github.com/janbar/BLOC/actions/workflows/build-ubuntu-latest.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-ubuntu-latest.yml)
+[![build-macos](https://github.com/janbar/BLOC/actions/workflows/build-macos.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-macos.yml)
+
 # BLOC
 A modular interpreter based on PL syntax.
 
@@ -18,7 +21,13 @@ cmake --build release --target install
 ```
 
 ## Run the CLI
-Launch **bloc** and type "help", or try a sample program as follow.
+Launch **bloc** and type "help".
+
+You could type inline expression as shown below.
+```
+ = sqrt( sin(3*pi/4) ** 2 + cos(3*pi/4) ** 2 )
+```
+Or run a sample script as follow.
 ```
 for i in 2 to 1000 loop
     b=true;
