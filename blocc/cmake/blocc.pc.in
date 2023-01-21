@@ -1,0 +1,10 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+
+Name: blocc
+Description: C/C++ library BLOC core
+Version: @blocc_VERSION@
+Libs: -L${libdir} -lblocc -lm
+Cflags: -I${includedir}

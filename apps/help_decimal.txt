@@ -1,0 +1,26 @@
+
+$BDECIMAL$N
+
+In BLOC, decimals are zero, positive or negative real numbers with a fractional
+part denoted by the decimal symbol '.' or the scientific notation 'E' or 'e',
+e.g. 0.0, 1234.56, -1.55. The followings are valid decimal literals in BLOC.
+
+0.0 , .123 , -1.55, 1.234e9, 1234.5678e-9
+
+Decimals has the maximum size of double-precision (64bits). The value beyond
+its maximum size referred as "inf". Scientific notation is used as a short
+representation to express floats having many digits.
+
+Use the $Bnum( x )$N function to convert string, integer to decimal.
+
+num(456)        >>> decimal 456.0
+num("1.23e9")   >>> decimal 1.23E9
+num("123.4XYX") >>> decimal 123.4
+
+Use the $Bisnum( x )$N function to validate a number literal.
+
+isnum("XYZ456") >>> boolean false
+
+The following decimal constants are predefined.
+
+$Bpi$N, $Bee$N (euler), and $Bphi$N (golden ratio).

@@ -1,0 +1,15 @@
+# - Config file for the BLOCC package
+# It defines the following variables
+#  blocc_INCLUDE_DIRS - include directories
+#  blocc_LIBRARIES    - libraries to link against
+
+# Compute paths
+get_filename_component(blocc_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+set(blocc_INCLUDE_DIRS "@includedir@")
+
+# Our library dependencies (contains definitions for IMPORTED targets)
+if(NOT TARGET blocc AND NOT blocc_BINARY_DIR)
+include("${blocc_CMAKE_DIR}/bloccTargets.cmake")
+endif()
+
+set(blocc_LIBRARIES blocc m)

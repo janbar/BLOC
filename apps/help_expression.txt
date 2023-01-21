@@ -1,0 +1,25 @@
+
+$BEXPRESSION$N
+
+An expression is a formula in which operands are linked to each other by the
+use of operators to compute a value. An operand can be a function, a variable
+or constant. Full expressions are similar to many other high level languages.
+
+$BMixing types$N
+If an integer and a real number take part in the operation, then the integer
+will be converted into a real one and the result will be a $Bdecimal$N type.
+
+$BPrecedence$N
+The expression precedence is as follows: (lowest to highest)
+
+  1.  || operator, left associative
+  2.  && operator, left associative
+  3.  ! operator, nonassociative
+  4.  Relational operators, left associative
+  5.  + and - operators, left associative
+  6.  *, / and % operators, left associative
+  7.  ** operator, right associative
+  8.  unary - and ~ operators, nonassociative
+  9.  member . operator, left associative
+
+Type "help operator" for more information on operator.

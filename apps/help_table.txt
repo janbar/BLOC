@@ -1,0 +1,37 @@
+
+$BTABLE$N
+
+In BLOC, tables are n-dimensional uniform array with n < 255, of any type. The
+constructor function is the $Btab()$N function.
+
+tab(0, str())          >>> empty table of string
+tab(5, str())          >>> table[5] initialized with empty string
+tab(5, 123)            >>> table[5] initialized with integer 123
+tab(5, tab(10, 1.23))  >>> [table[10]][5] initialized with decimal 1.23
+
+A = 0; for i in 1 to 3 loop A = tab(0,A); end loop;   >>> A is [[[integer]]]
+A = 0; for i in 1 to 255 loop A = tab(0,A); end loop; >>> ERROR
+
+Use member $Bcount()$N to retrieve the number of items in table.
+
+A table is an ordered collection of item. The sequence uses an index, starting
+with zero to fetch a certain item from it.
+
+tab(10, 123).at(5)     >>> integer 123
+
+Use member $Bconcat( x )$N to append table of items, or one item at end.
+Use member $Binsert( x , y )$N to insert table of items, or one item at index.
+Use member $Bdelete( x )$N to erase one item at index.
+Use member $Bput( x , y )$N to update one item at index.
+
+A = tab(0, tuple(str(), 0));        >>> A is empty table of tuple
+A.concat(tuple("Hello", 1));        >>> A is table[1] of tuple
+A.concat(A).concat(A);              >>> A is table[4] of tuple
+A.insert(0, tuple("world", 2));     >>> A is table[5] of tuple
+A.insert(0, tuple(2, "dummy"));     >>> ERROR
+A.insert(2, A);                     >>> A is table[10] of tuple
+B = tab(2, A);                      >>> B is table[2] of [tuple]
+B.at(1).delete(0);                  >>> B is table[2] of [tuple]
+B.at(1).count();                    >>> integer 9
+B.at(1).put(0, tuple("dummy", 3));
+B.at(1).at(0) @ 1                   >>> string "dummy"

@@ -1,0 +1,38 @@
+
+$Bexit$N
+    Quit the command line. All unsaved work will be lost.
+
+$Bclear$N
+    Clear statements buffer. All unsaved work will be lost.
+
+$Bload$N {path}
+    Load statements from file to be parsed and added to buffer.
+    See command 'save'.
+
+$Blist$N
+    List statements in buffer. Statements previously parsed successfully are
+    stored in buffer, to be saved or rerun.
+
+$Brun$N
+    Execute statements in buffer.
+
+$Bsave$N {path}
+    Save statements buffer to file. See command 'load'.
+
+$Ndump$N
+    Describe all variables in memory.
+
+$Bdesc$N {VARIABLE NAME}
+    Describe variable.
+
+$B!$N {command}
+    Executes an operating system command without leaving.
+
+$B=$N {EXPRESSION}
+    Perform the inline expression to follow. The expression can use any
+    available operator and function.
+
+$Bhelp$N {keyword}
+    Show help about keyword to follow. Keyword could be the name of any
+    available statement or function, else a category among statement,
+    function, expression, operator, type, or variable.

@@ -1,0 +1,226 @@
+
+###############################################################################
+# set lib version here
+set (blocc_VERSION_MAJOR 1)
+set (blocc_VERSION_MINOR 0)
+set (blocc_VERSION_PATCH 0)
+
+set (blocc_VERSION_REVNO 1)
+
+set (blocc_VERSION ${blocc_VERSION_MAJOR}.${blocc_VERSION_MINOR}.${blocc_VERSION_PATCH})
+set (BLOCC_LIB_VERSION ${blocc_VERSION})
+set (BLOCC_LIB_SOVERSION ${blocc_VERSION_MAJOR})
+
+add_definitions(
+  "-DLIBVERSION=\"${BLOCC_LIB_VERSION}\""
+  "-DLIBREVNUM=${blocc_VERSION_REVNO}"
+  "-DLIB_DLL_EXPORTS"
+)
+
+file(GLOB blocc_SOURCES
+  lex._tokenizer.c
+  readstdin.c
+  collection.cpp
+  complex.cpp
+  context.cpp
+  debug.cpp
+  exception_parse.cpp
+  exception_runtime.cpp
+  executable.cpp
+  expression_boolean.cpp
+  expression_builtin.cpp
+  expression_collection.cpp
+  expression_complex.cpp
+  expression_complex_ctor.cpp
+  expression_integer.cpp
+  expression_item.cpp
+  expression_literal.cpp
+  expression_member.cpp
+  expression_numeric.cpp
+  expression_operator.cpp
+  expression_tabchar.cpp
+  expression_tuple.cpp
+  expression_variable.cpp
+  import.cpp
+  import_manager.cpp
+  parse_expression.cpp
+  parser.cpp
+  parse_statement.cpp
+  statement_begin.cpp
+  statement.cpp
+  statement_do.cpp
+  statement_end.cpp
+  statement_for.cpp
+  statement_if.cpp
+  statement_import.cpp
+  statement_let.cpp
+  statement_print.cpp
+  statement_put.cpp
+  statement_return.cpp
+  statement_trace.cpp
+  statement_while.cpp
+  symbol.cpp
+  tuple.cpp
+  tuple_decl.cpp
+  builtin/*.cpp
+  member/*.cpp
+)
+
+file(GLOB blocc_PUBLIC_HEADERS
+  collection.h
+  complex.h
+  context.h
+  debug.h
+  declspec.h
+  exception.h
+  exception_parse.h
+  exception_runtime.h
+  executable.h
+  expression_boolean.h
+  expression_builtin.h
+  expression_collection.h
+  expression_complex_ctor.h
+  expression_complex.h
+  expression.h
+  expression_integer.h
+  expression_item.cpp
+  expression_literal.h
+  expression_member.h
+  expression_numeric.h
+  expression_operator.h
+  expression_static.h
+  expression_tabchar.h
+  expression_tuple.h
+  expression_variable.h
+  import.h
+  import_interface.h
+  import_manager.h
+  intrinsic_type.h
+  parse_expression.h
+  parser.h
+  readstdin.h
+  statement.h
+  symbol.h
+  template_stack.h
+  template_temporary.h
+  token.h
+  tokenizer.h
+  tuple_decl.h
+  tuple.h
+)
+
+file(GLOB blocc_PRIVATE_HEADERS
+  tokenizer.lex
+  parse_expression.h
+  parse_statement.h
+  statement_begin.h
+  statement_break.h
+  statement_continue.h
+  statement_do.h
+  statement_end.h
+  statement_for.h
+  statement_if.h
+  statement_import.h
+  statement_let.h
+  statement_print.h
+  statement_put.h
+  statement_return.h
+  statement_trace.h
+  statement_while.h
+  builtin/*.h
+  member/*.h
+)
+
+add_custom_target(blocc_HEADERS SOURCES ${blocc_PRIVATE_HEADERS} ${blocc_PUBLIC_HEADERS})
+
+if(MSVC)
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
+  list(APPEND blocc_SOURCES win32/dlfcn.c)
+  list(APPEND blocc_PRIVATE_HEADERS win32/dlfcn.h)
+endif()
+
+add_library(blocc SHARED ${blocc_SOURCES})
+
+if (MSVC)
+  target_link_libraries (blocc ws2_32)
+else ()
+  target_link_libraries (blocc m)
+endif ()
+
+set_target_properties(blocc PROPERTIES
+  VERSION "${BLOCC_LIB_VERSION}"
+  SOVERSION "${BLOCC_LIB_SOVERSION}"
+)
+
+# Support building as a subproject of a larger cmake project
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/blocc)
+file(COPY ${blocc_PUBLIC_HEADERS}
+  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/blocc)
+
+target_include_directories(blocc
+  PRIVATE
+    ${CMAKE_SOURCE_DIR}
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+# Export the package for use from the build-tree
+# (this registers the build-tree with a global CMake-registry)
+export(PACKAGE blocc)
+
+###############################################################################
+# install targets
+# Create pkg-conf file.
+# (We use the same files as ./configure does, so we
+#  have to defined the same variables used there).
+
+if(NOT SKIP_INSTALL_ALL)
+
+  # Components PATH
+  execute_process(
+    COMMAND dpkg-architecture -qDEB_HOST_MULTIARCH
+    OUTPUT_VARIABLE ARCH_TRIPLET
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
+
+  # Set install paths
+  include(GNUInstallDirs)
+
+  # Add all targets to the build-tree export set
+  export(TARGETS blocc FILE "${CMAKE_CURRENT_BINARY_DIR}/bloccTargets.cmake")
+
+  if(NOT MSVC)
+    set (prefix      "${CMAKE_INSTALL_PREFIX}")
+    set (exec_prefix "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_BINDIR}")
+    set (libdir      "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_LIBDIR}")
+    set (includedir  "${CMAKE_INSTALL_PREFIX}/${CMAKE_INSTALL_INCLUDEDIR}")
+    configure_file (cmake/blocc.pc.in blocc.pc @ONLY)
+    configure_file (cmake/bloccConfig.cmake.in bloccConfig.cmake @ONLY)
+    configure_file (cmake/bloccConfigVersion.cmake.in bloccConfigVersion.cmake @ONLY)
+
+    install(TARGETS blocc
+      EXPORT bloccTargets
+      RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+      ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+      LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+    install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/blocc
+      DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/blocc.pc
+      DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+    # Install the bloccConfig.cmake and bloccConfigVersion.cmake
+    set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/blocc)
+    install (FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/bloccConfig.cmake
+      ${CMAKE_CURRENT_BINARY_DIR}/bloccConfigVersion.cmake
+      DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT dev)
+
+    # Install the export set for use with the install-tree
+    install(EXPORT bloccTargets
+      DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT dev)
+  endif()
+
+endif()

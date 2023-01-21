@@ -1,0 +1,90 @@
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <climits>
+
+#include <test.h>
+#include <hashvalue.c>
+#include <blocc/exception_parse.h>
+
+TestingContext ctx;
+
+using namespace bloc;
+
+TEST_CASE("integer")
+{
+  Expression * e;
+  ctx.reset("1234567890");
+  e = ctx.parseExpression();
+  REQUIRE( e->integer(ctx) == 1234567890);
+  REQUIRE( e->unparse(ctx) == "1234567890" );
+  delete e;
+
+  ctx.reset("0000000000000000000000001");
+  e = ctx.parseExpression();
+  REQUIRE( e->integer(ctx) == 1 );
+  REQUIRE( e->unparse(ctx) == "1" );
+  delete e;
+
+  ctx.reset("0x0123456789abcdef");
+  e = ctx.parseExpression();
+  REQUIRE( e->integer(ctx) == 0x0123456789abcdefLL );
+  REQUIRE( e->unparse(ctx) == "81985529216486895" );
+  delete e;
+
+  ctx.reset("0x7fffffffffffffff");
+  e = ctx.parseExpression();
+  REQUIRE( e->integer(ctx) == 0x7fffffffffffffffLL );
+  REQUIRE( e->unparse(ctx) == "9223372036854775807" );
+  delete e;
+
+  ctx.reset("0x8000000000000000");
+  try { e = ctx.parseExpression(); delete e; }
+  catch (ParseError& pe) { SUCCEED(pe.what()); return; }
+  FAIL("no exception");
+}
+
+TEST_CASE("decimal")
+{
+  Expression * e;
+  ctx.reset("round( 1234567890.001 , 3 )");
+  e = ctx.parseExpression();
+  REQUIRE( e->numeric(ctx) == 1234567890.001);
+  REQUIRE( e->unparse(ctx) == "round(1234567890.001, 3)" );
+  delete e;
+
+  ctx.reset("round( 1.234567890001e+9 , 3 )");
+  e = ctx.parseExpression();
+  REQUIRE( e->numeric(ctx) == 1234567890.001);
+  REQUIRE( e->unparse(ctx) == "round(1234567890.001, 3)" );
+  delete e;
+
+  ctx.reset("round( 1234567890.001e-9 , 12)");
+  e = ctx.parseExpression();
+  REQUIRE( e->numeric(ctx) == 1.234567890001 );
+  REQUIRE( e->unparse(ctx) == "round(1.234567890001, 12)" );
+  delete e;
+
+  ctx.reset("1.23456789e+308");
+  e = ctx.parseExpression();
+  REQUIRE( e->numeric(ctx) == 1.23456789e+308 );
+  REQUIRE( e->unparse(ctx) == "1.23456789e+308" );
+  delete e;
+
+  ctx.reset("1.23456789e+309");
+  try { e = ctx.parseExpression(); delete e; }
+  catch (ParseError& pe) { SUCCEED(pe.what()); return; }
+  FAIL("no exception");
+}
+
+TEST_CASE("string")
+{
+  Expression * e;
+  ctx.reset("\"/\\\\@$^~|_.+-=#012345679\"\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"\\a\\b\\f\\n\\r\\t\"");
+  e = ctx.parseExpression();
+  REQUIRE( e->literal(ctx) ==
+          "/\\@$^~|_.+-=#012345679\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\a\b\f\n\r\t" );
+  REQUIRE( e->unparse(ctx) ==
+          "\"/\\\\@$^~|_.+-=#012345679\"\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"\\a\\b\\f\\n\\r\\t\"" );
+  delete e;
+}

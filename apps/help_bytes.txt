@@ -1,0 +1,26 @@
+
+$BBYTES$N
+
+In BLOC, bytes is a sequence of byte including zero. The constructor is the
+$Braw()$N function.
+
+raw()        >>> empty bytes
+raw(16)      >>> bytes [16] initialized with zero
+raw(16, 65)  >>> bytes [16] initialized with 'A'
+raw("Hello") >>> bytes [5] initialized with sequence 'H' 'e' 'l' 'l' 'o'
+
+Use the $Bcount( x )$N member to retrieve the size of bytes, as shown below.
+
+raw(16).count() >>> integer 16
+
+As bytes is an ordered collection of byte, the sequence uses an index, starting
+with zero to fetch a certain item (a byte in case of bytes) from it.
+
+raw(16, 65).at(0) >>> integer 65
+
+Use member $Bconcat( x )$N to append bytes, or one byte at end.
+Use member $Binsert( x , y )$N to insert bytes, or one byte at index.
+Use member $Bdelete( x )$N to erase one byte at index.
+Use member $Bput( x , y )$N to update one byte at index.
+
+raw("Hello").concat(0x20).concat("world !") >>> bytes[13]

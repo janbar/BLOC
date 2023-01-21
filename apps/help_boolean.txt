@@ -1,0 +1,12 @@
+
+$BBOOLEAN$N
+
+In BLOC, booleans are true or false. The followings values are valid boolean
+literals in BLOC.
+
+$Btrue$N, $Bfalse$N
+
+A relational, or logical expression returns boolean.
+
+( 1 == 1 )           >>> boolean true
+( true && false )    >>> boolean false

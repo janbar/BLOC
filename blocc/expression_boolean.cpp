@@ -1,0 +1,35 @@
+/*
+ *      Copyright (C) 2022 Jean-Luc Barriere
+ *
+ *  This program is free software: you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation, either version 3 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ */
+
+#include "expression_boolean.h"
+#include "expression_builtin.h"
+
+namespace bloc
+{
+
+const Type& BooleanExpression::type_static = Type(Type::BOOLEAN);
+
+const char * BooleanExpression::TRUE = "TRUE";
+const char * BooleanExpression::FALSE = "FALSE";
+
+std::string BooleanExpression::unparse(Context& ctx) const
+{
+  return BuiltinExpression::KEYWORDS[(v ? BuiltinExpression::FUNC_TRUE : BuiltinExpression::FUNC_FALSE)];
+}
+
+}
