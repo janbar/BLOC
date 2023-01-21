@@ -19,7 +19,7 @@ $Brun$N
 $Bsave$N {path}
     Save statements buffer to file. See command 'load'.
 
-$Ndump$N
+$Bdump$N
     Describe all variables in memory.
 
 $Bdesc$N {VARIABLE NAME}
