@@ -1,6 +1,6 @@
 
 $BBYTES$N
-
+
 In BLOC, bytes is a sequence of byte including zero. The constructor is the
 $Braw()$N function.
 
