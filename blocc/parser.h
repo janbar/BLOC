@@ -83,7 +83,7 @@ private:
   void state(STATE state) { _state = state; }
   bool init_scanner(void * reader_hdl, TOKEN_READER reader);
   void close_scanner();
-  void enable_trace(bool b);
+  void trace(bool b) { _trace = b; }
   bool next_token(TokenPtr& token);
 
   bool _trace = false;      ///< forward token string to stderr

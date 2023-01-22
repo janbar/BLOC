@@ -81,10 +81,7 @@ bool Parser::popAny(TokenPtr& token) {
   int tc = 0;
   const char * ts;
   Token * t = nullptr;
-
-  tokenizer_enable_space(_scanner);
   tokenizer_lex(_scanner, &tc, &ts);
-  tokenizer_disable_space(_scanner);
   if (tc <= 0)
     return false;
   t = new Token(tc, ts);
@@ -98,7 +95,7 @@ bool Parser::init_scanner(void * reader_hdl, TOKEN_READER reader)
   _scanner = tokenizer_init(reader_hdl, reader);
   if (_scanner == 0)
     return false;
-  tokenizer_disable_space(_scanner);
+  tokenizer_enable_space(_scanner);
   return true;
 }
 
@@ -178,7 +175,7 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
   if (!p.init_scanner(reader_hdl, reader))
     return nullptr;
 
-  p.enable_trace(trace);
+  p.trace(trace);
   std::list<const Statement*> statements;
 
   p.state(PARSE);
@@ -200,6 +197,8 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
       if (s != nullptr)
         statements.push_back(s);
     }
+    if (trace)
+      fflush(ctx.ctxerr());
     return new Executable(ctx, statements);
   }
   catch (ParseError& pe)
@@ -211,15 +210,6 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
     fflush(ctx.ctxerr());
   }
   return nullptr;
-}
-
-void Parser::enable_trace(bool b)
-{
-  _trace = b;
-  if (b)
-    tokenizer_enable_space(_scanner);
-  else
-    tokenizer_disable_space(_scanner);
 }
 
 bool Parser::next_token(TokenPtr& token) {
@@ -296,7 +286,7 @@ bool Parser::next_token(TokenPtr& token) {
 
     /* forward token string to trace */
     if (_trace)
-      fputs(ts, _ctx.ctxout());
+      fputs(ts, _ctx.ctxerr());
   }
 
   token.reset(t);
