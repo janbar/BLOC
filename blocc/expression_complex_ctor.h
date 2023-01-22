@@ -20,6 +20,7 @@
 #define EXPRESSION_COMPLEX_CTOR_H
 
 #include "expression.h"
+#include "import_interface.h"
 
 #include <vector>
 
@@ -36,13 +37,20 @@ class ComplexCTORExpression : public Expression
 {
 private:
   Type _type;
+  const IMPORT_CTOR * _ctor = nullptr;
   std::vector<Expression*> _args;
 
 public:
 
   virtual ~ComplexCTORExpression();
 
-  ComplexCTORExpression(unsigned type_id, const std::vector<Expression*>& args) : Expression(), _type(Type::COMPLEX, type_id), _args(args) { }
+  ComplexCTORExpression(unsigned type_id) : Expression(), _type(Type::COMPLEX, type_id) { }
+  
+  ComplexCTORExpression(unsigned type_id, const IMPORT_CTOR& ctor, std::vector<Expression*>&& args)
+  : Expression(), _type(Type::COMPLEX, type_id), _ctor(&ctor)
+  {
+    _args.swap(args);
+  }
 
   const Type& type(Context& ctx) const override
   {
@@ -59,6 +67,7 @@ public:
   }
 
   static ComplexCTORExpression * parse(Parser& p, Context& ctx, unsigned type_id);
+
 };
 
 }

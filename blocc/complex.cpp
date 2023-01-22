@@ -84,11 +84,11 @@ Complex& Complex::operator=(const Complex& c)
   return *this;
 }
 
-bool Complex::CTOR(Context& ctx, const std::vector<Expression*>& args)
+bool Complex::CTOR(int ctor_id, Context& ctx, const std::vector<Expression*>& args)
 {
   assert(_type.minor());
   assert(_instance == nullptr);
-  _instance = ImportManager::instance().module(typeId()).instance->createObject(ctx, args);
+  _instance = ImportManager::instance().module(typeId()).instance->createObject(ctor_id, ctx, args);
   return (_instance ? true : false);
 }
 

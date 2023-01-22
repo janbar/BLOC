@@ -80,7 +80,7 @@ public:
    * @param args          list of CTOR arguments
    * @return              pointer to new instance
    */
-  virtual void * createObject(bloc::Context& ctx, const std::vector<bloc::Expression*>& args) = 0;
+  virtual void * createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args) = 0;
 
   /**
    * Destroy object instance and free resources

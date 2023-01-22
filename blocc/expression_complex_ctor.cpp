@@ -35,7 +35,8 @@ ComplexCTORExpression::~ComplexCTORExpression()
 Complex ComplexCTORExpression::complex(Context& ctx) const
 {
   Complex c(_type.minor());
-  if (c.CTOR(ctx, _args))
+  int ctor_id = (_ctor == nullptr ? (-1) : _ctor->id);
+  if (c.CTOR(ctor_id, ctx, _args))
     return c;
   throw RuntimeError(EXC_RT_CTOR_FAILED_S, unparse(ctx).c_str());
 }
@@ -58,48 +59,64 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
 {
   if (type_id == 0)
     throw ParseError(EXC_PARSE_NOT_COMPLEX);
-  const IMPORT_MODULE& module = ImportManager::instance().module(type_id);
-  TokenPtr t = p.pop();
-  if (t->code != '(')
-    throw ParseError(EXC_PARSE_INV_EXPRESSION);
   std::vector<Expression*> args;
+  const IMPORT_MODULE& module = ImportManager::instance().module(type_id);
+
   try
   {
-    int i = 0;
-    while (i < module.interface.ctor_args_count)
+    /* parse arguments list */
+    TokenPtr t = p.pop();
+    if (t->code != '(')
+      throw ParseError(EXC_PARSE_INV_EXPRESSION);
+    if (p.front()->code == ')')
     {
-      args.push_back(ParseExpression::expression(p, ctx));
-      /* the expected type */
-      Type m_arg_type = import::make_type(module.interface.ctor_args[i].type, type_id);
-      /* check mode */
-      switch (module.interface.ctor_args[i].mode)
-      {
-      case IMPORT_IN:
-        /* assert type */
-        ParseExpression::assertType(args.back(), m_arg_type, p, ctx, false);
-        break;
-      case IMPORT_INOUT:
-      {
-        /* assert type */
-        ParseExpression::assertType(args.back(), m_arg_type, p, ctx, false);
-        /* must be variable expression */
-        VariableExpression * var = dynamic_cast<VariableExpression*>(args.back());
-        if (var == nullptr)
-          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, module.interface.name);
-        break;
-      }
-      }
-
-      if (++i == module.interface.ctor_args_count)
-        break;
-      t = p.pop();
-      if (t->code != Parser::CHAIN)
-        throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, module.interface.name);
+      p.pop();
+      /* default constructor */
+      return new ComplexCTORExpression(type_id);
     }
-    t = p.pop();
-    if (t->code != ')')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, module.interface.name);
-    return new ComplexCTORExpression(type_id, args);
+    else
+    {
+      for (;;)
+      {
+        args.push_back(ParseExpression::expression(p, ctx));
+        t = p.pop();
+        if (t->code == Parser::CHAIN)
+          continue;
+        if (t->code != ')')
+          throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str());
+        break;
+      }
+    }
+
+    /* else find the right constructor */
+    bool fid = false;
+    for (int m = 0; m < module.interface.ctors_count; ++m)
+    {
+      const IMPORT_CTOR& ctor = module.interface.ctors[m];
+      fid = true;
+      if (ctor.args_count == args.size())
+      {
+        bool found = true;
+        /* check arguments list */
+        int a = 0;
+        while (found && a < ctor.args_count)
+        {
+          /* the expected type */
+          Type m_arg_type = import::make_type(ctor.args[a], type_id);
+          /* check type */
+          found = ParseExpression::typeChecking(args[a], m_arg_type, p, ctx);
+          ++a;
+        }
+        if (found)
+        {
+          DBG(DBG_DEBUG, "%s: found ctor id=%d\n", __FUNCTION__, ctor.id);
+          return new ComplexCTORExpression(type_id, ctor, std::move(args));
+        }
+      }
+    }
+    if (fid)
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, module.interface.name);
+    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, module.interface.name);
   }
   catch (ParseError& pe)
   {

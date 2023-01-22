@@ -24,7 +24,7 @@ extern "C"
 {
 #endif
 
-#define IMPORT_VERSION  221200
+#define IMPORT_VERSION  230122
 
   typedef void* IMPORT_HANDLE;
 
@@ -58,7 +58,19 @@ extern "C"
   } IMPORT_TYPE;
 
   /**
-   * The definition of argument
+   * The definition of ctor
+   * A CTOR declares a list of input type
+   */
+  typedef struct
+  {
+    int id;
+    unsigned args_count;  /* arguments list count */
+    IMPORT_TYPE * args;   /* arguments list */
+  } IMPORT_CTOR;
+
+  /**
+   * The definition of method argument
+   * A method argument has a mode (IN/OUT) and a type
    */
   typedef struct
   {
@@ -68,6 +80,8 @@ extern "C"
 
   /**
    * The definition of method
+   * A method has a name, it declares a type returned,
+   * and a list of argument
    */
   typedef struct
   {
@@ -86,8 +100,8 @@ extern "C"
     const char * name;            /* name this complex object */
     unsigned method_count;        /* methods list count */
     IMPORT_METHOD * methods;      /* methods list */
-    unsigned ctor_args_count;     /* arguments list count of the constructor */
-    IMPORT_ARG * ctor_args;       /* arguments list of the constructor */
+    unsigned ctors_count;         /* ctor list count*/
+    IMPORT_CTOR * ctors;          /* ctor list */
   } IMPORT_INTERFACE;
 
   typedef IMPORT_HANDLE (*DLSYM_CREATE)();

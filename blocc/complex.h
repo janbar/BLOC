@@ -53,7 +53,7 @@ public:
 
   Complex& operator=(const Complex& c);
 
-  bool CTOR(Context& ctx, const std::vector<Expression*>& args);
+  bool CTOR(int ctor_id, Context& ctx, const std::vector<Expression*>& args);
 
   void swap(Complex& c);
 
