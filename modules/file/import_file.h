@@ -34,7 +34,7 @@ public:
 
   void declareInterface(IMPORT_INTERFACE * interface) override;
 
-  void * createObject(bloc::Context& ctx, const std::vector<bloc::Expression*>& args) override;
+  void * createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args) override;
 
   void destroyObject(void * object) override;
 

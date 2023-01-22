@@ -52,6 +52,20 @@ namespace file
 /*
  * The module interface
  */
+
+/**********************************************************************/
+/*  Constructors                                                      */
+/**********************************************************************/
+static IMPORT_TYPE ctor_0_args[]  = {
+  { "L", 0 }, // filename
+  { "L", 0 }, // open flags
+};
+
+static IMPORT_CTOR ctors[] =
+{
+  { 0,      2,  ctor_0_args },  /* new file( filename, open flags ) */
+};
+
 enum Method
 {
   Close = 0, Open, Write_S, Write_B, Read_S, Read_B, Flush,
@@ -60,6 +74,7 @@ enum Method
 };
 
 /**********************************************************************/
+/*  Method arguments                                                  */
 /*  mode:         type: decl,ndim                                     */
 /**********************************************************************/
 static IMPORT_ARG stat_args[]  = {
@@ -98,6 +113,7 @@ static IMPORT_ARG seek_args[]     = {
 };
 
 /**********************************************************************/
+/*  Methods list                                                      */
 /*  id:       name:         ret: decl,ndim  args_count,args:          */
 /**********************************************************************/
 static IMPORT_METHOD methods[] =
@@ -213,13 +229,32 @@ void FileImport::declareInterface(IMPORT_INTERFACE * interface)
   interface->name = "file";
   interface->method_count = sizeof(file::methods) / sizeof(IMPORT_METHOD);
   interface->methods = file::methods;
-  interface->ctor_args_count = 0;
-  interface->ctor_args = nullptr;
+  /* file do not declare any specialized ctor */
+  interface->ctors_count = sizeof(file::ctors) / sizeof(IMPORT_CTOR);
+  interface->ctors = file::ctors;
 }
 
-void * FileImport::createObject(bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
+void * FileImport::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
 {
   file::Handle * file = new file::Handle();
+  try
+  {
+    switch (ctor_id)
+    {
+    case 0: /* file( filename, open flags ) */
+      if (file->open(args[0]->literal(ctx), args[1]->literal(ctx)) != 0)
+        throw RuntimeError(EXC_RT_MESSAGE_S, "Failed to open file.");
+      break;
+
+    default: /* default ctor */
+      break;
+    }
+  }
+  catch (...)
+  {
+    delete file;
+    throw;
+  }
   return file;
 }
 
