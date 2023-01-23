@@ -27,12 +27,14 @@
 #include <blocc/exception_parse.h>
 #include <blocc/exception_runtime.h>
 #include <blocc/import_manager.h>
+#include <blocc/debug.h>
 
 #include "main_options.h"
 #include "read_file.h"
 #include "cli_parser.h"
 
 #if (defined(_WIN32) || defined(_WIN64))
+#define __WINDOWS__
 #define STDOUT stdout
 #define STDERR stderr
 #define FLUSHOUT fflush(STDOUT)
@@ -50,7 +52,23 @@
 
 static bool output(bloc::Context& ctx);
 
+#ifdef __WINDOWS__
+/* MSC handler for C runtime */
+static void on_invalid_parameter(
+    const wchar_t * expression, const wchar_t * function,
+    const wchar_t * file, unsigned int line, uintptr_t p_reserved)
+{
+  bloc::DBG(DBG_WARN, "An invalid parameter was specified.");
+}
+#endif
+
 int main(int argc, char **argv) {
+
+#ifdef __WINDOWS__
+  /* configure the main handler for C runtime */
+  (void) _set_invalid_parameter_handler(on_invalid_parameter);
+#endif
+
   bool ret = true;
   bloc::DBGLevel(DBG_WARN);
   FILE * outfile = STDOUT;
