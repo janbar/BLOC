@@ -21,6 +21,7 @@
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
+#include <blocc/debug.h>
 
 #include <cmath>
 

@@ -29,6 +29,7 @@
 #include <blocc/expression_tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
+#include <blocc/debug.h>
 #include <blocc/import_manager.h>
 
 #include <cstring>

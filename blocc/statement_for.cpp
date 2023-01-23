@@ -24,6 +24,7 @@
 #include "expression_variable.h"
 #include "parser.h"
 #include "context.h"
+#include "debug.h"
 
 #include <string>
 #include <cassert>

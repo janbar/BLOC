@@ -24,6 +24,7 @@
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/import_manager.h>
+#include <blocc/debug.h>
 
 namespace bloc
 {

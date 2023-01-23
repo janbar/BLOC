@@ -26,6 +26,7 @@
 #include "expression_integer.h"
 #include "expression_literal.h"
 #include "expression_tuple.h"
+#include "debug.h"
 
 #include <cstdio>
 #include <string>

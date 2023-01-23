@@ -22,6 +22,7 @@
 #include "parser.h"
 #include "context.h"
 #include "import_manager.h"
+#include "debug.h"
 
 namespace bloc
 {

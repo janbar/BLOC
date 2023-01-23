@@ -31,6 +31,7 @@
 #include "expression_item.h"
 #include "context.h"
 #include "parser.h"
+#include "debug.h"
 
 #include <cstring>
 #include <cassert>

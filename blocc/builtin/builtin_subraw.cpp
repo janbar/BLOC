@@ -21,6 +21,7 @@
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
+#include <blocc/debug.h>
 
 namespace bloc
 {
@@ -63,7 +64,7 @@ TabChar& SUBRAWExpression::tabchar(Context & ctx) const
 SUBRAWExpression * SUBRAWExpression::parse(Parser& p, Context& ctx)
 {
   std::vector<Expression*> args;
-    
+
   try
   {
     TokenPtr t = p.pop();

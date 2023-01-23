@@ -21,6 +21,7 @@
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
+#include <blocc/debug.h>
 
 namespace bloc
 {
@@ -58,7 +59,7 @@ std::string& SUBSTRExpression::literal(Context & ctx) const
 SUBSTRExpression * SUBSTRExpression::parse(Parser& p, Context& ctx)
 {
   std::vector<Expression*> args;
-    
+
   try
   {
     TokenPtr t = p.pop();

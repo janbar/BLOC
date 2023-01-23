@@ -25,6 +25,7 @@
 #include "expression_integer.h"
 #include "expression_numeric.h"
 #include "expression_tabchar.h"
+#include "debug.h"
 
 #include <cstdio>
 #include <string>

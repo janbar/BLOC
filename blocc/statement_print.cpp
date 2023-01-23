@@ -29,6 +29,7 @@
 #include "expression_collection.h"
 #include "expression_tuple.h"
 #include "import_manager.h"
+#include "debug.h"
 
 #include <cstdio>
 #include <string>

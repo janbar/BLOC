@@ -22,6 +22,7 @@
 #include "parse_statement.h"
 #include "parser.h"
 #include "context.h"
+#include "debug.h"
 
 #include <string>
 #include <cassert>

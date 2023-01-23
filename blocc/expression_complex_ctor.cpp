@@ -21,6 +21,7 @@
 #include "exception_parse.h"
 #include "import_manager.h"
 #include "parser.h"
+#include "debug.h"
 
 namespace bloc
 {

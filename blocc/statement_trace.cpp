@@ -22,6 +22,7 @@
 #include "parser.h"
 #include "context.h"
 #include "expression_boolean.h"
+#include "debug.h"
 
 #include <string>
 

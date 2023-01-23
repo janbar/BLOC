@@ -22,6 +22,7 @@
 #include <blocc/expression_tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
+#include <blocc/debug.h>
 
 namespace bloc
 {

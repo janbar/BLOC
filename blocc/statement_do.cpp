@@ -21,6 +21,7 @@
 #include "parse_expression.h"
 #include "parser.h"
 #include "context.h"
+#include "debug.h"
 
 namespace bloc
 {

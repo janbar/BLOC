@@ -22,6 +22,7 @@
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/readstdin.h>
+#include <blocc/debug.h>
 
 #include <cstdlib>
 

@@ -19,7 +19,6 @@
 #ifndef INTRINSIC_TYPE_H_
 #define INTRINSIC_TYPE_H_
 
-#include "debug.h"
 #include <cstdint>
 #include <string>
 #include <vector>

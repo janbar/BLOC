@@ -30,6 +30,7 @@
 #include "expression_collection.h"
 #include "expression_tuple.h"
 #include "expression_item.h"
+#include "debug.h"
 
 #include <string>
 #include <cassert>

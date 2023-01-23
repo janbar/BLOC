@@ -20,6 +20,7 @@
 #include "exception_parse.h"
 #include "parser.h"
 #include "context.h"
+#include "debug.h"
 
 namespace bloc
 {

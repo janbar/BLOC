@@ -23,6 +23,7 @@
 #include <blocc/parser.h>
 #include <blocc/expression_variable.h>
 #include <blocc/readstdin.h>
+#include <blocc/debug.h>
 
 #include <cstdlib>
 
