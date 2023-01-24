@@ -1,3 +1,4 @@
+set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 project (bloc CXX C)
 cmake_minimum_required(VERSION 3.8.2)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -25,7 +26,7 @@ add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake")
 
 # tests
-option(BUILD_TESTING "Make tests" ON)
+option(BUILD_TESTING "Make tests" OFF)
 include(CTest)
 if(BUILD_TESTING)
   add_subdirectory (tests)

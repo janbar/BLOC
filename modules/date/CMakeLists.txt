@@ -48,3 +48,7 @@ file(GLOB bloc_date_HEADERS
 add_library (bloc_date SHARED ${bloc_date_SOURCES})
 add_dependencies(bloc_date blocc)
 target_link_libraries(bloc_date blocc)
+
+set_target_properties(bloc_date PROPERTIES
+  SOVERSION "1"
+)

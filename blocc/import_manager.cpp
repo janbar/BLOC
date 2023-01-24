@@ -31,11 +31,18 @@
 #include <dlfcn.h>
 #include <unistd.h>
 #define FILE_SEPARATOR '/'
-#define LIBPREFIX "libbloc_"
+
 #if defined(__APPLE__)
-#define LIBSUFFIX ".dylib"
+#define LIBPREFIX "libbloc_"
+#define LIBSUFFIX "." LIBSOVERSION ".dylib"
+
+#elif defined(__CYGWIN__)
+#define LIBPREFIX "cygbloc_"
+#define LIBSUFFIX "-" LIBSOVERSION ".dll"
+
 #else
-#define LIBSUFFIX ".so"
+#define LIBPREFIX "libbloc_"
+#define LIBSUFFIX ".so." LIBSOVERSION
 #endif
 #endif
 
