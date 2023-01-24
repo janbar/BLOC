@@ -33,6 +33,8 @@ extern "C" {
 #define CC_INLINE
 #endif
 
+#define INVALID_TIME ((time_t)(-1))
+
 #if !defined(HAVE_TIMEGM) && !defined(timegm)
 #define timegm __timegm
 extern time_t __timegm(struct tm *utctime_tm);

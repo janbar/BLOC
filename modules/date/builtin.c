@@ -34,8 +34,6 @@
 #define strcasecmp _stricmp
 #endif
 
-#define INVALID_TIME ((time_t)(-1))
-
 time_t __timegm(struct tm *utctime_tm)
 {
   time_t time;

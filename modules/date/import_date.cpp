@@ -161,6 +161,8 @@ void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
         throw RuntimeError(EXC_RT_MESSAGE_S, "Invalid date format.");
       /* string is local time (no tz info) */
       time_t tt = mktime(&_tm);
+      if (tt == INVALID_TIME)
+        throw RuntimeError(EXC_RT_MESSAGE_S, "The system does not support this date range.");
       localtime_r(&tt, &dd->_tm);
       break;
     }
@@ -254,10 +256,14 @@ bloc::Expression * DateImport::executeMethod(
       throw RuntimeError(EXC_RT_OUT_OF_RANGE);
     int day = (int) add;
     int sec = (int) (86400.0 * (add - day));
-    dd->_tm.tm_mday += day;
-    dd->_tm.tm_sec += sec;
-    dd->_tm.tm_isdst = -1; /* reset dst */
-    mktime(&dd->_tm);
+    struct tm _tm = dd->_tm;
+    _tm.tm_mday += day;
+    _tm.tm_sec += sec;
+    _tm.tm_isdst = -1; /* reset dst */
+    time_t tt = mktime(&_tm);
+    if (tt == INVALID_TIME)
+      throw RuntimeError(EXC_RT_MESSAGE_S, "The system does not support this date range.");
+    dd->_tm = _tm;
     return new ComplexExpression(object_this);
   }
 
@@ -275,23 +281,27 @@ bloc::Expression * DateImport::executeMethod(
     if (unit < 0)
       throw RuntimeError(EXC_RT_MESSAGE_S,"Invalid name for time unit.");
 
+    struct tm _tm = dd->_tm;
     if (unit == 0 && add <= 86400 && add >= -86400)
-      dd->_tm.tm_sec += add;
+      _tm.tm_sec += add;
     else if (unit == 1 && add <= 86400 && add >= -86400)
-      dd->_tm.tm_min += add;
+      _tm.tm_min += add;
     else if (unit == 2 && add <= 86400 && add >= -86400)
-      dd->_tm.tm_hour += add;
+      _tm.tm_hour += add;
     else if (unit == 3 && add <= 86400 && add >= -86400)
-      dd->_tm.tm_mday += add;
+      _tm.tm_mday += add;
     else if (unit == 4 && add <= 1440 && add >= -1440)
-      dd->_tm.tm_mon += add;
+      _tm.tm_mon += add;
     else if (unit == 5 && add <= 1440 && add >= -1440)
-      dd->_tm.tm_year += add;
+      _tm.tm_year += add;
     else
       throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+    _tm.tm_isdst = -1; /* reset dst */
 
-    dd->_tm.tm_isdst = -1; /* reset dst */
-    mktime(&dd->_tm);
+    time_t tt = mktime(&_tm);
+    if (tt == INVALID_TIME)
+      throw RuntimeError(EXC_RT_MESSAGE_S, "The system does not support this date range.");
+    dd->_tm = _tm;
     return new ComplexExpression(object_this);
   }
 
