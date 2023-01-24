@@ -53,18 +53,23 @@ enum Method
 /*  Constructors                                                      */
 /**********************************************************************/
 static IMPORT_TYPE ctor_0_args[]  = {
+  { "C", 0 }, // date
+};
+
+static IMPORT_TYPE ctor_1_args[]  = {
   { "L", 0 }, // string
   { "L", 0 }, // format
 };
 
-static IMPORT_TYPE ctor_1_args[]  = {
-  { "C", 0 }, // date
+static IMPORT_TYPE ctor_2_args[]  = {
+  { "L", 0 }, // string formatted as ISO8601
 };
 
 static IMPORT_CTOR ctors[] =
 {
-  { 0,      2,  ctor_0_args },  /* new date( string, format ) */
-  { 1,      1,  ctor_1_args },  /* new date( date ) */
+  { 0,      1,  ctor_0_args },  /* new date( date ) */
+  { 1,      2,  ctor_1_args },  /* new date( string, format ) */
+  { 2,      1,  ctor_2_args },  /* new date( string iso ) */
 };
 
 /**********************************************************************/
@@ -137,6 +142,13 @@ struct Handle {
   time_t unixtime() { return mktime(&_tm); }
 };
 
+static const char * ISO8601UTC = "%Y-%m-%dT%H:%M:%SZ";
+static unsigned ISO8601UTC_LEN = 20;
+static const char * ISO8601LOC = "%Y-%m-%dT%H:%M:%S";
+static unsigned ISO8601LOC_LEN = 19;
+static const char * ISODATE = "%Y-%m-%d";
+static unsigned ISODATE_LEN = 10;
+
 } /* namespace date */
 
 void DateImport::declareInterface(IMPORT_INTERFACE * interface)
@@ -155,7 +167,15 @@ void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
   {
     switch(ctor_id)
     {
-    case 0: /* date ( string, format ) */
+    case 0: /* date ( date ), i.e copy constructor */
+    {
+      /* complex handle MUST be stored until the end of processing */
+      bloc::Complex c0 = args[0]->complex(ctx);
+      *dd = *(static_cast<date::Handle*>(c0.instance()));
+      break;
+    }
+
+    case 1: /* date ( string, format ) */
     {
       struct tm _tm;
       memset(&_tm, '\0', sizeof(tm));
@@ -170,11 +190,31 @@ void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       break;
     }
 
-    case 1: /* date ( date ), i.e copy constructor */
+    case 2: /* date ( string iso ) */
     {
-      /* complex handle MUST be stored until the end of processing */
-      bloc::Complex c0 = args[0]->complex(ctx);
-      *dd = *(static_cast<date::Handle*>(c0.instance()));
+      struct tm _tm;
+      memset(&_tm, '\0', sizeof(tm));
+      _tm.tm_isdst = -1;
+      std::string& str = args[0]->literal(ctx);
+      const char * format;
+      if (str.size() == date::ISO8601UTC_LEN)
+        format = date::ISO8601UTC;
+      else if (str.size() == date::ISO8601LOC_LEN)
+        format = date::ISO8601LOC;
+      else if (str.size() == date::ISODATE_LEN)
+        format = date::ISODATE;
+      else
+        throw RuntimeError(EXC_RT_MESSAGE_S, "Invalid date format.");
+      if (strptime(str.c_str(), format, &_tm) == nullptr)
+        throw RuntimeError(EXC_RT_MESSAGE_S, "Invalid date format.");
+      time_t tt;
+      if (format == date::ISO8601UTC)
+        tt = timegm(&_tm); /* utc time */
+      else
+        tt = mktime(&_tm); /* local time */
+      if (tt == INVALID_TIME)
+        throw RuntimeError(EXC_RT_MESSAGE_S, "The system does not support this date range.");
+      localtime_r(&tt, &dd->_tm);
       break;
     }
 
