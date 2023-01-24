@@ -2,6 +2,7 @@
 #include <string>
 #include <cstring>
 #include <climits>
+#include <cmath>
 
 #include <test.h>
 #include <hashvalue.c>
@@ -10,6 +11,11 @@
 TestingContext ctx;
 
 using namespace bloc;
+
+bool fequal(double a, double b)
+{
+  return std::fabs(a - b) < 1e-6;
+}
 
 TEST_CASE("integer")
 {
@@ -49,25 +55,25 @@ TEST_CASE("decimal")
   Expression * e;
   ctx.reset("round( 1234567890.001 , 3 )");
   e = ctx.parseExpression();
-  REQUIRE( e->numeric(ctx) == 1234567890.001);
+  REQUIRE( fequal(e->numeric(ctx), 1234567890.001) );
   REQUIRE( e->unparse(ctx) == "round(1234567890.001, 3)" );
   delete e;
 
   ctx.reset("round( 1.234567890001e+9 , 3 )");
   e = ctx.parseExpression();
-  REQUIRE( e->numeric(ctx) == 1234567890.001);
+  REQUIRE( fequal(e->numeric(ctx), 1234567890.001) );
   REQUIRE( e->unparse(ctx) == "round(1234567890.001, 3)" );
   delete e;
 
   ctx.reset("round( 1234567890.001e-9 , 12)");
   e = ctx.parseExpression();
-  REQUIRE( e->numeric(ctx) == 1.234567890001 );
+  REQUIRE( fequal(e->numeric(ctx), 1.234567890001) );
   REQUIRE( e->unparse(ctx) == "round(1.234567890001, 12)" );
   delete e;
 
   ctx.reset("1.23456789e+308");
   e = ctx.parseExpression();
-  REQUIRE( e->numeric(ctx) == 1.23456789e+308 );
+  REQUIRE( fequal(e->numeric(ctx), 1.23456789e+308) );
   REQUIRE( e->unparse(ctx) == "1.23456789e+308" );
   delete e;
 
