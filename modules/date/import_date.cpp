@@ -129,6 +129,8 @@ struct Handle {
   Handle() { memset(&_tm, '\0', sizeof(tm)); }
   void now()
   {
+    memset(&_tm, '\0', sizeof(tm));
+    _tm.tm_isdst = -1;
     time_t ts = time(nullptr);
     localtime_r(&ts, &_tm);
   }
@@ -157,6 +159,7 @@ void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
     {
       struct tm _tm;
       memset(&_tm, '\0', sizeof(tm));
+      _tm.tm_isdst = -1;
       if (strptime(args[0]->literal(ctx).c_str(), args[1]->literal(ctx).c_str(), &_tm) == nullptr)
         throw RuntimeError(EXC_RT_MESSAGE_S, "Invalid date format.");
       /* string is local time (no tz info) */
