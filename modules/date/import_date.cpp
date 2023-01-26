@@ -181,11 +181,11 @@ void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       memset(&_tm, '\0', sizeof(tm));
       _tm.tm_isdst = -1;
       if (strptime(args[0]->literal(ctx).c_str(), args[1]->literal(ctx).c_str(), &_tm) == nullptr)
-        throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "Invalid date format.");
+        throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
       /* string is local time (no tz info) */
       time_t tt = mktime(&_tm);
       if (tt == INVALID_TIME)
-        throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "The system does not support this date range.");
+        throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
       localtime_r(&tt, &dd->_tm);
       break;
     }
@@ -204,16 +204,16 @@ void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       else if (str.size() == date::ISODATE_LEN)
         format = date::ISODATE;
       else
-        throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "Invalid date format.");
+        throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
       if (strptime(str.c_str(), format, &_tm) == nullptr)
-        throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "Invalid date format.");
+        throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
       time_t tt;
       if (format == date::ISO8601UTC)
         tt = timegm(&_tm); /* utc time */
       else
         tt = mktime(&_tm); /* local time */
       if (tt == INVALID_TIME)
-        throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "The system does not support this date range.");
+        throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
       localtime_r(&tt, &dd->_tm);
       break;
     }
@@ -305,7 +305,7 @@ bloc::Expression * DateImport::executeMethod(
     _tm.tm_isdst = -1; /* reset dst */
     time_t tt = mktime(&_tm);
     if (tt == INVALID_TIME)
-      throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "The system does not support this date range.");
+      throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
     dd->_tm = _tm;
     return new ComplexExpression(object_this);
   }
@@ -322,7 +322,7 @@ bloc::Expression * DateImport::executeMethod(
       unit = i;
     }
     if (unit < 0)
-      throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S,"Invalid name for time unit.");
+      throw RuntimeError(EXC_RT_OTHER_S,"Invalid name for time unit.");
 
     struct tm _tm = dd->_tm;
     if (unit == 0 && add <= 86400 && add >= -86400)
@@ -343,7 +343,7 @@ bloc::Expression * DateImport::executeMethod(
 
     time_t tt = mktime(&_tm);
     if (tt == INVALID_TIME)
-      throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "The system does not support this date range.");
+      throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
     dd->_tm = _tm;
     return new ComplexExpression(object_this);
   }
@@ -370,7 +370,7 @@ bloc::Expression * DateImport::executeMethod(
       unit = i;
     }
     if (unit < 0)
-      throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S,"Invalid name for time unit.");
+      throw RuntimeError(EXC_RT_OTHER_S,"Invalid name for time unit.");
 
     if (unit > 0)
       dd->_tm.tm_sec = 0;
