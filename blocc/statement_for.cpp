@@ -171,33 +171,33 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Symbol of variable required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Symbol of variable required for FOR.");
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
     s->_iterator = new VariableExpression(ctx.registerSymbol(vname, Type::INTEGER));
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IN])
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Keyword IN required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FOR.");
     s->_expBeg = ParseExpression::expression(p, ctx);
     if (s->_expBeg->type(ctx) != Type::INTEGER)
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Numeric or Integer expression required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.");
     t = p.pop();
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS);
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_TO])
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Keyword TO required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword TO required for FOR.");
     s->_expEnd = ParseExpression::expression(p, ctx);
     if (s->_expEnd->type(ctx) != Type::INTEGER)
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Numeric or Integer expression required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.");
     t = p.pop();
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS);
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Missing LOOP keyword in FOR statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in FOR statement.");
     s->_exec = parse_clause(p, ctx, s);
     t = p.pop();
     if (t->text != KEYWORDS[STMT_END])
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Endless FOR LOOP statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Endless FOR LOOP statement.");
     /* parse statement END */
     s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
     t = p.pop();

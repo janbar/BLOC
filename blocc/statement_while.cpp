@@ -117,16 +117,16 @@ WHILEStatement * WHILEStatement::parse(Parser& p, Context& ctx)
   {
     s->exp = ParseExpression::expression(p, ctx);
     if (s->exp->type(ctx) != Type::BOOLEAN)
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Boolean expression required for WHILE.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Boolean expression required for WHILE.");
     TokenPtr t = p.pop();
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS);
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Missing LOOP keyword in WHILE statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in WHILE statement.");
     s->_exec = parse_clause(p, ctx, s);
     t = p.pop();
     if (t->text != KEYWORDS[STMT_END])
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Endless WHILE LOOP statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Endless WHILE LOOP statement.");
     /* parse statement END */
     s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
     t = p.pop();

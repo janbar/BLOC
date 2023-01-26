@@ -188,7 +188,7 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
       {
         /* when */
         if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_WHEN])
-          throw ParseError(EXC_PARSE_MESSAGE_S, "Missing WHEN keyword in EXCEPTION clause.");
+          throw ParseError(EXC_PARSE_OTHER_S, "Missing WHEN keyword in EXCEPTION clause.");
         /* exception name */
         t = p.pop();
         if (t->code != TOKEN_KEYWORD)
@@ -200,7 +200,7 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
         /* then */
         t = p.pop();
         if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_THEN])
-          throw ParseError(EXC_PARSE_MESSAGE_S, "Missing THEN keyword in EXCEPTION clause.");
+          throw ParseError(EXC_PARSE_OTHER_S, "Missing THEN keyword in EXCEPTION clause.");
         /* clause */
         Executable * exec = parse_catch(p, ctx);
         s->_catches.push_back(std::make_pair(name, exec));

@@ -35,19 +35,19 @@ ENDStatement * ENDStatement::parse(Parser& p, Context& ctx, STATEMENT endof)
     {
     case STMT_ENDIF:
       if (t->text != KEYWORDS[STMT_IF])
-        throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword. Waiting for END IF.");
+        throw ParseError(EXC_PARSE_OTHER_S, "unexpected END keyword. Waiting for END IF.");
       return s;
     case STMT_ENDLOOP:
       if (t->text != KEYWORDS[STMT_LOOP])
-         throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword. Waiting for END LOOP.");
+         throw ParseError(EXC_PARSE_OTHER_S, "unexpected END keyword. Waiting for END LOOP.");
       return s;
     case STMT_END:
       if (t->code != Parser::SEPARATOR)
-        throw ParseError(EXC_PARSE_MESSAGE_S, "Extra input beyond END keyword.");
+        throw ParseError(EXC_PARSE_OTHER_S, "Extra input beyond END keyword.");
       p.push(t);
       return s;
     default:
-      throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword.");
+      throw ParseError(EXC_PARSE_OTHER_S, "unexpected END keyword.");
     }
   }
   catch (ParseError& pe)

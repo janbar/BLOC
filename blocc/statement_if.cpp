@@ -133,7 +133,7 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
       if (exp->type(ctx) != Type::BOOLEAN)
       {
         delete exp;
-        throw ParseError(EXC_PARSE_MESSAGE_S, "Boolean expression required for IF.");
+        throw ParseError(EXC_PARSE_OTHER_S, "Boolean expression required for IF.");
       }
       TokenPtr t = p.pop();
       if (t->code == ')')
@@ -144,7 +144,7 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
       if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_THEN])
       {
         delete exp;
-        throw ParseError(EXC_PARSE_MESSAGE_S, "Missing THEN keyword in IF statement.");
+        throw ParseError(EXC_PARSE_OTHER_S, "Missing THEN keyword in IF statement.");
       }
       Executable * exec = parse_clause(p, ctx);
       s->_rules.push_back(std::make_pair(exp, exec));
@@ -158,7 +158,7 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
         t = p.pop();
       }
       if (t->text != KEYWORDS[STMT_END])
-        throw ParseError(EXC_PARSE_MESSAGE_S, "Endless IF statement.");
+        throw ParseError(EXC_PARSE_OTHER_S, "Endless IF statement.");
       /* parse statement END */
       exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDIF));
       t = p.pop();
