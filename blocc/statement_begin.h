@@ -42,6 +42,8 @@ private:
   std::list<std::pair<std::string, Executable*> > _catches;
   static Executable * parse_catch(Parser& p, Context& ctx);
 
+  void docatch(RuntimeError& rt, Context& ctx) const;
+
 public:
   virtual ~BEGINStatement();
 

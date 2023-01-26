@@ -124,7 +124,7 @@ const char * Statement::HELPS[] = {
           "\n[ elsif {boolean expression} then [statement ...] ...]"
           "\n[ else [statement ...] ]"
           "\nend if;",
-  /*THEN  */  "See statement IF, or BEGIN.",
+  /*THEN  */  "See statement IF, EXCEPTION.",
   /*ELSE  */  "See statement IF.",
   /*ELSIF */  "See statement IF.",
   /*FOR   */  "The FOR statement provides iterator construct. It defines a control variable"
@@ -151,7 +151,8 @@ const char * Statement::HELPS[] = {
   /*BEGIN */  "The BEGIN statement begins a new block of statements."
           "\n\nbegin [statement ...]"
           "\n[ exception [ when {exception name} then [statement ...] ...] ]"
-          "\nend;",
+          "\nend;"
+          "\n\nSee EXCEPTION, or statement RAISE.",
   /*BREAK */  "The BREAK statement jumps out of a loop."
           "\n\nbreak;",
   /*CONTINUE*/"The CONTINUE statement \"jumps over\" one iteration in the loop."
@@ -170,10 +171,18 @@ const char * Statement::HELPS[] = {
           "\nAll other types must be converted first (see function STR).",
   /*DO    */  "The DO statement execute the expression to follow."
           "\n\ndo {expression};",
-  /*EXCEPT*/  "See statement BEGIN.",
-  /*WHEN  */  "See statement BEGIN.",
-  /*RAISE */  "The RAISE statement throws exception with a qualified name."
-          "\n\nraise {exception name};",
+  /*EXCEPT*/  "The keyword EXCEPTION marks the beginning of exception processing section,"
+          "\ninside a block BEGIN...END. We could catch user defined exception by RAISE,"
+          "\nor throwable error among $Bdivide_by_zero$N, $Bout_of_range$N."
+          "\nThe keyword $Bothers$N allows us to catch any throwable exception."
+          "\n\nexception"
+          "\n[ when {exception name} then [statement ...] ...]"
+          "\n[ when others then [statement ...] ]"
+          "\n\nSee statement BEGIN, or RAISE.",
+  /*WHEN  */  "See EXCEPTION.",
+  /*RAISE */  "The RAISE statement throws a user named exception, or throwable error."
+          "\n\nraise {exception name};"
+          "\n\nSee EXCEPTION, or statement BEGIN.",
 };
 
 }

@@ -35,6 +35,43 @@ BEGINStatement::~BEGINStatement()
 {
   if (_exec)
     delete _exec;
+  for (auto& c : _catches)
+    delete c.second;
+  _catches.clear();
+}
+
+void BEGINStatement::docatch(RuntimeError& rt, Context& ctx) const
+{
+  if (!_catches.empty())
+  {
+    for (auto& c : _catches)
+    {
+      EXC_RT ec = RuntimeError::findThrowable(c.first);
+      if ((c.first == "OTHERS" && (rt.no == EXC_RT_USER_S || RuntimeError::throwable(rt.no))) ||
+          (ec == rt.no && (
+              /* catch known exception */
+              (ec != EXC_RT_USER_S) ||
+              /* catch user defined exception */
+              (ec == EXC_RT_USER_S && c.first == rt.what())
+              )))
+      {
+        /* catch the user defined exception */
+        try
+        {
+          c.second->run();
+        }
+        catch (RuntimeError& rte)
+        {
+          ctx.execEnd(); /* close block before throw */
+          throw;
+        }
+        return;
+      }
+    }
+  }
+  /* no catch */
+  ctx.execEnd(); /* close block before throw */
+  throw rt;
 }
 
 const Statement * BEGINStatement::doit(Context& ctx) const
@@ -44,10 +81,9 @@ const Statement * BEGINStatement::doit(Context& ctx) const
   {
     _exec->run();
   }
-  catch (...)
+  catch (RuntimeError& rt)
   {
-    ctx.execEnd();
-    throw;
+    docatch(rt, ctx);
   }
   ctx.execEnd();
   return _next;
