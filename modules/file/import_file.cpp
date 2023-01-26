@@ -243,7 +243,7 @@ void * FileImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
     {
     case 0: /* file( filename, open flags ) */
       if (file->open(args[0]->literal(ctx), args[1]->literal(ctx)) != 0)
-        throw RuntimeError(EXC_RT_USER_S, "Failed to open file.");
+        throw RuntimeError(EXC_RT_EXTERNAL_ERROR_S, "Failed to open file.");
       break;
 
     default: /* default ctor */
@@ -283,7 +283,7 @@ bloc::Expression * FileImport::executeMethod(
   case file::Write_S:
   {
     if (!file->_w)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened for write operation.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened for write operation.");
     std::string& str = args[0]->literal(ctx);
     return new bloc::IntegerExpression((int64_t)file->write(str.c_str(), str.size()));
   }
@@ -291,7 +291,7 @@ bloc::Expression * FileImport::executeMethod(
   case file::Read_S:
   {
     if (!file->_r)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened for read operation.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened for read operation.");
     int64_t n = args[1]->integer(ctx);
     char * buf = new char[n];
     n = file->read(buf, n);
@@ -304,22 +304,22 @@ bloc::Expression * FileImport::executeMethod(
 
   case file::SeekSet:
     if (!file->_file)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened.");
     return new bloc::IntegerExpression((int64_t)file->seek_set(args[0]->integer(ctx)));
 
   case file::SeekCur:
     if (!file->_file)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened.");
     return new bloc::IntegerExpression((int64_t)file->seek_cur(args[0]->integer(ctx)));
 
   case file::SeekEnd:
     if (!file->_file)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened.");
     return new bloc::IntegerExpression((int64_t)file->seek_end(args[0]->integer(ctx)));
 
   case file::Position:
     if (!file->_file)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened.");
     return new bloc::IntegerExpression(file->position());
 
   case file::Flush:
@@ -337,7 +337,7 @@ bloc::Expression * FileImport::executeMethod(
   case file::Write_B:
   {
     if (!file->_w)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened for write operation.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened for write operation.");
     bloc::TabChar& buf = args[0]->tabchar(ctx);
     return new bloc::IntegerExpression((int64_t)file->write(buf.data(), buf.size()));
   }
@@ -345,7 +345,7 @@ bloc::Expression * FileImport::executeMethod(
   case file::Read_B:
   {
     if (!file->_r)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened for read operation.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened for read operation.");
     int64_t n = args[1]->integer(ctx);
     char * buf = new char[n];
     n = file->read(buf, n);
@@ -369,7 +369,7 @@ bloc::Expression * FileImport::executeMethod(
   case file::Readln:
   {
     if (!file->_r)
-      throw bloc::RuntimeError(bloc::EXC_RT_USER_S, "file not opened for read operation.");
+      throw bloc::RuntimeError(bloc::EXC_RT_EXTERNAL_ERROR_S, "file not opened for read operation.");
     char * buf = new char[1024]; /* max length */
     unsigned n = file->readln(buf, 1024);
     bloc::LiteralExpression * out = new bloc::LiteralExpression(std::string(buf, n));
