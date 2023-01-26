@@ -80,18 +80,9 @@ Statement * ParseStatement::parse()
         case Statement::STMT_RETURN:
           s = RETURNStatement::parse(p, ctx);
           return beyond_statement(s);
+
         case Statement::STMT_IF:
           s = IFStatement::parse(p, ctx);
-          return s;
-        case Statement::STMT_ELSIF:
-          if (!ctx.execStatement() || ctx.execStatement()->keyword() != Statement::STMT_IF)
-            throw ParseError(EXC_PARSE_MISSING_KEYWORD_S, "IF before ELSIF");
-          s = new Statement(Statement::STMT_ELSIF);
-          return s;
-        case Statement::STMT_ELSE:
-          if (!ctx.execStatement() || ctx.execStatement()->keyword() != Statement::STMT_IF)
-            throw ParseError(EXC_PARSE_MISSING_KEYWORD_S, "IF before ELSE");
-          s = new Statement(Statement::STMT_ELSE);
           return s;
 
         case Statement::STMT_WHILE:
@@ -113,10 +104,6 @@ Statement * ParseStatement::parse()
         case Statement::STMT_BEGIN:
           s = BEGINStatement::parse(p, ctx);
           return s;
-
-        case Statement::STMT_END:
-          s = ENDStatement::parse(p, ctx);
-          return beyond_statement(s);
 
         case Statement::STMT_BREAK:
           s = BREAKStatement::parse(p, ctx);

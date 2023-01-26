@@ -25,40 +25,30 @@
 namespace bloc
 {
 
-ENDStatement * ENDStatement::parse(Parser& p, Context& ctx)
+ENDStatement * ENDStatement::parse(Parser& p, Context& ctx, STATEMENT endof)
 {
-  if (ctx.execStatement() == nullptr)
-    throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword.");
-
-  ENDStatement * s = new ENDStatement();
+  ENDStatement * s = new ENDStatement(endof);
   try
   {
     TokenPtr t = p.pop();
-    if (ctx.execLevel() > 0)
+    switch (endof)
     {
-      switch (ctx.execStatement()->keyword())
-      {
-      case STMT_IF:
-        if (t->text != KEYWORDS[STMT_IF])
-          throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword. Waiting for END IF.");
-        s->_keyword = STMT_ENDIF;
-        return s;
-      case STMT_FOR:
-      case STMT_WHILE:
-        if (t->text != KEYWORDS[STMT_LOOP])
-           throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword. Waiting for END LOOP.");
-        s->_keyword = STMT_ENDLOOP;
-        return s;
-      case STMT_BEGIN:
-        if (t->code != Parser::SEPARATOR)
-          throw ParseError(EXC_PARSE_MESSAGE_S, "Extra input beyond END keyword.");
-        p.push(t);
-        return s;
-      default:
-        break;
-      }
+    case STMT_ENDIF:
+      if (t->text != KEYWORDS[STMT_IF])
+        throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword. Waiting for END IF.");
+      return s;
+    case STMT_ENDLOOP:
+      if (t->text != KEYWORDS[STMT_LOOP])
+         throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword. Waiting for END LOOP.");
+      return s;
+    case STMT_END:
+      if (t->code != Parser::SEPARATOR)
+        throw ParseError(EXC_PARSE_MESSAGE_S, "Extra input beyond END keyword.");
+      p.push(t);
+      return s;
+    default:
+      throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword.");
     }
-    throw ParseError(EXC_PARSE_MESSAGE_S, "unexpected END keyword.");
   }
   catch (ParseError& pe)
   {

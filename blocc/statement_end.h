@@ -40,7 +40,7 @@ class ENDStatement : public Statement
 public:
   virtual ~ENDStatement() { }
 
-  ENDStatement() : Statement(STMT_END) { }
+  ENDStatement(STATEMENT endof) : Statement(endof) { }
 
   const Statement * doit(Context& ctx) const override
   {
@@ -50,7 +50,7 @@ public:
   /**
    * Parse END Statement.
    */
-  static ENDStatement * parse(Parser& p, Context& ctx);
+  static ENDStatement * parse(Parser& p, Context& ctx, STATEMENT endof);
 };
 
 }

@@ -17,6 +17,7 @@
  */
 
 #include "statement_begin.h"
+#include "statement_end.h"
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
@@ -59,6 +60,59 @@ void BEGINStatement::unparse(Context& ctx, FILE * out) const
   ctx.execBegin(this);
   _exec->unparse(out);
   ctx.execEnd();
+  if (!_catches.empty())
+  {
+    for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+    fputs(Statement::KEYWORDS[STMT_EXCEPTION], out);
+    fputc(Parser::NEWLINE, out);
+    for (auto& c : _catches)
+    {
+      for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+      fputs(Statement::KEYWORDS[STMT_WHEN], out);
+      fputc(' ', out);
+      fputs(c.first.c_str(), out);
+      fputc(' ', out);
+      fputs(Statement::KEYWORDS[STMT_THEN], out);
+      fputc(Parser::NEWLINE, out);
+      ctx.execBegin(this);
+      c.second->unparse(out);
+      ctx.execEnd();
+    }
+  }
+}
+
+Executable * BEGINStatement::parse_catch(Parser& p, Context& ctx)
+{
+  std::list<const Statement*> statements;
+  try
+  {
+    TokenPtr t;
+    while ((t = p.pop()))
+    {
+      if (t->code == Parser::SEPARATOR)
+        continue;
+      /* check for ending */
+      if (t->code == TOKEN_KEYWORD &&
+              (t->text == KEYWORDS[STMT_END] || t->text == KEYWORDS[STMT_WHEN]))
+        break;
+      /* parse the statement */
+      p.push(t);
+      Statement * ss = ParseStatement::statement(p, ctx);
+      statements.push_back(ss);
+    }
+    /* requires at least one statement, even NOP */
+    if (statements.empty())
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+    p.push(t);
+  }
+  catch (ParseError& pe)
+  {
+    DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
+    for (auto ss : statements)
+      delete ss;
+    throw;
+  }
+  return new Executable(ctx, statements);
 }
 
 BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
@@ -70,20 +124,59 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
   {
     bool end = false;
     TokenPtr t;
-    while (!end && (t = p.pop()))
+    for (;;)
     {
+      t = p.pop();
       if (t->code == Parser::SEPARATOR)
         continue;
+      /* check for ending */
+      if (t->text == KEYWORDS[STMT_END] || t->text == KEYWORDS[STMT_EXCEPTION])
+        break;
       /* parse the statement */
       p.push(t);
       Statement * ss = ParseStatement::statement(p, ctx);
       statements.push_back(ss);
-      /* check for ending */
-      if (ss->keyword() == STMT_END)
-        end = true;
     }
-    if (statements.back()->keyword() != Statement::STMT_END)
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Endless BEGIN statement.");
+    if (t->text == KEYWORDS[STMT_EXCEPTION])
+    {
+      t = p.pop();
+      /* parse exception section */
+      for (;;)
+      {
+        /* when */
+        if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_WHEN])
+          throw ParseError(EXC_PARSE_MESSAGE_S, "Missing WHEN keyword in EXCEPTION clause.");
+        /* exception name */
+        t = p.pop();
+        if (t->code != TOKEN_KEYWORD)
+          throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+        if (Parser::reservedKeyword(t->text))
+          throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str());
+        std::string name(t->text);
+        std::transform(name.begin(), name.end(), name.begin(), ::toupper);
+        /* then */
+        t = p.pop();
+        if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_THEN])
+          throw ParseError(EXC_PARSE_MESSAGE_S, "Missing THEN keyword in EXCEPTION clause.");
+        /* clause */
+        Executable * exec = parse_catch(p, ctx);
+        s->_catches.push_back(std::make_pair(name, exec));
+        t = p.pop();
+        if (t->text != KEYWORDS[STMT_END])
+          continue;
+        /* parse statement END */
+        exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_END));
+        break;
+      }
+    }
+    else
+    {
+      /* parse statement END */
+      statements.push_back(ENDStatement::parse(p, ctx, STMT_END));
+    }
+    t = p.pop();
+    if (t->code != Parser::SEPARATOR)
+      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
   }
   catch (ParseError& pe)
   {

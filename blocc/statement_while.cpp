@@ -17,6 +17,7 @@
  */
 
 #include "statement_while.h"
+#include "statement_end.h"
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
@@ -46,17 +47,7 @@ const Statement * WHILEStatement::doit(Context& ctx) const
   }
   if (exp->boolean(ctx))
   {
-    ctx.execBegin(this);
-    try
-    {
-      _exec->run();
-    }
-    catch (...)
-    {
-      ctx.execEnd();
-      throw;
-    }
-    ctx.execEnd();
+    _exec->run();
     if (!ctx.stopCondition())
       return this;
     if (ctx.continueCondition())
@@ -73,9 +64,9 @@ const Statement * WHILEStatement::doit(Context& ctx) const
 void WHILEStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(exp->unparse(ctx).c_str(), out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(KEYWORDS[STMT_LOOP], out);
   fputc(Parser::NEWLINE, out);
   ctx.execBegin(this);
@@ -95,20 +86,18 @@ Executable * WHILEStatement::parse_clause(Parser& p, Context& ctx, Statement * i
     {
       if (t->code == Parser::SEPARATOR)
         continue;
+      /* check for ending */
+      if (t->code == TOKEN_KEYWORD && t->text == KEYWORDS[STMT_END])
+        break;
       /* parse the statement */
       p.push(t);
       Statement * ss = ParseStatement::statement(p, ctx);
       statements.push_back(ss);
-      /* check for ending */
-      switch (ss->keyword())
-      {
-      case Statement::STMT_ENDLOOP:
-        end = true;
-        break;
-      default:
-        break;
-      }
     }
+    /* requires at least one statement, even NOP */
+    if (statements.empty())
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+    p.push(t);
   }
   catch (ParseError& pe)
   {
@@ -135,8 +124,14 @@ WHILEStatement * WHILEStatement::parse(Parser& p, Context& ctx)
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
       throw ParseError(EXC_PARSE_MESSAGE_S, "Missing LOOP keyword in WHILE statement.");
     s->_exec = parse_clause(p, ctx, s);
-    if (s->_exec->statements().back()->keyword() != Statement::STMT_ENDLOOP)
+    t = p.pop();
+    if (t->text != KEYWORDS[STMT_END])
       throw ParseError(EXC_PARSE_MESSAGE_S, "Endless WHILE LOOP statement.");
+    /* parse statement END */
+    s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
+    t = p.pop();
+    if (t->code != Parser::SEPARATOR)
+      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
     return s;
   }
   catch (ParseError& pe)

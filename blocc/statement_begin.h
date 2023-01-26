@@ -39,6 +39,8 @@ class BEGINStatement : public Statement
 {
 private:
   Executable * _exec = nullptr;
+  std::list<std::pair<std::string, Executable*> > _catches;
+  static Executable * parse_catch(Parser& p, Context& ctx);
 
 public:
   virtual ~BEGINStatement();

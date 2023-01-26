@@ -30,6 +30,8 @@
 namespace bloc
 {
 
+const char * Parser::INDENT = "    ";
+
 Parser::~Parser()
 {
   close_scanner();

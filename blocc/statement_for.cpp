@@ -17,6 +17,7 @@
  */
 
 #include "statement_for.h"
+#include "statement_end.h"
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
@@ -69,7 +70,6 @@ const Statement * FORStatement::doit(Context& ctx) const
     }
     nref += _data.step;
   }
-  ctx.execBegin(this);
   try
   {
     _exec->run();
@@ -77,10 +77,8 @@ const Statement * FORStatement::doit(Context& ctx) const
   catch (...)
   {
     _data.var->safety(false);
-    ctx.execEnd();
     throw;
   }
-  ctx.execEnd();
   if (!ctx.stopCondition())
     return this;
   if (ctx.continueCondition())
@@ -96,17 +94,17 @@ const Statement * FORStatement::doit(Context& ctx) const
 void FORStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(_iterator->symbolName().c_str(), out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(KEYWORDS[STMT_IN], out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(_expBeg->unparse(ctx).c_str(), out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(KEYWORDS[STMT_TO], out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(_expEnd->unparse(ctx).c_str(), out);
-  fputs(" ", out);
+  fputc(' ', out);
   fputs(KEYWORDS[STMT_LOOP], out);
   fputc(Parser::NEWLINE, out);
   ctx.execBegin(this);
@@ -137,20 +135,18 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
     {
       if (t->code == Parser::SEPARATOR)
         continue;
+      /* check for ending */
+      if (t->code == TOKEN_KEYWORD && t->text == KEYWORDS[STMT_END])
+        break;
       /* parse the statement */
       p.push(t);
       Statement * ss = ParseStatement::statement(p, ctx);
       statements.push_back(ss);
-      /* check for ending */
-      switch (ss->keyword())
-      {
-      case Statement::STMT_ENDLOOP:
-        end = true;
-        break;
-      default:
-        break;
-      }
     }
+    /* requires at least one statement, even NOP */
+    if (statements.empty())
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+    p.push(t);
   }
   catch (ParseError& pe)
   {
@@ -199,8 +195,14 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
       throw ParseError(EXC_PARSE_MESSAGE_S, "Missing LOOP keyword in FOR statement.");
     s->_exec = parse_clause(p, ctx, s);
-    if (s->_exec->statements().back()->keyword() != STMT_ENDLOOP)
+    t = p.pop();
+    if (t->text != KEYWORDS[STMT_END])
       throw ParseError(EXC_PARSE_MESSAGE_S, "Endless FOR LOOP statement.");
+    /* parse statement END */
+    s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
+    t = p.pop();
+    if (t->code != Parser::SEPARATOR)
+      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
     return s;
   }
   catch (ParseError& pe)

@@ -316,4 +316,20 @@ void Context::statWorkingMemory(size_t * count, size_t * size) const
   }
 }
 
+/**************************************************************************/
+/* Environment                                                            */
+/**************************************************************************/
+
+const char * Context::country()
+{
+  static const char * COUNTRY = "US";
+  return COUNTRY;
+}
+
+const char * Context::language()
+{
+  static const char * LANGUAGE = "en";
+  return LANGUAGE;
+}
+
 }

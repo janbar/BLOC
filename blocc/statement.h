@@ -67,6 +67,9 @@ public:
     STMT_PRINT      = 21,
     STMT_PUT        = 22,
     STMT_DO         = 23,
+    STMT_EXCEPTION  = 24,
+    STMT_WHEN       = 25,
+    STMT_RAISE      = 26,
   };
 
   virtual ~Statement();

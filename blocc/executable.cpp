@@ -53,18 +53,21 @@ void Executable::unparse(FILE * out)
 {
   for (auto s : _statements)
   {
-    bool eos = (s->keyword() == Statement::STMT_END ||
-                s->keyword() == Statement::STMT_ENDIF ||
-                s->keyword() == Statement::STMT_ENDLOOP ||
-                s->keyword() == Statement::STMT_ELSIF ||
-                s->keyword() == Statement::STMT_ELSE);
-    if (!eos)
-      for (size_t i = 0; i < _context.execLevel(); ++i) fputs("    ", out);
-    else
-      for (size_t i = 1; i < _context.execLevel(); ++i) fputs("    ", out);
-    s->unparse(_context, out);
-    if (!eos)
+    switch (s->keyword())
     {
+    case Statement::STMT_END:
+    case Statement::STMT_ENDIF:
+    case Statement::STMT_ENDLOOP:
+    case Statement::STMT_ELSIF:
+    case Statement::STMT_ELSE:
+    case Statement::STMT_EXCEPTION:
+    case Statement::STMT_WHEN:
+      for (size_t i = 1; i < _context.execLevel(); ++i) fputs(Parser::INDENT, out);
+      s->unparse(_context, out);
+      break;
+    default:
+      for (size_t i = 0; i < _context.execLevel(); ++i) fputs(Parser::INDENT, out);
+      s->unparse(_context, out);
       fputc(Parser::SEPARATOR, out);
       fputc(Parser::NEWLINE, out);
     }

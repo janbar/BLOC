@@ -17,6 +17,7 @@
  */
 
 #include "statement_if.h"
+#include "statement_end.h"
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
@@ -47,17 +48,7 @@ const Statement * IFStatement::doit(Context& ctx) const
   {
     if (r.first == nullptr || r.first->boolean(ctx))
     {
-      ctx.execBegin(this);
-      try
-      {
-        r.second->run();
-      }
-      catch (...)
-      {
-        ctx.execEnd();
-        throw;
-      }
-      ctx.execEnd();
+      r.second->run();
       break;
     }
   }
@@ -66,26 +57,38 @@ const Statement * IFStatement::doit(Context& ctx) const
 
 void IFStatement::unparse(Context& ctx, FILE * out) const
 {
-  fputs(KEYWORDS[keyword()], out);
-  for (auto& r : _rules)
+  auto it = _rules.begin();
+  while (it != _rules.end())
   {
-    if (r.first)
+    if (it->first != nullptr)
     {
-      fputs(" ", out);
-      fputs(r.first->unparse(ctx).c_str(), out);
-      fputs(" ", out);
+      if (it == _rules.begin())
+        fputs(KEYWORDS[STMT_IF], out);
+      else
+      {
+        for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+        fputs(KEYWORDS[STMT_ELSIF], out);
+      }
+      fputc(' ', out);
+      fputs(it->first->unparse(ctx).c_str(), out);
+      fputc(' ', out);
       fputs(KEYWORDS[STMT_THEN], out);
+    }
+    else
+    {
+      for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+      fputs(KEYWORDS[STMT_ELSE], out);
     }
     fputc(Parser::NEWLINE, out);
     ctx.execBegin(this);
-    r.second->unparse(out);
+    it->second->unparse(out);
     ctx.execEnd();
+    ++it;
   }
 }
 
-Executable * IFStatement::parse_clause(Parser& p, Context& ctx, Statement * fi)
+Executable * IFStatement::parse_clause(Parser& p, Context& ctx)
 {
-  ctx.execBegin(fi);
   std::list<const Statement*> statements;
   try
   {
@@ -95,31 +98,27 @@ Executable * IFStatement::parse_clause(Parser& p, Context& ctx, Statement * fi)
     {
       if (t->code == Parser::SEPARATOR)
         continue;
+      /* check for ending */
+      if (t->code == TOKEN_KEYWORD &&
+              (t->text == KEYWORDS[STMT_END] || t->text == KEYWORDS[STMT_ELSIF] ||
+               t->text == KEYWORDS[STMT_ELSE]))
+        break;
       /* parse the statement */
       p.push(t);
       Statement * ss = ParseStatement::statement(p, ctx);
       statements.push_back(ss);
-      /* check for ending */
-      switch (ss->keyword())
-      {
-      case Statement::STMT_ELSIF:
-      case Statement::STMT_ELSE:
-      case Statement::STMT_ENDIF:
-        end = true;
-        break;
-      default:
-        break;
-      }
     }
+    /* requires at least one statement, even NOP */
+    if (statements.empty())
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+    p.push(t);
   }
   catch (ParseError& pe)
   {
-    ctx.execEnd();
     for (auto ss : statements)
       delete ss;
     throw;
   }
-  ctx.execEnd();
   return new Executable(ctx, statements);
 }
 
@@ -147,23 +146,25 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
         delete exp;
         throw ParseError(EXC_PARSE_MESSAGE_S, "Missing THEN keyword in IF statement.");
       }
-      Executable * exec = parse_clause(p, ctx, s);
+      Executable * exec = parse_clause(p, ctx);
       s->_rules.push_back(std::make_pair(exp, exec));
-      if (exec->statements().back()->keyword() == STMT_ENDIF)
-        break; /* end of statement IF */
-      else if (exec->statements().back()->keyword() == STMT_ELSIF)
+      t = p.pop();
+      if (t->text == KEYWORDS[STMT_ELSIF])
         continue; /* process next rule */
-      else if (exec->statements().back()->keyword() == STMT_ELSE)
+      if (t->text == KEYWORDS[STMT_ELSE])
       {
-        exec = parse_clause(p, ctx, s);
-        if (exec->statements().back()->keyword() == STMT_ENDIF)
-        {
-          s->_rules.push_back(std::make_pair(nullptr, exec));
-          break;
-        }
-        delete exec;
+        exec = parse_clause(p, ctx);
+        s->_rules.push_back(std::make_pair(nullptr, exec));
+        t = p.pop();
       }
-      throw ParseError(EXC_PARSE_MESSAGE_S, "Endless IF statement.");
+      if (t->text != KEYWORDS[STMT_END])
+        throw ParseError(EXC_PARSE_MESSAGE_S, "Endless IF statement.");
+      /* parse statement END */
+      exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDIF));
+      t = p.pop();
+      if (t->code != Parser::SEPARATOR)
+        throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
+      break;
     }
     return s;
   }

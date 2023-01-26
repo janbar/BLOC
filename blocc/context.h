@@ -299,17 +299,9 @@ public:
 
   static int compatible();
 
-  static const char * country()
-  {
-    static const char * COUNTRY = "US";
-    return COUNTRY;
-  }
+  static const char * country();
 
-  static const char * language()
-  {
-    static const char * LANGUAGE = "en";
-    return LANGUAGE;
-  }
+  static const char * language();
 
 private:
   std::chrono::system_clock::time_point _ts_init = std::chrono::system_clock::now();

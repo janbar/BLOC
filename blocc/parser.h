@@ -36,6 +36,7 @@ public:
   static const char NEWLINE       = '\n';
   static const char SEPARATOR     = ';';
   static const char CHAIN         = ',';
+  static const char * INDENT;
 
   enum STATE {
     BEGIN      = 0,

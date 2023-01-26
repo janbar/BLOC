@@ -21,7 +21,8 @@ const char * Statement::KEYWORDS[] = {
   "if",       "then",     "else",     "elsif",    "for",
   "while",    "loop",     "in",       "to",       "return",
   "begin",    "break",    "continue", "end",      "end if",
-  "end loop", "print",    "put",      "do",
+  "end loop", "print",    "put",      "do",       "exception",
+  "when",     "raise",
 };
 
 Statement::~Statement()
@@ -123,7 +124,7 @@ const char * Statement::HELPS[] = {
           "\n[ elsif {boolean expression} then [statement ...] ...]"
           "\n[ else [statement ...] ]"
           "\nend if;",
-  /*THEN  */  "See statement IF.",
+  /*THEN  */  "See statement IF, or BEGIN.",
   /*ELSE  */  "See statement IF.",
   /*ELSIF */  "See statement IF.",
   /*FOR   */  "The FOR statement provides iterator construct. It defines a control variable"
@@ -148,7 +149,9 @@ const char * Statement::HELPS[] = {
           "\n\nreturn [{expression}];"
           "\n\nOnly boolean, integer, numeric, and literal expression can be returned.",
   /*BEGIN */  "The BEGIN statement begins a new block of statements."
-          "\n\nbegin [statement ...] end;",
+          "\n\nbegin [statement ...]"
+          "\n[ exception [ when {exception name} then [statement ...] ...] ]"
+          "\nend;",
   /*BREAK */  "The BREAK statement jumps out of a loop."
           "\n\nbreak;",
   /*CONTINUE*/"The CONTINUE statement \"jumps over\" one iteration in the loop."
@@ -167,6 +170,10 @@ const char * Statement::HELPS[] = {
           "\nAll other types must be converted first (see function STR).",
   /*DO    */  "The DO statement execute the expression to follow."
           "\n\ndo {expression};",
+  /*EXCEPT*/  "See statement BEGIN.",
+  /*WHEN  */  "See statement BEGIN.",
+  /*RAISE */  "The RAISE statement throws exception with a qualified name."
+          "\n\nraise {exception name};",
 };
 
 }

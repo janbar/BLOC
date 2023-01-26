@@ -48,7 +48,7 @@ class IFStatement : public Statement
 {
 private:
   std::list<std::pair<Expression*, Executable*> > _rules;
-  static Executable * parse_clause(Parser& p, Context& ctx, Statement * fi);
+  static Executable * parse_clause(Parser& p, Context& ctx);
 
 public:
   virtual ~IFStatement();
