@@ -49,11 +49,13 @@ codepoint TransformNop(const character* ch, int context) {
   return ch->code;
 }
 
-codepoint TransformUpper(const character* ch, [[maybe_unused]] int context) {
+codepoint TransformUpper(const character* ch, int context) {
+  (void)context;
   return ch->upper;
 }
 
-codepoint TransformLower(const character* ch, [[maybe_unused]] int context) {
+codepoint TransformLower(const character* ch, int context) {
+  (void)context;
   return ch->lower;
 }
 
