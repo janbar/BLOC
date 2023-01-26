@@ -23,7 +23,9 @@ namespace bloc
 
 const char * RuntimeError::RUNTIME_ERROR[] =
 {
-  "%s", /* user defined */
+  "",   /* noerror */
+  "%s", /* user error */
+  "%s", /* external error */
   "Internal error (%s).",
   "Not implemented yet.",
   "Illegal operation.",
@@ -51,6 +53,7 @@ const char * RuntimeError::RUNTIME_ERROR[] =
 
 RuntimeError::THROWABLE RuntimeError::THROWABLES[] =
 {
+  { EXC_RT_NOERROR,         "" },
   { EXC_RT_OUT_OF_RANGE,    "OUT_OF_RANGE" },
   { EXC_RT_DIVIDE_BY_ZERO,  "DIVIDE_BY_ZERO" },
 };
@@ -65,14 +68,14 @@ EXC_RT RuntimeError::findThrowable(const std::string& keyword)
   return EXC_RT_USER_S;
 }
 
-bool RuntimeError::throwable(EXC_RT no)
+unsigned RuntimeError::throwable(EXC_RT no)
 {
-  for (int i = 0; i < sizeof(THROWABLES); ++i)
+  for (unsigned i = 0; i < sizeof(THROWABLES); ++i)
   {
     if (no == THROWABLES[i].no)
-      return true;
+      return i;
   }
-  return false;
+  return 0;
 }
 
 }

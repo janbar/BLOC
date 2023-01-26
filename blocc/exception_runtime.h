@@ -29,8 +29,10 @@ namespace bloc
 
 enum EXC_RT
 {
-  EXC_RT_USER_S               = 0,
-  EXC_RT_INTERNAL_ERROR_S     = 1,
+  EXC_RT_NOERROR              = 0,
+  EXC_RT_USER_S               = 1,
+  EXC_RT_EXTERNAL_ERROR_S,
+  EXC_RT_INTERNAL_ERROR_S,
   EXC_RT_NOT_IMPLEMENTED,
   EXC_RT_INV_EXPRESSION,
   EXC_RT_UNDEFINED_SYMBOL_S,
@@ -60,14 +62,16 @@ class RuntimeError : public Error
   public:
     LIBBLOC_API static const char * RUNTIME_ERROR[];
 
+    RuntimeError() : Error(), no(EXC_RT_NOERROR) { }
     explicit RuntimeError(EXC_RT no) : Error(RUNTIME_ERROR[no]), no(no) { }
     RuntimeError(EXC_RT no, const char * arg) : Error(RUNTIME_ERROR[no], arg), no(no) { }
-    const EXC_RT no;
+
+    EXC_RT no;
 
     typedef struct { EXC_RT no; const char * keyword; } THROWABLE;
     LIBBLOC_API static THROWABLE THROWABLES[];
     static EXC_RT findThrowable(const std::string& keyword);
-    static bool throwable(EXC_RT no);
+    static unsigned throwable(EXC_RT no);
 };
 
 

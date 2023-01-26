@@ -92,7 +92,7 @@ public:
     FUNC_GETENV = 37, // getenv(x)
     FUNC_TRUE   = 38, // true
     FUNC_FALSE  = 39, // false
-
+    FUNC_ERROR  = 40, // error
     FUNC_PHI    = 41, // phi (gold number)
     FUNC_PI     = 42, // pi
     FUNC_EE     = 43, // e (euler)

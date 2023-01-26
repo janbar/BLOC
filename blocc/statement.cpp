@@ -178,7 +178,8 @@ const char * Statement::HELPS[] = {
           "\n\nexception"
           "\n[ when {exception name} then [statement ...] ...]"
           "\n[ when others then [statement ...] ]"
-          "\n\nSee statement BEGIN, or RAISE.",
+          "\n\nWe can retrieve the catched exception calling the constant $Berror$N."
+          "\nSee statement BEGIN, or RAISE.",
   /*WHEN  */  "See EXCEPTION.",
   /*RAISE */  "The RAISE statement throws a user named exception, or throwable error."
           "\n\nraise {exception name};"

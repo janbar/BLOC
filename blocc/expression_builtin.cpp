@@ -26,6 +26,7 @@
 #include "builtin/builtin_cos.h"
 #include "builtin/builtin_cosh.h"
 #include "builtin/builtin_ee.h"
+#include "builtin/builtin_error.h"
 #include "builtin/builtin_exp.h"
 #include "builtin/builtin_false.h"
 #include "builtin/builtin_floor.h"
@@ -90,7 +91,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "tanh",       "",           "",           "",           "",
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tuple",      "getsys",     "getenv",     "true",       "false",
-    "",           "phi",        "pi",         "ee",         "random",
+    "error",      "phi",        "pi",         "ee",         "random",
     "",           "",           "",           "",           "",
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
@@ -115,6 +116,7 @@ std::string BuiltinExpression::unparse(Context& ctx) const
   case FUNC_EE:
   case FUNC_TRUE:
   case FUNC_FALSE:
+  case FUNC_ERROR:
     break;
   default:
     sb.append("(");
@@ -170,6 +172,8 @@ BuiltinExpression * BuiltinExpression::expression(Parser& p, Context& ctx)
     return new PIExpression();
   case FUNC_EE:
     return new EEExpression();
+  case FUNC_ERROR:
+    return new ERRORExpression();
 
     /* 1 numeric */
   case FUNC_ABS:
@@ -379,14 +383,14 @@ const char * BuiltinExpression::HELPS[] = {
           "\nThe operator '@#' accesses the item at position # [1..n], as shown below."
           "\nExpression {TUPLE}@1 returns the value of item at position 1."
           "\nTuple has the method set@#(x) to assign the value x to the item of rank #.",
-  /*GETSYS*/  "returns the corresponding value string of the system setting x."
-          "\n\ngetsys( x ) , where setting could be 'compatible', 'language', 'country',"
-          "\nor 'integer_max'.",
+  /*GETSYS*/  "returns the corresponding value string of context environment variable x."
+          "\n\ngetsys( x ) , where x could be 'compatible', 'language', 'country',"
+          "\n'integer_max', or 'last_error'.",
   /*GETENV*/  "returns the corresponding value string of the environment variable x."
           "\n\ngetenv( x )",
   /*TRUE  */  "is the boolean expression 'true'",
   /*FALSE */  "is the boolean expression 'false'",
-  "",
+  /*ERROR */  "is the current thrown error as tuple { string(name), string(message), integer(code) }.",
   /*PHI   */  "is the golden ratio.",
   /*PI    */  "is the number PI.",
   /*EE    */  "is the Euler's number",

@@ -47,7 +47,7 @@ void BEGINStatement::docatch(RuntimeError& rt, Context& ctx) const
     for (auto& c : _catches)
     {
       EXC_RT ec = RuntimeError::findThrowable(c.first);
-      if ((c.first == "OTHERS" && (rt.no == EXC_RT_USER_S || RuntimeError::throwable(rt.no))) ||
+      if ((c.first == "OTHERS" && (rt.no == EXC_RT_USER_S || RuntimeError::throwable(rt.no) > 0)) ||
           (ec == rt.no && (
               /* catch known exception */
               (ec != EXC_RT_USER_S) ||
@@ -58,11 +58,17 @@ void BEGINStatement::docatch(RuntimeError& rt, Context& ctx) const
         /* catch the user defined exception */
         try
         {
+          /* save catched error in the context */
+          ctx.error(rt);
           c.second->run();
+          /* clear error in the context */
+          ctx.error(RuntimeError());
         }
         catch (RuntimeError& rte)
         {
-          ctx.execEnd(); /* close block before throw */
+          /* note: the saved error will be kept for debug */
+          /* close block before throw */
+          ctx.execEnd();
           throw;
         }
         return;
@@ -70,7 +76,8 @@ void BEGINStatement::docatch(RuntimeError& rt, Context& ctx) const
     }
   }
   /* no catch */
-  ctx.execEnd(); /* close block before throw */
+  /* close block before throw */
+  ctx.execEnd();
   throw rt;
 }
 

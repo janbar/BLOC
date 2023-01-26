@@ -16,38 +16,36 @@
  *
  */
 
-#ifndef EXCEPTION_H_
-#define EXCEPTION_H_
+#ifndef BUILTIN_ERROR_H_
+#define BUILTIN_ERROR_H_
 
-#include <stdexcept>
-#include <string>
+#include <blocc/expression_builtin.h>
+#include <blocc/expression_tuple.h>
 
 namespace bloc
 {
 
-class Error : public std::exception
-{
-  protected:
-    const char * _message;
-    std::string _arg;
+class Context;
+class Parser;
+
+class ERRORExpression : public BuiltinExpression {
+
+  static Tuple::container_t empty_error();
+  mutable Tuple v;
 
 public:
-  Error() : _message(nullptr) { }
-  explicit Error(const char * what) : _message(what)  { }
-  Error(const char * what, const char * arg) : _message(what), _arg(arg) { }
 
-  const char * what() const noexcept override
-  {
-    static char buf[256];
-    if (_message != nullptr)
-      snprintf(buf, sizeof(buf), _message, _arg.c_str());
-    else
-      *buf = '\0';
-    return buf;
-  }
+  virtual ~ERRORExpression() { }
+
+  ERRORExpression() : BuiltinExpression(FUNC_ERROR), v(empty_error()) { }
+
+  const Type& type(Context& ctx) const override { return v.tuple_type(); }
+
+  const Tuple::Decl& tuple_decl(Context& ctx) const override { return v.tuple_decl(); }
+
+  Tuple& tuple(Context& ctx) const override;
 };
 
 }
 
-#endif /* EXCEPTION_H_ */
-
+#endif /* BUILTIN_ERROR_H_ */

@@ -293,6 +293,9 @@ public:
   FILE * ctxout() const { return _sout; }
   FILE * ctxerr() const { return _serr; }
 
+  void error(const RuntimeError& error) { _last_error = error; }
+  const RuntimeError& error() { return _last_error; }
+
   static const char * version();
 
   static const char * versionHeader();
@@ -327,6 +330,8 @@ private:
 
   FILE * _sout = nullptr; // stream for output
   FILE * _serr = nullptr; // stream for errors
+
+  RuntimeError _last_error;
 };
 
 }
