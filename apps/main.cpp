@@ -130,8 +130,7 @@ int main(int argc, char **argv) {
     /* keep streams open until exit, as they could be one of stdin, stdout */
     if (!exec)
     {
-      ::fclose(progfile);
-      ::fclose(outfile);
+      /* fclose all */
       return EXIT_FAILURE;
     }
     try
@@ -146,13 +145,10 @@ int main(int argc, char **argv) {
       fflush(ctx.ctxerr());
     }
     delete exec;
-    /* now input stream can be closed */
-    ::fclose(progfile);
   }
 
   bloc::ImportManager::destroy();
-  /* now output stream can be closed */
-  ::fclose(outfile);
+  /* fclose all */
   return (ret ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
