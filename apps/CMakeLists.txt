@@ -10,11 +10,15 @@ target_link_libraries(bloc blocc ${blocc_LIBRARIRES})
 
 if(NOT SKIP_INSTALL_ALL)
 
-  # Set install paths
-  include(GNUInstallDirs)
-
   if(NOT MSVC)
+    # Set install paths
+    include(GNUInstallDirs)
     install(TARGETS bloc RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+  else()
+    install(TARGETS bloc CONFIGURATIONS Debug
+      RUNTIME DESTINATION Debug)
+    install(TARGETS bloc CONFIGURATIONS Release
+      RUNTIME DESTINATION Release)
   endif()
 
 endif()

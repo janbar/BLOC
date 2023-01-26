@@ -6,6 +6,7 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake")
 
 if(MSVC)
+  set(CMAKE_INSTALL_PREFIX ${CMAKE_BINARY_DIR})
   include(MSVCRuntime)
   set(MSVC_DYNAMIC_RUNTIME 1)
   configure_msvc_runtime()

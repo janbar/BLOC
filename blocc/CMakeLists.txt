@@ -201,7 +201,7 @@ if(NOT SKIP_INSTALL_ALL)
       ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
       LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
-    install (DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/blocc
+    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/blocc
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
     install(FILES ${CMAKE_CURRENT_BINARY_DIR}/blocc.pc
@@ -209,7 +209,7 @@ if(NOT SKIP_INSTALL_ALL)
 
     # Install the bloccConfig.cmake and bloccConfigVersion.cmake
     set(INSTALL_CMAKE_DIR ${CMAKE_INSTALL_LIBDIR}/cmake/blocc)
-    install (FILES
+    install(FILES
       ${CMAKE_CURRENT_BINARY_DIR}/bloccConfig.cmake
       ${CMAKE_CURRENT_BINARY_DIR}/bloccConfigVersion.cmake
       DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT dev)
@@ -217,6 +217,15 @@ if(NOT SKIP_INSTALL_ALL)
     # Install the export set for use with the install-tree
     install(EXPORT bloccTargets
       DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT dev)
+  else()
+    install(TARGETS blocc CONFIGURATIONS Debug
+      RUNTIME DESTINATION Debug
+      ARCHIVE DESTINATION Debug
+      LIBRARY DESTINATION Debug)
+    install(TARGETS blocc CONFIGURATIONS Release
+      RUNTIME DESTINATION Release
+      ARCHIVE DESTINATION Release
+      LIBRARY DESTINATION Release)
   endif()
 
 endif()
