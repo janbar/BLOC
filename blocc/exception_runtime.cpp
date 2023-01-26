@@ -23,7 +23,7 @@ namespace bloc
 
 const char * RuntimeError::RUNTIME_ERROR[] =
 {
-  "EOF", /* EXC_RT_EOF */
+  "%s", /* user defined */
   "Internal error (%s).",
   "Not implemented yet.",
   "Illegal operation.",
@@ -47,7 +47,32 @@ const char * RuntimeError::RUNTIME_ERROR[] =
   "Type mismatch in expression: %s was expected.",
   "Bad type of argument calling function '%s'.",
   "Bad type of argument calling method '%s'.",
-  "%s", /* EXC_RT_MESSAGE_S */
 };
+
+RuntimeError::THROWABLE RuntimeError::THROWABLES[] =
+{
+  { EXC_RT_OUT_OF_RANGE,    "OUT_OF_RANGE" },
+  { EXC_RT_DIVIDE_BY_ZERO,  "DIVIDE_BY_ZERO" },
+};
+
+EXC_RT RuntimeError::findThrowable(const std::string& keyword)
+{
+  for (int i = 0; i < sizeof(THROWABLES); ++i)
+  {
+    if (keyword == THROWABLES[i].keyword)
+      return THROWABLES[i].no;
+  }
+  return EXC_RT_USER_S;
+}
+
+bool RuntimeError::throwable(EXC_RT no)
+{
+  for (int i = 0; i < sizeof(THROWABLES); ++i)
+  {
+    if (no == THROWABLES[i].no)
+      return true;
+  }
+  return false;
+}
 
 }

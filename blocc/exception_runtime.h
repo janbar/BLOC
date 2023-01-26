@@ -22,12 +22,14 @@
 #include "exception.h"
 #include "declspec.h"
 
+#include <string>
+
 namespace bloc
 {
 
 enum EXC_RT
 {
-  EXC_RT_EOF                  = 0,
+  EXC_RT_USER_S               = 0,
   EXC_RT_INTERNAL_ERROR_S     = 1,
   EXC_RT_NOT_IMPLEMENTED,
   EXC_RT_INV_EXPRESSION,
@@ -51,7 +53,6 @@ enum EXC_RT
   EXC_RT_TYPE_MISMATCH_S,
   EXC_RT_FUNC_ARG_TYPE_S,
   EXC_RT_MEMB_ARG_TYPE_S,
-  EXC_RT_MESSAGE_S,
 };
 
 class RuntimeError : public Error
@@ -62,6 +63,11 @@ class RuntimeError : public Error
     explicit RuntimeError(EXC_RT no) : Error(RUNTIME_ERROR[no]), no(no) { }
     RuntimeError(EXC_RT no, const char * arg) : Error(RUNTIME_ERROR[no], arg), no(no) { }
     const EXC_RT no;
+
+    typedef struct { EXC_RT no; const char * keyword; } THROWABLE;
+    LIBBLOC_API static THROWABLE THROWABLES[];
+    static EXC_RT findThrowable(const std::string& keyword);
+    static bool throwable(EXC_RT no);
 };
 
 

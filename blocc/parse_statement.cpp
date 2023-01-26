@@ -37,6 +37,7 @@
 #include "statement_put.h"
 #include "statement_do.h"
 #include "statement_trace.h"
+#include "statement_raise.h"
 #include "expression_item.h"
 
 #include <forward_list>
@@ -119,6 +120,10 @@ Statement * ParseStatement::parse()
 
         case Statement::STMT_DO:
           s = DOStatement::parse(p, ctx);
+          return beyond_statement(s);
+
+        case Statement::STMT_RAISE:
+          s = RAISEStatement::parse(p, ctx);
           return beyond_statement(s);
 
         case Statement::STMT_IMPORT:
