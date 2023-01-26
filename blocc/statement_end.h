@@ -40,7 +40,7 @@ class ENDStatement : public Statement
 public:
   virtual ~ENDStatement() { }
 
-  ENDStatement(STATEMENT endof) : Statement(endof) { }
+  explicit ENDStatement(STATEMENT endof) : Statement(endof) { }
 
   const Statement * doit(Context& ctx) const override
   {
