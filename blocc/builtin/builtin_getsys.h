@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef BUILTIN_GETCONTEXT_H_
-#define BUILTIN_GETCONTEXT_H_
+#ifndef BUILTIN_GETSYS_H_
+#define BUILTIN_GETSYS_H_
 
 #include <blocc/expression_builtin.h>
 #include <blocc/expression_boolean.h>
@@ -50,4 +50,4 @@ public:
 
 }
 
-#endif /* BUILTIN_GETCONTEXT_H_ */
+#endif /* BUILTIN_GETSYS_H_ */
