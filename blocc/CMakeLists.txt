@@ -60,6 +60,7 @@ file(GLOB blocc_SOURCES
   statement_return.cpp
   statement_trace.cpp
   statement_while.cpp
+  statement_raise.cpp
   symbol.cpp
   tuple.cpp
   tuple_decl.cpp
@@ -128,6 +129,7 @@ file(GLOB blocc_PRIVATE_HEADERS
   statement_return.h
   statement_trace.h
   statement_while.h
+  statement_raise.h
   builtin/*.h
   member/*.h
 )
