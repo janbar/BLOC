@@ -296,7 +296,7 @@ Expression* Context::dropReturned()
 void Context::onRuntimeError()
 {
   /* purge control stack */
-  while (!_controlstack.empty() && _controlstack.top()->level() > execLevel())
+  while (!_controlstack.empty() && _controlstack.top()->level() >= execLevel())
     _controlstack.unstack();
   /* purge temporary allocations */
   purgeWorkingMemory();
