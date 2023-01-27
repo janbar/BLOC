@@ -95,6 +95,8 @@ void Context::purge()
   for (auto& e : _symbols)
     delete e.second;
   _symbols.clear();
+  /* reset trace mode */
+  _trace = false;
 }
 
 /**************************************************************************/
