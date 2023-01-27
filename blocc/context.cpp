@@ -77,6 +77,8 @@ Context::Context(int fd_out, int fd_err)
 Context::~Context()
 {
   purge();
+  if (_serr != _sout)
+    ::fclose(_serr);
   ::fclose(_sout);
 }
 
