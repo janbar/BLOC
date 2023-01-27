@@ -34,4 +34,5 @@ unittest_project(NAME test_table SOURCES test_table.cpp TARGET blocc)
 unittest_project(NAME test_math_function SOURCES test_math_function.cpp TARGET blocc)
 unittest_project(NAME perf_hash SOURCES perf_hash.cpp TARGET blocc)
 unittest_project(NAME perf_prim SOURCES perf_prim.cpp TARGET blocc)
+unittest_project(NAME test_exception_handling SOURCES test_exception_handling.cpp TARGET blocc)
 
