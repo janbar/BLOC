@@ -33,10 +33,16 @@ int Executable::run(Context& ctx, const std::list<const Statement*>& statements)
 {
   try
   {
+    /* return condition must be cleared before rerun */
+    if (ctx.returnCondition())
+      throw RuntimeError(EXC_RT_REQUIRE_PURGE);
+    /* the statement loop */
     for (auto s : statements)
     {
+      /* the statement chain */
       while (s != nullptr)
         s = s->execute(ctx);
+      /* a stop condition breaks the loop */
       if (ctx.stopCondition())
         break;
     }
