@@ -21,6 +21,7 @@ add_definitions(
 file(GLOB blocc_SOURCES
   lex._tokenizer.c
   readstdin.c
+  bloc_capi.cpp
   collection.cpp
   complex.cpp
   context.cpp
@@ -70,6 +71,7 @@ file(GLOB blocc_SOURCES
 )
 
 file(GLOB blocc_PUBLIC_HEADERS
+  bloc_capi.h
   collection.h
   complex.h
   context.h

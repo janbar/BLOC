@@ -36,3 +36,6 @@ unittest_project(NAME perf_hash SOURCES perf_hash.cpp TARGET blocc)
 unittest_project(NAME perf_prim SOURCES perf_prim.cpp TARGET blocc)
 unittest_project(NAME test_exception_handling SOURCES test_exception_handling.cpp TARGET blocc)
 
+add_executable(test_c_api test_c_api.c)
+add_dependencies(test_c_api blocc)
+target_link_libraries(test_c_api blocc)
