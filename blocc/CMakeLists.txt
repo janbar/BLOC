@@ -46,6 +46,7 @@ file(GLOB blocc_SOURCES
   import_manager.cpp
   parse_expression.cpp
   parser.cpp
+  string_reader.cpp
   parse_statement.cpp
   statement_begin.cpp
   statement.cpp
@@ -100,6 +101,7 @@ file(GLOB blocc_PUBLIC_HEADERS
   intrinsic_type.h
   parse_expression.h
   parser.h
+  string_reader.h
   readstdin.h
   statement.h
   symbol.h
