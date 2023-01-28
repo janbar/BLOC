@@ -153,7 +153,7 @@ Statement * Parser::parseStatement()
     state(END);
     return s;
   }
-  state(EXIT);
+  state(ABORT);
   return nullptr;
 }
 

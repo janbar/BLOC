@@ -156,7 +156,7 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
 
   std::list<const bloc::Statement*> statements;
 
-  while (p->state() != bloc::Parser::EXIT)
+  while (p->state() != bloc::Parser::ABORT)
   {
     bloc::Statement * s = nullptr;
     bloc::TokenPtr t;

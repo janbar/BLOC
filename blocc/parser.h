@@ -43,20 +43,58 @@ public:
     PARSE,
     END,
     CLEAR,
-    EXIT,
+    ABORT,
   };
 
   ~Parser();
 
   static bool reservedKeyword(const std::string& text);
 
+  /**
+   * Make an executable from a source stream. On failure the null pointer is
+   * returned, so no exception is thrown. Finally the returned pointer must be
+   * freed by the caller.
+   * @param ctx         the context used to perform the parse
+   * @param reader_hdl  the pointer to pass to the reader
+   * @param reader      the function to read stream
+   * @param trace       enable or disable tracing (default false)
+   * @return            a pointer to executable, or null on failure
+   */
   static Executable * parse(Context& ctx, void * reader_hdl, TOKEN_READER reader, bool trace = false);
 
+  /**
+   * Returns an interactive parser for a source stream. The returned pointer
+   * must be freed by the caller.
+   * @param ctx         the context used to perform the parse
+   * @param reader_hdl  the pointer to pass to the reader
+   * @param reader      the function to read stream
+   * @return            the new parser
+   */
   static Parser * createInteractiveParser(Context& ctx, void * reader_hdl, TOKEN_READER reader);
 
+  /**
+   * Returns an interactive parser for a source stream, initialized to pass itself
+   * to the stream reader. The returned pointer must be freed by the caller.
+   * @param ctx         the context used to perform the parse
+   * @param reader      the function to read stream
+   * @return            the new parser
+   */
   static Parser * createInteractiveParser(Context& ctx, TOKEN_READER reader);
 
+  /**
+   * Parse the next statement read from stream. On failure it throws exception
+   * ParseError. At unexpected end of stream it throws the ParseError with no
+   * EXC_PARSE_EOF. Finally the returned pointer must be freed by the caller.
+   * @return            the new statement or throws
+   */
   Statement * parseStatement();
+
+  /**
+   * Parse the next expression read from stream. On failure it throws exception
+   * ParseError. At unexpected end of stream it throws the ParseError with no
+   * EXC_PARSE_EOF. Finally the returned pointer must be freed by the caller.
+   * @return            the new expression or throws
+   */
   Expression * parseExpression();
 
   STATE state() { return _state; }
@@ -67,6 +105,11 @@ public:
   TokenPtr pop();
   void push(TokenPtr& t);
   void push_back(TokenPtr& t);
+
+  /**
+   * Clear the parser state. It should be called after ParseError to purge
+   * the current stream buffer until end of line.
+   */
   void clear();
 
   bool syntaxOnly() const { return _syntaxOnly; }
