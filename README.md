@@ -4,7 +4,7 @@
 # BLOC
 A modular interpreter based on PL syntax.
 
-BLOC can be used as is or embedded in a C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). A sample of module is "file" that allows to operate files.
+BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). A sample of module is "file" that allows to operate files.
 
 Internally BLOC supports classical data types, among boolean, integer, decimal, string, byte array, tuple, and table. For now it processes twice faster than Python.
 
