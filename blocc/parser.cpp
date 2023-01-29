@@ -205,6 +205,8 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
   }
   catch (ParseError& pe)
   {
+    for (auto s : statements)
+      delete s;
     /* break current trace line before print what */
     if (trace)
       fputc('\n', ctx.ctxerr());
