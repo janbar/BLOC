@@ -1,0 +1,17 @@
+Source: bloc
+Section: devel
+Priority: optional
+Maintainer: janbar <jlbarriere68@gmail.com>
+Build-Depends: cmake,
+               git,
+               debhelper (>= 9.0.0)
+Standards-Version: 3.9.8
+Homepage: https://github.com/janbar/BLOC
+
+Package: bloc
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: BLOC is a modular PL scripting language
+ BLOC can be used as is or embedded in a C/C++ program to perform dynamic
+ processing. The language is of the PASCALIAN type, and capabilities can be
+ extended dynamically importing external modules.

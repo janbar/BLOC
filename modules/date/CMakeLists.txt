@@ -52,3 +52,23 @@ target_link_libraries(bloc_date blocc)
 set_target_properties(bloc_date PROPERTIES
   SOVERSION "1"
 )
+
+###############################################################################
+# install targets
+
+if(NOT SKIP_INSTALL_ALL)
+
+  if(NOT MSVC)
+    # Set install paths
+    include(GNUInstallDirs)
+    install(TARGETS bloc_date LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+  else()
+    install(TARGETS bloc_date CONFIGURATIONS Debug
+      RUNTIME DESTINATION Debug
+      ARCHIVE DESTINATION Debug)
+    install(TARGETS bloc_date CONFIGURATIONS Release
+      RUNTIME DESTINATION Release
+      ARCHIVE DESTINATION Release)
+  endif()
+
+endif()

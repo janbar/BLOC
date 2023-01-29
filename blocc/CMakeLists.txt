@@ -7,8 +7,8 @@ set (blocc_VERSION_PATCH 0)
 
 set (BLOCC_VERSION_REVNO 1)
 
-set (BLOCC_VERSION ${blocc_VERSION_MAJOR}.${blocc_VERSION_MINOR}.${blocc_VERSION_PATCH})
-set (BLOCC_LIB_VERSION ${BLOCC_VERSION})
+set (blocc_VERSION ${blocc_VERSION_MAJOR}.${blocc_VERSION_MINOR}.${blocc_VERSION_PATCH})
+set (BLOCC_LIB_VERSION ${blocc_VERSION})
 set (BLOCC_LIB_SOVERSION ${blocc_VERSION_MAJOR})
 
 add_definitions(
@@ -151,7 +151,7 @@ add_library(blocc SHARED ${blocc_SOURCES})
 if (MSVC)
   target_link_libraries (blocc ws2_32)
 else ()
-  target_link_libraries (blocc m)
+  target_link_libraries (blocc m dl)
 endif ()
 
 set_target_properties(blocc PROPERTIES

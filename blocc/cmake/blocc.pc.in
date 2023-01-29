@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: blocc
 Description: C/C++ library BLOC core
 Version: @blocc_VERSION@
-Libs: -L${libdir} -lblocc -lm
+Libs: -L${libdir} -lblocc -lm -ldl
 Cflags: -I${includedir}

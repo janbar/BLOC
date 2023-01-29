@@ -12,4 +12,4 @@ if(NOT TARGET blocc AND NOT blocc_BINARY_DIR)
 include("${blocc_CMAKE_DIR}/bloccTargets.cmake")
 endif()
 
-set(blocc_LIBRARIES blocc m)
+set(blocc_LIBRARIES blocc m dl)
