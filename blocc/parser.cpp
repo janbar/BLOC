@@ -207,11 +207,13 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
   {
     for (auto s : statements)
       delete s;
-    /* break current trace line before print what */
+    /* break current trace line */
     if (trace)
+    {
       fputc('\n', ctx.ctxerr());
-    fprintf(ctx.ctxerr(), "Error: %s\n", pe.what());
-    fflush(ctx.ctxerr());
+      fflush(ctx.ctxerr());
+    }
+    throw;
   }
   return nullptr;
 }

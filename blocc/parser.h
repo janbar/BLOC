@@ -51,14 +51,13 @@ public:
   static bool reservedKeyword(const std::string& text);
 
   /**
-   * Make an executable from a source stream. On failure the null pointer is
-   * returned, so no exception is thrown. Finally the returned pointer must be
-   * freed by the caller.
+   * Make an executable from a source stream. On failure it throws exception
+   * ParseError. Finally the returned pointer must be freed by the caller.
    * @param ctx         the context used to perform the parse
    * @param reader_hdl  the pointer to pass to the reader
    * @param reader      the function to read stream
    * @param trace       enable or disable tracing (default false)
-   * @return            a pointer to executable, or null on failure
+   * @return            the new executable or throws
    */
   static Executable * parse(Context& ctx, void * reader_hdl, TOKEN_READER reader, bool trace = false);
 

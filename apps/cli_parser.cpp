@@ -615,7 +615,12 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
       reset_color();
       return 1;
     }
-    bloc::Executable * exec = bloc::Parser::parse(ctx, progfile, &read_file, true);
+    bloc::Executable * exec = nullptr;
+    try { exec = bloc::Parser::parse(ctx, progfile, &read_file, true); }
+    catch (bloc::ParseError& pe)
+    {
+      set_color(fgRED); PRINT1("Error: %s\n", pe.what()); reset_color();
+    }
     ::fclose(progfile);
     if (!exec)
       return 1;

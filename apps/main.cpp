@@ -126,7 +126,12 @@ int main(int argc, char **argv) {
       bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
       ctx.storeVariable(symbol, bloc::LiteralExpression(prog[i]));
     }
-    bloc::Executable * exec = bloc::Parser::parse(ctx, progfile, &read_file);
+    bloc::Executable * exec = nullptr;
+    try { exec = bloc::Parser::parse(ctx, progfile, &read_file); }
+    catch (bloc::ParseError& pe)
+    {
+      fprintf(STDERR, "Error: %s\n", pe.what());
+    }
     /* keep streams open until exit, as they could be one of stdin, stdout */
     if (!exec)
     {
