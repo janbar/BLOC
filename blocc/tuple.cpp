@@ -54,7 +54,7 @@ Tuple::Tuple(const Tuple& t) : v(), _decl(t._decl), _type(t._type)
     v.push_back(e->cloneNew());
 }
 
-void Tuple::swap(Tuple& t)
+void Tuple::swap(Tuple& t) noexcept
 {
   assert(_type == t._type);
   v.swap(t.v);

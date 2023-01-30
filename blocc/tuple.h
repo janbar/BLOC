@@ -42,12 +42,12 @@ public:
   explicit Tuple(container_t&& items);
 
   Tuple(const Tuple& t);
-  Tuple(Tuple&& t) : v(std::move(t.v)), _decl(std::move(t._decl)), _type(t._type) { }
+  Tuple(Tuple&& t) noexcept : v(std::move(t.v)), _decl(std::move(t._decl)), _type(t._type) { }
 
   const Type& tuple_type() const { return _type; }
   const Decl& tuple_decl() const override { return _decl; }
 
-  void swap(Tuple& t);
+  void swap(Tuple& t) noexcept;
 
   reference operator[](unsigned pos) { return v[pos]; }
   reference at(unsigned pos) { return v.at(pos); }
