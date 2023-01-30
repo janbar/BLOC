@@ -32,7 +32,7 @@
 
 #include <cstdio>
 #include <cstring>
-#include <atomic>
+#include <random>
 #include <cassert>
 
 #if (defined(_WIN32) || defined(_WIN64))
@@ -334,6 +334,19 @@ const char * Context::language()
 {
   static const char * LANGUAGE = "en";
   return LANGUAGE;
+}
+
+double Context::random(double max)
+{
+  static std::minstd_rand r;
+  static bool seeded = false;
+  if (!seeded)
+  {
+    seeded = true;
+    unsigned c = (unsigned) std::chrono::system_clock::now().time_since_epoch().count();
+    r.seed((c / ((c % 60) + 1)));
+  }
+  return (double)r() / std::minstd_rand::max() * max;
 }
 
 }

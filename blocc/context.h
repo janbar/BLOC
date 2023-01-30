@@ -29,7 +29,6 @@
 #include <map>
 #include <algorithm>
 #include <chrono>
-#include <atomic>
 
 namespace bloc
 {
@@ -305,6 +304,8 @@ public:
   static const char * country();
 
   static const char * language();
+
+  static double random(double max);
 
 private:
   std::chrono::system_clock::time_point _ts_init = std::chrono::system_clock::now();
