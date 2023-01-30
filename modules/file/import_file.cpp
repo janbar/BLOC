@@ -454,13 +454,15 @@ unsigned file::Handle::readln(char * buf, unsigned n)
 {
   unsigned r = 0;
   int c;
-  while (r < n && (c = ::fgetc(_file)) > 0)
+  while (r < n)
   {
-    *buf = (char)c;
-    ++buf;
+    if ((c = ::fgetc(_file)) <= 0)
+      break;
     ++r;
+    *buf = (char)c;
     if (c == '\n')
       break;
+    ++buf;
   }
   return r;
 }
