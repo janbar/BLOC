@@ -22,7 +22,7 @@
 #include "exception_parse.h"
 #include "parse_statement.h"
 #include "parse_expression.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 #include "expression_builtin.h"
 
 #include <cstring>
@@ -167,7 +167,7 @@ bool Parser::reservedKeyword(const std::string& text)
   return (
           Statement::findKeyword(text) != Statement::unknown ||
           BuiltinExpression::findKeyword(text) != BuiltinExpression::unknown ||
-          ImportManager::instance().findModuleTypeId(text) != 0
+          PluginManager::instance().findModuleTypeId(text) != 0
           );
 }
 

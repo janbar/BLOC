@@ -16,10 +16,10 @@
  *
  */
 
-#ifndef IMPORT_H_
-#define IMPORT_H_
+#ifndef PLUGIN_H_
+#define PLUGIN_H_
 
-#include "import_interface.h"
+#include "plugin_interface.h"
 #include "declspec.h"
 #include "context.h"
 #include "expression_variable.h"
@@ -38,7 +38,7 @@
 
 namespace bloc
 {
-namespace import
+namespace plugin
 {
 
 /**
@@ -49,7 +49,7 @@ namespace import
  * @param type_id the identifier of the this module
  */
 Tuple::Decl
-make_decl(IMPORT_DECL decl_def, Type::TypeMinor type_id);
+make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id);
 
 /**
  * Build type from IMPORT_TYPE definition.
@@ -59,20 +59,20 @@ make_decl(IMPORT_DECL decl_def, Type::TypeMinor type_id);
  * @param type_id the identifier of the this module
  */
 Type
-make_type(IMPORT_TYPE type_def, Type::TypeMinor type_id);
+make_type(PLUGIN_TYPE type_def, Type::TypeMinor type_id);
 
 
-class ImportBase
+class PluginBase
 {
 public:
-  ImportBase() { }
-  virtual ~ImportBase() { }
+  PluginBase() { }
+  virtual ~PluginBase() { }
 
   /**
    * Transfers the definition of the interface
    * @param interface
    */
-  virtual void declareInterface(IMPORT_INTERFACE * interface) = 0;
+  virtual void declareInterface(PLUGIN_INTERFACE * interface) = 0;
 
   /**
    * Create object instance and return its pointer.
@@ -120,19 +120,19 @@ public:
 };
 
 
-#define IMPORTCREATOR(ImportClass) \
-extern "C" LIBBLOC_DLL_EXPORT IMPORT_HANDLE IMPORT_create() \
+#define PLUGINCREATOR(PluginClass) \
+extern "C" LIBBLOC_DLL_EXPORT PLUGIN_HANDLE PLUGIN_create() \
 {\
-  using namespace bloc::import;\
-  return new ImportClass;\
+  using namespace bloc::plugin;\
+  return new PluginClass;\
 }\
-extern "C" LIBBLOC_DLL_EXPORT int IMPORT_version() \
+extern "C" LIBBLOC_DLL_EXPORT int PLUGIN_version() \
 {\
-  return IMPORT_VERSION;\
+  return PLUGIN_VERSION;\
 }\
 
-} /* namespace import */
+} /* namespace plugin */
 } /* namespace bloc */
 
-#endif /* IMPORT_H */
+#endif /* PLUGIN_H_ */
 

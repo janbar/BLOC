@@ -31,7 +31,7 @@
 #include "expression_item.h"
 #include "expression_builtin.h"
 #include "expression_member.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 
 #include <string>
 #include <cassert>
@@ -150,7 +150,7 @@ Expression * ParseExpression::element()
       }
       else
       {
-        unsigned type_id = ImportManager::instance().findModuleTypeId(t->text);
+        unsigned type_id = PluginManager::instance().findModuleTypeId(t->text);
         if (type_id > 0)
         {
           /* found a CTOR of complex */

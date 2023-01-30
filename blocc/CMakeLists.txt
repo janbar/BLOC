@@ -43,8 +43,8 @@ file(GLOB blocc_SOURCES
   expression_tabchar.cpp
   expression_tuple.cpp
   expression_variable.cpp
-  import.cpp
-  import_manager.cpp
+  plugin.cpp
+  plugin_manager.cpp
   parse_expression.cpp
   parser.cpp
   string_reader.cpp
@@ -97,9 +97,9 @@ file(GLOB blocc_PUBLIC_HEADERS
   expression_tabchar.h
   expression_tuple.h
   expression_variable.h
-  import.h
-  import_interface.h
-  import_manager.h
+  plugin.h
+  plugin_interface.h
+  plugin_manager.h
   intrinsic_type.h
   parse_expression.h
   parser.h

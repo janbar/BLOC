@@ -17,7 +17,7 @@
  */
 
 #include "expression_collection.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 
 namespace bloc
 {
@@ -27,7 +27,7 @@ std::string CollectionExpression::typeName(Context& ctx) const
   switch (type(ctx).major())
   {
   case Type::COMPLEX:
-    return type(ctx).typeName(ImportManager::instance().module(type(ctx).minor()).interface.name);
+    return type(ctx).typeName(PluginManager::instance().plugged(type(ctx).minor()).interface.name);
   case Type::ROWTYPE:
     return type(ctx).typeName(tuple_decl(ctx).tupleName().c_str());
   default:

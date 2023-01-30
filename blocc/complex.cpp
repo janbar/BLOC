@@ -19,7 +19,7 @@
 #include "complex.h"
 #include "context.h"
 #include "expression.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 
 #include <cassert>
 
@@ -36,7 +36,7 @@ Complex::~Complex()
       _refcount = nullptr;
       if (_instance)
       {
-        ImportManager::instance().module(typeId()).instance->destroyObject(_instance);
+        PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
         _instance = nullptr;
       }
     }
@@ -70,7 +70,7 @@ Complex& Complex::operator=(const Complex& c)
   {
     delete _refcount;
     if (_instance)
-      ImportManager::instance().module(typeId()).instance->destroyObject(_instance);
+      PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
   }
   /* and set */
   _refcount = c._refcount;
@@ -88,7 +88,7 @@ bool Complex::CTOR(int ctor_id, Context& ctx, const std::vector<Expression*>& ar
 {
   assert(_type.minor());
   assert(_instance == nullptr);
-  _instance = ImportManager::instance().module(typeId()).instance->createObject(ctor_id, ctx, args);
+  _instance = PluginManager::instance().plugged(typeId()).instance->createObject(ctor_id, ctx, args);
   return (_instance ? true : false);
 }
 

@@ -16,17 +16,17 @@
  *
  */
 
-#ifndef IMPORT_INTERFACE_H_
-#define IMPORT_INTERFACE_H_
+#ifndef PLUGIN_INTERFACE_H_
+#define PLUGIN_INTERFACE_H_
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-#define IMPORT_VERSION  230122
+#define PLUGIN_VERSION  230122
 
-  typedef void* IMPORT_HANDLE;
+  typedef void* PLUGIN_HANDLE;
 
   /**
    * The string declares the intrinsic type (1 letter) or a tuple as sequence
@@ -40,22 +40,22 @@ extern "C"
    *    X   -->   Bytes array
    *
    */
-  typedef const char * IMPORT_DECL;
+  typedef const char * PLUGIN_DECL;
 
   typedef enum
   {
-    IMPORT_IN    = 1,     /* read only */
-    IMPORT_INOUT = 2,     /* read, write without copy */
-  } IMPORT_ARG_MODE;
+    PLUGIN_IN    = 1,     /* read only */
+    PLUGIN_INOUT = 2,     /* read, write without copy */
+  } PLUGIN_ARG_MODE;
 
   /**
    * The definition of type (single or array)
    */
   typedef struct
   {
-    IMPORT_DECL     decl; /* type or tuple declaration */
+    PLUGIN_DECL     decl; /* type or tuple declaration */
     unsigned char   ndim; /* 0 for type, n for n-dimensional array of type */
-  } IMPORT_TYPE;
+  } PLUGIN_TYPE;
 
   /**
    * The definition of ctor
@@ -65,8 +65,8 @@ extern "C"
   {
     int id;
     unsigned args_count;  /* arguments list count */
-    IMPORT_TYPE * args;   /* arguments list */
-  } IMPORT_CTOR;
+    PLUGIN_TYPE * args;   /* arguments list */
+  } PLUGIN_CTOR;
 
   /**
    * The definition of method argument
@@ -74,9 +74,9 @@ extern "C"
    */
   typedef struct
   {
-    IMPORT_ARG_MODE mode; /* argument mode: IN/OUT */
-    IMPORT_TYPE     type; /* argument type */
-  } IMPORT_ARG;
+    PLUGIN_ARG_MODE mode; /* argument mode: IN/OUT */
+    PLUGIN_TYPE     type; /* argument type */
+  } PLUGIN_ARG;
 
   /**
    * The definition of method
@@ -87,10 +87,10 @@ extern "C"
   {
     int id;
     const char * name;    /* name of the method */
-    IMPORT_TYPE ret;      /* returned type */
+    PLUGIN_TYPE ret;      /* returned type */
     unsigned args_count;  /* arguments list count */
-    IMPORT_ARG * args;    /* arguments list */
-  } IMPORT_METHOD;
+    PLUGIN_ARG * args;    /* arguments list */
+  } PLUGIN_METHOD;
 
   /**
    * The object interface
@@ -99,16 +99,16 @@ extern "C"
   {
     const char * name;            /* name this complex object */
     unsigned method_count;        /* methods list count */
-    IMPORT_METHOD * methods;      /* methods list */
+    PLUGIN_METHOD * methods;      /* methods list */
     unsigned ctors_count;         /* ctor list count*/
-    IMPORT_CTOR * ctors;          /* ctor list */
-  } IMPORT_INTERFACE;
+    PLUGIN_CTOR * ctors;          /* ctor list */
+  } PLUGIN_INTERFACE;
 
-  typedef IMPORT_HANDLE (*DLSYM_CREATE)();
+  typedef PLUGIN_HANDLE (*DLSYM_CREATE)();
   typedef int (*DLSYM_VERSION)();
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* IMPORT_INTERFACE_H_ */
+#endif /* PLUGIN_INTERFACE_H_ */

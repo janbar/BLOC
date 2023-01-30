@@ -40,11 +40,11 @@
 /*
  * Create the module FileImport
  */
-IMPORTCREATOR(FileImport)
+PLUGINCREATOR(FilePlugin)
 
 namespace bloc
 {
-namespace import
+namespace plugin
 {
 namespace file
 {
@@ -56,12 +56,12 @@ namespace file
 /**********************************************************************/
 /*  Constructors                                                      */
 /**********************************************************************/
-static IMPORT_TYPE ctor_0_args[]  = {
+static PLUGIN_TYPE ctor_0_args[]  = {
   { "L", 0 }, // filename
   { "L", 0 }, // open flags
 };
 
-static IMPORT_CTOR ctors[] =
+static PLUGIN_CTOR ctors[] =
 {
   { 0,      2,  ctor_0_args },  /* new file( filename, open flags ) */
 };
@@ -77,46 +77,46 @@ enum Method
 /*  Method arguments                                                  */
 /*  mode:         type: decl,ndim                                     */
 /**********************************************************************/
-static IMPORT_ARG stat_args[]  = {
-  { IMPORT_IN,    { "L", 0 } }, // filename
+static PLUGIN_ARG stat_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // filename
 };
 
-static IMPORT_ARG dir_args[]  = {
-  { IMPORT_IN,    { "L", 0 } }, // filename
+static PLUGIN_ARG dir_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // filename
 };
 
-static IMPORT_ARG open_args[]     = {
-  { IMPORT_IN,    { "L", 0 } }, // filename
-  { IMPORT_IN,    { "L", 0 } }, // open flags
+static PLUGIN_ARG open_args[]     = {
+  { PLUGIN_IN,    { "L", 0 } }, // filename
+  { PLUGIN_IN,    { "L", 0 } }, // open flags
 };
 
-static IMPORT_ARG write_s_args[]  = {
-  { IMPORT_IN,    { "L", 0 } }, // write string
+static PLUGIN_ARG write_s_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // write string
 };
 
-static IMPORT_ARG write_b_args[]  = {
-  { IMPORT_IN,    { "X", 0 } }, // write raw
+static PLUGIN_ARG write_b_args[]  = {
+  { PLUGIN_IN,    { "X", 0 } }, // write raw
 };
 
-static IMPORT_ARG read_s_args[]   = {
-  { IMPORT_INOUT, { "L", 0 } }, // string read
-  { IMPORT_IN,    { "I", 0 } }, // read size
+static PLUGIN_ARG read_s_args[]   = {
+  { PLUGIN_INOUT, { "L", 0 } }, // string read
+  { PLUGIN_IN,    { "I", 0 } }, // read size
 };
 
-static IMPORT_ARG read_b_args[]   = {
-  { IMPORT_INOUT, { "X", 0 } }, // raw read
-  { IMPORT_IN,    { "I", 0 } }, // read size
+static PLUGIN_ARG read_b_args[]   = {
+  { PLUGIN_INOUT, { "X", 0 } }, // raw read
+  { PLUGIN_IN,    { "I", 0 } }, // read size
 };
 
-static IMPORT_ARG seek_args[]     = {
-  { IMPORT_IN,    { "I", 0 } }, // seek offset
+static PLUGIN_ARG seek_args[]     = {
+  { PLUGIN_IN,    { "I", 0 } }, // seek offset
 };
 
 /**********************************************************************/
 /*  Methods list                                                      */
 /*  id:       name:         ret: decl,ndim  args_count,args:          */
 /**********************************************************************/
-static IMPORT_METHOD methods[] =
+static PLUGIN_METHOD methods[] =
 {
   { Close,    "close",      { "B", 0 },     0, nullptr, },
 
@@ -224,17 +224,17 @@ static int _dir(const std::string& path, bloc::Collection& out)
 
 } /* namespace file */
 
-void FileImport::declareInterface(IMPORT_INTERFACE * interface)
+void FilePlugin::declareInterface(PLUGIN_INTERFACE * interface)
 {
   interface->name = "file";
-  interface->method_count = sizeof(file::methods) / sizeof(IMPORT_METHOD);
+  interface->method_count = sizeof(file::methods) / sizeof(PLUGIN_METHOD);
   interface->methods = file::methods;
   /* file do not declare any specialized ctor */
-  interface->ctors_count = sizeof(file::ctors) / sizeof(IMPORT_CTOR);
+  interface->ctors_count = sizeof(file::ctors) / sizeof(PLUGIN_CTOR);
   interface->ctors = file::ctors;
 }
 
-void * FileImport::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
+void * FilePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
 {
   file::Handle * file = new file::Handle();
   try
@@ -258,13 +258,13 @@ void * FileImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
   return file;
 }
 
-void FileImport::destroyObject(void * object)
+void FilePlugin::destroyObject(void * object)
 {
   file::Handle * file = static_cast<file::Handle*>(object);
   delete file;
 }
 
-bloc::Expression * FileImport::executeMethod(
+bloc::Expression * FilePlugin::executeMethod(
           bloc::Complex object_this,
           int method_id,
           bloc::Context& ctx,
@@ -361,7 +361,7 @@ bloc::Expression * FileImport::executeMethod(
 
   case file::Dir:
   {
-    Collection ret(bloc::import::make_decl("IL", object_this.typeId()), 1);
+    Collection ret(bloc::plugin::make_decl("IL", object_this.typeId()), 1);
     file::_dir(args[0]->literal(ctx), ret);
     return new CollectionExpression(std::move(ret));
   }

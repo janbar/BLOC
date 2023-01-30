@@ -17,7 +17,7 @@
  */
 
 #include "tuple_decl.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 
 #include <cstdint>
 
@@ -36,7 +36,7 @@ std::string TupleDecl::Decl::tupleName() const
       sb.append(1, ',');
     sb.append(1, ' ');
     if (this->at(i).major() == Type::COMPLEX)
-      sb.append(ImportManager::instance().module(this->at(i).minor()).interface.name);
+      sb.append(PluginManager::instance().plugged(this->at(i).minor()).interface.name);
     else
       sb.append(Type::typeName(this->at(i).major()));
   }

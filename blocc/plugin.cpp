@@ -16,13 +16,13 @@
  *
  */
 
-#include "import.h"
+#include "plugin.h"
 
 #include <cstring>
 
 namespace bloc
 {
-namespace import
+namespace plugin
 {
 
 #define NA Type::NO_TYPE
@@ -56,7 +56,7 @@ static const Type::TypeMajor __match_type_code__[] = {
 #undef NA
 
 TupleDecl::Decl
-make_decl(IMPORT_DECL decl_def, Type::TypeMinor type_id)
+make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id)
 {
   Tuple::Decl decl;
   unsigned len = ::strlen(decl_def);
@@ -73,7 +73,7 @@ make_decl(IMPORT_DECL decl_def, Type::TypeMinor type_id)
 }
 
 Type
-make_type(IMPORT_TYPE type_def, Type::TypeMinor type_id)
+make_type(PLUGIN_TYPE type_def, Type::TypeMinor type_id)
 {
   return make_decl(type_def.decl, type_id).make_type(type_def.ndim);
 }

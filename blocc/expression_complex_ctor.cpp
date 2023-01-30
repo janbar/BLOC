@@ -19,7 +19,7 @@
 #include "expression_complex_ctor.h"
 #include "parse_expression.h"
 #include "exception_parse.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 #include "parser.h"
 #include "debug.h"
 
@@ -44,8 +44,8 @@ Complex ComplexCTORExpression::complex(Context& ctx) const
 
 std::string ComplexCTORExpression::unparse(Context& ctx) const
 {
-  const IMPORT_MODULE& module = ImportManager::instance().module(_type.minor());
-  std::string sb(module.interface.name);
+  const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_type.minor());
+  std::string sb(plug.interface.name);
   sb.append("(");
   for (Expression * e : _args)
     sb.append(e->unparse(ctx)).append(1, Parser::CHAIN);
@@ -61,7 +61,7 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
   if (type_id == 0)
     throw ParseError(EXC_PARSE_NOT_COMPLEX);
   std::vector<Expression*> args;
-  const IMPORT_MODULE& module = ImportManager::instance().module(type_id);
+  const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
 
   try
   {
@@ -91,9 +91,9 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
 
     /* else find the right constructor */
     bool fid = false;
-    for (int m = 0; m < module.interface.ctors_count; ++m)
+    for (int m = 0; m < plug.interface.ctors_count; ++m)
     {
-      const IMPORT_CTOR& ctor = module.interface.ctors[m];
+      const PLUGIN_CTOR& ctor = plug.interface.ctors[m];
       fid = true;
       if (ctor.args_count == args.size())
       {
@@ -103,7 +103,7 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
         while (found && a < ctor.args_count)
         {
           /* the expected type */
-          Type m_arg_type = import::make_type(ctor.args[a], type_id);
+          Type m_arg_type = plugin::make_type(ctor.args[a], type_id);
           /* check type */
           found = ParseExpression::typeChecking(args[a], m_arg_type, p, ctx);
           ++a;
@@ -116,8 +116,8 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
       }
     }
     if (fid)
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, module.interface.name);
-    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, module.interface.name);
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, plug.interface.name);
+    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, plug.interface.name);
   }
   catch (ParseError& pe)
   {

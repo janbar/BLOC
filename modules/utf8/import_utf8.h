@@ -19,20 +19,20 @@
 #ifndef IMPORT_UTF8_H_
 #define IMPORT_UTF8_H_
 
-#include <blocc/import.h>
+#include <blocc/plugin.h>
 
 namespace bloc
 {
-namespace import
+namespace plugin
 {
 
-class UTF8Import : public ImportBase
+class UTF8Plugin : public PluginBase
 {
 public:
-  ~UTF8Import() { }
-  UTF8Import() = default;
+  ~UTF8Plugin() { }
+  UTF8Plugin() = default;
 
-  void declareInterface(IMPORT_INTERFACE * interface) override;
+  void declareInterface(PLUGIN_INTERFACE * interface) override;
 
   void * createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args) override;
 

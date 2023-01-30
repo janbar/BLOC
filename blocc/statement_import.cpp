@@ -21,7 +21,7 @@
 #include "parse_expression.h"
 #include "parser.h"
 #include "context.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 #include "debug.h"
 
 namespace bloc
@@ -53,18 +53,18 @@ void IMPORTStatement::loadModule(Context& ctx)
   unsigned type_id = 0;
   if (_exp == nullptr)
   {
-    if ((type_id = ImportManager::instance().importTypeByName(_name)) == 0)
+    if ((type_id = PluginManager::instance().importModuleByName(_name)) == 0)
       throw ParseError(EXC_PARSE_IMPORT_FAILED_S, _name.c_str());
   }
   else
   {
     std::string& path = _exp->literal(ctx);
-    if ((type_id = ImportManager::instance().importTypeByPath(path.c_str())) == 0)
+    if ((type_id = PluginManager::instance().importModuleByPath(path.c_str())) == 0)
       throw ParseError(EXC_PARSE_IMPORT_FAILED_S, path.c_str());
   }
-  const IMPORT_MODULE& module = ImportManager::instance().module(type_id);
+  const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
   DBG(DBG_DEBUG, "%s: id=%d name=%s instance=%p dlhandle=%p\n", __FUNCTION__,
-          type_id, module.interface.name, module.instance, module.dlhandle);
+          type_id, plug.interface.name, plug.instance, plug.dlhandle);
 }
 
 IMPORTStatement * IMPORTStatement::parse(Parser& p, Context& ctx)

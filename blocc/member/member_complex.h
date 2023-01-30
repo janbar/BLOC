@@ -20,7 +20,7 @@
 #define MEMBER_COMPLEX_H_
 
 #include <blocc/expression_member.h>
-#include <blocc/import_interface.h>
+#include <blocc/plugin_interface.h>
 
 #include <string>
 #include <vector>
@@ -36,16 +36,16 @@ class MemberMETHODExpression : public MemberExpression
   Tuple::Decl _decl_method;
   Type _type_method;
 
-  const IMPORT_METHOD * _method = nullptr;
+  const PLUGIN_METHOD * _method = nullptr;
   Type::TypeMinor _method_type_id = 0;
 
 public:
 
   virtual ~MemberMETHODExpression() { }
 
-  MemberMETHODExpression(const IMPORT_METHOD& method, unsigned type_id, Expression * e);
+  MemberMETHODExpression(const PLUGIN_METHOD& method, unsigned type_id, Expression * e);
 
-  MemberMETHODExpression(const IMPORT_METHOD& method, unsigned type_id, Expression * e, std::vector<Expression*>&& args)
+  MemberMETHODExpression(const PLUGIN_METHOD& method, unsigned type_id, Expression * e, std::vector<Expression*>&& args)
   : MemberMETHODExpression(method, type_id, e)
   {
     _args.swap(args);

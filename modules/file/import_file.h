@@ -19,20 +19,20 @@
 #ifndef IMPORT_FILE_H_
 #define IMPORT_FILE_H_
 
-#include <blocc/import.h>
+#include <blocc/plugin.h>
 
 namespace bloc
 {
-namespace import
+namespace plugin
 {
 
-class FileImport : public ImportBase
+class FilePlugin : public PluginBase
 {
 public:
-  ~FileImport() { }
-  FileImport() = default;
+  ~FilePlugin() { }
+  FilePlugin() = default;
 
-  void declareInterface(IMPORT_INTERFACE * interface) override;
+  void declareInterface(PLUGIN_INTERFACE * interface) override;
 
   void * createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args) override;
 

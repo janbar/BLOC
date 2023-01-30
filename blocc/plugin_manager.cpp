@@ -16,7 +16,7 @@
  *
  */
 
-#include "import_manager.h"
+#include "plugin_manager.h"
 #include "debug.h"
 
 #include <cstdlib>
@@ -49,25 +49,25 @@
 namespace bloc
 {
 
-ImportManager * ImportManager::_instance = nullptr;
+PluginManager * PluginManager::_instance = nullptr;
 
-IMPORT_INTERFACE ImportManager::_internal = { "null", 0, nullptr, 0, nullptr };
+PLUGIN_INTERFACE PluginManager::_internal = { "null", 0, nullptr, 0, nullptr };
 
-ImportManager& ImportManager::instance()
+PluginManager& PluginManager::instance()
 {
   if (_instance)
     return *_instance;
-  return *(_instance = new ImportManager());
+  return *(_instance = new PluginManager());
 }
 
-void ImportManager::destroy()
+void PluginManager::destroy()
 {
   if (_instance)
     delete _instance;
   _instance = nullptr;
 }
 
-unsigned ImportManager::findModuleTypeId(const std::string & name) const
+unsigned PluginManager::findModuleTypeId(const std::string & name) const
 {
   for (unsigned i = _modules.size() - 1; i > 0; --i)
   {
@@ -77,18 +77,18 @@ unsigned ImportManager::findModuleTypeId(const std::string & name) const
   return 0;
 }
 
-ImportManager::ImportManager()
+PluginManager::PluginManager()
 {
-  IMPORT_MODULE module;
-  module.interface = _internal;
-  module.instance = nullptr;
-  module.dlhandle = nullptr;
-  _modules.emplace_back(module);
+  PLUGGED_MODULE plug;
+  plug.interface = _internal;
+  plug.instance = nullptr;
+  plug.dlhandle = nullptr;
+  _modules.emplace_back(plug);
 }
 
-ImportManager::~ImportManager()
+PluginManager::~PluginManager()
 {
-  for (IMPORT_MODULE& m : _modules)
+  for (PLUGGED_MODULE& m : _modules)
   {
     if (m.instance)
       delete m.instance;
@@ -98,16 +98,16 @@ ImportManager::~ImportManager()
   _modules.clear();
 }
 
-std::vector<const IMPORT_INTERFACE*> ImportManager::reportInterfaces() const
+std::vector<const PLUGIN_INTERFACE*> PluginManager::reportInterfaces() const
 {
-  std::vector<const IMPORT_INTERFACE*> v;
+  std::vector<const PLUGIN_INTERFACE*> v;
   v.reserve(_modules.size() - 1);
   for (unsigned i = 1; i < _modules.size(); ++i)
     v.emplace_back(&_modules[i].interface);
   return v;
 }
 
-unsigned ImportManager::importTypeByName(const std::string & name)
+unsigned PluginManager::importModuleByName(const std::string & name)
 {
   void* dlhandle = nullptr;
   std::string libs;
@@ -122,7 +122,7 @@ unsigned ImportManager::importTypeByName(const std::string & name)
   return registerModule(dlhandle);
 }
 
-unsigned ImportManager::importTypeByPath(const char * libpath)
+unsigned PluginManager::importModuleByPath(const char * libpath)
 {
   void* dlhandle = nullptr;
   dlhandle = dlopen(libpath, RTLD_LAZY);
@@ -134,7 +134,7 @@ unsigned ImportManager::importTypeByPath(const char * libpath)
   return registerModule(dlhandle);
 }
 
-unsigned ImportManager::registerModule(void* dlhandle)
+unsigned PluginManager::registerModule(void* dlhandle)
 {
   /* check for already registered dlhandle */
   for (int id = 0; id < _modules.size(); ++id)
@@ -145,25 +145,25 @@ unsigned ImportManager::registerModule(void* dlhandle)
       return id;
     }
   }
-  DLSYM_VERSION version = (DLSYM_VERSION)dlsym(dlhandle, "IMPORT_version");
+  DLSYM_VERSION version = (DLSYM_VERSION)dlsym(dlhandle, "PLUGIN_version");
   if (!version)
   {
     DBG(DBG_ERROR, "%s: %s\n", __FUNCTION__, dlerror());
     return 0;
   }
-  if (version() != IMPORT_VERSION)
+  if (version() != PLUGIN_VERSION)
   {
-    DBG(DBG_ERROR, "%s: version mismatch: found %d, requires %d\n", __FUNCTION__, version(), IMPORT_VERSION);
+    DBG(DBG_ERROR, "%s: version mismatch: found %d, requires %d\n", __FUNCTION__, version(), PLUGIN_VERSION);
     return 0;
   }
-  DLSYM_CREATE create = (DLSYM_CREATE)dlsym(dlhandle, "IMPORT_create");
+  DLSYM_CREATE create = (DLSYM_CREATE)dlsym(dlhandle, "PLUGIN_create");
   if (!create)
   {
     DBG(DBG_ERROR, "%s: %s\n", __FUNCTION__, dlerror());
     return 0;
   }
 
-  bloc::import::ImportBase * instance = static_cast<bloc::import::ImportBase*>(create());
+  bloc::plugin::PluginBase * instance = static_cast<bloc::plugin::PluginBase*>(create());
   if (!instance)
   {
     dlclose(dlhandle);
@@ -171,20 +171,20 @@ unsigned ImportManager::registerModule(void* dlhandle)
     return 0;
   }
 
-  IMPORT_MODULE module;
-  instance->declareInterface(&module.interface);
-  module.instance = instance;
-  module.dlhandle = dlhandle;
+  PLUGGED_MODULE plug;
+  instance->declareInterface(&plug.interface);
+  plug.instance = instance;
+  plug.dlhandle = dlhandle;
   /* check for name conflict */
-  if (findModuleTypeId(module.interface.name) > 0)
+  if (findModuleTypeId(plug.interface.name) > 0)
   {
-    DBG(DBG_ERROR, "%s: module '%s' already imported.\n", __FUNCTION__, module.interface.name);
+    DBG(DBG_ERROR, "%s: module '%s' already imported.\n", __FUNCTION__, plug.interface.name);
     delete instance;
     dlclose(dlhandle);
     return 0;
   }
   /* register the module */
-  _modules.emplace_back(module);
+  _modules.emplace_back(plug);
   return (_modules.size() - 1);
 }
 

@@ -20,7 +20,7 @@
 #include "exception_parse.h"
 #include "context.h"
 #include "parser.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 
 namespace bloc
 {
@@ -121,7 +121,7 @@ std::string VariableExpression::typeName(Context& ctx) const {
     switch (s->major())
     {
     case Type::COMPLEX:
-      return s->typeName(ImportManager::instance().module(s->minor()).interface.name);
+      return s->typeName(PluginManager::instance().plugged(s->minor()).interface.name);
     case Type::ROWTYPE:
       return s->tuple_decl().tupleName();
     default:

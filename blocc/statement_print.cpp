@@ -28,7 +28,7 @@
 #include "expression_tabchar.h"
 #include "expression_collection.h"
 #include "expression_tuple.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 #include "debug.h"
 
 #include <cstdio>

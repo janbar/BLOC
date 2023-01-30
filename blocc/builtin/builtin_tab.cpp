@@ -23,7 +23,7 @@
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
-#include <blocc/import_manager.h>
+#include <blocc/plugin_manager.h>
 #include <blocc/debug.h>
 
 namespace bloc
@@ -118,7 +118,7 @@ std::string TABExpression::typeName(Context& ctx) const
   switch (type(ctx).major())
   {
   case Type::COMPLEX:
-    return type(ctx).typeName(ImportManager::instance().module(type(ctx).minor()).interface.name);
+    return type(ctx).typeName(PluginManager::instance().plugged(type(ctx).minor()).interface.name);
   case Type::ROWTYPE:
     return type(ctx).typeName(tuple_decl(ctx).tupleName().c_str());
   default:

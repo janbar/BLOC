@@ -30,7 +30,7 @@
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
-#include <blocc/import_manager.h>
+#include <blocc/plugin_manager.h>
 
 #include <cstring>
 #include <cassert>
@@ -38,14 +38,14 @@
 namespace bloc
 {
 
-MemberMETHODExpression::MemberMETHODExpression(const IMPORT_METHOD& method, unsigned type_id, Expression * e)
+MemberMETHODExpression::MemberMETHODExpression(const PLUGIN_METHOD& method, unsigned type_id, Expression * e)
 : MemberExpression(BTM_undefined, e), _method(&method), _method_type_id(type_id)
 {
   /* the type/decl returned by complex member are defined by the static interface,
    * so it is static */
   if (_method)
   {
-    _decl_method = import::make_decl(_method->ret.decl, _method_type_id);
+    _decl_method = plugin::make_decl(_method->ret.decl, _method_type_id);
     _type_method = _decl_method.make_type(_method->ret.ndim);
   }
   else
@@ -56,10 +56,10 @@ bool MemberMETHODExpression::boolean(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     if (!ret)
       throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
@@ -75,10 +75,10 @@ int64_t MemberMETHODExpression::integer(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     if (!ret)
       throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
@@ -94,10 +94,10 @@ double MemberMETHODExpression::numeric(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     if (!ret)
       throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
@@ -113,10 +113,10 @@ std::string& MemberMETHODExpression::literal(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     if (!ret)
       throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
@@ -132,10 +132,10 @@ TabChar& MemberMETHODExpression::tabchar(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     if (!ret)
       throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
@@ -151,10 +151,10 @@ Tuple& MemberMETHODExpression::tuple(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     if (!ret)
       throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
@@ -170,10 +170,10 @@ Collection& MemberMETHODExpression::collection(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     if (!ret)
       throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
@@ -189,10 +189,10 @@ Complex MemberMETHODExpression::complex(Context& ctx) const
 {
   if (_method)
   {
-    const IMPORT_MODULE& module = ImportManager::instance().module(_method_type_id);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
     if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, module.interface.name);
-    Expression * ret = module.instance->executeMethod(
+      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+    Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
     Complex c = ret->complex(ctx);
     delete ret;
@@ -232,7 +232,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
   std::vector<Expression*> args;
   const Type& exp_type = exp->type(ctx);
   unsigned type_id = exp_type.minor();
-  const IMPORT_MODULE& module = ImportManager::instance().module(type_id);
+  const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
   TokenPtr t = p.pop();
 
   try
@@ -260,9 +260,9 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
 
     /* find method */
     bool fname = false;
-    for (int m = 0; m < module.interface.method_count; ++m)
+    for (int m = 0; m < plug.interface.method_count; ++m)
     {
-      const IMPORT_METHOD& method = module.interface.methods[m];
+      const PLUGIN_METHOD& method = plug.interface.methods[m];
       if (method.name != m_name)
         continue;
       fname = true;
@@ -274,14 +274,14 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
         while (found && a < method.args_count)
         {
           /* the expected type */
-          Type m_arg_type = import::make_type(method.args[a].type, type_id);
+          Type m_arg_type = plugin::make_type(method.args[a].type, type_id);
           switch (method.args[a].mode)
           {
-          case IMPORT_IN:
+          case PLUGIN_IN:
             /* check type */
             found = ParseExpression::typeChecking(args[a], m_arg_type, p, ctx);
             break;
-          case IMPORT_INOUT:
+          case PLUGIN_INOUT:
           {
             /* must be variable expression with same type */
             VariableExpression * var = dynamic_cast<VariableExpression*>(args[a]);

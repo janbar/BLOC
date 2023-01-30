@@ -16,10 +16,10 @@
  *
  */
 
-#ifndef IMPORT_MANAGER_H_
-#define IMPORT_MANAGER_H_
+#ifndef PLUGIN_MANAGER_H_
+#define PLUGIN_MANAGER_H_
 
-#include "import.h"
+#include "plugin.h"
 
 #include <string>
 #include <vector>
@@ -27,47 +27,47 @@
 namespace bloc
 {
 
-struct IMPORT_MODULE
+struct PLUGGED_MODULE
 {
-  IMPORT_INTERFACE interface;
-  import::ImportBase* instance;
+  PLUGIN_INTERFACE interface;
+  plugin::PluginBase* instance;
   void* dlhandle;
 };
 
-class ImportManager
+class PluginManager
 {
 
 public:
-  ~ImportManager();
+  ~PluginManager();
 
-  static ImportManager& instance();
+  static PluginManager& instance();
   
   static void destroy();
 
-  std::vector<const IMPORT_INTERFACE*> reportInterfaces() const;
+  std::vector<const PLUGIN_INTERFACE*> reportInterfaces() const;
 
   unsigned findModuleTypeId(const std::string& name) const;
 
-  const IMPORT_MODULE& module(unsigned type_id) const
+  const PLUGGED_MODULE& plugged(unsigned type_id) const
   {
     if (type_id < _modules.size())
         return _modules[type_id];
     return _modules[0];
   }
 
-  unsigned importTypeByName(const std::string& name);
-  unsigned importTypeByPath(const char * libpath);
+  unsigned importModuleByName(const std::string& name);
+  unsigned importModuleByPath(const char * libpath);
 
 private:
-  ImportManager();
+  PluginManager();
 
-  static ImportManager * _instance;
-  std::vector<IMPORT_MODULE> _modules;
-  static IMPORT_INTERFACE _internal;
+  static PluginManager * _instance;
+  std::vector<PLUGGED_MODULE> _modules;
+  static PLUGIN_INTERFACE _internal;
 
   unsigned registerModule(void* dlhandle);
 };
 
 }
 
-#endif /* IMPORT_MANAGER_H_ */
+#endif /* PLUGIN_MANAGER_H_ */

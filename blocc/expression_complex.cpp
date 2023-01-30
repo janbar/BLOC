@@ -17,7 +17,7 @@
  */
 
 #include "expression_complex.h"
-#include "import_manager.h"
+#include "plugin_manager.h"
 #include "parser.h"
 
 namespace bloc
@@ -27,7 +27,7 @@ const Type& ComplexExpression::null = Type(Type::COMPLEX);
 
 std::string ComplexExpression::readableComplex(const Complex& c)
 {
-  std::string sb(ImportManager::instance().module(c.typeId()).interface.name);
+  std::string sb(PluginManager::instance().plugged(c.typeId()).interface.name);
   if (c.typeId())
   {
     char buf[24];
@@ -41,8 +41,8 @@ std::string ComplexExpression::readableComplex(const Complex& c)
 
 std::string ComplexExpression::typeName(Context& ctx) const
 {
-  const IMPORT_MODULE& module = ImportManager::instance().module(v.typeId());
-  return module.interface.name;
+  const PLUGGED_MODULE& plugin = PluginManager::instance().plugged(v.typeId());
+  return plugin.interface.name;
 }
 
 }

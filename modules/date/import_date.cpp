@@ -28,11 +28,11 @@
 /*
  * Create the module DateImport
  */
-IMPORTCREATOR(DateImport)
+PLUGINCREATOR(DatePlugin)
 
 namespace bloc
 {
-namespace import
+namespace plugin
 {
 namespace date
 {
@@ -52,20 +52,20 @@ enum Method
 /**********************************************************************/
 /*  Constructors                                                      */
 /**********************************************************************/
-static IMPORT_TYPE ctor_0_args[]  = {
+static PLUGIN_TYPE ctor_0_args[]  = {
   { "C", 0 }, // date
 };
 
-static IMPORT_TYPE ctor_1_args[]  = {
+static PLUGIN_TYPE ctor_1_args[]  = {
   { "L", 0 }, // string
   { "L", 0 }, // format
 };
 
-static IMPORT_TYPE ctor_2_args[]  = {
+static PLUGIN_TYPE ctor_2_args[]  = {
   { "L", 0 }, // string formatted as ISO8601
 };
 
-static IMPORT_CTOR ctors[] =
+static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,  ctor_0_args },  /* new date( date ) */
   { 1,      2,  ctor_1_args },  /* new date( string, format ) */
@@ -76,32 +76,32 @@ static IMPORT_CTOR ctors[] =
 /*  Method arguments                                                  */
 /*  mode:         type: decl,ndim                                     */
 /**********************************************************************/
-static IMPORT_ARG format_args[]  = {
-  { IMPORT_IN,    { "L", 0 } }, // format
+static PLUGIN_ARG format_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // format
 };
 
-static IMPORT_ARG diff_args[]  = {
-  { IMPORT_IN,    { "C", 0 } }, // date0
+static PLUGIN_ARG diff_args[]  = {
+  { PLUGIN_IN,    { "C", 0 } }, // date0
 };
 
-static IMPORT_ARG num_args[]  = {
-  { IMPORT_IN,    { "N", 0 } }, // decimal
+static PLUGIN_ARG num_args[]  = {
+  { PLUGIN_IN,    { "N", 0 } }, // decimal
 };
 
-static IMPORT_ARG add_args[]  = {
-  { IMPORT_IN,    { "I", 0 } }, // integer
-  { IMPORT_IN,    { "L", 0 } }, // format
+static PLUGIN_ARG add_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // integer
+  { PLUGIN_IN,    { "L", 0 } }, // format
 };
 
-static IMPORT_ARG trunc_args[]  = {
-  { IMPORT_IN,    { "L", 0 } }, // format
+static PLUGIN_ARG trunc_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // format
 };
 
 /**********************************************************************/
 /*  Methods list                                                      */
 /*  id:       name:         ret: decl,ndim  args_count,args:          */
 /**********************************************************************/
-static IMPORT_METHOD methods[] =
+static PLUGIN_METHOD methods[] =
 {
   { Format,     "format",       { "L", 0 },     1, format_args, },
   { Unixtime,   "unixtime",     { "I", 0 },     0, nullptr, },
@@ -151,16 +151,16 @@ static unsigned ISODATE_LEN = 10;
 
 } /* namespace date */
 
-void DateImport::declareInterface(IMPORT_INTERFACE * interface)
+void DatePlugin::declareInterface(PLUGIN_INTERFACE * interface)
 {
   interface->name = "date";
-  interface->method_count = sizeof(date::methods) / sizeof(IMPORT_METHOD);
+  interface->method_count = sizeof(date::methods) / sizeof(PLUGIN_METHOD);
   interface->methods = date::methods;
-  interface->ctors_count = sizeof(date::ctors) / sizeof(IMPORT_CTOR);
+  interface->ctors_count = sizeof(date::ctors) / sizeof(PLUGIN_CTOR);
   interface->ctors = date::ctors;
 }
 
-void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
+void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
 {
   date::Handle * dd = new date::Handle();
   try
@@ -230,13 +230,13 @@ void * DateImport::createObject(int ctor_id, bloc::Context& ctx, const std::vect
   return dd;
 }
 
-void DateImport::destroyObject(void * object)
+void DatePlugin::destroyObject(void * object)
 {
   date::Handle * dd = static_cast<date::Handle*>(object);
   delete dd;
 }
 
-bloc::Expression * DateImport::executeMethod(
+bloc::Expression * DatePlugin::executeMethod(
           bloc::Complex object_this,
           int method_id,
           bloc::Context& ctx,

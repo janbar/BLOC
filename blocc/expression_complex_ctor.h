@@ -20,7 +20,7 @@
 #define EXPRESSION_COMPLEX_CTOR_H
 
 #include "expression.h"
-#include "import_interface.h"
+#include "plugin_interface.h"
 
 #include <vector>
 
@@ -37,7 +37,7 @@ class ComplexCTORExpression : public Expression
 {
 private:
   Type _type;
-  const IMPORT_CTOR * _ctor = nullptr;
+  const PLUGIN_CTOR * _ctor = nullptr;
   std::vector<Expression*> _args;
 
 public:
@@ -46,7 +46,7 @@ public:
 
   ComplexCTORExpression(unsigned type_id) : Expression(), _type(Type::COMPLEX, type_id) { }
   
-  ComplexCTORExpression(unsigned type_id, const IMPORT_CTOR& ctor, std::vector<Expression*>&& args)
+  ComplexCTORExpression(unsigned type_id, const PLUGIN_CTOR& ctor, std::vector<Expression*>&& args)
   : Expression(), _type(Type::COMPLEX, type_id), _ctor(&ctor)
   {
     _args.swap(args);

@@ -41,7 +41,7 @@
 #include <blocc/expression_operator.h>
 #include <blocc/expression_builtin.h>
 #include <blocc/expression_member.h>
-#include <blocc/import_manager.h>
+#include <blocc/plugin_manager.h>
 
 #include <cstdlib>
 #include <cstdio>

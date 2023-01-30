@@ -22,11 +22,11 @@
 /*
  * Create the module UTF8Import
  */
-IMPORTCREATOR(UTF8Import)
+PLUGINCREATOR(UTF8Plugin)
 
 namespace bloc
 {
-namespace import
+namespace plugin
 {
 namespace utf8
 {
@@ -38,15 +38,15 @@ namespace utf8
 /**********************************************************************/
 /*  Constructors                                                      */
 /**********************************************************************/
-static IMPORT_TYPE ctor_0_args[]  = {
+static PLUGIN_TYPE ctor_0_args[]  = {
   { "C", 0 }, // utf8
 };
 
-static IMPORT_TYPE ctor_1_args[]  = {
+static PLUGIN_TYPE ctor_1_args[]  = {
   { "L", 0 }, // string
 };
 
-static IMPORT_CTOR ctors[] =
+static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,  ctor_0_args },  /* copy ctor */
   { 1,      1,  ctor_1_args },  /* new utf8( string ) */
@@ -65,43 +65,43 @@ enum Method
 /*  Method arguments                                                  */
 /*  mode:         type: decl,ndim                                     */
 /**********************************************************************/
-static IMPORT_ARG int_args[]  = {
-  { IMPORT_IN,    { "I", 0 } }, // integer
+static PLUGIN_ARG int_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // integer
 };
 
-static IMPORT_ARG string_args[]  = {
-  { IMPORT_IN,    { "L", 0 } }, // string
+static PLUGIN_ARG string_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // string
 };
 
-static IMPORT_ARG utf8_args[]  = {
-  { IMPORT_IN,    { "C", 0 } }, // utf8
+static PLUGIN_ARG utf8_args[]  = {
+  { PLUGIN_IN,    { "C", 0 } }, // utf8
 };
 
-static IMPORT_ARG remove_args[]  = {
-  { IMPORT_IN,    { "I", 0 } }, // pos
-  { IMPORT_IN,    { "I", 0 } }, // size
+static PLUGIN_ARG remove_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // pos
+  { PLUGIN_IN,    { "I", 0 } }, // size
 };
 
-static IMPORT_ARG insert_args[]  = {
-  { IMPORT_IN,    { "I", 0 } }, // pos
-  { IMPORT_IN,    { "I", 0 } }, // codepoint
+static PLUGIN_ARG insert_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // pos
+  { PLUGIN_IN,    { "I", 0 } }, // codepoint
 };
 
-static IMPORT_ARG insertC_args[]  = {
-  { IMPORT_IN,    { "I", 0 } }, // integer
-  { IMPORT_IN,    { "C", 0 } }, // utf8
+static PLUGIN_ARG insertC_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // integer
+  { PLUGIN_IN,    { "C", 0 } }, // utf8
 };
 
-static IMPORT_ARG substr_args[]  = {
-  { IMPORT_IN,    { "I", 0 } }, // pos
-  { IMPORT_IN,    { "I", 0 } }, // size
+static PLUGIN_ARG substr_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // pos
+  { PLUGIN_IN,    { "I", 0 } }, // size
 };
 
 /**********************************************************************/
 /*  Methods list                                                      */
 /*  id:       name:         ret: decl,ndim  args_count,args:          */
 /**********************************************************************/
-static IMPORT_METHOD methods[] =
+static PLUGIN_METHOD methods[] =
 {
   { Empty,    "empty",      { "B", 0 },     0, nullptr, },
 
@@ -146,16 +146,16 @@ static IMPORT_METHOD methods[] =
 
 } /* namespace utf8 */
 
-void UTF8Import::declareInterface(IMPORT_INTERFACE * interface)
+void UTF8Plugin::declareInterface(PLUGIN_INTERFACE * interface)
 {
   interface->name = "utf8";
-  interface->method_count = sizeof(utf8::methods) / sizeof(IMPORT_METHOD);
+  interface->method_count = sizeof(utf8::methods) / sizeof(PLUGIN_METHOD);
   interface->methods = utf8::methods;
-  interface->ctors_count = sizeof(utf8::ctors) / sizeof(IMPORT_CTOR);
+  interface->ctors_count = sizeof(utf8::ctors) / sizeof(PLUGIN_CTOR);
   interface->ctors = utf8::ctors;
 }
 
-void * UTF8Import::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
+void * UTF8Plugin::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
 {
   switch (ctor_id)
   {
@@ -175,13 +175,13 @@ void * UTF8Import::createObject(int ctor_id, bloc::Context& ctx, const std::vect
   return nullptr;
 }
 
-void UTF8Import::destroyObject(void * object)
+void UTF8Plugin::destroyObject(void * object)
 {
   utf8helper::UTF8String * u = static_cast<utf8helper::UTF8String*>(object);
   delete u;
 }
 
-bloc::Expression * UTF8Import::executeMethod(
+bloc::Expression * UTF8Plugin::executeMethod(
           bloc::Complex object_this,
           int method_id,
           bloc::Context& ctx,
