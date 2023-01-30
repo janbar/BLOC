@@ -116,7 +116,7 @@ enum FG
 static bool g_has_color = false;
 
 static void read_input(void * handle, char * buf, int * len, int max_size);
-static int find_cmd(const std::string& c);
+static CMD find_cmd(const std::string& c);
 static void set_color(enum FG c);
 static void reset_color(void);
 static void output_cli(bloc::Context& ctx);
@@ -239,12 +239,12 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
   *len = bloc_readstdin(buf, max_size);
 }
 
-static int find_cmd(const std::string& c)
+static CMD find_cmd(const std::string& c)
 {
-  for (size_t i = 0; i < (sizeof (CMD_KEYWORDS) / sizeof (char*)); ++i)
+  for (unsigned i = 0; i < (sizeof (CMD_KEYWORDS) / sizeof (char*)); ++i)
   {
     if (::strcmp(CMD_KEYWORDS[i], c.c_str()) == 0)
-      return i;
+      return (CMD)i;
   }
   return CMD_NOTCMD;
 }
@@ -477,7 +477,7 @@ static void print_help(const std::string& what)
 static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::Statement*>& statements)
 {
   bloc::TokenPtr t = p.front();
-  CMD c = (CMD)find_cmd(p.front()->text);
+  CMD c = find_cmd(p.front()->text);
   switch (c)
   {
   case CMD_NOTCMD:
