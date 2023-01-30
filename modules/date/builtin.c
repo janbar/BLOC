@@ -75,8 +75,10 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
   const char *ex;
   size_t len;
   int want_century = 0, century = 0, relyear = 0;
-  while (*f) {
-    if (*f != '%') {
+  while (*f)
+  {
+    if (*f != '%')
+    {
       if (isspace(*f)) for (; *s && isspace(*s); s++);
       else if (*s != *f) return 0;
       else s++;
@@ -85,21 +87,28 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
     }
     f++;
     if (*f == '+') f++;
-    if (isdigit(*f)) {
+    if (isdigit(*f))
+    {
       char *new_f;
       w=strtoul(f, &new_f, 10);
       f = new_f;
-    } else {
+    }
+    else
+    {
       w=-1;
     }
     adj=0;
-    switch (*f++) {
-    case 'a': case 'A':
+    switch (*f++)
+    {
+    case 'a':
+    case 'A':
       dest = &tm->tm_wday;
       min = ABDAY_1;
       range = 7;
       goto symbolic_range;
-    case 'b': case 'B': case 'h':
+    case 'b':
+    case 'B':
+    case 'h':
       dest = &tm->tm_mon;
       min = ABMON_1;
       range = 12;
@@ -113,7 +122,8 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
       if (w<0) w=2;
       want_century |= 2;
       goto numeric_digits;
-    case 'd': case 'e':
+    case 'd':
+    case 'e':
       dest = &tm->tm_mday;
       min = 1;
       range = 31;
@@ -149,20 +159,23 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
       min = 0;
       range = 60;
       goto numeric_range;
-    case 'n': case 't':
+    case 'n':
+    case 't':
       for (; *s && isspace(*s); s++);
       break;
     case 'p':
       ex = nl_langinfo(AM_STR);
       len = strlen(ex);
-      if (!strncasecmp(s, ex, len)) {
+      if (!strncasecmp(s, ex, len))
+      {
         tm->tm_hour %= 12;
         s += len;
         break;
       }
       ex = nl_langinfo(PM_STR);
       len = strlen(ex);
-      if (!strncasecmp(s, ex, len)) {
+      if (!strncasecmp(s, ex, len))
+      {
         tm->tm_hour %= 12;
         tm->tm_hour += 12;
         s += len;
@@ -222,41 +235,44 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
       break;
     default:
       return 0;
-    numeric_range:
-      if (!isdigit(*s)) return 0;
-      *dest = 0;
-      for (i=1; i<=min+range && isdigit(*s); i*=10)
-        *dest = *dest * 10 + *s++ - '0';
-      if (*dest - min >= (unsigned)range) return 0;
-      *dest -= adj;
-      goto update;
-    numeric_digits:
-      neg = 0;
-      if (*s == '+') s++;
-      else if (*s == '-') neg=1, s++;
-      if (!isdigit(*s)) return 0;
-      for (*dest=i=0; i<w && isdigit(*s); i++)
-        *dest = *dest * 10 + *s++ - '0';
-      if (neg) *dest = -*dest;
-      *dest -= adj;
-      goto update;
-    symbolic_range:
-      for (i=2*range-1; i>=0; i--) {
-        ex = nl_langinfo(min+i);
-        len = strlen(ex);
-        if (strncasecmp(s, ex, len)) continue;
-        s += len;
-        *dest = i % range;
-        break;
-      }
-      if (i<0) return 0;
-      goto update;
-    update:
-      //FIXME
-      ;
     }
+    continue;
+    
+numeric_range:
+    if (!isdigit(*s)) return 0;
+    *dest = 0;
+    for (i=1; i<=min+range && isdigit(*s); i*=10)
+      *dest = *dest * 10 + *s++ - '0';
+    if (*dest - min >= (unsigned)range) return 0;
+    *dest -= adj;
+    continue;
+
+numeric_digits:
+    neg = 0;
+    if (*s == '+') s++;
+    else if (*s == '-') neg=1, s++;
+    if (!isdigit(*s)) return 0;
+    for (*dest=i=0; i<w && isdigit(*s); i++)
+      *dest = *dest * 10 + *s++ - '0';
+    if (neg) *dest = -*dest;
+    *dest -= adj;
+    continue;
+
+symbolic_range:
+    for (i=2*range-1; i>=0; i--)
+    {
+      ex = nl_langinfo(min+i);
+      len = strlen(ex);
+      if (strncasecmp(s, ex, len)) continue;
+      s += len;
+      *dest = i % range;
+      break;
+    }
+    if (i<0) return 0;
   }
-  if (want_century) {
+
+  if (want_century)
+  {
     tm->tm_year = relyear;
     if (want_century & 2) tm->tm_year += century * 100 - 1900;
     else if (tm->tm_year <= 68) tm->tm_year += 100;
