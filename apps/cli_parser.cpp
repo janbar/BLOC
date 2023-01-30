@@ -358,10 +358,10 @@ static void print_btml(const void * buf, unsigned len)
   const char * cur = (const char *)buf;
   char pc = 0;
   char c;
-  while (len > 0 && (c = *cur) != 0)
+  while (len > 0)
   {
-    ++cur;
-    --len;
+    if ((c = *cur) == 0)
+      break;
     if (pc == '$')
     {
       switch (c)
@@ -392,6 +392,9 @@ static void print_btml(const void * buf, unsigned len)
     }
     else
       pc = c;
+
+    ++cur;
+    --len;
   }
   if (pc != 0)
     fputc(pc, STDOUT);
