@@ -1,0 +1,36 @@
+name: Sonar
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    types: [opened, synchronize, reopened]
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Prepare Sonar scanner
+        run: |
+            wget -nv https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.1.2450-linux.zip
+            unzip -q sonar-scanner-cli-4.6.1.2450-linux.zip -d $HOME/.sonar/
+            echo "$HOME/.sonar/sonar-scanner-4.6.1.2450-linux/bin/" >> $GITHUB_PATH
+            wget -nv https://sonarcloud.io/static/cpp/build-wrapper-linux-x86.zip
+            unzip -q build-wrapper-linux-x86.zip -d $HOME/.sonar/
+            echo "$HOME/.sonar/build-wrapper-linux-x86" >> $GITHUB_PATH
+      - name: Configure build
+        run: "cmake -B build -Wno-dev -DCMAKE_BUILD_TYPE=Debug"
+      - name: Build project
+        run:  build-wrapper-linux-x86-64 --out-dir sonar-build-output cmake --build build
+      - name: Run Sonar scanner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner -Dsonar.cfamily.build-wrapper-output=sonar-build-output -Dsonar.login=$SONAR_TOKEN
+
