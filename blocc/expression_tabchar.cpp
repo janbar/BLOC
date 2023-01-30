@@ -27,8 +27,9 @@ void TabcharExpression::outputTabchar(const TabChar& v, FILE * _stdout, unsigned
 {
   unsigned idx = 0, lno = 0;
   size_t sz = v.size();
-  while (idx < sz && lno++ < max_lines)
+  while (idx < sz && lno < max_lines)
   {
+    ++lno;
     fprintf(_stdout, "%08X:  ", idx);
     char str[24];
     int i;

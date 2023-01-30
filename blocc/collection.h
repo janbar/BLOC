@@ -44,13 +44,13 @@ public:
   : v(), _decl(decl) { _type = _decl.make_type(level); }
 
   Collection(const Collection& t);
-  Collection(Collection&& t)
+  Collection(Collection&& t) noexcept
   : v(std::move(t.v)), _decl(std::move(t._decl)), _type(t._type) { }
 
   const Type& table_type() const { return _type; }
   const Tuple::Decl& table_decl() const { return _decl; }
 
-  void swap(Collection& t);
+  void swap(Collection& t) noexcept;
   void clear();
   void reserve(unsigned n) { v.reserve(n) ; }
 

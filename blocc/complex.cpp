@@ -51,7 +51,7 @@ Complex::Complex(const Complex& c)
   *_refcount += 1;
 }
 
-Complex::Complex(Complex&& c)
+Complex::Complex(Complex&& c) noexcept
 : _refcount(c._refcount)
 , _type(c._type)
 , _instance(c._instance)
@@ -92,7 +92,7 @@ bool Complex::CTOR(int ctor_id, Context& ctx, const std::vector<Expression*>& ar
   return (_instance ? true : false);
 }
 
-void Complex::swap(Complex& c)
+void Complex::swap(Complex& c) noexcept
 {
   int * tmp_ref = _refcount;
   void * tmp_ptr = _instance;
@@ -105,7 +105,7 @@ void Complex::swap(Complex& c)
   c._type = tmp_typ;
 }
 
-void Complex::swap(Complex&& c)
+void Complex::swap(Complex&& c) noexcept
 {
   _refcount = c._refcount;
   _instance = c._instance;

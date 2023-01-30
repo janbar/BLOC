@@ -49,15 +49,15 @@ public:
 
   Complex(const Complex& c);
 
-  Complex(Complex&& c);
+  Complex(Complex&& c) noexcept;
 
   Complex& operator=(const Complex& c);
 
   bool CTOR(int ctor_id, Context& ctx, const std::vector<Expression*>& args);
 
-  void swap(Complex& c);
+  void swap(Complex& c) noexcept;
 
-  void swap(Complex&& c);
+  void swap(Complex&& c) noexcept;
 
   Type::TypeMinor typeId() const { return _type.minor(); }
 

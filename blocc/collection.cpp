@@ -33,7 +33,7 @@ Collection::Collection(const Collection& t)
     v.push_back(e->cloneNew());
 }
 
-void Collection::swap(Collection& t)
+void Collection::swap(Collection& t) noexcept
 {
   assert(_type == t._type);
   v.swap(t.v);
