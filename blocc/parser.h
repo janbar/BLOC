@@ -111,8 +111,10 @@ public:
    */
   void clear();
 
-  bool syntaxOnly() const { return _syntaxOnly; }
   bool popAny(TokenPtr& token);
+
+  void trace(bool b) { _trace = b; }
+  bool semantic() const { return _semantic; }
 
 private:
   explicit Parser(Context& ctx) : _ctx(ctx) { }
@@ -126,11 +128,10 @@ private:
   void state(STATE state) { _state = state; }
   bool init_scanner(void * reader_hdl, TOKEN_READER reader);
   void close_scanner();
-  void trace(bool b) { _trace = b; }
   bool next_token(TokenPtr& token);
 
   bool _trace = false;      ///< forward token string to stderr
-  bool _syntaxOnly = false; ///< flag for semantic analyze only
+  bool _semantic = true;    ///< enable/disable semantic analyze
 };
 
 }

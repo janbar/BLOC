@@ -49,7 +49,7 @@ Expression * ParseExpression::expression(Parser& p, Context& ctx)
 bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p, Context& ctx)
 {
   const Type& exp_type = exp->type(ctx);
-  return p.syntaxOnly() || ///< done semantic analyze only
+  return !p.semantic() ||
           (exp_type == type ||
           (exp_type.level() == type.level() && (
             (exp_type == Type::NUMERIC && type == Type::INTEGER) ||
@@ -68,7 +68,7 @@ Expression * ParseExpression::assertType(Expression * exp, const Type& type, Par
 
 Expression * ParseExpression::assertTypeUniform(Expression * exp, const Type& type, Parser& p, Context& ctx, bool deleteOnFailure /*= true*/)
 {
-  if (p.syntaxOnly() || exp->type(ctx) == type)
+  if (!p.semantic() || exp->type(ctx) == type)
     return exp;
   if (deleteOnFailure) delete exp;
   throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str());
