@@ -27,7 +27,7 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a array of value.
  */
-class CollectionExpression : public StaticExpression
+class CollectionExpression : public SwappableExpression<CollectionExpression>
 {
 private:
 
@@ -37,8 +37,8 @@ public:
 
   virtual ~CollectionExpression() { }
 
-  explicit CollectionExpression(const Collection& a) : StaticExpression(), v(a) { }
-  explicit CollectionExpression(Collection &&a) : StaticExpression(), v(std::move(a)) { }
+  explicit CollectionExpression(const Collection& a) : v(a) { }
+  explicit CollectionExpression(Collection &&a) : v(std::move(a)) { }
 
   const Type& type(Context& ctx) const override { return v.table_type(); }
 
@@ -63,9 +63,9 @@ public:
 
   Collection& refCollection() override { return v; }
 
-  void swap(StaticExpression& e) override
+  void swap(CollectionExpression& e) noexcept override
   {
-    v.swap(e.refCollection());
+    v.swap(e.v);
   }
 
   CollectionExpression * swapNew() override

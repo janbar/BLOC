@@ -180,7 +180,7 @@ StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&
   else
   {
     /* swap */
-    _storage[symbol.id]->swap(e);
+    _storage[symbol.id]->_swap(e);
   }
   return *_storage[symbol.id];
 }

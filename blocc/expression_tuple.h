@@ -28,7 +28,7 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a tuple of value.
  */
-class TupleExpression : public StaticExpression
+class TupleExpression : public SwappableExpression<TupleExpression>
 {
 private:
 
@@ -40,8 +40,8 @@ public:
 
   virtual ~TupleExpression() { }
 
-  explicit TupleExpression(const Tuple& a) : StaticExpression(), v(a) { }
-  explicit TupleExpression(Tuple &&a) : StaticExpression(), v(std::move(a)) { }
+  explicit TupleExpression(const Tuple& a) : v(a) { }
+  explicit TupleExpression(Tuple &&a) : v(std::move(a)) { }
 
   const Type& type(Context& ctx) const override { return v.tuple_type(); }
 
@@ -65,9 +65,9 @@ public:
 
   Tuple& refTuple() override { return v; }
 
-  void swap(StaticExpression& e) override
+  void swap(TupleExpression& e) noexcept override
   {
-    v.swap(e.refTuple());
+    v.swap(e.v);
   }
 
   TupleExpression * swapNew() override

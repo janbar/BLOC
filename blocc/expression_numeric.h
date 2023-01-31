@@ -28,7 +28,7 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a numeric value.
  */
-class NumericExpression : public StaticExpression
+class NumericExpression : public SwappableExpression<NumericExpression>
 {
 private:
 
@@ -39,7 +39,7 @@ public:
 
   virtual ~NumericExpression() { }
 
-  explicit NumericExpression(double a) : StaticExpression(), v(a) { }
+  explicit NumericExpression(double a) : v(a) { }
 
   const Type& type(Context& ctx) const override
   {
@@ -88,10 +88,10 @@ public:
 
   double& refNumeric() override { return v; }
 
-  void swap(StaticExpression& e) override
+  void swap(NumericExpression& e) noexcept override
   {
-    double tmp = e.refNumeric();
-    e.refNumeric() = v;
+    double tmp = e.v;
+    e.v = v;
     v = tmp;
   }
 

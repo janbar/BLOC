@@ -28,7 +28,7 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a literal value.
  */
-class LiteralExpression : public StaticExpression
+class LiteralExpression : public SwappableExpression<LiteralExpression>
 {
 private:
 
@@ -39,9 +39,9 @@ public:
 
   virtual ~LiteralExpression() { }
 
-  LiteralExpression() : StaticExpression() { }
-  explicit LiteralExpression(const std::string& a) : StaticExpression(), v(a) { }
-  explicit LiteralExpression(std::string &&a) : StaticExpression(), v(std::move(a)) { }
+  LiteralExpression() { }
+  explicit LiteralExpression(const std::string& a) : v(a) { }
+  explicit LiteralExpression(std::string &&a) : v(std::move(a)) { }
 
   const Type& type(Context& ctx) const override
   {
@@ -74,9 +74,9 @@ public:
 
   std::string& refLiteral() override { return v; }
 
-  void swap(StaticExpression& e) override
+  void swap(LiteralExpression& e) noexcept override
   {
-    v.swap(e.refLiteral());
+    v.swap(e.v);
   }
 
   LiteralExpression * swapNew() override

@@ -28,7 +28,7 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a boolean value.
  */
-class BooleanExpression : public StaticExpression
+class BooleanExpression : public SwappableExpression<BooleanExpression>
 {
 private:
 
@@ -41,7 +41,7 @@ public:
 
   virtual ~BooleanExpression() { }
 
-  explicit BooleanExpression(bool a) : StaticExpression(), v(a) { }
+  explicit BooleanExpression(bool a) : v(a) { }
 
   const Type& type(Context& ctx) const override
   {
@@ -71,10 +71,10 @@ public:
 
   bool& refBoolean() override { return v; }
 
-  void swap(StaticExpression& e) override
+  void swap(BooleanExpression& e) noexcept override
   {
-    bool tmp = e.refBoolean();
-    e.refBoolean() = v;
+    bool tmp = e.v;
+    e.v = v;
     v = tmp;
   }
 

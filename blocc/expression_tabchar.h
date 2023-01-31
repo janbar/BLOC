@@ -28,7 +28,7 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a char array value.
  */
-class TabcharExpression : public StaticExpression
+class TabcharExpression : public SwappableExpression<TabcharExpression>
 {
 private:
 
@@ -39,9 +39,8 @@ public:
 
   virtual ~TabcharExpression() { }
 
-  TabcharExpression() : StaticExpression() { }
-  explicit TabcharExpression(const TabChar& a) : StaticExpression(), v(a) { }
-  explicit TabcharExpression(TabChar &&a) : StaticExpression(), v(std::move(a)) { }
+  explicit TabcharExpression(const TabChar& a) : v(a) { }
+  explicit TabcharExpression(TabChar &&a) : v(std::move(a)) { }
 
   const Type& type(Context& ctx) const override
   {
@@ -70,9 +69,9 @@ public:
 
   TabChar& refTabchar() override { return v; }
 
-  void swap(StaticExpression& e) override
+  void swap(TabcharExpression& e) noexcept override
   {
-    v.swap(e.refTabchar());
+    v.swap(e.v);
   }
 
   TabcharExpression * swapNew() override

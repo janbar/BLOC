@@ -31,6 +31,9 @@ namespace bloc
  */
 class StaticExpression : public Expression
 {
+  friend class Context;
+  virtual void _swap(StaticExpression& e) noexcept = 0;
+
 protected:
   bool _safety = false;
 
@@ -96,9 +99,16 @@ public:
     throw RuntimeError(EXC_RT_NOT_COMPLEX);
   }
 
-  virtual void swap(StaticExpression& e) = 0;
   virtual StaticExpression * swapNew() = 0;
   virtual StaticExpression * cloneNew() const = 0;
+};
+
+/* implement CRTP */
+template<class T> class SwappableExpression : public StaticExpression
+{
+  void _swap(StaticExpression& e) noexcept override { swap(*static_cast<T*>(&e)); }
+public:
+  virtual void swap(T& e) noexcept = 0;
 };
 
 }

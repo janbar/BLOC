@@ -28,7 +28,7 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a complex value.
  */
-class ComplexExpression : public StaticExpression
+class ComplexExpression : public SwappableExpression<ComplexExpression>
 {
 private:
 
@@ -39,8 +39,8 @@ public:
 
   virtual ~ComplexExpression() { }
 
-  explicit ComplexExpression(Complex& c) : StaticExpression(), v(c) { }
-  explicit ComplexExpression(Complex&& c) : StaticExpression(), v(std::move(c)) { }
+  explicit ComplexExpression(Complex& c) : v(c) { }
+  explicit ComplexExpression(Complex&& c) : v(std::move(c)) { }
 
   const Type& type(Context& ctx) const override
   {
@@ -65,9 +65,9 @@ public:
 
   Complex& refComplex() override { return v; }
 
-  void swap(StaticExpression& e) override
+  void swap(ComplexExpression& e) noexcept override
   {
-    v.swap(e.refComplex());
+    v.swap(e.v);
   }
 
   ComplexExpression * swapNew() override
