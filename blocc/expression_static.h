@@ -96,7 +96,7 @@ public:
     throw RuntimeError(EXC_RT_NOT_COMPLEX);
   }
 
-  virtual void swap(StaticExpression& e) noexcept(false) = 0;
+  virtual void swap(StaticExpression& e) = 0;
   virtual StaticExpression * swapNew() = 0;
   virtual StaticExpression * cloneNew() const = 0;
 };
