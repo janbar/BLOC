@@ -19,8 +19,7 @@
 
 /* Provide nl_langinfo from scratch */
 
-char *
-nl_langinfo (nl_item item)
+char *__nl_langinfo (nl_item item)
 {
   switch (item)
     {

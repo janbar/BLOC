@@ -76,8 +76,11 @@ typedef int nl_item;
 # define ERA_T_FMT   10050
 # define ALT_DIGITS  10051
 
-char *
-nl_langinfo (nl_item item);
+#ifdef nl_langinfo
+#undef nl_langinfo
+#endif
+#define nl_langinfo __nl_langinfo
+char *__nl_langinfo (nl_item item);
 
 #ifdef __cplusplus
 }
