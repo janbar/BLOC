@@ -1,0 +1,14 @@
+usage: bloc [options] [file] [args ...]
+
+Without specifying a file, or an argument, the interactive mode will be
+started.
+
+  --help, -h         print this usage and exit
+  --cli              force interactive mode
+  --color            force colored output
+  --expr             process only the expression to follow
+  --out=FILE         write the program output to FILE
+  --debug            enable debug messages
+
+When running a program or interactive mode, all arguments passed in the
+command line will be stored in the context as variables $0..$n.

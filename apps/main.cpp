@@ -26,12 +26,14 @@
 #include <blocc/parser.h>
 #include <blocc/exception_parse.h>
 #include <blocc/exception_runtime.h>
+#include <blocc/string_reader.h>
 #include <blocc/plugin_manager.h>
 #include <blocc/debug.h>
 
 #include "main_options.h"
 #include "read_file.h"
 #include "cli_parser.h"
+#include "usage.h"
 
 #if (defined(_WIN32) || defined(_WIN64))
 #define __WINDOWS__
@@ -78,7 +80,11 @@ int main(int argc, char **argv) {
   const char * bad = getCmd(argv + 1, argv + argc, options, prog);
   if (bad != nullptr)
   {
-    PRINT1("Unknown command option: %s\n", bad);
+    std::string tmp(bad);
+    if (tmp == "-h" || tmp == "--help")
+      fwrite(usage_txt, 1, usage_txt_len, STDOUT);
+    else
+      PRINT1("Unknown command option: %s\n", bad);
     return EXIT_FAILURE;
   }
 
@@ -90,10 +96,36 @@ int main(int argc, char **argv) {
       bloc::DBGLevel(DBG_DEBUG);
   }
 
+  /* run command-line */
   if (options.docli || prog.empty())
   {
     cli_parser(options, prog);
   }
+  /* processing expression */
+  else if (options.doexp)
+  {
+    bloc::StringReader reader;
+    for (auto& arg : prog)
+      reader.append(arg).append(" ");
+    /* mark the end of expression: could be semi-colon or nl */
+    reader.append(";");
+    bloc::Context ctx(::fileno(STDOUT), ::fileno(STDERR));
+    bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &reader, bloc::StringReader::read_input);
+    try
+    {
+      bloc::Expression * exp = p->parseExpression();
+      ctx.saveReturned(exp);
+      ret = output(ctx);
+    }
+    catch (bloc::Error& ee)
+    {
+      ret = false;
+      fprintf(ctx.ctxerr(), "Error: %s\n", ee.what());
+      fflush(ctx.ctxerr());
+    }
+    delete p;
+  }
+  /* running program */
   else
   {
     FILE * progfile;

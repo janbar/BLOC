@@ -28,6 +28,7 @@ struct MainOptions
   bool parse = false;                   /* only parse, the program won't be run */
   bool docli = false;                   /* run CLI, arguments to follow will be loaded into the context */
   bool color = false;                   /* enable colored output */
+  bool doexp = false;                   /* execute the expression to follow */
   std::string dbg_hints;                /* debug hints */
   std::string file_sout;                /* forward output stream */
 };

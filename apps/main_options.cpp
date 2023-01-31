@@ -54,6 +54,8 @@ const char * getCmd(char **begin, char **end, MainOptions& options, std::vector<
         options.docli = true;
       else if (cmdOption(*it, "--color", nullptr))
         options.color = true;
+      else if (cmdOption(*it, "--expr", nullptr))
+        options.doexp = true;
       else if (cmdOption(*it, "--out", &options.file_sout))
         continue;
       else
