@@ -38,8 +38,8 @@ class Complex
 
 public:
 
-  bool operator==(const Complex& c) { return (this->_instance == c._instance); }
-  bool operator!=(const Complex& c) { return !(*this == c); }
+  bool operator==(const Complex& c) const { return (this->_instance == c._instance); }
+  bool operator!=(const Complex& c) const { return !(*this == c); }
 
   Complex() { _refcount = new int(1); }
 
