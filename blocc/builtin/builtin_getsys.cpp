@@ -31,7 +31,7 @@ namespace bloc
 
 std::string& GETSYSExpression::literal(Context & ctx) const
 {
-  std::string& rv = _args[0]->literal(ctx);
+  const std::string& rv = _args[0]->literal(ctx);
   if (rv == "compatible")
     return ctx.allocate(std::to_string(ctx.compatible()));
   if (rv == "language")

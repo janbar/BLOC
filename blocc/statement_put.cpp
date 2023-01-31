@@ -41,7 +41,7 @@ PUTStatement::~PUTStatement()
 
 const Statement * PUTStatement::doit(Context& ctx) const
 {
-  for (auto exp : _args)
+  for (const auto exp : _args)
   {
     const Type& exp_type = exp->type(ctx);
     if (exp_type.level() == 0)
@@ -89,7 +89,7 @@ void PUTStatement::unparse(Context& ctx, FILE * out) const
   fputs(Statement::KEYWORDS[keyword()], out);
   if (_args.empty())
     return;
-  for (auto exp : _args)
+  for (const auto exp : _args)
   {
     fputs(" ", out);
     fputs(exp->unparse(ctx).c_str(), out);

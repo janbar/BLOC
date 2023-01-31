@@ -23,7 +23,8 @@
 void read_file(void * handle, char * buf, int * len, int max_size)
 {
   FILE * file = static_cast<FILE*>(handle);
-  int ret, read = 0;
+  int read = 0;
+  int ret;
   while ((ret = ::fread(&buf[read], sizeof(char), 1, file)) == 1)
   {
     if (read == max_size)

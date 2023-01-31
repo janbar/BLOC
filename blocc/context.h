@@ -71,7 +71,7 @@ public:
 
   StaticExpression * loadVariable(const std::string& symbolName)
   {
-    Symbol * symbol = findSymbol(symbolName);
+    const Symbol * symbol = findSymbol(symbolName);
     if (symbol)
       return loadVariable(*symbol);
     return nullptr;
@@ -256,9 +256,9 @@ public:
    *     Expression * e = Parser.parseExpression();
    *     result = e->literal(ctx);
    *     delete e;
-   *     ctx.purgeWorkingMemory();  //run the purge after copying result//
+   *     ctx.purgeWorkingMemory();  --> run the purge after copying result
    *   } catch (RuntimeError& re) {
-   *     ctx.purgeWorkingMemory();  //run the purge on exception//
+   *     ctx.purgeWorkingMemory();  --> run the purge on exception
    *     ...
    *   }
    *
@@ -274,7 +274,7 @@ public:
    *       ...
    *     }
    *   } catch (RuntimeError& re) {
-   *     ctx.purgeWorkingMemory();  //run the purge on exception//
+   *     ctx.purgeWorkingMemory();  --> run the purge on exception
    *     ...
    *   }
    */

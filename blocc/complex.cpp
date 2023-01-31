@@ -45,16 +45,16 @@ Complex::~Complex()
 
 Complex::Complex(const Complex& c)
 : _refcount(c._refcount)
-, _type(c._type)
 , _instance(c._instance)
+, _type(c._type)
 {
   *_refcount += 1;
 }
 
 Complex::Complex(Complex&& c) noexcept
 : _refcount(c._refcount)
-, _type(c._type)
 , _instance(c._instance)
+, _type(c._type)
 {
   c._refcount = nullptr;
   c._type = Type(Type::COMPLEX);

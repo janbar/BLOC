@@ -40,7 +40,7 @@ Tuple::~Tuple()
 Tuple::Tuple(container_t&& items)
 {
   _decl.reserve(items.size());
-  for (StaticExpression * e : items)
+  for (const StaticExpression * e : items)
     _decl.push_back(e->refType());
   _type = _decl.make_type(0);
   v.swap(items);
@@ -50,7 +50,7 @@ Tuple::Tuple(const Tuple& t) : v(), _decl(t._decl), _type(t._type)
 {
   /* clone elements */
   v.reserve(t.size());
-  for (StaticExpression * e : t.v)
+  for (const StaticExpression * e : t.v)
     v.push_back(e->cloneNew());
 }
 

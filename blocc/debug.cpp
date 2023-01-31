@@ -63,7 +63,7 @@ static inline void __dbg_setlevel(debug_ctx_t* ctx, int level)
  * \param fmt a printf style format string for the message
  * \param ... arguments to the format
  */
-static inline void __dbg(debug_ctx_t* ctx, int level, const char* fmt, va_list ap)
+static inline void __dbg(const debug_ctx_t* ctx, int level, const char* fmt, va_list ap)
 {
   if (ctx != NULL && level <= ctx->cur_level)
   {

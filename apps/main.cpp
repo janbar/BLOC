@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
     /* load args values into context as variables $0..$n */
     for (int i = 0; i < prog.size(); ++i)
     {
-      bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
+      const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
       ctx.storeVariable(symbol, bloc::LiteralExpression(prog[i]));
     }
     bloc::Executable * exec = nullptr;

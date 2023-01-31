@@ -47,7 +47,7 @@ std::string ComplexCTORExpression::unparse(Context& ctx) const
   const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_type.minor());
   std::string sb(plug.interface.name);
   sb.append("(");
-  for (Expression * e : _args)
+  for (const Expression * e : _args)
     sb.append(e->unparse(ctx)).append(1, Parser::CHAIN);
   if (sb.back() == Parser::CHAIN)
     sb.back() = ')';

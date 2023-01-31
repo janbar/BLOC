@@ -25,7 +25,7 @@
 namespace bloc
 {
 
-class Symbol : public Type, TupleDecl
+class Symbol : public Type, public TupleDecl
 {
 public:
   const unsigned id;

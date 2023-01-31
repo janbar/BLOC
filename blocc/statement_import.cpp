@@ -58,7 +58,7 @@ void IMPORTStatement::loadModule(Context& ctx)
   }
   else
   {
-    std::string& path = _exp->literal(ctx);
+    const std::string& path = _exp->literal(ctx);
     if ((type_id = PluginManager::instance().importModuleByPath(path.c_str())) == 0)
       throw ParseError(EXC_PARSE_IMPORT_FAILED_S, path.c_str());
   }

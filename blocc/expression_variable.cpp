@@ -27,11 +27,11 @@ namespace bloc
 
 const Type& VariableExpression::type(Context& ctx) const {
   /* retrieve the type of the stored expression at runtime */
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr) {
     /* memory pointed by this variable has not been populated yet */
     /* so return the type fixed during semantic analysis */
-    Symbol * s = ctx.findSymbol(_symbol.name);
+    const Symbol * s = ctx.findSymbol(_symbol.name);
     if (s == nullptr)
       throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
     return *s;
@@ -40,49 +40,49 @@ const Type& VariableExpression::type(Context& ctx) const {
 }
 
 bool VariableExpression::boolean(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->boolean(ctx);
 }
 
 int64_t VariableExpression::integer(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->integer(ctx);
 }
 
 double VariableExpression::numeric(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->numeric(ctx);
 }
 
 std::string& VariableExpression::literal(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->literal(ctx);
 }
 
 TabChar& VariableExpression::tabchar(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->tabchar(ctx);
 }
 
 Collection& VariableExpression::collection(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->collection(ctx);
 }
 
 Tuple& VariableExpression::tuple(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->tuple(ctx);
@@ -90,11 +90,11 @@ Tuple& VariableExpression::tuple(Context& ctx) const {
 
 const Tuple::Decl& VariableExpression::tuple_decl(Context& ctx) const
 {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr) {
     /* memory pointed by this variable has not been populated yet */
     /* so return the decl fixed during semantic analysis */
-    Symbol * s = ctx.findSymbol(_symbol.name);
+    const Symbol * s = ctx.findSymbol(_symbol.name);
     if (s == nullptr)
       throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
     return s->tuple_decl();
@@ -103,7 +103,7 @@ const Tuple::Decl& VariableExpression::tuple_decl(Context& ctx) const
 }
 
 Complex VariableExpression::complex(Context& ctx) const {
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
   return z->complex(ctx);
@@ -111,11 +111,11 @@ Complex VariableExpression::complex(Context& ctx) const {
 
 std::string VariableExpression::typeName(Context& ctx) const {
   /* retrieve the type of the stored expression at runtime */
-  StaticExpression * z = ctx.loadVariable(_symbol);
+  const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr) {
     /* memory pointed by this variable has not been populated yet */
     /* so return the type fixed during semantic analysis */
-    Symbol * s = ctx.findSymbol(_symbol.name);
+    const Symbol * s = ctx.findSymbol(_symbol.name);
     if (s == nullptr)
       throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
     switch (s->major())
@@ -135,7 +135,7 @@ VariableExpression * VariableExpression::parse(Parser& p, Context& ctx, const st
 {
   std::string name(symbol_name);
   std::transform(name.begin(), name.end(), name.begin(), ::toupper);
-  Symbol * symbol = ctx.findSymbol(name);
+  const Symbol * symbol = ctx.findSymbol(name);
   if (!symbol)
     throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, name.c_str());
   return new VariableExpression(*symbol);

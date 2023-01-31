@@ -28,7 +28,7 @@ namespace bloc
 
 std::string& REPLACEExpression::literal(Context & ctx) const
 {
-  std::string& a = _args[0]->literal(ctx);
+  const std::string& a = _args[0]->literal(ctx);
   const std::string& b = _args[1]->literal(ctx);
   const std::string& c = _args[2]->literal(ctx);
   std::string& rv = ctx.allocate(std::string());

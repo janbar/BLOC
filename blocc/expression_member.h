@@ -66,9 +66,9 @@ public:
   MemberExpression(BTMETHOD op, Expression * e, std::vector<Expression*>&& args)
   : Expression(), _builtin(op), _exp(e), _args(std::move(args)) { }
 
-  virtual std::string unparse(Context& ctx) const override;
+  std::string unparse(Context& ctx) const override;
 
-  virtual std::string toString(Context& ctx) const override
+  std::string toString(Context& ctx) const override
   {
     return KEYWORDS[_builtin];
   }

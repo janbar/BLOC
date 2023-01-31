@@ -29,7 +29,7 @@ namespace bloc
 
 TUPLEExpression::TUPLEExpression(std::vector<Expression*>&& args, Context& ctx) : BuiltinExpression(FUNC_TUPLE, std::move(args))
 {
-  for (Expression * e : _args)
+  for (const Expression * e : _args)
     _decl.push_back(e->type(ctx));
   _type = _decl.make_type(0);
 }
@@ -38,7 +38,7 @@ Tuple& TUPLEExpression::tuple(Context & ctx) const
 {
   /* build items, then move */
   Tuple::container_t items;
-  for (Expression * a : _args)
+  for (const Expression * a : _args)
   {
     const Type& arg_type = a->type(ctx);
     switch(arg_type.major())

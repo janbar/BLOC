@@ -133,7 +133,7 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
     g_has_color = true;
   else if (::isatty(STDOUT_FILENO))
   {
-    char * buf = ::getenv("TERM");
+    const char * buf = ::getenv("TERM");
     if (buf != nullptr)
     {
       std::string env(buf);
@@ -147,7 +147,7 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   /* load args values into context as variables $0..$n */
   for (int i = 0; i < args.size(); ++i)
   {
-    bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
+    const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
     ctx.storeVariable(symbol, bloc::LiteralExpression(args[i]));
   }
   bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &read_input);
@@ -158,13 +158,13 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
 
   while (p->state() != bloc::Parser::ABORT)
   {
-    bloc::Statement * s = nullptr;
+    const bloc::Statement * s = nullptr;
     bloc::TokenPtr t;
 
     try { t = p->front(); }
     catch (bloc::ParseError& ee)
     {
-      /* silent */
+      /* silence EOF */
       break;
     }
 
@@ -299,7 +299,7 @@ static void output_cli(bloc::Context& ctx)
         }
         case bloc::Type::TABCHAR:
         {
-          bloc::TabChar& r = exp->tabchar(ctx);
+          const bloc::TabChar& r = exp->tabchar(ctx);
           bloc::TabcharExpression::outputTabchar(r, STDOUT, 1);
           break;
         }
@@ -314,7 +314,7 @@ static void output_cli(bloc::Context& ctx)
       }
       else
       {
-        bloc::Collection& c = exp->collection(ctx);
+        const bloc::Collection& c = exp->collection(ctx);
         PRINT(exp->typeName(ctx).append(1, '[').append(std::to_string(c.size())).append(1, ']').c_str());
         PRINT("\n");
       }
@@ -343,8 +343,7 @@ static void print_table(const std::set<std::string>& list, int colw, int coln)
   auto idx = list.cbegin();
   while (idx != list.cend())
   {
-    int i;
-    for (i = 0; i < coln && idx != list.cend(); ++i, ++idx)
+    for (int i = 0; i < coln && idx != list.cend(); ++i, ++idx)
       PRINT2("%*s", colw, idx->c_str());
     PRINT("\n\n");
   }

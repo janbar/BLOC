@@ -25,11 +25,11 @@ namespace bloc
 {
 
 Collection::Collection(const Collection& t)
-: v(), _type(t._type), _decl(t._decl)
+: v(), _decl(t._decl), _type(t._type)
 {
   /* clone elements */
   v.reserve(t.size());
-  for (StaticExpression * e : t.v)
+  for (const StaticExpression * e : t.v)
     v.push_back(e->cloneNew());
 }
 

@@ -74,7 +74,7 @@ Collection& TABExpression::collection(Context & ctx) const
     }
     case Type::LITERAL:
     {
-      std::string& s = _args[1]->literal(ctx);
+      const std::string& s = _args[1]->literal(ctx);
       for (int i = 0; i < n; ++i)
         tab->push_back(new LiteralExpression(s));
       break;
@@ -88,7 +88,7 @@ Collection& TABExpression::collection(Context & ctx) const
     }
     case Type::TABCHAR:
     {
-      TabChar& r = _args[1]->tabchar(ctx);
+      const TabChar& r = _args[1]->tabchar(ctx);
       for (int i = 0; i < n; ++i)
         tab->push_back(new TabcharExpression(r));
       break;
@@ -106,7 +106,7 @@ Collection& TABExpression::collection(Context & ctx) const
   }
   else
   {
-    Collection& t = _args[1]->collection(ctx);
+    const Collection& t = _args[1]->collection(ctx);
     for (int i = 0; i < n; ++i)
       tab->push_back(new CollectionExpression(t));
   }

@@ -140,7 +140,7 @@ Collection& MemberINSERTExpression::collection(Context& ctx) const
     {
       /* inline clone */
       Collection::const_iterator it = rv.begin() + p;
-      for (StaticExpression * e : a)
+      for (const StaticExpression * e : a)
         it = rv.insert(it, e->cloneNew());
     }
     return rv;

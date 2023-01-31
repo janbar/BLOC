@@ -237,7 +237,7 @@ void Context::dumpVariables()
 {
   if (!_symbols.empty())
   {
-    for (auto& sym : _symbols)
+    for (const auto& sym : _symbols)
       describeSymbol(sym);
   }
   else
@@ -313,7 +313,7 @@ void Context::onRuntimeError()
 void Context::statWorkingMemory(size_t * count, size_t * size) const
 {
   *count = *size = 0;
-  for (auto e : _temporary_storage)
+  for (const auto e : _temporary_storage)
   {
     ++*count;
     *size += e->size();

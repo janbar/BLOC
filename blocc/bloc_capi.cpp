@@ -43,7 +43,7 @@ static bloc::StaticExpression*
 bloc_cast_as_static(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e)
 {
   bloc::Context * _ctx = reinterpret_cast<bloc::Context*>(ctx);
-  bloc::Expression * _exp = reinterpret_cast<bloc::Expression*>(e);
+  const bloc::Expression * _exp = reinterpret_cast<bloc::Expression*>(e);
   if (_exp->type(*_ctx).level() == 0)
   {
     switch (_exp->type(*_ctx).major())
@@ -303,7 +303,7 @@ bloc_literal(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, const char **buf)
 {
   try
   {
-    std::string& str = reinterpret_cast<bloc::Expression*>(e)->literal(*reinterpret_cast<bloc::Context*>(ctx));
+    const std::string& str = reinterpret_cast<bloc::Expression*>(e)->literal(*reinterpret_cast<bloc::Context*>(ctx));
     *buf = str.data();
     return bloc_true;
   }

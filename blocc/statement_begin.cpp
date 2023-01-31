@@ -40,7 +40,7 @@ BEGINStatement::~BEGINStatement()
   _catches.clear();
 }
 
-void BEGINStatement::docatch(RuntimeError& rt, Context& ctx) const
+void BEGINStatement::docatch(const RuntimeError& rt, Context& ctx) const
 {
   if (!_catches.empty())
   {
@@ -140,7 +140,7 @@ Executable * BEGINStatement::parse_catch(Parser& p, Context& ctx)
         break;
       /* parse the statement */
       p.push(t);
-      Statement * ss = ParseStatement::statement(p, ctx);
+      const Statement * ss = ParseStatement::statement(p, ctx);
       statements.push_back(ss);
     }
     /* requires at least one statement, even NOP */
@@ -177,7 +177,7 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
         break;
       /* parse the statement */
       p.push(t);
-      Statement * ss = ParseStatement::statement(p, ctx);
+      const Statement * ss = ParseStatement::statement(p, ctx);
       statements.push_back(ss);
     }
     if (t->text == KEYWORDS[STMT_EXCEPTION])

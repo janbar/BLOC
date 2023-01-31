@@ -128,7 +128,7 @@ Collection& MemberCONCATExpression::collection(Context& ctx) const
       }
       else
         /* inline clone */
-        for (StaticExpression * e : a)
+        for (const StaticExpression * e : a)
           rv.push_back(e->cloneNew());
     }
     return rv;

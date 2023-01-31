@@ -102,8 +102,8 @@ public:
 
   TokenPtr front();
   TokenPtr pop();
-  void push(TokenPtr& t);
-  void push_back(TokenPtr& t);
+  void push(const TokenPtr& t);
+  void push_back(const TokenPtr& t);
 
   /**
    * Clear the parser state. It should be called after ParseError to purge

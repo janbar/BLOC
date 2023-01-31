@@ -32,7 +32,7 @@ namespace bloc
 
 int64_t READExpression::integer(Context & ctx) const
 {
-  VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
+  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
   int64_t n = 1024;
   if (_args.size() > 1)
     n = _args[1]->integer(ctx);

@@ -31,7 +31,7 @@ namespace bloc
 std::string& GETENVExpression::literal(Context & ctx) const
 {
   std::string& rv = _args[0]->literal(ctx);
-  char * buf = ::getenv(rv.c_str());
+  const char * buf = ::getenv(rv.c_str());
   if (buf != nullptr)
   {
     if (_args[0]->isRvalue(ctx))

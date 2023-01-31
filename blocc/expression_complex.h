@@ -39,7 +39,7 @@ public:
 
   virtual ~ComplexExpression() { }
 
-  explicit ComplexExpression(Complex& c) : v(c) { }
+  explicit ComplexExpression(const Complex& c) : v(c) { }
   explicit ComplexExpression(Complex&& c) : v(std::move(c)) { }
 
   const Type& type(Context& ctx) const override

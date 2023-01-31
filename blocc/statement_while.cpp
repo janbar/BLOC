@@ -91,7 +91,7 @@ Executable * WHILEStatement::parse_clause(Parser& p, Context& ctx, Statement * i
         break;
       /* parse the statement */
       p.push(t);
-      Statement * ss = ParseStatement::statement(p, ctx);
+      const Statement * ss = ParseStatement::statement(p, ctx);
       statements.push_back(ss);
     }
     /* requires at least one statement, even NOP */

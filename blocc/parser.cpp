@@ -64,12 +64,12 @@ TokenPtr Parser::pop() {
   return t;
 }
 
-void Parser::push(TokenPtr& t) {
+void Parser::push(const TokenPtr& t) {
   _tokens.push_front(t);
   DBG(DBG_PROTO, "%s [%d] : %s\n", __FUNCTION__, t->code, t->text.c_str());
 }
 
-void Parser::push_back(TokenPtr& t) {
+void Parser::push_back(const TokenPtr& t) {
   _tokens.push_back(t);
 }
 

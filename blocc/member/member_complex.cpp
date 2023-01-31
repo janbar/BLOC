@@ -284,7 +284,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
           case PLUGIN_INOUT:
           {
             /* must be variable expression with same type */
-            VariableExpression * var = dynamic_cast<VariableExpression*>(args[a]);
+            const VariableExpression * var = dynamic_cast<VariableExpression*>(args[a]);
             found = (var != nullptr && ParseExpression::typeChecking(args[a], m_arg_type, p, ctx));
             break;
           }
