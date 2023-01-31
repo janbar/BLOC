@@ -45,7 +45,7 @@ PRINTStatement::~PRINTStatement()
 
 const Statement * PRINTStatement::doit(Context& ctx) const
 {
-  for (const auto exp : _args)
+  for (const Expression * exp : _args)
   {
     const Type& exp_type = exp->type(ctx);
     if (exp_type.level() == 0)
@@ -97,7 +97,7 @@ void PRINTStatement::unparse(Context& ctx, FILE * out) const
   fputs(Statement::KEYWORDS[keyword()], out);
   if (_args.empty())
     return;
-  for (const auto exp : _args)
+  for (const Expression * exp : _args)
   {
     fputs(" ", out);
     fputs(exp->unparse(ctx).c_str(), out);
