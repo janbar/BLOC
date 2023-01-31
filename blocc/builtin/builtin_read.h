@@ -42,6 +42,8 @@ public:
 
   int64_t integer(Context& ctx) const override;
 
+  double numeric(Context& ctx) const override { return (double) integer(ctx); }
+
   static READExpression * parse(Parser& p, Context& ctx);
 };
 

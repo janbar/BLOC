@@ -41,6 +41,8 @@ public:
 
   int64_t integer(Context& ctx) const override;
 
+  double numeric(Context& ctx) const override { return (double) integer(ctx); }
+
   static MemberCOUNTExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };
 
