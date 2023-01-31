@@ -24,13 +24,14 @@ void read_file(void * handle, char * buf, int * len, int max_size)
 {
   FILE * file = static_cast<FILE*>(handle);
   int read = 0;
-  int ret;
-  while ((ret = ::fread(&buf[read], sizeof(char), 1, file)) == 1)
+  while (read < max_size)
   {
-    if (read == max_size)
-      break;
-    if (buf[read++] == '\n')
-      break;
+    if (::fread(&buf[read], sizeof(char), 1, file) == 1)
+    {
+      if (buf[read++] != '\n')
+        continue;
+    }
+    break;
   }
   *len = read;
 }

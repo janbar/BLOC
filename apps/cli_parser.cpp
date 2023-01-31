@@ -74,10 +74,10 @@
 
 enum CMD
 {
-  CMD_NOTCMD = -1,
   CMD_EXIT = 0, CMD_CLEAR,    CMD_LIST,   CMD_LOAD,   CMD_SAVE,
   CMD_RUN,      CMD_DESC,     CMD_DUMP,   CMD_HELP,   CMD_EXPR,
   CMD_COPYR,    CMD_LICENSE,  CMD_SYSTEM,
+  CMD_unknown,
 };
 
 static const char * CMD_KEYWORDS[] =
@@ -85,6 +85,7 @@ static const char * CMD_KEYWORDS[] =
   "exit",       "clear",      "list",     "load",     "save",
   "run",        "desc",       "dump",     "help",     "=",
   "copyright",  "license",    "!",
+  "" /*unknown command*/,
 };
 
 typedef struct { const char * help; unsigned * text_len; unsigned char * text; }
@@ -246,7 +247,7 @@ static CMD find_cmd(const std::string& c)
     if (::strcmp(CMD_KEYWORDS[i], c.c_str()) == 0)
       return (CMD)i;
   }
-  return CMD_NOTCMD;
+  return CMD_unknown;
 }
 
 static void set_color(enum FG c)
@@ -479,7 +480,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
   CMD c = find_cmd(p.front()->text);
   switch (c)
   {
-  case CMD_NOTCMD:
+  case CMD_unknown:
     return 0;
   case CMD_EXIT:
     return (-1); /* QUIT */
