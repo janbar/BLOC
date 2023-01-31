@@ -357,7 +357,7 @@ const char * BuiltinExpression::HELPS[] = {
   /*READ  */  "returns the count of characters read from the input."
           "\nThe read value, including newline terminator, is stored into var with"
           "\na maximum of y characters. The 'string' variable var must be initialized"
-          "first."
+          "\nfirst."
           "\n\nread( var [, y] )",
   /*READLN*/  "returns the literal value read from the input."
           "\nThe value does not include the newline terminator. Optionally x contains"
