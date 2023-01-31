@@ -1,7 +1,7 @@
 
 # build module "file"
-file(GLOB bloc_file_SOURCES import_file.cpp)
-file(GLOB bloc_file_HEADERS import_file.h)
+file(GLOB bloc_file_SOURCES plugin_file.cpp)
+file(GLOB bloc_file_HEADERS plugin_file.h)
 
 add_library (bloc_file SHARED ${bloc_file_SOURCES})
 add_dependencies(bloc_file blocc)

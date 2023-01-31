@@ -34,13 +34,13 @@ endif()
 
 # build module "date"
 file(GLOB bloc_date_SOURCES
-  import_date.cpp
+  plugin_date.cpp
   nl_langinfo.c
   builtin.c
 )
 
 file(GLOB bloc_date_HEADERS
-  import_date.h
+  plugin_date.h
   langinfo.h
   builtin.h
 )

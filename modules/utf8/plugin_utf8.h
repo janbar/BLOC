@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef IMPORT_FILE_H_
-#define IMPORT_FILE_H_
+#ifndef PLUGIN_UTF8_H
+#define PLUGIN_UTF8_H
 
 #include <blocc/plugin.h>
 
@@ -26,11 +26,11 @@ namespace bloc
 namespace plugin
 {
 
-class FilePlugin : public PluginBase
+class UTF8Plugin : public PluginBase
 {
 public:
-  ~FilePlugin() { }
-  FilePlugin() = default;
+  ~UTF8Plugin() { }
+  UTF8Plugin() = default;
 
   void declareInterface(PLUGIN_INTERFACE * interface) override;
 
@@ -49,5 +49,5 @@ public:
 }
 }
 
-#endif /* IMPORT_FILE_H_ */
+#endif /* PLUGIN_UTF8_H */
 

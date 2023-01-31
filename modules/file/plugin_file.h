@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef IMPORT_DATE_H_
-#define IMPORT_DATE_H_
+#ifndef PLUGIN_FILE_H_
+#define PLUGIN_FILE_H_
 
 #include <blocc/plugin.h>
 
@@ -26,11 +26,11 @@ namespace bloc
 namespace plugin
 {
 
-class DatePlugin : public PluginBase
+class FilePlugin : public PluginBase
 {
 public:
-  ~DatePlugin() { }
-  DatePlugin() = default;
+  ~FilePlugin() { }
+  FilePlugin() = default;
 
   void declareInterface(PLUGIN_INTERFACE * interface) override;
 
@@ -49,5 +49,5 @@ public:
 }
 }
 
-#endif /* IMPORT_DATE_H_ */
+#endif /* PLUGIN_FILE_H_ */
 

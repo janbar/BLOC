@@ -16,7 +16,7 @@
  *
  */
 
-#include "import_file.h"
+#include "plugin_file.h"
 
 #include <cstdio>
 #include <cerrno>

@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef IMPORT_UTF8_H_
-#define IMPORT_UTF8_H_
+#ifndef PLUGIN_DATE_H_
+#define PLUGIN_DATE_H_
 
 #include <blocc/plugin.h>
 
@@ -26,11 +26,11 @@ namespace bloc
 namespace plugin
 {
 
-class UTF8Plugin : public PluginBase
+class DatePlugin : public PluginBase
 {
 public:
-  ~UTF8Plugin() { }
-  UTF8Plugin() = default;
+  ~DatePlugin() { }
+  DatePlugin() = default;
 
   void declareInterface(PLUGIN_INTERFACE * interface) override;
 
@@ -49,5 +49,5 @@ public:
 }
 }
 
-#endif /* IMPORT_UTF8_H_ */
+#endif /* PLUGIN_DATE_H_ */
 
