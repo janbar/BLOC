@@ -33,11 +33,11 @@ std::string& GETSYSExpression::literal(Context & ctx) const
 {
   const std::string& rv = _args[0]->literal(ctx);
   if (rv == "compatible")
-    return ctx.allocate(std::to_string(ctx.compatible()));
+    return ctx.allocate(std::to_string(Context::compatible()));
   if (rv == "language")
-    return ctx.allocate(std::string(ctx.language()));
+    return ctx.allocate(std::string(Context::language()));
   if (rv == "country")
-    return ctx.allocate(std::string(ctx.country()));
+    return ctx.allocate(std::string(Context::country()));
   if (rv == "integer_max")
     return ctx.allocate(std::to_string(INT64_MAX));
   throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);

@@ -44,7 +44,7 @@ Tuple& ERRORExpression::tuple(Context & ctx) const
   if (rt.no == EXC_RT_USER_S)
     v.at(0)->refLiteral().assign(rt.what());
   else
-    v.at(0)->refLiteral().assign(rt.THROWABLES[RuntimeError::throwable(rt.no)].keyword);
+    v.at(0)->refLiteral().assign(RuntimeError::THROWABLES[RuntimeError::throwable(rt.no)].keyword);
   v.at(1)->refLiteral().assign(rt.what());
   v.at(2)->refInteger() = rt.no;
   return v;

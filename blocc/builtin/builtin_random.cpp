@@ -31,7 +31,7 @@ double RANDOMExpression::numeric(Context & ctx) const
   double d = 1.0;
   if (!_args.empty())
     d = _args[0]->numeric(ctx);
-  return ctx.random(d);
+  return Context::random(d);
 }
 
 RANDOMExpression * RANDOMExpression::parse(Parser& p, Context& ctx)
