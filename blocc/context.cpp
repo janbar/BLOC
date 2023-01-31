@@ -313,7 +313,7 @@ void Context::onRuntimeError()
 void Context::statWorkingMemory(size_t * count, size_t * size) const
 {
   *count = *size = 0;
-  for (const auto e : _temporary_storage)
+  for (const TemporaryBase * e : _temporary_storage)
   {
     ++*count;
     *size += e->size();
