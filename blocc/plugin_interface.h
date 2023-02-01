@@ -24,7 +24,7 @@ extern "C"
 {
 #endif
 
-#define PLUGIN_VERSION  230131
+#define PLUGIN_VERSION  230201
 
   typedef void* PLUGIN_HANDLE;
 
