@@ -26,10 +26,9 @@ namespace bloc
 namespace plugin
 {
 
-class UTF8Plugin : public PluginBase
+class UTF8Plugin final : public PluginBase
 {
 public:
-  ~UTF8Plugin() { }
   UTF8Plugin() = default;
 
   void declareInterface(PLUGIN_INTERFACE * interface) override;

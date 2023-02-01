@@ -26,10 +26,9 @@ namespace bloc
 namespace plugin
 {
 
-class FilePlugin : public PluginBase
+class FilePlugin final : public PluginBase
 {
 public:
-  ~FilePlugin() { }
   FilePlugin() = default;
 
   void declareInterface(PLUGIN_INTERFACE * interface) override;

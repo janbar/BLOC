@@ -26,10 +26,9 @@ namespace bloc
 namespace plugin
 {
 
-class DatePlugin : public PluginBase
+class DatePlugin final : public PluginBase
 {
 public:
-  ~DatePlugin() { }
   DatePlugin() = default;
 
   void declareInterface(PLUGIN_INTERFACE * interface) override;
