@@ -80,7 +80,7 @@ public:
     if (_level > 0)
       fn.append(_level, '[').append(nickname).append(_level, ']');
     else
-      fn.assign(typeName(_major));
+      fn.assign(nickname);
     return fn;
   }
 
