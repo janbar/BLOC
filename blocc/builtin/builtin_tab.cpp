@@ -81,9 +81,17 @@ Collection& TABExpression::collection(Context & ctx) const
     }
     case Type::COMPLEX:
     {
-      /* execute ctor for each */
-      for (int i = 0; i < n; ++i)
-        tab->push_back(new ComplexExpression(_args[1]->complex(ctx)));
+      /* execute ctor or method for each */
+      if (_args[1]->isRvalue(ctx))
+      {
+        for (int i = 0; i < n; ++i)
+          tab->push_back(new ComplexExpression(std::move(_args[1]->complex(ctx))));
+      }
+      else
+      {
+        for (int i = 0; i < n; ++i)
+          tab->push_back(new ComplexExpression(_args[1]->complex(ctx)));
+      }
       break;
     }
     case Type::TABCHAR:
