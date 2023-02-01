@@ -124,6 +124,7 @@ static void output_cli(bloc::Context& ctx);
 static bool path_valid(const std::string& path);
 static void print_table(const std::set<std::string>& list, int colw, int coln);
 static void print_btml(const void * buf, unsigned len);
+static void describe_module(unsigned type_id);
 static void print_help(const std::string& what);
 static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::Statement*>& statements);
 
@@ -402,6 +403,89 @@ static void print_btml(const void * buf, unsigned len)
     PRINTBUF(NORM, sizeof(NORM), STDOUT);
 }
 
+static void describe_module(unsigned type_id)
+{
+  char buf[80];
+  const bloc::PLUGGED_MODULE& plug = bloc::PluginManager::instance().plugged(type_id);
+  print_btml("\n$BCONSTRUCTORS\n\n", UINT16_MAX);
+  snprintf(buf, sizeof(buf), "$B%s$N", plug.interface.name);
+  print_btml(buf, sizeof(buf));
+  PRINT("() is default contructor\n\n");
+  for (unsigned i = 0; i < plug.interface.ctors_count; ++i)
+  {
+    snprintf(buf, sizeof(buf), "$B%s$N", plug.interface.name);
+    print_btml(buf, sizeof(buf));
+    PRINT("(");
+    for (unsigned j = 0; j < plug.interface.ctors[i].args_count; ++j)
+    {
+      bloc::Type t = bloc::plugin::make_type(plug.interface.ctors[i].args[j], type_id);
+      if (j > 0)
+        PRINT(", ");
+      if (t.major() == bloc::Type::ROWTYPE)
+      {
+        bloc::Tuple::Decl decl = bloc::plugin::make_decl(plug.interface.ctors[i].args[j].decl, type_id);
+        PRINT(t.typeName(decl.tupleName().c_str()).c_str());
+      }
+      else
+      {
+        PRINT(t.typeName().c_str());
+      }
+    }
+    PRINT(")\n");
+    if (plug.interface.ctors[i].brief)
+      PRINT1("%s\n", plug.interface.ctors[i].brief);
+    PRINT("\n");
+  }
+  print_btml("\n$BMETHODS\n\n", UINT16_MAX);
+  for (unsigned i = 0; i < plug.interface.method_count; ++i)
+  {
+    snprintf(buf, sizeof(buf), "$B%s$N", plug.interface.methods[i].name);
+    print_btml(buf, sizeof(buf));
+    PRINT("(");
+    for (unsigned j = 0; j < plug.interface.methods[i].args_count; ++j)
+    {
+      bloc::Type t = bloc::plugin::make_type(plug.interface.methods[i].args[j].type, type_id);
+      if (j > 0)
+        PRINT(", ");
+      if (t.major() == bloc::Type::ROWTYPE)
+      {
+        bloc::Tuple::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].args[j].type.decl, type_id);
+        PRINT1("%s", t.typeName(decl.tupleName().c_str()).c_str());
+      }
+      else
+      {
+        PRINT(t.typeName().c_str());
+      }
+      switch (plug.interface.methods[i].args[j].mode)
+      {
+      case PLUGIN_IN:
+        PRINT(" IN");
+        break;
+      case PLUGIN_INOUT:
+        PRINT(" INOUT");
+        break;
+      default:
+        break;
+      }
+    }
+    PRINT(") returns ");
+    bloc::Type t = bloc::plugin::make_type(plug.interface.methods[i].ret, type_id);
+    if (t.major() == bloc::Type::ROWTYPE)
+    {
+      bloc::Tuple::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].ret.decl, type_id);
+      PRINT(t.typeName(decl.tupleName().c_str()).c_str());
+    }
+    else
+    {
+      PRINT(t.typeName().c_str());
+    }
+    PRINT("\n");
+    if (plug.interface.methods[i].brief)
+      PRINT1("%s\n", plug.interface.methods[i].brief);
+    PRINT("\n");
+  }
+}
+
 static void print_help(const std::string& what)
 {
   std::string w(what);
@@ -468,7 +552,13 @@ static void print_help(const std::string& what)
       }
       else
       {
-        set_color(fgYELLOW); PRINT("Unknown keyword.\n"); reset_color();
+        unsigned type_id = bloc::PluginManager::instance().findModuleTypeId(w);
+        if (type_id > 0)
+          describe_module(type_id);
+        else
+        {
+          set_color(fgYELLOW); PRINT("Unknown keyword.\n"); reset_color();
+        }
       }
     }
   }

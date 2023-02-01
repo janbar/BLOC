@@ -29,10 +29,10 @@ $B!$N {command}
     Executes an operating system command without leaving.
 
 $B=$N {EXPRESSION}
-    Perform the inline expression to follow. The expression can use any
+    Process the inline expression to follow. The expression can use any
     available operator and function.
 
 $Bhelp$N {keyword}
     Show help about keyword to follow. Keyword could be the name of any
-    available statement or function, else a category among statement,
-    function, expression, operator, type, or variable.
+    available statement or function, a category among statement, function,
+    expression, operator, type, or variable, else an imported module.
