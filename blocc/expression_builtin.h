@@ -116,9 +116,9 @@ public:
 
   bool isRvalue(Context& ctx) const override { return true; }
 
-  virtual std::string unparse(Context& ctx) const override;
+  std::string unparse(Context& ctx) const override;
 
-  virtual std::string toString(Context& ctx) const override
+  std::string toString(Context& ctx) const override
   {
     return KEYWORDS[oper];
   }
