@@ -202,7 +202,7 @@ static bool output(bloc::Context& ctx)
         switch (exp->type(ctx).major())
         {
         case bloc::Type::BOOLEAN:
-          ret = exp->boolean(ctx);
+          ::fputs(bloc::BooleanExpression::readableBoolean(exp->boolean(ctx)).c_str(), ctx.ctxout());
           break;
         case bloc::Type::INTEGER:
           ::fputs(bloc::IntegerExpression::readableInteger(exp->integer(ctx)).c_str(), ctx.ctxout());
