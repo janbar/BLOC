@@ -67,9 +67,12 @@ static PLUGIN_TYPE ctor_2_args[]  = {
 
 static PLUGIN_CTOR ctors[] =
 {
-  { 0,      1,  ctor_0_args },  /* new date( date ) */
-  { 1,      2,  ctor_1_args },  /* new date( string, format ) */
-  { 2,      1,  ctor_2_args },  /* new date( string iso ) */
+  { 0,      1,  ctor_0_args,
+          "Build a new calendar as a copy of the given one." },
+  { 1,      2,  ctor_1_args,
+          "Build a new calendar from the given string and format." },
+  { 2,      1,  ctor_2_args,
+          "Build a new calendar from the given ISO date or time string." },
 };
 
 /**********************************************************************/
@@ -103,24 +106,44 @@ static PLUGIN_ARG trunc_args[]  = {
 /**********************************************************************/
 static PLUGIN_METHOD methods[] =
 {
-  { Format,     "format",       { "L", 0 },     1, format_args, },
-  { Unixtime,   "unixtime",     { "I", 0 },     0, nullptr, },
-  { Iso8601,    "iso8601",      { "L", 0 },     0, nullptr, },
-  { Iso8601utc, "iso8601utc",   { "L", 0 },     0, nullptr, },
-  { Isodate,    "isodate",      { "L", 0 },     0, nullptr, },
-  { Difftime,   "difftime",     { "N", 0 },     1, diff_args, },
-  { Add,        "add",          { "C", 0 },     1, num_args, },
-  { Add_unit,   "add",          { "C", 0 },     2, add_args, },
-  { Second,     "second",       { "I", 0 },     0, nullptr, },
-  { Minute,     "minute",       { "I", 0 },     0, nullptr, },
-  { Hour,       "hour",         { "I", 0 },     0, nullptr, },
-  { Day,        "day",          { "I", 0 },     0, nullptr, },
-  { Month,      "month",        { "I", 0 },     0, nullptr, },
-  { Year,       "year",         { "I", 0 },     0, nullptr, },
-  { Weekday,    "weekday",      { "I", 0 },     0, nullptr, },
-  { Yearday,    "yearday",      { "I", 0 },     0, nullptr, },
-  { Trunc,      "trunc",        { "C", 0 },     0, nullptr, },
-  { Trunc_unit, "trunc",        { "C", 0 },     1, trunc_args, },
+  { Format,     "format",       { "L", 0 },     1, format_args,
+          "Formats calendar time according to the directives in the given format string." },
+  { Unixtime,   "unixtime",     { "I", 0 },     0, nullptr,
+          "Converts calendar time to time since epoch." },
+  { Iso8601,    "iso8601",      { "L", 0 },     0, nullptr,
+          "Formats calendar time according to ISO8601 format string." },
+  { Iso8601utc, "iso8601utc",   { "L", 0 },     0, nullptr,
+          "Formats calendar time UTC according to ISO8601 format string." },
+  { Isodate,    "isodate",      { "L", 0 },     0, nullptr,
+          "Formats calendar according to ISO date format string." },
+  { Difftime,   "difftime",     { "N", 0 },     1, diff_args,
+          "Computes the difference between times in seconds." },
+  { Add,        "add",          { "C", 0 },     1, num_args,
+          "Add or remove day(s) to the calendar." },
+  { Add_unit,   "add",          { "C", 0 },     2, add_args,
+          "Add or remove unit(s) to the calendar."
+          "\nUnit could by among second, minute, hour, day, month, or year." },
+  { Second,     "second",       { "I", 0 },     0, nullptr,
+          "Returns second of calendar." },
+  { Minute,     "minute",       { "I", 0 },     0, nullptr,
+          "Returns minute of calendar." },
+  { Hour,       "hour",         { "I", 0 },     0, nullptr,
+          "Returns hour of calendar." },
+  { Day,        "day",          { "I", 0 },     0, nullptr,
+          "Returns day of calendar." },
+  { Month,      "month",        { "I", 0 },     0, nullptr,
+          "Returns month of calendar." },
+  { Year,       "year",         { "I", 0 },     0, nullptr,
+          "Returns year of calendar." },
+  { Weekday,    "weekday",      { "I", 0 },     0, nullptr,
+          "Returns week day of calendar. Monday=1 ... Sunday=7." },
+  { Yearday,    "yearday",      { "I", 0 },     0, nullptr,
+          "Returns year day of calendar." },
+  { Trunc,      "trunc",        { "C", 0 },     0, nullptr,
+          "Truncate time to the calendar." },
+  { Trunc_unit, "trunc",        { "C", 0 },     1, trunc_args,
+          "Truncate the calendar to a specific unit."
+          "\nUnit could by among minute, hour, day, month, or year." },
 };
 
 /**

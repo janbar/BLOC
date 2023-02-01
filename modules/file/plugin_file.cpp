@@ -63,7 +63,8 @@ static PLUGIN_TYPE ctor_0_args[]  = {
 
 static PLUGIN_CTOR ctors[] =
 {
-  { 0,      2,  ctor_0_args },  /* new file( filename, open flags ) */
+  { 0,      2,  ctor_0_args,
+          "Build and open file for the given filename, and flags." },
 };
 
 enum Method
@@ -118,39 +119,45 @@ static PLUGIN_ARG seek_args[]     = {
 /**********************************************************************/
 static PLUGIN_METHOD methods[] =
 {
-  { Close,    "close",      { "B", 0 },     0, nullptr, },
-
-  { Open,     "open",       { "I", 0 },     2, open_args, },
-
-  { Write_S,  "write",      { "I", 0 },     1, write_s_args, },
-
-  { Read_S,   "read",       { "I", 0 },     2, read_s_args, },
-
-  { SeekSet,  "seekset",    { "I", 0 },     1, seek_args, },
-
-  { SeekCur,  "seekcur",    { "I", 0 },     1, seek_args, },
-
-  { SeekEnd,  "seekend",    { "I", 0 },     1, seek_args, },
-
-  { Position, "position",   { "I", 0 },     0, nullptr, },
-
-  { Flush,    "flush",      { "B", 0 },     0, nullptr, },
-
-  { Filename, "filename",   { "L", 0 },     0, nullptr, },
-
-  { IsOpen,   "isopen",     { "B", 0 },     0, nullptr, },
-
-  { Write_B,  "write",      { "I", 0 },     1, write_b_args, },
-
-  { Read_B,   "read",       { "I", 0 },     2, read_b_args, },
-
-  { Mode,     "mode",       { "L", 0 },     0, nullptr, },
-
-  { Stat,     "stat",       { "I", 0 },     1, stat_args, },
-
-  { Dir,      "dir",        { "IL", 1 },    1, dir_args, },
-
-  { Readln,   "readln",     { "L", 0 },     0, nullptr, },
+  { Close,    "close",      { "B", 0 },     0, nullptr,
+          "Close the file handle." },
+  { Open,     "open",       { "I", 0 },     2, open_args,
+          "Opens a file indicated by filename and flags, and returns the system error"
+          "\nnumber or 0 for success." },
+  { Write_S,  "write",      { "I", 0 },     1, write_s_args,
+          "Writes string, and returns the number of character written successfully." },
+  { Read_S,   "read",       { "I", 0 },     2, read_s_args,
+          "Reads up to count characters into the variable, and returns the number of"
+          "\ncharacter read successfully." },
+  { SeekSet,  "seekset",    { "I", 0 },     1, seek_args,
+          "Moves the file position indicator to an absolute location in a file." },
+  { SeekCur,  "seekcur",    { "I", 0 },     1, seek_args,
+          "Moves the file position indicator from the current file position." },
+  { SeekEnd,  "seekend",    { "I", 0 },     1, seek_args,
+          "Moves the file position indicator from the end of the file." },
+  { Position, "position",   { "I", 0 },     0, nullptr,
+          "Returns the file position indicator." },
+  { Flush,    "flush",      { "B", 0 },     0, nullptr,
+          "synchronizes output stream with the actual file." },
+  { Filename, "filename",   { "L", 0 },     0, nullptr,
+          "Returns filename of the actual file." },
+  { IsOpen,   "isopen",     { "B", 0 },     0, nullptr,
+          "Checks whether the file is open." },
+  { Write_B,  "write",      { "I", 0 },     1, write_b_args,
+          "Writes bytes, and returns the number of byte written successfully." },
+  { Read_B,   "read",       { "I", 0 },     2, read_b_args,
+          "Reads up to count bytes into the variable, and returns the number of byte"
+          "\nread successfully." },
+  { Mode,     "mode",       { "L", 0 },     0, nullptr,
+          "Returns open flags of the actual file." },
+  { Stat,     "stat",       { "I", 0 },     1, stat_args,
+          "Returns information about a file: Regular=1, Directory=2, Other=3." },
+  { Dir,      "dir",        { "IL", 1 },    1, dir_args,
+          "Returns the entry list of a directory."
+          "\nFirst field contains the entry type, second contains the entry name." },
+  { Readln,   "readln",     { "L", 0 },     0, nullptr,
+          "Reads and returns a line of characters from actual file, including the"
+          "\nnewline character. At EOF it returns an empty string.", },
 };
 
 /**

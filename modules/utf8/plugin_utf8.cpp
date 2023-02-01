@@ -48,8 +48,10 @@ static PLUGIN_TYPE ctor_1_args[]  = {
 
 static PLUGIN_CTOR ctors[] =
 {
-  { 0,      1,  ctor_0_args },  /* copy ctor */
-  { 1,      1,  ctor_1_args },  /* new utf8( string ) */
+  { 0,      1,  ctor_0_args,
+          "Build a new unicode string as a copy of the given one." },
+  { 1,      1,  ctor_1_args,
+          "Build a new unicode string from the standard string." },
 };
 
 enum Method
@@ -103,45 +105,47 @@ static PLUGIN_ARG substr_args[]  = {
 /**********************************************************************/
 static PLUGIN_METHOD methods[] =
 {
-  { Empty,    "empty",      { "B", 0 },     0, nullptr, },
-
-  { Size,     "count",      { "I", 0 },     0, nullptr, },
-
-  { Rawsize,  "rawsize",    { "I", 0 },     0, nullptr, },
-
-  { Reserve,  "reserve",    { "B", 0 },     1, int_args, },
-
-  { Clear,    "clear",      { "B", 0 },     0, nullptr, },
-
-  { Append,   "append",     { "C", 0 },     1, int_args, },
-
-  { AppendL,  "append",     { "C", 0 },     1, string_args, },
-
-  { ConcatC,  "concat",     { "C", 0 },     1, utf8_args, },
-
-  { Tostring, "string",     { "L", 0 },     0, nullptr, },
-
-  { At,       "at",         { "I", 0 },     1, int_args, },
-
-  { Remove,   "remove",     { "B", 0 },     2, remove_args, },
-
-  { Insert,   "insert",     { "B", 0 },     2, insert_args, },
-
-  { InsertC,  "insert",     { "I", 0 },     2, insertC_args, },
-
-  { Substr1,  "substr",     { "L", 0 },     1, int_args, },
-
-  { Substr2,  "substr",     { "L", 0 },     2, substr_args, },
-
-  { Toupper,  "toupper",    { "C", 0 },     0, nullptr, },
-
-  { Tolower,  "tolower",    { "C", 0 },     0, nullptr, },
-
-  { Normaliz, "normalize",  { "C", 0 },     0, nullptr, },
-
-  { Capital,  "capitalize", { "C", 0 },     0, nullptr, },
-
-  { Translit, "translit",   { "C", 0 },     0, nullptr, },
+  { Empty,    "empty",      { "B", 0 },     0, nullptr,
+          "Checks whether the unicode string is empty." },
+  { Size,     "count",      { "I", 0 },     0, nullptr,
+          "Returns the count of code points contained in the unicode string." },
+  { Rawsize,  "rawsize",    { "I", 0 },     0, nullptr,
+          "Returns the size in bytes of the unicode string." },
+  { Reserve,  "reserve",    { "B", 0 },     1, int_args,
+          "Reserves storage for code point capacity." },
+  { Clear,    "clear",      { "B", 0 },     0, nullptr,
+          "Clears the contents." },
+  { Append,   "append",     { "C", 0 },     1, int_args,
+          "Appends a code point to the end." },
+  { AppendL,  "append",     { "C", 0 },     1, string_args,
+          "Appends a standard string to the end." },
+  { ConcatC,  "concat",     { "C", 0 },     1, utf8_args,
+          "Appends an unicode string to the end." },
+  { Tostring, "string",     { "L", 0 },     0, nullptr,
+          "Returns a standard string from the content." },
+  { At,       "at",         { "I", 0 },     1, int_args,
+          "Returns the code point at the position in content." },
+  { Remove,   "remove",     { "B", 0 },     2, remove_args,
+          "Removes code points from the position, and up to the given count." },
+  { Insert,   "insert",     { "B", 0 },     2, insert_args,
+          "Inserts at the position, the given code point." },
+  { InsertC,  "insert",     { "I", 0 },     2, insertC_args,
+          "Inserts at the position, the given unicode string." },
+  { Substr1,  "substr",     { "L", 0 },     1, int_args,
+          "Returns a standard string from sub content starting at the position." },
+  { Substr2,  "substr",     { "L", 0 },     2, substr_args,
+          "Returns a standard string from sub content starting at the position, and up"
+          "\nto count of code point." },
+  { Toupper,  "toupper",    { "C", 0 },     0, nullptr,
+          "Transform the content to upper case." },
+  { Tolower,  "tolower",    { "C", 0 },     0, nullptr,
+          "Transform the content to lower case." },
+  { Normaliz, "normalize",  { "C", 0 },     0, nullptr,
+          "Normalize the content, i.e removing extra spaces or control characters." },
+  { Capital,  "capitalize", { "C", 0 },     0, nullptr,
+          "Capitalize all words of the content." },
+  { Translit, "translit",   { "C", 0 },     0, nullptr,
+          "Transliterates the content to an ASCII string." },
 };
 
 } /* namespace utf8 */

@@ -66,6 +66,7 @@ extern "C"
     int id;
     unsigned args_count;  /* arguments list count */
     PLUGIN_TYPE * args;   /* arguments list */
+    const char * brief;
   } PLUGIN_CTOR;
 
   /**
@@ -90,6 +91,7 @@ extern "C"
     PLUGIN_TYPE ret;      /* returned type */
     unsigned args_count;  /* arguments list count */
     PLUGIN_ARG * args;    /* arguments list */
+    const char * brief;
   } PLUGIN_METHOD;
 
   /**
