@@ -39,7 +39,7 @@ public:
   void destroyObject(void * object) override;
 
   Expression * executeMethod(
-          bloc::Complex object_this,
+          bloc::Complex& object_this,
           int method_id,
           bloc::Context& ctx,
           const std::vector<bloc::Expression*>& args

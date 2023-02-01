@@ -71,11 +71,9 @@ void Statement::trace_pre(Context& ctx) const
 
 void Statement::trace_post(Context& ctx) const
 {
-  size_t count, size;
-  ctx.statWorkingMemory(&count, &size);
-  fprintf(ctx.ctxerr(), "%012.6f: %s : alloc_count=%u alloc_size=%lu bcr=%d%d%d\n",
-          ctx.timestamp(), KEYWORDS[_keyword],
-          (unsigned)count, (unsigned long)size,
+  size_t count = ctx.allocationCount();
+  fprintf(ctx.ctxerr(), "%012.6f: %s : alloc_count=%u bcr=%d%d%d\n",
+          ctx.timestamp(), KEYWORDS[_keyword], (unsigned)count,
           ctx.breakCondition(), ctx.continueCondition(), ctx.returnCondition());
   fflush(ctx.ctxerr());
 }

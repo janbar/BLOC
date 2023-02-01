@@ -239,7 +239,14 @@ public:
     return tmp->handle;
   }
 
-  void statWorkingMemory(size_t * count, size_t * size) const;
+  Complex& allocate(Complex&& v)
+  {
+    Temporary<Complex> * tmp = new Temporary<Complex>(std::move(v));
+    _temporary_storage.push_back(tmp);
+    return tmp->handle;
+  }
+
+  size_t allocationCount() const { return _temporary_storage.size(); }
 
   /**
    * Purge temporary storage allocated by a standalone expression or statement.

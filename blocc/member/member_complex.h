@@ -69,7 +69,7 @@ public:
 
   Collection& collection(Context& ctx) const override;
 
-  Complex complex(Context& ctx) const override;
+  Complex& complex(Context& ctx) const override;
 
   std::string typeName(Context& ctx) const override;
 

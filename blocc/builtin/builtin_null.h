@@ -38,7 +38,7 @@ public:
 
   const Type& type(Context& ctx) const override { return ComplexExpression::null; }
 
-  Complex complex(Context& ctx) const override { return Complex(); }
+  Complex& complex(Context& ctx) const override;
 };
 
 }

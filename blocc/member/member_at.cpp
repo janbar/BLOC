@@ -163,7 +163,7 @@ const TupleDecl::Decl& MemberATExpression::tuple_decl(Context& ctx) const
   return _exp->tuple_decl(ctx);
 }
 
-Complex MemberATExpression::complex(Context& ctx) const
+Complex& MemberATExpression::complex(Context& ctx) const
 {
   /* collection */
   Collection& rv = _exp->collection(ctx);

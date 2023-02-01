@@ -185,7 +185,7 @@ Collection& MemberMETHODExpression::collection(Context& ctx) const
   throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
 }
 
-Complex MemberMETHODExpression::complex(Context& ctx) const
+Complex& MemberMETHODExpression::complex(Context& ctx) const
 {
   if (_method)
   {
@@ -194,7 +194,7 @@ Complex MemberMETHODExpression::complex(Context& ctx) const
       throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
     Expression * ret = plug.instance->executeMethod(
             _exp->complex(ctx), _method->id, ctx, _args);
-    Complex c = ret->complex(ctx);
+    Complex& c = ret->complex(ctx);
     delete ret;
     return c;
   }

@@ -47,7 +47,7 @@ public:
     return v.complex_type();
   }
 
-  Complex complex(Context& ctx) const override { return v; }
+  Complex& complex(Context& ctx) const override { return v; }
 
   std::string unparse(Context& ctx) const override
   {

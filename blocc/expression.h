@@ -112,7 +112,7 @@ public:
     return Tuple::no_decl;
   }
 
-  virtual Complex complex(Context& ctx) const
+  virtual Complex& complex(Context& ctx) const
   {
     throw RuntimeError(EXC_RT_NOT_COMPLEX);
   }

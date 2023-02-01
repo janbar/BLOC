@@ -56,7 +56,7 @@ public:
 
   const TupleDecl::Decl& tuple_decl(Context& ctx) const override;
 
-  Complex complex(Context& ctx) const override;
+  Complex& complex(Context& ctx) const override;
 
   static MemberATExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };

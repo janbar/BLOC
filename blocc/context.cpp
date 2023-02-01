@@ -307,20 +307,6 @@ void Context::onRuntimeError()
 }
 
 /**************************************************************************/
-/* Temporary management                                                   */
-/**************************************************************************/
-
-void Context::statWorkingMemory(size_t * count, size_t * size) const
-{
-  *count = *size = 0;
-  for (const TemporaryBase * e : _temporary_storage)
-  {
-    ++*count;
-    *size += e->size();
-  }
-}
-
-/**************************************************************************/
 /* Environment                                                            */
 /**************************************************************************/
 

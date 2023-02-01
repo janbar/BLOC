@@ -76,7 +76,7 @@ TabChar& ItemExpression::tabchar(Context& ctx) const
   throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
 }
 
-Complex ItemExpression::complex(Context& ctx) const
+Complex& ItemExpression::complex(Context& ctx) const
 {
   if (_index < _exp->tuple_decl(ctx).size())
     return _exp->tuple(ctx)[_index]->complex(ctx);

@@ -61,7 +61,7 @@ public:
 
   const Tuple::Decl& tuple_decl(Context& ctx) const override;
 
-  Complex complex(Context& ctx) const override;
+  Complex& complex(Context& ctx) const override;
 
   std::string unparse(Context& ctx) const override
   {

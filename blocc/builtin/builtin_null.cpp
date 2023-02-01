@@ -24,4 +24,9 @@
 namespace bloc
 {
 
+Complex& NULLExpression::complex(Context& ctx) const
+{
+  return ctx.allocate(Complex());
+}
+
 }

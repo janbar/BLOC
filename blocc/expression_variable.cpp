@@ -102,7 +102,7 @@ const Tuple::Decl& VariableExpression::tuple_decl(Context& ctx) const
   return z->tuple_decl(ctx);
 }
 
-Complex VariableExpression::complex(Context& ctx) const {
+Complex& VariableExpression::complex(Context& ctx) const {
   const StaticExpression * z = ctx.loadVariable(_symbol);
   if (z == nullptr)
     throw RuntimeError(EXC_RT_UNDEFINED_SYMBOL_S, _symbol.name.c_str());

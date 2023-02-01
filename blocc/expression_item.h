@@ -60,7 +60,7 @@ public:
 
   TabChar& tabchar(Context& ctx) const override;
 
-  Complex complex(Context& ctx) const override;
+  Complex& complex(Context& ctx) const override;
 
   std::string toString(Context& ctx) const override
   {

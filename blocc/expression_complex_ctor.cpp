@@ -33,12 +33,12 @@ ComplexCTORExpression::~ComplexCTORExpression()
   _args.clear();
 }
 
-Complex ComplexCTORExpression::complex(Context& ctx) const
+Complex& ComplexCTORExpression::complex(Context& ctx) const
 {
   Complex c(_type.minor());
   int ctor_id = (_ctor == nullptr ? (-1) : _ctor->id);
   if (c.CTOR(ctor_id, ctx, _args))
-    return c;
+    return ctx.allocate(std::move(c));
   throw RuntimeError(EXC_RT_CTOR_FAILED_S, unparse(ctx).c_str());
 }
 

@@ -26,14 +26,12 @@ namespace bloc
 
 struct TemporaryBase {
   virtual ~TemporaryBase() = default;
-  virtual size_t size() const = 0;
 };
 
 template <typename T> struct Temporary : TemporaryBase
 {
   T handle;
   explicit Temporary(T&& hdl) : handle(std::move(hdl)) { }
-  size_t size() const override { return handle.size(); }
 };
 
 }
