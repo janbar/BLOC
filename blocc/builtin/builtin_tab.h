@@ -43,7 +43,7 @@ public:
 
   virtual ~TABExpression() { }
 
-  TABExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_TAB, std::move(args)) { }
+  explicit TABExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_TAB, std::move(args)) { }
 
   const Type& type(Context& ctx) const override
   {

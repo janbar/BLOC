@@ -34,7 +34,7 @@ public:
 
   virtual ~ROUNDExpression() { }
 
-  ROUNDExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_ROUND, std::move(args)) { }
+  explicit ROUNDExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_ROUND, std::move(args)) { }
 
   const Type& type(Context& ctx) const override { return NumericExpression::type_static; }
 

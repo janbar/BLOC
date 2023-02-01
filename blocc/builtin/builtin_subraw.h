@@ -34,7 +34,7 @@ public:
 
   virtual ~SUBRAWExpression() { }
 
-  SUBRAWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_SUBRAW, std::move(args)) { }
+  explicit SUBRAWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_SUBRAW, std::move(args)) { }
 
   const Type& type(Context& ctx) const override { return TabcharExpression::type_static; }
 

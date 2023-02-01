@@ -77,7 +77,7 @@ public:
   /**
    * Construct a new statement object with a valid key.
    */
-  Statement(STATEMENT keyword) : _keyword(keyword) { }
+  explicit Statement(STATEMENT keyword) : _keyword(keyword) { }
 
   /**
    * This method does the actual statement execution. It works by calling the

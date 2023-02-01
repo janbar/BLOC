@@ -34,7 +34,7 @@ public:
 
   virtual ~REPLACEExpression() { }
 
-  REPLACEExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_REPSTR, std::move(args)) { }
+  explicit REPLACEExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_REPSTR, std::move(args)) { }
 
   const Type& type(Context& ctx) const override { return LiteralExpression::type_static; }
 

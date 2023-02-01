@@ -34,7 +34,7 @@ public:
 
   virtual ~STRPOSExpression() { }
 
-  STRPOSExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_STRPOS, std::move(args)) { }
+  explicit STRPOSExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_STRPOS, std::move(args)) { }
 
   const Type& type(Context& ctx) const override { return IntegerExpression::type_static; }
 

@@ -34,7 +34,7 @@ public:
 
   virtual ~RAWExpression() { }
 
-  RAWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_RAW, std::move(args)) { }
+  explicit RAWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_RAW, std::move(args)) { }
 
   const Type& type(Context& ctx) const override { return TabcharExpression::type_static; }
 

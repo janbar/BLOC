@@ -35,7 +35,7 @@ public:
 
   virtual ~MINExpression() { }
 
-  MINExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_MIN, std::move(args)) { }
+  explicit MINExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_MIN, std::move(args)) { }
 
   const Type& type(Context& ctx) const override;
 

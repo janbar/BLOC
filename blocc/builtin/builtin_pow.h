@@ -35,7 +35,7 @@ public:
 
   virtual ~POWExpression() { }
 
-  POWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_POW, std::move(args)) { }
+  explicit POWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_POW, std::move(args)) { }
 
   const Type& type(Context& ctx) const override;
 

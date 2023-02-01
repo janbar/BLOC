@@ -35,7 +35,7 @@ public:
 
   virtual ~MODExpression() { }
 
-  MODExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_MOD, std::move(args)) { }
+  explicit MODExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_MOD, std::move(args)) { }
 
   const Type& type(Context& ctx) const override;
 

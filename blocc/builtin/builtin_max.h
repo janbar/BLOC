@@ -35,7 +35,7 @@ public:
 
   virtual ~MAXExpression() { }
 
-  MAXExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_MAX, std::move(args)) { }
+  explicit MAXExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_MAX, std::move(args)) { }
 
   const Type& type(Context& ctx) const override;
 

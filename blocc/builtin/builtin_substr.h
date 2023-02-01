@@ -34,7 +34,7 @@ public:
 
   virtual ~SUBSTRExpression() { }
 
-  SUBSTRExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_SUBSTR, std::move(args)) { }
+  explicit SUBSTRExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_SUBSTR, std::move(args)) { }
 
   const Type& type(Context& ctx) const override { return LiteralExpression::type_static; }
 
