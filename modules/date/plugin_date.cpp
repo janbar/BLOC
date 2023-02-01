@@ -107,7 +107,6 @@ static PLUGIN_METHOD methods[] =
   { Unixtime,   "unixtime",     { "I", 0 },     0, nullptr, },
   { Iso8601,    "iso8601",      { "L", 0 },     0, nullptr, },
   { Iso8601utc, "iso8601utc",   { "L", 0 },     0, nullptr, },
-  { Iso8601utc, "iso8601utc",   { "L", 0 },     0, nullptr, },
   { Isodate,    "isodate",      { "L", 0 },     0, nullptr, },
   { Difftime,   "difftime",     { "N", 0 },     1, diff_args, },
   { Add,        "add",          { "C", 0 },     1, num_args, },
