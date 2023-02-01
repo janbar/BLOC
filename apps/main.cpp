@@ -105,7 +105,7 @@ int main(int argc, char **argv) {
   else if (options.doexp)
   {
     bloc::StringReader reader;
-    for (auto& arg : prog)
+    for (const auto& arg : prog)
       reader.append(arg).append(" ");
     /* mark the end of expression: could be semi-colon or nl */
     reader.append(";");
