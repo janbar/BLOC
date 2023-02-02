@@ -77,7 +77,7 @@ public:
   }
 
   /**
-   * Proves that the this expression provides an "rvalue".
+   * Proves this expression provides an "rvalue".
    * The "rvalue" is temporary static expression, and its content can be
    * modified and forwarded throughout the duration of the running statement,
    * thus avoiding copying or new memory allocation.
