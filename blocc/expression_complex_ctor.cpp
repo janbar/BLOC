@@ -35,10 +35,10 @@ ComplexCTORExpression::~ComplexCTORExpression()
 
 Complex& ComplexCTORExpression::complex(Context& ctx) const
 {
-  Complex c(_type.minor());
+  _tmp.swap(Complex(_type.minor()));
   int ctor_id = (_ctor == nullptr ? (-1) : _ctor->id);
-  if (c.CTOR(ctor_id, ctx, _args))
-    return ctx.allocate(std::move(c));
+  if (_tmp.CTOR(ctor_id, ctx, _args))
+    return _tmp;
   throw RuntimeError(EXC_RT_CTOR_FAILED_S, unparse(ctx).c_str());
 }
 

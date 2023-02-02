@@ -20,7 +20,7 @@
 #define BUILTIN_NULL_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_complex.h>
+#include <blocc/complex.h>
 
 namespace bloc
 {
@@ -30,15 +30,20 @@ class Parser;
 
 class NULLExpression : public BuiltinExpression {
 
+  mutable Complex _null;
+
 public:
 
   virtual ~NULLExpression() { }
 
   NULLExpression() : BuiltinExpression(FUNC_NIL) { }
 
-  const Type& type(Context& ctx) const override { return ComplexExpression::null; }
+  const Type& type(Context& ctx) const override { return _null.complex_type(); }
 
-  Complex& complex(Context& ctx) const override;
+  Complex& complex(Context& ctx) const override { return _null; }
+
+  /* payload MUST be copied */
+  bool isRvalue(Context& ctx) const override { return false; }
 };
 
 }

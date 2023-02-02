@@ -239,13 +239,6 @@ public:
     return tmp->handle;
   }
 
-  Complex& allocate(Complex&& v)
-  {
-    Temporary<Complex> * tmp = new Temporary<Complex>(std::move(v));
-    _temporary_storage.push_back(tmp);
-    return tmp->handle;
-  }
-
   size_t allocationCount() const { return _temporary_storage.size(); }
 
   /**
