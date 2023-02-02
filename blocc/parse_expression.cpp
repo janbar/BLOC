@@ -53,7 +53,8 @@ bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p
           (exp_type == type ||
           (exp_type.level() == type.level() && (
             (exp_type == Type::NUMERIC && type == Type::INTEGER) ||
-            (exp_type == Type::INTEGER && type == Type::NUMERIC)
+            (exp_type == Type::INTEGER && type == Type::NUMERIC) ||
+            (exp_type == Type::COMPLEX && type == Type::COMPLEX)
           )));
 }
 
