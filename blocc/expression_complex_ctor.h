@@ -60,6 +60,8 @@ public:
 
   Complex& complex(Context& ctx) const override;
 
+  bool isRvalue(Context& ctx) const override { return true; }
+
   std::string unparse(Context& ctx) const override;
 
   std::string toString(Context& ctx) const override
