@@ -110,15 +110,11 @@ void Complex::swap(Complex&& c) noexcept
   /* release handle */
   if (_refcount)
   {
-    if (*_refcount == 1)
+    if ((*_refcount -= 1) == 0)
     {
       delete _refcount;
       if (_instance)
         PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
-    }
-    else
-    {
-      *_refcount -= 1;
     }
   }
   /*  move handle */
