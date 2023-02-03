@@ -179,10 +179,10 @@ bool OperatorExpression::boolean(Context&ctx) const
       case Type::COMPLEX:
         return (arg1->complex(ctx) != arg2->complex(ctx));
       default:
-        return false;
+        return true;
       }
     }
-    return false;
+    return true;
   }
 
   case OP_LT:
