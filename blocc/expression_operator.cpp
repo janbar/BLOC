@@ -126,46 +126,73 @@ bool OperatorExpression::boolean(Context&ctx) const
     return arg1->boolean(ctx) ^ arg2->boolean(ctx);
 
   case OP_EQ:
-    switch (arg1->type(ctx).major())
+  {
+    const Type& t1 = arg1->type(ctx);
+    const Type& t2 = arg2->type(ctx);
+    if (t1 == t2 ||
+            (t1 == Type::NUMERIC && t2 == Type::INTEGER) ||
+            (t1 == Type::INTEGER && t2 == Type::NUMERIC))
     {
-    case Type::BOOLEAN:
-      return (arg1->boolean(ctx) == arg2->boolean(ctx));
-    case Type::INTEGER:
-      return (arg1->integer(ctx) == arg2->integer(ctx));
-    case Type::NUMERIC:
-      return (arg1->numeric(ctx) == arg2->numeric(ctx));
-    case Type::LITERAL:
-      return (arg1->literal(ctx).compare(arg2->literal(ctx)) == 0);
-    case Type::COMPLEX:
-      return (arg1->complex(ctx) == arg2->complex(ctx));
-    default:
-      return false;
+      switch (t1.major())
+      {
+      case Type::BOOLEAN:
+        return (arg1->boolean(ctx) == arg2->boolean(ctx));
+      case Type::INTEGER:
+        if (t2 == Type::NUMERIC)
+          return (arg1->numeric(ctx) == arg2->numeric(ctx));
+        else
+          return (arg1->integer(ctx) == arg2->integer(ctx));
+      case Type::NUMERIC:
+        return (arg1->numeric(ctx) == arg2->numeric(ctx));
+      case Type::LITERAL:
+        return (arg1->literal(ctx).compare(arg2->literal(ctx)) == 0);
+      case Type::COMPLEX:
+        return (arg1->complex(ctx) == arg2->complex(ctx));
+      default:
+        return false;
+      }
     }
-    break;
+    return false;
+  }
 
   case OP_NE:
-    switch (arg1->type(ctx).major())
+  {
+    const Type& t1 = arg1->type(ctx);
+    const Type& t2 = arg2->type(ctx);
+    if (t1 == t2 ||
+            (t1 == Type::NUMERIC && t2 == Type::INTEGER) ||
+            (t1 == Type::INTEGER && t2 == Type::NUMERIC))
     {
-    case Type::BOOLEAN:
-      return (arg1->boolean(ctx) != arg2->boolean(ctx));
-    case Type::INTEGER:
-      return (arg1->integer(ctx) != arg2->integer(ctx));
-    case Type::NUMERIC:
-      return (arg1->numeric(ctx) != arg2->numeric(ctx));
-    case Type::LITERAL:
-      return (arg1->literal(ctx).compare(arg2->literal(ctx)) != 0);
-    case Type::COMPLEX:
-      return (arg1->complex(ctx) != arg2->complex(ctx));
-    default:
-      return false;
+      switch (t1.major())
+      {
+      case Type::BOOLEAN:
+        return (arg1->boolean(ctx) != arg2->boolean(ctx));
+      case Type::INTEGER:
+        if (t2 == Type::NUMERIC)
+          return (arg1->numeric(ctx) != arg2->numeric(ctx));
+        else
+          return (arg1->integer(ctx) != arg2->integer(ctx));
+      case Type::NUMERIC:
+        return (arg1->numeric(ctx) != arg2->numeric(ctx));
+      case Type::LITERAL:
+        return (arg1->literal(ctx).compare(arg2->literal(ctx)) != 0);
+      case Type::COMPLEX:
+        return (arg1->complex(ctx) != arg2->complex(ctx));
+      default:
+        return false;
+      }
     }
-    break;
+    return false;
+  }
 
   case OP_LT:
     switch (arg1->type(ctx).major())
     {
     case Type::INTEGER:
-      return (arg1->integer(ctx) < arg2->integer(ctx));
+      if (arg2->type(ctx) == Type::NUMERIC)
+        return (arg1->numeric(ctx) < arg2->numeric(ctx));
+      else
+        return (arg1->integer(ctx) < arg2->integer(ctx));
     case Type::NUMERIC:
       return (arg1->numeric(ctx) < arg2->numeric(ctx));
     case Type::LITERAL:
@@ -179,7 +206,10 @@ bool OperatorExpression::boolean(Context&ctx) const
     switch (arg1->type(ctx).major())
     {
     case Type::INTEGER:
-      return (arg1->integer(ctx) <= arg2->integer(ctx));
+      if (arg2->type(ctx) == Type::NUMERIC)
+        return (arg1->numeric(ctx) <= arg2->numeric(ctx));
+      else
+        return (arg1->integer(ctx) <= arg2->integer(ctx));
     case Type::NUMERIC:
       return (arg1->numeric(ctx) <= arg2->numeric(ctx));
     case Type::LITERAL:
@@ -193,7 +223,10 @@ bool OperatorExpression::boolean(Context&ctx) const
     switch (arg1->type(ctx).major())
     {
     case Type::INTEGER:
-      return (arg1->integer(ctx) > arg2->integer(ctx));
+      if (arg2->type(ctx) == Type::NUMERIC)
+        return (arg1->numeric(ctx) > arg2->numeric(ctx));
+      else
+        return (arg1->integer(ctx) > arg2->integer(ctx));
     case Type::NUMERIC:
       return (arg1->numeric(ctx) > arg2->numeric(ctx));
     case Type::LITERAL:
@@ -207,7 +240,10 @@ bool OperatorExpression::boolean(Context&ctx) const
     switch (arg1->type(ctx).major())
     {
     case Type::INTEGER:
-      return (arg1->integer(ctx) >= arg2->integer(ctx));
+      if (arg2->type(ctx) == Type::NUMERIC)
+        return (arg1->numeric(ctx) >= arg2->numeric(ctx));
+      else
+        return (arg1->integer(ctx) >= arg2->integer(ctx));
     case Type::NUMERIC:
       return (arg1->numeric(ctx) >= arg2->numeric(ctx));
     case Type::LITERAL:

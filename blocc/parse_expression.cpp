@@ -53,8 +53,7 @@ bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p
           (exp_type == type ||
           (exp_type.level() == type.level() && (
             (exp_type == Type::NUMERIC && type == Type::INTEGER) ||
-            (exp_type == Type::INTEGER && type == Type::NUMERIC) ||
-            (exp_type == Type::COMPLEX && type == Type::COMPLEX)
+            (exp_type == Type::INTEGER && type == Type::NUMERIC)
           )));
 }
 
@@ -443,9 +442,9 @@ Expression * ParseExpression::relation()
     switch (t->code)
     {
     case TOKEN_ISNOTEQ:
-      return new OperatorExpression(OperatorExpression::OP_NE, result, assertType(bitlogic(), result->type(ctx), p, ctx));
+      return new OperatorExpression(OperatorExpression::OP_NE, result, bitlogic());
     case TOKEN_ISEQUAL:
-      return new OperatorExpression(OperatorExpression::OP_EQ, result, assertType(bitlogic(), result->type(ctx), p, ctx));
+      return new OperatorExpression(OperatorExpression::OP_EQ, result, bitlogic());
     case TOKEN_ISEQLESS:
       return new OperatorExpression(OperatorExpression::OP_LE, result, assertType(bitlogic(), result->type(ctx), p, ctx));
     case '<':
