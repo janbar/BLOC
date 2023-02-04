@@ -266,7 +266,14 @@ bool OperatorExpression::boolean(Context&ctx) const
     return (arg2->boolean(ctx) == false);
 
   case OP_MATCH:
-    return std::regex_match(arg1->literal(ctx), std::regex(arg2->literal(ctx)));
+    try
+    {
+      return std::regex_match(arg1->literal(ctx), std::regex(arg2->literal(ctx)));
+    }
+    catch (std::regex_error& re)
+    {
+      throw RuntimeError(EXC_RT_OTHER_S, re.what());
+    }
 
   default:
     throw RuntimeError(EXC_RT_INV_EXPRESSION);
