@@ -23,10 +23,10 @@
 #include "context.h"
 #include "parser.h"
 
-#include <cassert>
-
 namespace bloc
 {
+
+Type ItemExpression::_opaque = Type(Type::NO_TYPE);
 
 ItemExpression::~ItemExpression()
 {
@@ -36,6 +36,9 @@ ItemExpression::~ItemExpression()
 
 const Type& ItemExpression::type(Context&ctx) const
 {
+  /* tuple is opaque */
+  if (_exp->type(ctx).minor() == 0)
+    return _opaque;
   if (_index < _exp->tuple_decl(ctx).size())
     return _exp->tuple_decl(ctx)[_index];
   return ComplexExpression::null;
@@ -97,7 +100,9 @@ ItemExpression * ItemExpression::item(Parser& p, Context& ctx, Expression * exp)
   if (t->code != TOKEN_INTEGER)
     throw ParseError(EXC_PARSE_INV_EXPRESSION);
   unsigned item_no = (unsigned)std::stoul(t->text, 0, 10);
-  if (item_no < 1 || item_no > exp->tuple_decl(ctx).size())
+  /* no minor for an opaque tuple */
+  if (item_no < 1 ||
+      (exp->type(ctx).minor() != 0 && item_no > exp->tuple_decl(ctx).size()))
     throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
   return new ItemExpression(exp, item_no - 1);
 }

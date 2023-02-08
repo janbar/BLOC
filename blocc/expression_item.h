@@ -34,6 +34,7 @@ class ItemExpression : public Expression
 
   Expression * _exp = nullptr;
   unsigned _index = 0;
+  static Type _opaque;
 
 public:
 

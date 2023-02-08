@@ -49,12 +49,14 @@ Expression * ParseExpression::expression(Parser& p, Context& ctx)
 bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p, Context& ctx)
 {
   const Type& exp_type = exp->type(ctx);
-  return !p.semantic() ||
-          (exp_type == type ||
+  return !p.semantic() || exp_type == type ||
           (exp_type.level() == type.level() && (
+            /* type mixing */
             (exp_type == Type::NUMERIC && type == Type::INTEGER) ||
-            (exp_type == Type::INTEGER && type == Type::NUMERIC)
-          )));
+            (exp_type == Type::INTEGER && type == Type::NUMERIC) ||
+            /* opaque */
+            type == Type::NO_TYPE || exp_type == Type::NO_TYPE
+          ));
 }
 
 Expression * ParseExpression::assertType(Expression * exp, const Type& type, Parser& p, Context& ctx, bool deleteOnFailure /*= true*/)
@@ -68,7 +70,10 @@ Expression * ParseExpression::assertType(Expression * exp, const Type& type, Par
 
 Expression * ParseExpression::assertTypeUniform(Expression * exp, const Type& type, Parser& p, Context& ctx, bool deleteOnFailure /*= true*/)
 {
-  if (!p.semantic() || exp->type(ctx) == type)
+  const Type& exp_type = exp->type(ctx);
+  if (!p.semantic() || exp_type == type ||
+      /* opaque */
+      type == Type::NO_TYPE || exp_type == Type::NO_TYPE)
     return exp;
   if (deleteOnFailure) delete exp;
   throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str());
