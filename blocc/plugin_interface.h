@@ -30,7 +30,8 @@ extern "C"
 
   /**
    * The string declares the intrinsic type (1 letter) or a tuple as sequence
-   * of letter for each item.
+   * of letter for each item. Note that R declares an opaque tuple, and cannot
+   * be used in the sequence of tuple declaration.
    *
    *    B   -->   Boolean
    *    I   -->   Integer
@@ -38,6 +39,7 @@ extern "C"
    *    L   -->   Literal (C-String)
    *    C   -->   Complex (Object like this)
    *    X   -->   Bytes array
+   *    R   -->   Opaque tuple
    *
    */
   typedef const char * PLUGIN_DECL;

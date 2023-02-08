@@ -19,6 +19,7 @@
 #include "plugin.h"
 
 #include <cstring>
+#include <cassert>
 
 namespace bloc
 {
@@ -68,6 +69,12 @@ make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id)
       continue;
     cnt++;
     decl.push_back(Type(m, (m == Type::COMPLEX ? type_id : 0), 0));
+    /* opaque tuple cannot be nested */
+    if (m == Type::ROWTYPE)
+    {
+      assert(i == 0);
+      break;
+    }
   }
   return decl;
 }
