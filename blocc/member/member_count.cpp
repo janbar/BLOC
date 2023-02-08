@@ -70,6 +70,7 @@ MemberCOUNTExpression * MemberCOUNTExpression::parse(Parser& p, Context& ctx, Ex
       {
       case Type::LITERAL:
       case Type::TABCHAR:
+      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_COUNT]);

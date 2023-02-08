@@ -101,6 +101,7 @@ MemberExpression * MemberExpression::expression(Parser& p, Context& ctx, Express
       case Type::LITERAL:
       case Type::TABCHAR:
       case Type::ROWTYPE:
+      case Type::NO_TYPE: /* opaque */
         return parse_builtin(p, ctx, exp);
       default:
         throw ParseError(EXC_PARSE_INV_EXPRESSION);

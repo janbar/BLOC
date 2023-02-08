@@ -86,6 +86,7 @@ MemberDELETEExpression * MemberDELETEExpression::parse(Parser& p, Context& ctx, 
       {
       case Type::LITERAL:
       case Type::TABCHAR:
+      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_DELETE]);

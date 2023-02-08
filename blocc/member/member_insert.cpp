@@ -217,6 +217,7 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
       {
       case Type::LITERAL:
       case Type::TABCHAR:
+      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT]);
@@ -248,15 +249,26 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
                 !ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
           throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT]);
         break;
+      case Type::NO_TYPE: /* opaque */
+        break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT]);
       }
     }
-    else
+    /* collection INSERT */
+    else if (exp_type != Type::ROWTYPE ||
+            /* not opaque */
+            (exp_type.minor() != 0 && args.back()->type(ctx).minor() != 0))
     {
-      /* collection INSERT collection */
       if (args.back()->type(ctx) != exp_type &&
               args.back()->type(ctx) != exp_type.levelDown())
+        throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+    }
+    else
+    {
+      /* collection INSERT opaque */
+      if (args.back()->type(ctx).level() != exp_type.level() &&
+              args.back()->type(ctx).level() != exp_type.levelDown().level())
         throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
     }
     assertClosedMember(p, ctx, KEYWORDS[BTM_INSERT]);

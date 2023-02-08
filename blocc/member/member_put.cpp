@@ -148,6 +148,7 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
       {
       case Type::LITERAL:
       case Type::TABCHAR:
+      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]);
@@ -169,6 +170,7 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
         /* PUT a char */
       case Type::LITERAL:
       case Type::TABCHAR:
+      case Type::NO_TYPE: /* opaque */
         if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
           throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_PUT]);
         break;
