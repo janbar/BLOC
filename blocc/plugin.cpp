@@ -35,13 +35,13 @@ static const Type::TypeMajor __match_type_code__[] = {
   NA, NA, Type::BOOLEAN, Type::COMPLEX, NA, NA, NA, NA,
   NA, Type::INTEGER, NA, NA, Type::LITERAL, NA, Type::NUMERIC, NA,
 
-  NA, NA, NA, NA, NA, NA, NA, NA,
+  NA, NA, Type::ROWTYPE, NA, NA, NA, NA, NA,
   Type::TABCHAR, NA, NA, NA, NA, NA, NA, NA,
 
   NA, NA, Type::BOOLEAN, Type::COMPLEX, NA, NA, NA, NA,
   NA, Type::INTEGER, NA, NA, Type::LITERAL, NA, Type::NUMERIC, NA,
 
-  NA, NA, NA, NA, NA, NA, NA, NA,
+  NA, NA, Type::ROWTYPE, NA, NA, NA, NA, NA,
   Type::TABCHAR, NA, NA, NA, NA, NA, NA, NA,
 
   NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,
