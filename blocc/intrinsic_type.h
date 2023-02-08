@@ -89,7 +89,7 @@ public:
     switch (type)
     {
     case NO_TYPE:
-      return "void";
+      return "undefined";
     case BOOLEAN:
       return "boolean";
     case INTEGER:
