@@ -42,7 +42,7 @@ namespace plugin
 {
 
 /**
- * Build tuple declaration from IMPORT_DECL definition.
+ * Build tuple declaration from PLUGIN_DECL definition.
  * The tuple declaration (decl_t) is required to create a collection of tuple.
  * Use this function to build it, before calling the collection CTOR.
  * @param decl_def the tuple definition
@@ -52,7 +52,7 @@ Tuple::Decl
 make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id);
 
 /**
- * Build type from IMPORT_TYPE definition.
+ * Build type from PLUGIN_TYPE definition.
  * The type (Type) is required to create a collection of intrinsic type. Use
  * this function to build it, before calling the collection CTOR.
  * @param type_def the type definition
@@ -92,7 +92,7 @@ public:
    * Execute the given method.
    * It should return a pointer to new expression from type:
    *    BooleanExpression, IntegerExpression, NumericExpression,
-   *    LiteralExpression, TabcharExpression,
+   *    LiteralExpression, TabcharExpression, TupleExpression,
    * or self by returning new ComplexExpression(object_this).
    * The returned pointer will be freed by the caller after payload processing.
    * Returning nullptr will throw RuntimeError(EXC_RT_MEMB_FAILED_S). Obviously
