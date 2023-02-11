@@ -92,7 +92,7 @@ std::string ItemExpression::unparse(Context& ctx) const
       .append(1, OPERATOR).append(std::to_string(_index + 1));
 }
 
-ItemExpression * ItemExpression::item(Parser& p, Context& ctx, Expression * exp)
+ItemExpression * ItemExpression::parse(Parser& p, Context& ctx, Expression * exp)
 {
   const Type& exp_type = exp->type(ctx);
   if (exp_type.major() != Type::ROWTYPE)

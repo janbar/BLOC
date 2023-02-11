@@ -70,7 +70,7 @@ public:
             .append(std::to_string(_index + 1));
   }
 
-  static ItemExpression * item(Parser& p, Context& ctx, Expression * exp);
+  static ItemExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };
 
 }

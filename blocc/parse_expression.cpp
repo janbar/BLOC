@@ -94,11 +94,11 @@ Expression * ParseExpression::member(Expression * exp)
       {
       case MemberExpression::OPERATOR:
         p.pop();
-        exp = MemberExpression::expression(p, ctx, exp);
+        exp = MemberExpression::parse(p, ctx, exp);
         break;
       case ItemExpression::OPERATOR:
         p.pop();
-        exp = ItemExpression::item(p, ctx, exp);
+        exp = ItemExpression::parse(p, ctx, exp);
         break;
       default:
         done = true;
@@ -150,7 +150,7 @@ Expression * ParseExpression::element()
       {
         /* found a builtin function */
         p.push(t);
-        result = BuiltinExpression::expression(p, ctx);
+        result = BuiltinExpression::parse(p, ctx);
         return member(result);
       }
       else

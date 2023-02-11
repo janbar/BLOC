@@ -130,7 +130,7 @@ public:
    * Parse a function argument. This code pulls off the '(' and ')' around the
    * arguments passed to the function and parses them.
    */
-  static BuiltinExpression * expression(Parser& p, Context& ctx);
+  static BuiltinExpression * parse(Parser& p, Context& ctx);
 
 protected:
   virtual ~BuiltinExpression();

@@ -86,7 +86,7 @@ void MemberExpression::assertClosedMember(Parser& p, Context& ctx, const char * 
     throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, member);
 }
 
-MemberExpression * MemberExpression::expression(Parser& p, Context& ctx, Expression * exp)
+MemberExpression * MemberExpression::parse(Parser& p, Context& ctx, Expression * exp)
 {
   try
   {

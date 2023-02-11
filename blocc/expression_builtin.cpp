@@ -150,7 +150,7 @@ std::set<std::string> BuiltinExpression::keywordSet()
   return lst;
 }
 
-BuiltinExpression * BuiltinExpression::expression(Parser& p, Context& ctx)
+BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
 {
   TokenPtr t = p.pop();
   FUNCTION fc = (FUNCTION)findKeyword(t->text);

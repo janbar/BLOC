@@ -75,7 +75,7 @@ public:
 
   static int findBuiltinKeyword(const std::string& s);
 
-  static MemberExpression * expression(Parser& p, Context& ctx, Expression * exp);
+  static MemberExpression * parse(Parser& p, Context& ctx, Expression * exp);
 
 protected:
   static void assertClosedMember(Parser& p, Context& ctx, const char * member);
