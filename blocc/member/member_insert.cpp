@@ -108,13 +108,14 @@ TabChar& MemberINSERTExpression::tabchar(Context& ctx) const
 
 Collection& MemberINSERTExpression::collection(Context& ctx) const
 {
-  /* collection */
+  const Type& arg_type = _args[1]->type(ctx);
+  const Type& exp_type = _exp->type(ctx);
   Collection& rv = _exp->collection(ctx);
   int64_t p = _args[0]->integer(ctx);
   if (p < 0 || p > rv.size())
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
   /* same set */
-  if (_args[1]->type(ctx) == _exp->type(ctx))
+  if (arg_type == exp_type)
   {
     Collection& a = _args[1]->collection(ctx);
     /* allocate once and for all */
@@ -146,11 +147,11 @@ Collection& MemberINSERTExpression::collection(Context& ctx) const
     return rv;
   }
   /* one element */
-  else if (_args[1]->type(ctx) == _exp->type(ctx).levelDown())
+  else if (arg_type == exp_type.levelDown())
   {
-    if (_args[1]->type(ctx).level() == 0)
+    if (arg_type.level() == 0)
     {
-      switch (_args[1]->type(ctx).major())
+      switch (arg_type.major())
       {
       case Type::BOOLEAN:
         rv.insert(rv.begin() + p, new BooleanExpression(_args[1]->boolean(ctx)));

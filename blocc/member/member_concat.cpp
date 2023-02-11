@@ -101,10 +101,11 @@ TabChar& MemberCONCATExpression::tabchar(Context& ctx) const
 
 Collection& MemberCONCATExpression::collection(Context& ctx) const
 {
-  /* collection */
+  const Type& arg_type = _args[0]->type(ctx);
+  const Type& exp_type = _exp->type(ctx);
   Collection& rv = _exp->collection(ctx);
   /* same set */
-  if (_args[0]->type(ctx) == _exp->type(ctx))
+  if (arg_type == exp_type)
   {
     Collection& a = _args[0]->collection(ctx);
     /* allocate once and for all */
@@ -134,11 +135,11 @@ Collection& MemberCONCATExpression::collection(Context& ctx) const
     return rv;
   }
   /* one element */
-  else if (_args[0]->type(ctx) == _exp->type(ctx).levelDown())
+  else if (arg_type == exp_type.levelDown())
   {
-    if (_args[0]->type(ctx).level() == 0)
+    if (arg_type.level() == 0)
     {
-      switch (_args[0]->type(ctx).major())
+      switch (arg_type.major())
       {
       case Type::BOOLEAN:
         rv.push_back(new BooleanExpression(_args[0]->boolean(ctx)));
