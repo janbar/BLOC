@@ -116,14 +116,9 @@ public:
 
   int64_t integer(Context& ctx) const override;
 
-  /**
-   * This method evaluates the expression in the context of the
-   * passed in program. It throws runtime errors for things like
-   * divide by zero or out of range.
-   */
   double numeric(Context& ctx) const override;
 
-  bool isRvalue(Context& ctx) const override { return true; }
+  bool isRvalue() const override { return true; }
 
   std::string& literal(Context& ctx) const override;
 

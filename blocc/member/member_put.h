@@ -47,7 +47,9 @@ public:
   const Tuple::Decl& tuple_decl(Context& ctx) const override { return _exp->tuple_decl(ctx); }
 
   std::string typeName(Context& ctx) const override { return _exp->typeName(ctx); }
-  
+
+  bool isRvalue() const override { return _exp->isRvalue(); }
+
   static MemberPUTExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };
 

@@ -82,7 +82,7 @@ Collection& TABExpression::collection(Context & ctx) const
     case Type::COMPLEX:
     {
       /* execute ctor or method for each */
-      if (_args[1]->isRvalue(ctx))
+      if (_args[1]->isRvalue())
       {
         for (int i = 0; i < n; ++i)
           tab->push_back(new ComplexExpression(std::move(_args[1]->complex(ctx))));

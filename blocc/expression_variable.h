@@ -63,6 +63,8 @@ public:
 
   Complex& complex(Context& ctx) const override;
 
+  bool isStored() const override { return true; }
+
   std::string unparse(Context& ctx) const override
   {
     return _symbol.name;

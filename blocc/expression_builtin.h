@@ -114,7 +114,7 @@ public:
     FUNC_HASH   = 63, // hash(x) | hash(x,max)
   };
 
-  bool isRvalue(Context& ctx) const override { return true; }
+  bool isRvalue() const override { return true; }
 
   std::string unparse(Context& ctx) const override;
 

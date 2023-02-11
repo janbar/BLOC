@@ -55,7 +55,7 @@ public:
 
   double numeric(Context& ctx) const override;
 
-  bool isRvalue(Context& ctx) const override { return false; }
+  bool isRvalue() const override { return false; }
 
   std::string& literal(Context& ctx) const override;
 

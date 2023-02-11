@@ -29,7 +29,7 @@ namespace bloc
 std::string& RTRIMExpression::literal(Context & ctx) const
 {
   int64_t a;
-  if (_args[0]->isRvalue(ctx))
+  if (_args[0]->isRvalue())
   {
     std::string& rv = _args[0]->literal(ctx);
     a = rv.length() - 1;

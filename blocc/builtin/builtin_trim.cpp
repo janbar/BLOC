@@ -31,7 +31,7 @@ namespace bloc
 std::string& TRIMExpression::literal(Context & ctx) const
 {
   int64_t a, b, c;
-  if (_args[0]->isRvalue(ctx))
+  if (_args[0]->isRvalue())
   {
     std::string& rv = _args[0]->literal(ctx);
     b = rv.length() - 1;

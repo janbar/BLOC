@@ -53,19 +53,19 @@ Tuple& TUPLEExpression::tuple(Context & ctx) const
       items.push_back(new NumericExpression(a->numeric(ctx)));
       break;
     case Type::LITERAL:
-      if (a->isRvalue(ctx))
+      if (a->isRvalue())
         items.push_back(new LiteralExpression(std::move(a->literal(ctx))));
       else
         items.push_back(new LiteralExpression(a->literal(ctx)));
       break;
     case Type::COMPLEX:
-      if (a->isRvalue(ctx))
+      if (a->isRvalue())
         items.push_back(new ComplexExpression(std::move(a->complex(ctx))));
       else
         items.push_back(new ComplexExpression(a->complex(ctx)));
       break;
     case Type::TABCHAR:
-      if (a->isRvalue(ctx))
+      if (a->isRvalue())
         items.push_back(new TabcharExpression(std::move(a->tabchar(ctx))));
       else
         items.push_back(new TabcharExpression(a->tabchar(ctx)));

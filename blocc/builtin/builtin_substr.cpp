@@ -29,7 +29,7 @@ namespace bloc
 std::string& SUBSTRExpression::literal(Context & ctx) const
 {
   int64_t a, b, c;
-  if (_args[0]->isRvalue(ctx))
+  if (_args[0]->isRvalue())
   {
     std::string& rv = _args[0]->literal(ctx);
     if ((c = rv.size()) == 0)

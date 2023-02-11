@@ -58,6 +58,8 @@ public:
 
   Complex& complex(Context& ctx) const override;
 
+  bool isRvalue() const override { return _exp->isRvalue(); }
+
   static MemberATExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };
 

@@ -48,6 +48,8 @@ public:
 
   std::string typeName(Context& ctx) const override { return _exp->typeName(ctx); }
 
+  bool isRvalue() const override { return _exp->isRvalue(); }
+
   static MemberDELETEExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };
 

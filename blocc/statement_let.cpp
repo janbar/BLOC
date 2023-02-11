@@ -66,7 +66,7 @@ const Statement * LETStatement::doit(Context& ctx) const
         break;
       case Type::COMPLEX:
       {
-        if (_exp->isRvalue(ctx))
+        if (_exp->isRvalue())
           _var.store(ctx, ComplexExpression(std::move(_exp->complex(ctx))));
         else
           _var.store(ctx, ComplexExpression(_exp->complex(ctx)));
@@ -74,7 +74,7 @@ const Statement * LETStatement::doit(Context& ctx) const
       }
       case Type::LITERAL:
       {
-        if (_exp->isRvalue(ctx))
+        if (_exp->isRvalue())
           _var.store(ctx, LiteralExpression(std::move(_exp->literal(ctx))));
         else
           _var.store(ctx, LiteralExpression(_exp->literal(ctx)));
@@ -82,7 +82,7 @@ const Statement * LETStatement::doit(Context& ctx) const
       }
       case Type::TABCHAR:
       {
-        if (_exp->isRvalue(ctx))
+        if (_exp->isRvalue())
           _var.store(ctx, TabcharExpression(std::move(_exp->tabchar(ctx))));
         else
           _var.store(ctx, TabcharExpression(_exp->tabchar(ctx)));
@@ -90,7 +90,7 @@ const Statement * LETStatement::doit(Context& ctx) const
       }
       case Type::ROWTYPE:
       {
-        if (_exp->isRvalue(ctx))
+        if (_exp->isRvalue())
           _var.store(ctx, TupleExpression(std::move(_exp->tuple(ctx))));
         else
           _var.store(ctx, TupleExpression(_exp->tuple(ctx)));
@@ -101,7 +101,7 @@ const Statement * LETStatement::doit(Context& ctx) const
     else
     {
       /* first check for an rvalue, if not then make a copy */
-      if (_exp->isRvalue(ctx))
+      if (_exp->isRvalue())
         _var.store(ctx, CollectionExpression(std::move(_exp->collection(ctx))));
       else
         _var.store(ctx, CollectionExpression(_exp->collection(ctx)));

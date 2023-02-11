@@ -82,7 +82,16 @@ public:
    * modified and forwarded throughout the duration of the running statement,
    * thus avoiding copying or new memory allocation.
    */
-  virtual bool isRvalue(Context& ctx) const
+  virtual bool isRvalue() const
+  {
+    return false;
+  }
+
+  /**
+   * Proves this expression provides a stored value, loaded from a variable.
+   * The stored value is static expression, and its type cannot be opaque.
+   */
+  virtual bool isStored() const
   {
     return false;
   }

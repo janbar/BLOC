@@ -57,7 +57,7 @@ const Statement * RETURNStatement::doit(Context& ctx) const
         ctx.saveReturned(nullptr);
         break;
       case Type::LITERAL:
-        if (_exp->isRvalue(ctx))
+        if (_exp->isRvalue())
           ctx.saveReturned(new LiteralExpression(std::move(_exp->literal(ctx))));
         else
           ctx.saveReturned(new LiteralExpression(_exp->literal(ctx)));
@@ -80,7 +80,7 @@ const Statement * RETURNStatement::doit(Context& ctx) const
         ctx.saveReturned(nullptr);
         break;
       case Type::ROWTYPE:
-        if (_exp->isRvalue(ctx))
+        if (_exp->isRvalue())
           ctx.saveReturned(new TupleExpression(std::move(_exp->tuple(ctx))));
         else
           ctx.saveReturned(new TupleExpression(_exp->tuple(ctx)));

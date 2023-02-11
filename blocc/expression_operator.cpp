@@ -402,7 +402,7 @@ std::string& OperatorExpression::literal(Context& ctx) const
   switch (oper)
   {
   case OP_ADD:
-    if (arg1->isRvalue(ctx))
+    if (arg1->isRvalue())
       return arg1->literal(ctx).append(arg2->literal(ctx));
     else
       return ctx.allocate(std::string(arg1->literal(ctx))).append(arg2->literal(ctx));

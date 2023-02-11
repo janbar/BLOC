@@ -29,7 +29,7 @@ namespace bloc
 TabChar& SUBRAWExpression::tabchar(Context & ctx) const
 {
   int64_t a, b, c;
-  if (_args[0]->isRvalue(ctx))
+  if (_args[0]->isRvalue())
   {
     TabChar& rv = _args[0]->tabchar(ctx);
     if ((c = rv.size()) == 0)

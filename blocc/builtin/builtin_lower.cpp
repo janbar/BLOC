@@ -28,7 +28,7 @@ namespace bloc
 
 std::string& LOWERExpression::literal(Context & ctx) const
 {
-  if (_args[0]->isRvalue(ctx))
+  if (_args[0]->isRvalue())
   {
     std::string& rv = _args[0]->literal(ctx);
     std::transform(rv.begin(), rv.end(), rv.begin(), ::tolower);

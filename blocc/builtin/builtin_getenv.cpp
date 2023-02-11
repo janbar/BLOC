@@ -34,11 +34,11 @@ std::string& GETENVExpression::literal(Context & ctx) const
   const char * buf = ::getenv(rv.c_str());
   if (buf != nullptr)
   {
-    if (_args[0]->isRvalue(ctx))
+    if (_args[0]->isRvalue())
       return rv.assign(buf);
     return ctx.allocate(std::string(buf));
   }
-  if (_args[0]->isRvalue(ctx))
+  if (_args[0]->isRvalue())
     return rv.assign("");
   return ctx.allocate(std::string());
 }

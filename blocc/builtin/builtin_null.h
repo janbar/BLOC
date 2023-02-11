@@ -43,7 +43,7 @@ public:
   Complex& complex(Context& ctx) const override { return _null; }
 
   /* payload MUST be copied */
-  bool isRvalue(Context& ctx) const override { return false; }
+  bool isRvalue() const override { return false; }
 };
 
 }

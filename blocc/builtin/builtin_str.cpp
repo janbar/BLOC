@@ -40,7 +40,7 @@ std::string& STRExpression::literal(Context & ctx) const
   case Type::NUMERIC:
     return ctx.allocate((NumericExpression::readableNumeric(_args[0]->numeric(ctx))));
   case Type::LITERAL:
-    if (_args[0]->isRvalue(ctx))
+    if (_args[0]->isRvalue())
       return _args[0]->literal(ctx);
     return ctx.allocate(std::string(_args[0]->literal(ctx)));
   case Type::TABCHAR:

@@ -139,7 +139,7 @@ MemberExpression * MemberExpression::parse_builtin(Parser& p, Context& ctx, Expr
   case BTM_AT:
     break;
   default:
-    if (!exp->isRvalue(ctx))
+    if (!exp->isRvalue())
     {
       if (!dynamic_cast<VariableExpression*>(exp) &&
               !dynamic_cast<MemberExpression*>(exp) &&

@@ -120,7 +120,7 @@ Collection& MemberCONCATExpression::collection(Context& ctx) const
     }
     else
     {
-      if (_args[0]->isRvalue(ctx))
+      if (_args[0]->isRvalue())
       {
         /* move */
         for (StaticExpression * e : a)
@@ -151,25 +151,25 @@ Collection& MemberCONCATExpression::collection(Context& ctx) const
         rv.push_back(new NumericExpression(_args[0]->numeric(ctx)));
         break;
       case Type::COMPLEX:
-        if (_args[0]->isRvalue(ctx))
+        if (_args[0]->isRvalue())
           rv.push_back(new ComplexExpression(std::move(_args[0]->complex(ctx))));
         else
           rv.push_back(new ComplexExpression(_args[0]->complex(ctx)));
         break;
       case Type::LITERAL:
-        if (_args[0]->isRvalue(ctx))
+        if (_args[0]->isRvalue())
           rv.push_back(new LiteralExpression(std::move(_args[0]->literal(ctx))));
         else
           rv.push_back(new LiteralExpression(_args[0]->literal(ctx)));
         break;
       case Type::TABCHAR:
-        if (_args[0]->isRvalue(ctx))
+        if (_args[0]->isRvalue())
           rv.push_back(new TabcharExpression(std::move(_args[0]->tabchar(ctx))));
         else
           rv.push_back(new TabcharExpression(_args[0]->tabchar(ctx)));
         break;
       case Type::ROWTYPE:
-        if (_args[0]->isRvalue(ctx))
+        if (_args[0]->isRvalue())
           rv.push_back(new TupleExpression(std::move(_args[0]->tuple(ctx))));
         else
           rv.push_back(new TupleExpression(_args[0]->tuple(ctx)));
@@ -178,7 +178,7 @@ Collection& MemberCONCATExpression::collection(Context& ctx) const
         throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
       }
     }
-    else if (_args[0]->isRvalue(ctx))
+    else if (_args[0]->isRvalue())
       rv.push_back(new CollectionExpression(std::move(_args[0]->collection(ctx))));
     else
       rv.push_back(new CollectionExpression(_args[0]->collection(ctx)));

@@ -129,7 +129,7 @@ Collection& MemberINSERTExpression::collection(Context& ctx) const
         it = rv.insert(it, e->swapNew());
       _a.clear();
     }
-    else if (_args[1]->isRvalue(ctx))
+    else if (_args[1]->isRvalue())
     {
       /* move */
       Collection::const_iterator it = rv.begin() + p;
@@ -163,25 +163,25 @@ Collection& MemberINSERTExpression::collection(Context& ctx) const
         rv.insert(rv.begin() + p, new NumericExpression(_args[1]->numeric(ctx)));
         break;
       case Type::COMPLEX:
-        if (_args[1]->isRvalue(ctx))
+        if (_args[1]->isRvalue())
           rv.insert(rv.begin() + p, new ComplexExpression(std::move(_args[1]->complex(ctx))));
         else
           rv.insert(rv.begin() + p, new ComplexExpression(_args[1]->complex(ctx)));
         break;
       case Type::LITERAL:
-        if (_args[1]->isRvalue(ctx))
+        if (_args[1]->isRvalue())
           rv.insert(rv.begin() + p, new LiteralExpression(std::move(_args[1]->literal(ctx))));
         else
           rv.insert(rv.begin() + p, new LiteralExpression(_args[1]->literal(ctx)));
         break;
       case Type::TABCHAR:
-        if (_args[1]->isRvalue(ctx))
+        if (_args[1]->isRvalue())
           rv.insert(rv.begin() + p, new TabcharExpression(std::move(_args[1]->tabchar(ctx))));
         else
           rv.insert(rv.begin() + p, new TabcharExpression(_args[1]->tabchar(ctx)));
         break;
       case Type::ROWTYPE:
-        if (_args[1]->isRvalue(ctx))
+        if (_args[1]->isRvalue())
           rv.insert(rv.begin() + p, new TupleExpression(std::move(_args[1]->tuple(ctx))));
         else
           rv.insert(rv.begin() + p, new TupleExpression(_args[1]->tuple(ctx)));
@@ -190,7 +190,7 @@ Collection& MemberINSERTExpression::collection(Context& ctx) const
         throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
       }
     }
-    else if (_args[1]->isRvalue(ctx))
+    else if (_args[1]->isRvalue())
       rv.insert(rv.begin() + p, new CollectionExpression(std::move(_args[1]->collection(ctx))));
     else
       rv.insert(rv.begin() + p, new CollectionExpression(_args[1]->collection(ctx)));

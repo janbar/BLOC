@@ -91,25 +91,25 @@ Collection& MemberPUTExpression::collection(Context& ctx) const
       rv[p] = new NumericExpression(_args[1]->numeric(ctx));
       break;
     case Type::COMPLEX:
-      if (_args[1]->isRvalue(ctx))
+      if (_args[1]->isRvalue())
         rv[p] = new ComplexExpression(std::move(_args[1]->complex(ctx)));
       else
         rv[p] = new ComplexExpression(_args[1]->complex(ctx));
       break;
     case Type::LITERAL:
-      if (_args[1]->isRvalue(ctx))
+      if (_args[1]->isRvalue())
         rv[p] = new LiteralExpression(std::move(_args[1]->literal(ctx)));
       else
         rv[p] = new LiteralExpression(_args[1]->literal(ctx));
       break;
     case Type::TABCHAR:
-      if (_args[1]->isRvalue(ctx))
+      if (_args[1]->isRvalue())
         rv[p] = new TabcharExpression(std::move(_args[1]->tabchar(ctx)));
       else
         rv[p] = new TabcharExpression(_args[1]->tabchar(ctx));
       break;
     case Type::ROWTYPE:
-      if (_args[1]->isRvalue(ctx))
+      if (_args[1]->isRvalue())
         rv[p] = new TupleExpression(std::move(_args[1]->tuple(ctx)));
       else
         rv[p] = new TupleExpression(_args[1]->tuple(ctx));
@@ -120,7 +120,7 @@ Collection& MemberPUTExpression::collection(Context& ctx) const
   }
   else
   {
-    if (_args[1]->isRvalue(ctx))
+    if (_args[1]->isRvalue())
       rv[p] = new CollectionExpression(std::move(_args[1]->collection(ctx)));
     else
       rv[p] = new CollectionExpression(_args[1]->collection(ctx));

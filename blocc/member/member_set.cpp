@@ -55,19 +55,19 @@ Tuple& MemberSETExpression::tuple(Context& ctx) const
       rv[_index]->refNumeric() = _args[0]->numeric(ctx);
       break;
     case Type::LITERAL:
-      if (_args[0]->isRvalue(ctx))
+      if (_args[0]->isRvalue())
         rv[_index]->refLiteral().swap(_args[0]->literal(ctx));
       else
         rv[_index]->refLiteral() = _args[0]->literal(ctx);
       break;
     case Type::COMPLEX:
-      if (_args[0]->isRvalue(ctx))
+      if (_args[0]->isRvalue())
         rv[_index]->refComplex().swap(_args[0]->complex(ctx));
       else
         rv[_index]->refComplex() = _args[0]->complex(ctx);
       break;
     case Type::TABCHAR:
-      if (_args[0]->isRvalue(ctx))
+      if (_args[0]->isRvalue())
         rv[_index]->refTabchar().swap(_args[0]->tabchar(ctx));
       else
         rv[_index]->refTabchar() = _args[0]->tabchar(ctx);
