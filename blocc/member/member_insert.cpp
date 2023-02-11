@@ -268,6 +268,8 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
     else
     {
       /* collection INSERT opaque */
+      if (!exp->isStored() || !args.back()->isStored())
+        throw ParseError(EXC_PARSE_OPAQUE_ROWTYPE);
       if (args.back()->type(ctx).level() != exp_type.level() &&
               args.back()->type(ctx).level() != exp_type.levelDown().level())
         throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());

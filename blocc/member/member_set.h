@@ -48,6 +48,8 @@ public:
 
   bool isRvalue() const override { return _exp->isRvalue(); }
 
+  bool isStored() const override { return _exp->isStored(); }
+
   std::string unparse(Context& ctx) const override;
 
   static MemberSETExpression * parse(Parser& p, Context& ctx, Expression * exp);

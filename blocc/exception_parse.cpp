@@ -53,6 +53,7 @@ const char * ParseError::PARSE_ERROR[] =
   "Missing keyword %s.",
   "Keyword '%s' cannot be used as variable name.",
   "Import module '%s' failed.",
+  "Opaque tuple must be stored in a variable before accessing its items.",
   "%s", /* EXC_PARSE_MESSAGE_S */
 };
 

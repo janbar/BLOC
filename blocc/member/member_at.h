@@ -60,6 +60,8 @@ public:
 
   bool isRvalue() const override { return _exp->isRvalue(); }
 
+  bool isStored() const override { return _exp->isStored(); }
+
   static MemberATExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };
 

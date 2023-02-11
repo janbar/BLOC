@@ -94,15 +94,18 @@ std::string ItemExpression::unparse(Context& ctx) const
 
 ItemExpression * ItemExpression::item(Parser& p, Context& ctx, Expression * exp)
 {
-  if (exp->type(ctx).major() != Type::ROWTYPE)
+  const Type& exp_type = exp->type(ctx);
+  if (exp_type.major() != Type::ROWTYPE)
     throw ParseError(EXC_PARSE_NOT_ROWTYPE);
+  if (exp_type.minor() == 0 && !exp->isStored())
+    throw ParseError(EXC_PARSE_OPAQUE_ROWTYPE);
   TokenPtr t = p.pop();
   if (t->code != TOKEN_INTEGER)
     throw ParseError(EXC_PARSE_INV_EXPRESSION);
   unsigned item_no = (unsigned)std::stoul(t->text, 0, 10);
   /* no minor for an opaque tuple */
   if (item_no < 1 ||
-      (exp->type(ctx).minor() != 0 && item_no > exp->tuple_decl(ctx).size()))
+      (exp_type.minor() != 0 && item_no > exp->tuple_decl(ctx).size()))
     throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
   return new ItemExpression(exp, item_no - 1);
 }
