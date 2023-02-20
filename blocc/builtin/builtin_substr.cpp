@@ -34,7 +34,7 @@ std::string& SUBSTRExpression::literal(Context & ctx) const
     std::string& rv = _args[0]->literal(ctx);
     if ((c = rv.size()) == 0)
       return rv;
-    b = (_args[2] ? _args[2]->integer(ctx) : c);
+    b = (_args.size() > 2 ? _args[2]->integer(ctx) : c);
     a = _args[1]->integer(ctx);
     a = (a < 0 ? a + c : a);
     b = std::max<int64_t>(std::min(b, c - a), 0L);
@@ -47,7 +47,7 @@ std::string& SUBSTRExpression::literal(Context & ctx) const
   const std::string& var = _args[0]->literal(ctx);
   if ((c = var.size()) == 0)
     return ctx.allocate(std::string());
-  b = (_args[2] ? _args[2]->integer(ctx) : c);
+  b = (_args.size() > 2 ? _args[2]->integer(ctx) : c);
   a = _args[1]->integer(ctx);
   a = (a < 0 ? a + c : a);
   b = std::max<int64_t>(std::min(b, c - a), 0L);

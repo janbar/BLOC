@@ -34,7 +34,7 @@ TabChar& SUBRAWExpression::tabchar(Context & ctx) const
     TabChar& rv = _args[0]->tabchar(ctx);
     if ((c = rv.size()) == 0)
       return rv;
-    b = (_args[2] ? _args[2]->integer(ctx) : c);
+    b = (_args.size() > 2 ? _args[2]->integer(ctx) : c);
     a = _args[1]->integer(ctx);
     a = (a < 0 ? a + c : a);
     b = std::max<int64_t>(std::min(b, c - a), 0L);
@@ -50,7 +50,7 @@ TabChar& SUBRAWExpression::tabchar(Context & ctx) const
   const TabChar& var = _args[0]->tabchar(ctx);
   if ((c = var.size()) == 0)
     return ctx.allocate(TabChar());
-  b = (_args[2] ? _args[2]->integer(ctx) : c);
+  b = (_args.size() > 2 ? _args[2]->integer(ctx) : c);
   a = _args[1]->integer(ctx);
   a = (a < 0 ? a + c : a);
   b = std::max<int64_t>(std::min(b, c - a), 0L);
