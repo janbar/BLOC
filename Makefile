@@ -1,5 +1,5 @@
-CMAKE := cmake
-BUILDDIR := $(PWD)/release
+CMAKE = cmake
+BUILDDIR = $(PWD)/release
 
 all: CMakeLists.txt
 	mkdir -p $(BUILDDIR)
