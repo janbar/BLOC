@@ -37,7 +37,7 @@ class Parser;
 class VariableExpression : public Expression
 {
 private:
-  Symbol _symbol;
+  const Symbol& _symbol;
 
 public:
   virtual ~VariableExpression() { }
