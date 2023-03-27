@@ -50,6 +50,7 @@ private:
   Expression * _expBeg = nullptr;
   Expression * _expEnd = nullptr;
   Executable * _exec = nullptr;
+  enum { AUTO = 0, ASC, DESC } _order = AUTO;
 
   mutable struct RT
   {

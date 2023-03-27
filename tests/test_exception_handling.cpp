@@ -141,10 +141,10 @@ TEST_CASE("unstacking on exception")
   ctx.storeVariable(a1, IntegerExpression(100));
   ctx.reset(
           "brk=$1*2, cnt=0;\n"
-          "for i in 2 to $1 loop\n"
+          "for i in 1 to $1 loop\n"
           "  brk=brk-1; if brk <= 0 then return 0; end if;\n"
           "  begin\n"
-          "    for j in 2 to i/2 loop\n"
+          "    for j in 2 to i/2 asc loop\n"
           "      if i%j == 0 then raise notprim; end if;\n"
           "    end loop;\n"
           "    cnt=cnt+1;\n"
@@ -158,6 +158,6 @@ TEST_CASE("unstacking on exception")
   delete e;
   Expression * r = ctx.dropReturned();
   REQUIRE( r != nullptr );
-  REQUIRE( r->integer(ctx) == 24 );
+  REQUIRE( r->integer(ctx) == 27 );
   delete r;
 }

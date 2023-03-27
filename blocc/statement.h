@@ -70,6 +70,8 @@ public:
     STMT_EXCEPTION  = 24,
     STMT_WHEN       = 25,
     STMT_RAISE      = 26,
+    STMT_ASC        = 27,
+    STMT_DESC       = 28,
   };
 
   virtual ~Statement();

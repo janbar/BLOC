@@ -6,12 +6,12 @@ A modular interpreter based on PL syntax.
 
 BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). A sample of module is "file" that allows to operate files.
 
-Internally BLOC supports classical data types, among boolean, integer, decimal, string, byte array, tuple, and table. For now it processes twice faster than Python.
+Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like tuple and table. For now, it processes twice as fast as Python.
 
 ## Build BLOC
 You can build and test BLOC on Unix (Linux, BSD, MacOS, Illumos, SunOS), and MS-Windows. This repository contains the CMake project to configure and build BLOC. To achieve the build you will need to install **cmake** and a C99/C++11 compiler (**GCC** or **CLang**).
 
-The build provides the core library **blocc**, the CLI tool **bloc**, and some modules to extend features of the language.
+The build provides the core library **blocc**, the CLI tool **bloc**, and some modules to extend types and features of the language.
 
 ```
 cmake -B release -DCMAKE_BUILD_TYPE=Release
@@ -29,9 +29,9 @@ You could type inline expression as shown below.
 ```
 Or run a sample script as follow.
 ```
-for i in 2 to 1000 loop
+for i in 1 to 1000 loop
     b=true;
-    for j in 2 to i/2 loop
+    for j in 2 to i/2 asc loop
         if i%j == 0 then b=false; break; end if;
     end loop;
     if b then print i; end if;

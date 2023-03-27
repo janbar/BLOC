@@ -22,7 +22,7 @@ const char * Statement::KEYWORDS[] = {
   "while",    "loop",     "in",       "to",       "return",
   "begin",    "break",    "continue", "end",      "end if",
   "end loop", "print",    "put",      "do",       "exception",
-  "when",     "raise",
+  "when",     "raise",    "asc",      "desc",
 };
 
 Statement::~Statement()
@@ -128,8 +128,9 @@ const char * Statement::HELPS[] = {
   /*FOR   */  "The FOR statement provides iterator construct. It defines a control variable"
           "\nthat is initialized to an initial value. Then block of statements after the"
           "\nLOOP keyword will be executed while the specified limit isn't reached. The"
-          "\ncontrol value is incremented or decremented after each iteration."
-          "\n\nfor {var} in {integer expression} to {integer expression} loop"
+          "\ncontrol value is incremented or decremented after each iteration. The sequence"
+          "\norder is automatic else it could be specified with keywords ASC or DESC."
+          "\n\nfor {var} in {integer expression} to {integer expression} [asc|desc] loop"
           "\n    [statement ...]"
           "\nend loop;",
   /*WHILE */  "The WHILE statement provides loop flow in execution."
@@ -182,6 +183,8 @@ const char * Statement::HELPS[] = {
   /*RAISE */  "The RAISE statement throws a user named exception, or throwable error."
           "\n\nraise {exception name};"
           "\n\nSee EXCEPTION, or statement BEGIN.",
+  /*ASC   */  "See statement FOR.",
+  /*DESC  */  "See statement FOR.",
 };
 
 }

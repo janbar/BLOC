@@ -51,20 +51,24 @@ const Statement * FORStatement::doit(Context& ctx) const
   {
     int64_t b = _expBeg->integer(ctx);
     int64_t e = _expEnd->integer(ctx);
+    _data.var = &_iterator->store(ctx, IntegerExpression(b));
     if (e > b)
     {
+      if (_order == DESC)
+        return _next;
       _data.min = b;
       _data.max = e;
       _data.step = 1;
     }
     else
     {
+      if (_order == ASC)
+        return _next;
       _data.min = e;
       _data.max = b;
       _data.step = -1;
     }
-    /* initialize var as type safe */
-    _data.var = &_iterator->store(ctx, IntegerExpression(b));
+    /*  var is type safe in the loop body */
     _data.var->safety(true);
     ctx.stackControl(this);
   }
@@ -117,6 +121,19 @@ void FORStatement::unparse(Context& ctx, FILE * out) const
   fputc(' ', out);
   fputs(_expEnd->unparse(ctx).c_str(), out);
   fputc(' ', out);
+  switch(_order)
+  {
+  case AUTO:
+    break;
+  case ASC:
+    fputs(KEYWORDS[STMT_ASC], out);
+    fputc(' ', out);
+    break;
+  case DESC:
+    fputs(KEYWORDS[STMT_DESC], out);
+    fputc(' ', out);
+    break;
+  }
   fputs(KEYWORDS[STMT_LOOP], out);
   fputc(Parser::NEWLINE, out);
   ctx.execBegin(this);
@@ -204,6 +221,19 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
     t = p.pop();
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+    if (t->code == TOKEN_KEYWORD)
+    {
+      if (t->text == KEYWORDS[STMT_ASC])
+      {
+        s->_order = ASC;
+        t = p.pop();
+      }
+      else if (t->text == KEYWORDS[STMT_DESC])
+      {
+        s->_order = DESC;
+        t = p.pop();
+      }
+    }
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
       throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in FOR statement.");
     s->_exec = parse_clause(p, ctx, s);

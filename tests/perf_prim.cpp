@@ -17,14 +17,14 @@ TEST_CASE("perf 10000 prims")
   Symbol& a1 = ctx.registerSymbol("$1", Type::INTEGER);
   ctx.storeVariable(a1, IntegerExpression(10000));
   ctx.reset(
-          "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
-          "for j in 2 to i/2 loop\nif i%j == 0 then b=false; break; end if;\n"
+          "cnt=0;\nfor i in 1 to $1 loop\nb=true;\n"
+          "for j in 2 to i/2 asc loop\nif i%j == 0 then b=false; break; end if;\n"
           "end loop;\nif b then cnt=cnt+1; end if;\nend loop;\nreturn cnt;"
   );
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
   Expression * r = ctx.dropReturned();
-  REQUIRE( r->integer(ctx) == 1228 );
+  REQUIRE( r->integer(ctx) == 1231 );
   delete r;
 }
