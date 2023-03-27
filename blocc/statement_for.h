@@ -53,7 +53,8 @@ private:
 
   mutable struct RT
   {
-    int64_t limit = 0;
+    int64_t min = 0;
+    int64_t max = 0;
     int64_t step = 1;
     StaticExpression * var = nullptr;
   } _data;

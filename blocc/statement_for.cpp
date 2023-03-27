@@ -49,11 +49,22 @@ const Statement * FORStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
-    int64_t n = _expBeg->integer(ctx);
-    _data.limit = _expEnd->integer(ctx);
-    _data.step = (_data.limit < n ? -1 : 1);
+    int64_t b = _expBeg->integer(ctx);
+    int64_t e = _expEnd->integer(ctx);
+    if (e > b)
+    {
+      _data.min = b;
+      _data.max = e;
+      _data.step = 1;
+    }
+    else
+    {
+      _data.min = e;
+      _data.max = b;
+      _data.step = -1;
+    }
     /* initialize var as type safe */
-    _data.var = &_iterator->store(ctx, IntegerExpression(n));
+    _data.var = &_iterator->store(ctx, IntegerExpression(b));
     _data.var->safety(true);
     ctx.stackControl(this);
   }
@@ -61,7 +72,8 @@ const Statement * FORStatement::doit(Context& ctx) const
   {
     /* var is type safe, so it can be read without care */
     int64_t& nref = _data.var->refInteger();
-    if (nref >= _data.limit)
+    if ((_data.step > 0 && nref >= _data.max) ||
+        (_data.step < 0 && nref <= _data.min))
     {
       /* now var can be unsafe */
       _data.var->safety(false);
