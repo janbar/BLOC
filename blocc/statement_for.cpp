@@ -62,7 +62,7 @@ const Statement * FORStatement::doit(Context& ctx) const
     }
     else
     {
-      if (_order == ASC)
+      if (_order == ASC && e != b)
         return _next;
       _data.min = e;
       _data.max = b;
