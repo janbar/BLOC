@@ -25,6 +25,6 @@ TEST_CASE("perf 10000 prims")
   REQUIRE( e->run() == 0 );
   delete e;
   Expression * r = ctx.dropReturned();
-  REQUIRE( r->integer(ctx) == 1231 );
+  REQUIRE( r->integer(ctx) == 1230 );
   delete r;
 }

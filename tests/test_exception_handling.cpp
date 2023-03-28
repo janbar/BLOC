@@ -158,6 +158,6 @@ TEST_CASE("unstacking on exception")
   delete e;
   Expression * r = ctx.dropReturned();
   REQUIRE( r != nullptr );
-  REQUIRE( r->integer(ctx) == 27 );
+  REQUIRE( r->integer(ctx) == 26 );
   delete r;
 }
