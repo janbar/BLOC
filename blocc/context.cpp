@@ -161,28 +161,28 @@ Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl
 
 StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&& e)
 {
-  if (_storage[symbol.id] == nullptr)
+  std::vector<StaticExpression*>::iterator it = _storage.begin() + symbol.id;
+  if (*it == nullptr)
   {
-    /* swap new */
-    _storage[symbol.id] = e.swapNew();
-    /* also forward the safety flag */
-    _storage[symbol.id]->safety(symbol.safety());
+    /* store new and forward the safety flag */
+    *it = e.swapNew();
+    (*it)->safety(symbol.safety());
   }
-  else if (_storage[symbol.id]->refType() != e.refType())
+  else if ((*it)->refType() != e.refType())
   {
     /* safety flag forbids any change of type */
-    if (_storage[symbol.id]->safety())
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _storage[symbol.id]->typeName(*this).c_str());
+    if ((*it)->safety())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, (*it)->typeName(*this).c_str());
     /* delete old, and store new */
-    delete _storage[symbol.id];
-    _storage[symbol.id] = e.swapNew();
+    delete *it;
+    *it = e.swapNew();
   }
   else
   {
     /* swap */
-    _storage[symbol.id]->_swap(e);
+    (*it)->_swap(e);
   }
-  return *_storage[symbol.id];
+  return **it;
 }
 
 void Context::describeSymbol(const std::string& name)
