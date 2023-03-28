@@ -329,8 +329,8 @@ double Context::random(double max)
   if (!seeded)
   {
     seeded = true;
-    unsigned c = (unsigned) std::chrono::system_clock::now().time_since_epoch().count();
-    r.seed((c / ((c % 60) + 1)));
+    r.seed((unsigned) ::getpid());
+    (void)r();
   }
   return (double)r() / std::minstd_rand::max() * max;
 }
