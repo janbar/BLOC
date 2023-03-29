@@ -182,11 +182,17 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
     {
       if (pe.no == bloc::EXC_PARSE_EOF)
       {
+        /* broken input issued by CTRL+D */
         set_color(fgRED); PRINT1("%s\n", pe.what()); reset_color();
-        break;
+        ::clearerr(stdin);
+        delete p;
+        p = bloc::Parser::createInteractiveParser(ctx, &read_input);
       }
-      set_color(fgRED); PRINT1("Error: %s\n", pe.what()); reset_color();
-      p->clear();
+      else
+      {
+        set_color(fgRED); PRINT1("Error: %s\n", pe.what()); reset_color();
+        p->clear();
+      }
     }
 
     if (s)
