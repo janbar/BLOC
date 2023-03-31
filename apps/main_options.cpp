@@ -50,11 +50,11 @@ const char * getCmd(char **begin, char **end, MainOptions& options, std::vector<
         options.debug = true;
       else if (cmdOption(*it, "--parse", nullptr))
         options.parse = true;
-      else if (cmdOption(*it, "--cli", nullptr))
+      else if (cmdOption(*it, "--cli", nullptr) || cmdOption(*it, "-i", nullptr))
         options.docli = true;
       else if (cmdOption(*it, "--color", nullptr))
         options.color = true;
-      else if (cmdOption(*it, "--expr", nullptr))
+      else if (cmdOption(*it, "--expr", nullptr) || cmdOption(*it, "-e", nullptr))
         options.doexp = true;
       else if (cmdOption(*it, "--out", &options.file_sout))
         continue;
