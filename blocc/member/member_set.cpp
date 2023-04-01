@@ -39,7 +39,7 @@ namespace bloc
 
 Tuple& MemberSETExpression::tuple(Context& ctx) const
 {
-  /* tabchar */
+  /* tuple */
   Tuple& rv = _exp->tuple(ctx);
   if (_index < rv.tuple_decl().size())
   {
