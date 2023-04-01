@@ -47,8 +47,8 @@ const Type& MemberATExpression::type(Context& ctx) const
     case Type::LITERAL:
     case Type::TABCHAR:
       return IntegerExpression::type_static;
-    case Type::ROWTYPE:
-      return _exp->type(ctx);
+    case Type::NO_TYPE: /* opaque */
+      return exp_type;
     default:
       return ComplexExpression::null;
     }
@@ -190,6 +190,7 @@ MemberATExpression * MemberATExpression::parse(Parser& p, Context& ctx, Expressi
       {
       case Type::LITERAL:
       case Type::TABCHAR:
+      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_AT]);

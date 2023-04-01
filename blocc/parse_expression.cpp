@@ -50,12 +50,12 @@ bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p
 {
   const Type& exp_type = exp->type(ctx);
   return !p.semantic() || exp_type == type ||
+          /* opaque */
+          type == Type::NO_TYPE || exp_type == Type::NO_TYPE ||
+          /* type mixing */
           (exp_type.level() == type.level() && (
-            /* type mixing */
             (exp_type == Type::NUMERIC && type == Type::INTEGER) ||
-            (exp_type == Type::INTEGER && type == Type::NUMERIC) ||
-            /* opaque */
-            type == Type::NO_TYPE || exp_type == Type::NO_TYPE
+            (exp_type == Type::INTEGER && type == Type::NUMERIC)
           ));
 }
 
