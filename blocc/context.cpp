@@ -36,6 +36,7 @@
 #include <cassert>
 
 #if (defined(_WIN32) || defined(_WIN64))
+#include <process.h>
 #define STDOUT_FILENO _fileno(stdout)
 #else
 #include <unistd.h>
