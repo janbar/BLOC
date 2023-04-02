@@ -46,12 +46,9 @@ public:
   virtual ~ComplexCTORExpression();
 
   explicit ComplexCTORExpression(unsigned type_id) : Expression(), _type(Type::COMPLEX, type_id) { }
-  
+
   ComplexCTORExpression(unsigned type_id, const PLUGIN_CTOR& ctor, std::vector<Expression*>&& args)
-  : Expression(), _type(Type::COMPLEX, type_id), _ctor(&ctor)
-  {
-    _args.swap(args);
-  }
+  : Expression(), _type(Type::COMPLEX, type_id), _ctor(&ctor), _args(std::move(args)) { }
 
   const Type& type(Context& ctx) const override
   {

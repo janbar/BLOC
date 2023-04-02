@@ -58,13 +58,13 @@ std::string ComplexCTORExpression::unparse(Context& ctx) const
 
 ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, unsigned type_id)
 {
-  if (type_id == 0)
-    throw ParseError(EXC_PARSE_NOT_COMPLEX);
   std::vector<Expression*> args;
-  const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
 
   try
   {
+    if (type_id == 0)
+      throw ParseError(EXC_PARSE_NOT_COMPLEX);
+    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
     /* parse arguments list */
     TokenPtr t = p.pop();
     if (t->code != '(')
