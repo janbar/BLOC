@@ -36,7 +36,8 @@
 #include <cassert>
 
 #if (defined(_WIN32) || defined(_WIN64))
-#include <process.h>
+#include <process.h>  /* for getpid */
+#include <io.h>       /* for dup */
 #define STDOUT_FILENO _fileno(stdout)
 #else
 #include <unistd.h>
@@ -62,17 +63,17 @@ int Context::compatible()
 
 Context::Context()
 {
-  _sout = ::fdopen(STDOUT_FILENO, "w");
+  _sout = ::fdopen(::dup(STDOUT_FILENO), "w");
   _serr = _sout;
 }
 
 Context::Context(int fd_out, int fd_err)
 {
-  _sout = ::fdopen(fd_out, "w");
+  _sout = ::fdopen(::dup(fd_out), "w");
   if (fd_err == fd_out)
     _serr = _sout;
   else
-    _serr = ::fdopen(fd_err, "w");
+    _serr = ::fdopen(::dup(fd_err), "w");
 }
 
 Context::~Context()
