@@ -48,7 +48,8 @@ const Statement * IFStatement::doit(Context& ctx) const
   {
     if (r.first == nullptr || r.first->boolean(ctx))
     {
-      r.second->run();
+      /* it should run with the given context */
+      r.second->run(ctx, r.second->statements());
       break;
     }
   }

@@ -60,7 +60,8 @@ void BEGINStatement::docatch(const RuntimeError& rt, Context& ctx) const
         {
           /* save catched error in the context */
           ctx.error(rt);
-          c.second->run();
+          /* it should run with the given context */
+          c.second->run(ctx, c.second->statements());
           /* clear error in the context */
           ctx.error(RuntimeError());
         }
@@ -86,7 +87,8 @@ const Statement * BEGINStatement::doit(Context& ctx) const
   ctx.execBegin(this);
   try
   {
-    _exec->run();
+    /* it should run with the given context */
+    _exec->run(ctx, _exec->statements());
   }
   catch (RuntimeError& rt)
   {

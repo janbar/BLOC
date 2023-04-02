@@ -88,7 +88,8 @@ const Statement * FORStatement::doit(Context& ctx) const
   }
   try
   {
-    _exec->run();
+    /* it should run with the given context */
+    _exec->run(ctx, _exec->statements());
   }
   catch (...)
   {

@@ -47,7 +47,8 @@ const Statement * WHILEStatement::doit(Context& ctx) const
   }
   if (exp->boolean(ctx))
   {
-    _exec->run();
+    /* it should run with the given context */
+    _exec->run(ctx, _exec->statements());
     if (!ctx.stopCondition())
       return this;
     if (ctx.continueCondition())
