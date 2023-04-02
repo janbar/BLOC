@@ -84,28 +84,56 @@ public:
     return fn;
   }
 
+  constexpr static const char * STR_NO_TYPE = "undefined";
+  constexpr static const char * STR_BOOLEAN = "boolean";
+  constexpr static const char * STR_INTEGER = "integer";
+  constexpr static const char * STR_NUMERIC = "decimal";
+  constexpr static const char * STR_LITERAL = "string";
+  constexpr static const char * STR_COMPLEX = "object";
+  constexpr static const char * STR_TABCHAR = "bytes";
+  constexpr static const char * STR_ROWTYPE = "tuple";
+
   static const char * typeName(TypeMajor type)
   {
     switch (type)
     {
     case NO_TYPE:
-      return "undefined";
+      return STR_NO_TYPE;
     case BOOLEAN:
-      return "boolean";
+      return STR_BOOLEAN;
     case INTEGER:
-      return "integer";
+      return STR_INTEGER;
     case NUMERIC:
-      return "decimal";
+      return STR_NUMERIC;
     case LITERAL:
-      return "string";
+      return STR_LITERAL;
     case COMPLEX:
-      return "object";
+      return STR_COMPLEX;
     case TABCHAR:
-      return "bytes";
+      return STR_TABCHAR;
     case ROWTYPE:
-      return "tuple";
+      return STR_ROWTYPE;
     }
     return "?";
+  }
+
+  static Type nameType(const std::string& text)
+  {
+    if (text == STR_BOOLEAN)
+      return Type::BOOLEAN;
+    if (text == STR_INTEGER)
+      return Type::INTEGER;
+    if (text == STR_NUMERIC)
+      return Type::NUMERIC;
+    if (text == STR_LITERAL)
+      return Type::LITERAL;
+    if (text == STR_COMPLEX)
+      return Type::COMPLEX;
+    if (text == STR_TABCHAR)
+      return Type::TABCHAR;
+    if (text == STR_ROWTYPE)
+      return Type::ROWTYPE;
+    return Type::NO_TYPE;
   }
 
 protected:

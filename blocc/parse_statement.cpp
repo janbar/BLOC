@@ -38,6 +38,7 @@
 #include "statement_do.h"
 #include "statement_trace.h"
 #include "statement_raise.h"
+#include "statement_function.h"
 #include "expression_item.h"
 
 #include <forward_list>
@@ -81,6 +82,10 @@ Statement * ParseStatement::parse()
         case Statement::STMT_RETURN:
           s = RETURNStatement::parse(p, ctx);
           return beyond_statement(s);
+
+        case Statement::STMT_FUNCTION:
+          s = FUNCTIONStatement::parse(p, ctx);
+          return s;
 
         case Statement::STMT_IF:
           s = IFStatement::parse(p, ctx);

@@ -46,7 +46,7 @@ LETStatement::~LETStatement()
 
 const Statement * LETStatement::doit(Context& ctx) const
 {
-  _var.store(ctx, _exp);
+  _var.store(ctx, ctx, _exp);
   return _next;
 }
 

@@ -42,6 +42,7 @@
 #include <blocc/expression_builtin.h>
 #include <blocc/expression_member.h>
 #include <blocc/plugin_manager.h>
+#include <blocc/functor_manager.h>
 
 #include <cstdlib>
 #include <cstdio>

@@ -20,6 +20,7 @@
 #define STATEMENT_H_
 
 #include "exception.h"
+#include "intrinsic_type.h"
 #include "declspec.h"
 
 #include <string>
@@ -47,7 +48,7 @@ public:
     STMT_TRACE      = 1,
     STMT_LET        = 2,
     STMT_IMPORT     = 3,
-
+    STMT_FUNCTION   = 4,
     STMT_IF         = 5,
     STMT_THEN       = 6,
     STMT_ELSE       = 7,
@@ -72,6 +73,8 @@ public:
     STMT_RAISE      = 26,
     STMT_ASC        = 27,
     STMT_DESC       = 28,
+    STMT_IS         = 29,
+    STMT_RETURNS    = 30,
   };
 
   virtual ~Statement();

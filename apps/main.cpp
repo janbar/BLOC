@@ -28,6 +28,7 @@
 #include <blocc/exception_runtime.h>
 #include <blocc/string_reader.h>
 #include <blocc/plugin_manager.h>
+#include <blocc/functor_manager.h>
 #include <blocc/debug.h>
 
 #include "main_options.h"
@@ -184,6 +185,7 @@ int main(int argc, char **argv) {
     delete exec;
   }
 
+  bloc::FunctorManager::destroy();
   bloc::PluginManager::destroy();
   /* fclose all */
   return (ret ? EXIT_SUCCESS : EXIT_FAILURE);

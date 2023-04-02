@@ -17,12 +17,13 @@ namespace bloc
  * These are all of the statement KEYWORDS we can parse.
  */
 const char * Statement::KEYWORDS[] = {
-  "nop",      "trace",    "let",      "import",   "",
+  "nop",      "trace",    "let",      "import",   "function",
   "if",       "then",     "else",     "elsif",    "for",
   "while",    "loop",     "in",       "to",       "return",
   "begin",    "break",    "continue", "end",      "end if",
   "end loop", "print",    "put",      "do",       "exception",
-  "when",     "raise",    "asc",      "desc",
+  "when",     "raise",    "asc",      "desc",     "is",
+  "returns",
 };
 
 Statement::~Statement()
@@ -112,7 +113,17 @@ const char * Statement::HELPS[] = {
           "\nimport {encapsulated string containing the library file path};"
           "\n\nUsing module name will try to load the library 'libbloc_{name}.so'"
           "\non UNIX, and 'bloc_{name}.dll' on WINDOWS.",
-  "",
+  /*FUNCTION*/  "The FUNCTION statement declares a block of code which only runs"
+          "\nwhen it is called, and should return data as a result. You can pass"
+          "\ndata, known as parameters, into a function."
+          "\n\nfunction {name} [( x [, y ...] )] returns {type name} is"
+          "\nbegin [statement ...]"
+          "\n[ exception [ when {exception name} then [statement ...] ...] ]"
+          "\nend;"
+          "\n\nThe returned type can be boolean, integer, decimal, string, bytes,"
+          "\ntuple, table, or an imported object. Tuple and table types are opaque,"
+          "\nso the result must be stored in a variable before accessing an item."
+          "\nSee statement BEGIN.",
   /*IF    */  "The IF statement provides conditional control flow in execution."
           "\nIt has a boolean expression associated with it that is evaluated at runtime."
           "\nIf the result of that evaluation is a 'true' value, then statements beyond"
@@ -185,6 +196,8 @@ const char * Statement::HELPS[] = {
           "\n\nSee EXCEPTION, or statement BEGIN.",
   /*ASC   */  "See statement FOR.",
   /*DESC  */  "See statement FOR.",
+  /*IS    */  "See statement FUNCTION.",
+  /*RETURNS*/ "See statement FUNCTION.",
 };
 
 }

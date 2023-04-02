@@ -103,12 +103,13 @@ public:
    * Execute the given expression, then store the result into memory pointed by
    * this variable. This helper should be run once and only once for the given
    * expression.
-   * @param ctx
-   * @param exp
+   * @param d_ctx storage context
+   * @param s_ctx running context
+   * @param s_exp
    * @return a reference to the stored expression
    */
-  void store(Context& ctx, Expression * exp) const;
-  
+  void store(Context& d_ctx, Context& s_ctx, Expression * s_exp) const;
+
   /**
    * Returns the reference of the content in memory pointed by this variable.
    * Obviously never assigned variable returns null.

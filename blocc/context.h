@@ -44,6 +44,19 @@ public:
   explicit Context(int fd_out, int fd_err);
 
   /**
+   * Make a shallow clone
+   * @param ctx root context
+   * @param recursion level of recursion
+   * @param trace enable trace
+   */
+  explicit Context(const Context& ctx, uint8_t recursion, bool trace);
+
+  void reset()
+  {
+    _returnCondition = false;
+  }
+
+  /**
    * Purge the context including all symbols and storage pool.
    * Any executables previously built with the context will no longer work.
    */
@@ -207,6 +220,16 @@ public:
     return _trace;
   }
 
+  void recursion(uint8_t r)
+  {
+    _recursion = r;
+  }
+
+  uint8_t recursion() const
+  {
+    return _recursion;
+  }
+
   /**************************************************************************/
   /* Temporary management                                                   */
   /**************************************************************************/
@@ -331,6 +354,8 @@ private:
 
   FILE * _sout = nullptr; // stream for output
   FILE * _serr = nullptr; // stream for errors
+
+  uint8_t _recursion = 0;
 
   RuntimeError _last_error;
 };

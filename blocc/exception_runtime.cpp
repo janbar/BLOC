@@ -53,6 +53,8 @@ const char * RuntimeError::RUNTIME_ERROR[] =
   "Method '%s' not applicable.",
   "The OPAQUE expression must be stored in a variable before calling a method or accessing an item.",
   "The context must be purged after a RETURN.",
+  "No return value.",
+  "The recursion limit has been reached.",
 };
 
 RuntimeError::THROWABLE RuntimeError::THROWABLES[] =

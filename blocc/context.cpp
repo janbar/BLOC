@@ -84,6 +84,21 @@ Context::~Context()
   ::fclose(_sout);
 }
 
+Context::Context(const Context& ctx, uint8_t recursion, bool trace)
+: _trace(trace), _recursion(recursion)
+{
+  /* duplicate file descriptors */
+  _sout = ::fdopen(::dup(::fileno(ctx._sout)), "w");
+  if (ctx._serr == ctx._sout)
+    _serr = _sout;
+  else
+    _serr = ::fdopen(::dup(::fileno(ctx._serr)), "w");
+  /* copy table of symbols */
+  for (auto& e : ctx._symbols)
+    _symbols.insert(std::make_pair(e.first, new Symbol(*e.second)));
+  _storage.insert(_storage.begin(), ctx._storage.size(), nullptr);
+}
+
 void Context::purge()
 {
   returnCondition(false);

@@ -34,6 +34,7 @@ file(GLOB blocc_SOURCES
   expression_collection.cpp
   expression_complex.cpp
   expression_complex_ctor.cpp
+  expression_functor.cpp
   expression_integer.cpp
   expression_item.cpp
   expression_literal.cpp
@@ -43,6 +44,7 @@ file(GLOB blocc_SOURCES
   expression_tabchar.cpp
   expression_tuple.cpp
   expression_variable.cpp
+  functor_manager.cpp
   plugin.cpp
   plugin_manager.cpp
   parse_expression.cpp
@@ -54,6 +56,7 @@ file(GLOB blocc_SOURCES
   statement_do.cpp
   statement_end.cpp
   statement_for.cpp
+  statement_function.cpp
   statement_if.cpp
   statement_import.cpp
   statement_let.cpp
@@ -81,12 +84,13 @@ file(GLOB blocc_PUBLIC_HEADERS
   exception_parse.h
   exception_runtime.h
   executable.h
+  expression.h
   expression_boolean.h
   expression_builtin.h
   expression_collection.h
   expression_complex_ctor.h
   expression_complex.h
-  expression.h
+  expression_functor.h
   expression_integer.h
   expression_item.cpp
   expression_literal.h
@@ -97,6 +101,7 @@ file(GLOB blocc_PUBLIC_HEADERS
   expression_tabchar.h
   expression_tuple.h
   expression_variable.h
+  functor_manager.h
   plugin.h
   plugin_interface.h
   plugin_manager.h
@@ -125,6 +130,7 @@ file(GLOB blocc_PRIVATE_HEADERS
   statement_do.h
   statement_end.h
   statement_for.h
+  statement_function.h
   statement_if.h
   statement_import.h
   statement_let.h
