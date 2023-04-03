@@ -131,6 +131,71 @@ std::string VariableExpression::typeName(Context& ctx) const {
   return z->typeName(ctx);
 }
 
+void VariableExpression::store(Context& ctx, Expression * exp) const
+{
+  if (exp != nullptr)
+  {
+    const Type& exp_type = exp->type(ctx);
+    if (exp_type.level() == 0)
+    {
+      switch (exp_type.major())
+      {
+      case Type::NO_TYPE:
+        break;
+      case Type::BOOLEAN:
+        ctx.storeVariable(_symbol, std::move(BooleanExpression(exp->boolean(ctx))));
+        break;
+      case Type::INTEGER:
+        ctx.storeVariable(_symbol, std::move(IntegerExpression(exp->integer(ctx))));
+        break;
+      case Type::NUMERIC:
+        ctx.storeVariable(_symbol, std::move(NumericExpression(exp->numeric(ctx))));
+        break;
+      case Type::COMPLEX:
+      {
+        if (exp->isRvalue())
+          ctx.storeVariable(_symbol, std::move(ComplexExpression(std::move(exp->complex(ctx)))));
+        else
+          ctx.storeVariable(_symbol, std::move(ComplexExpression(exp->complex(ctx))));
+        break;
+      }
+      case Type::LITERAL:
+      {
+        if (exp->isRvalue())
+          ctx.storeVariable(_symbol, std::move(LiteralExpression(std::move(exp->literal(ctx)))));
+        else
+          ctx.storeVariable(_symbol, std::move(LiteralExpression(exp->literal(ctx))));
+        break;
+      }
+      case Type::TABCHAR:
+      {
+        if (exp->isRvalue())
+          ctx.storeVariable(_symbol, std::move(TabcharExpression(std::move(exp->tabchar(ctx)))));
+        else
+          ctx.storeVariable(_symbol, std::move(TabcharExpression(exp->tabchar(ctx))));
+        break;
+      }
+      case Type::ROWTYPE:
+      {
+        if (exp->isRvalue())
+          ctx.storeVariable(_symbol, std::move(TupleExpression(std::move(exp->tuple(ctx)))));
+        else
+          ctx.storeVariable(_symbol, std::move(TupleExpression(exp->tuple(ctx))));
+        break;
+      }
+      }
+    }
+    else
+    {
+      /* first check for an rvalue, if not then make a copy */
+      if (exp->isRvalue())
+        ctx.storeVariable(_symbol, std::move(CollectionExpression(std::move(exp->collection(ctx)))));
+      else
+        ctx.storeVariable(_symbol, std::move(CollectionExpression(exp->collection(ctx))));
+    }
+  }
+}
+
 VariableExpression * VariableExpression::parse(Parser& p, Context& ctx, const std::string& symbol_name)
 {
   std::string name(symbol_name);

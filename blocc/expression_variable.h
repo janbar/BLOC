@@ -100,6 +100,16 @@ public:
   }
 
   /**
+   * Execute the given expression, then store the result into memory pointed by
+   * this variable. This helper should be run once and only once for the given
+   * expression.
+   * @param ctx
+   * @param exp
+   * @return a reference to the stored expression
+   */
+  void store(Context& ctx, Expression * exp) const;
+  
+  /**
    * Returns the reference of the content in memory pointed by this variable.
    * Obviously never assigned variable returns null.
    * @param ctx

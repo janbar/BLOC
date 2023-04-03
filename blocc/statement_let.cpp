@@ -46,67 +46,7 @@ LETStatement::~LETStatement()
 
 const Statement * LETStatement::doit(Context& ctx) const
 {
-  if (_exp != nullptr)
-  {
-    const Type& exp_type = _exp->type(ctx);
-    if (exp_type.level() == 0)
-    {
-      switch (exp_type.major())
-      {
-      case Type::NO_TYPE:
-        break;
-      case Type::BOOLEAN:
-        _var.store(ctx, BooleanExpression(_exp->boolean(ctx)));
-        break;
-      case Type::INTEGER:
-        _var.store(ctx, IntegerExpression(_exp->integer(ctx)));
-        break;
-      case Type::NUMERIC:
-        _var.store(ctx, NumericExpression(_exp->numeric(ctx)));
-        break;
-      case Type::COMPLEX:
-      {
-        if (_exp->isRvalue())
-          _var.store(ctx, ComplexExpression(std::move(_exp->complex(ctx))));
-        else
-          _var.store(ctx, ComplexExpression(_exp->complex(ctx)));
-        break;
-      }
-      case Type::LITERAL:
-      {
-        if (_exp->isRvalue())
-          _var.store(ctx, LiteralExpression(std::move(_exp->literal(ctx))));
-        else
-          _var.store(ctx, LiteralExpression(_exp->literal(ctx)));
-        break;
-      }
-      case Type::TABCHAR:
-      {
-        if (_exp->isRvalue())
-          _var.store(ctx, TabcharExpression(std::move(_exp->tabchar(ctx))));
-        else
-          _var.store(ctx, TabcharExpression(_exp->tabchar(ctx)));
-        break;
-      }
-      case Type::ROWTYPE:
-      {
-        if (_exp->isRvalue())
-          _var.store(ctx, TupleExpression(std::move(_exp->tuple(ctx))));
-        else
-          _var.store(ctx, TupleExpression(_exp->tuple(ctx)));
-        break;
-      }
-      }
-    }
-    else
-    {
-      /* first check for an rvalue, if not then make a copy */
-      if (_exp->isRvalue())
-        _var.store(ctx, CollectionExpression(std::move(_exp->collection(ctx))));
-      else
-        _var.store(ctx, CollectionExpression(_exp->collection(ctx)));
-    }
-  }
+  _var.store(ctx, _exp);
   return _next;
 }
 
