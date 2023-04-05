@@ -38,11 +38,21 @@ public:
 
   const Type& type(Context& ctx) const override { return _exp->type(ctx); }
 
+  bool boolean(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]); }
+
+  int64_t integer(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]); }
+
+  double numeric(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]); }
+
   std::string& literal(Context& ctx) const override;
 
   TabChar& tabchar(Context& ctx) const override;
 
   Collection& collection(Context& ctx) const override;
+
+  Tuple& tuple(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]); }
+
+  Complex& complex(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]); }
 
   const Tuple::Decl& tuple_decl(Context& ctx) const override { return _exp->tuple_decl(ctx); }
 

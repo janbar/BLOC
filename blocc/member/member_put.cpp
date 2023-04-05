@@ -75,8 +75,10 @@ Collection& MemberPUTExpression::collection(Context& ctx) const
   /* the existing element will be freed after completion */
   StaticExpression * old = rv[p];
 
-  /* put the new */
+  /* arg type must be same of the collection else throw */
   const Type& arg1_type = _args[1]->type(ctx);
+  if (arg1_type.major() != _exp->type(ctx).major())
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
   if (arg1_type.level() == 0)
   {
     switch (arg1_type.major())
@@ -146,9 +148,9 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
     {
       switch (exp_type.major())
       {
+      case Type::NO_TYPE: /* opaque */
       case Type::LITERAL:
       case Type::TABCHAR:
-      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]);
@@ -167,10 +169,10 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
     {
       switch (exp_type.major())
       {
-        /* PUT a char */
-      case Type::LITERAL:
-      case Type::TABCHAR:
       case Type::NO_TYPE: /* opaque */
+        break;
+      case Type::LITERAL: /* PUT a char */
+      case Type::TABCHAR: /* PUT a char */
         if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
           throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_PUT]);
         break;
