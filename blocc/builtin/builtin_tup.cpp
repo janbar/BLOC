@@ -94,6 +94,7 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
         throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
       switch (arg_type.major())
       {
+      case Type::NO_TYPE: /* opaque */
       case Type::BOOLEAN:
       case Type::INTEGER:
       case Type::NUMERIC:
