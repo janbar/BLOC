@@ -180,11 +180,24 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]);
       }
     }
+    /* collection PUT */
     else
     {
-      /* PUT element type */
-      if (!ParseExpression::typeChecking(args.back(), exp_type.levelDown(), p, ctx))
-        throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+      const Type& arg_type = args.back()->type(ctx);
+      /* type opaque or tuple opaque */
+      bool exp_opaque = (exp_type == Type::NO_TYPE || (exp_type == Type::ROWTYPE && exp_type.minor() == 0));
+      bool arg_opaque = (arg_type == Type::NO_TYPE || (arg_type == Type::ROWTYPE && arg_type.minor() == 0));
+
+      /* test opaque is stored */
+      if ((exp_opaque && !exp->isStored()) || (arg_opaque && !args.back()->isStored()))
+        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
+
+      /* test known types are compatible */
+      if (!exp_opaque && !arg_opaque)
+      {
+        if (!ParseExpression::typeChecking(args.back(), exp_type.levelDown(), p, ctx))
+          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+      }
     }
     assertClosedMember(p, ctx, KEYWORDS[BTM_PUT]);
     return new MemberPUTExpression(exp, std::move(args));

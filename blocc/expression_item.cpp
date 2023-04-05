@@ -101,11 +101,18 @@ ItemExpression * ItemExpression::parse(Parser& p, Context& ctx, Expression * exp
   unsigned item_no = (unsigned)std::stoul(t->text, 0, 10);
   switch (exp_type.major())
   {
-  case Type::NO_TYPE: /* opaque */
+  case Type::NO_TYPE:
   case Type::ROWTYPE:
-    if (exp_type.minor() != 0 && /* not opaque */
-            (item_no < 1 || item_no > exp->tuple_decl(ctx).size()))
-      throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
+    if (exp_type.minor() == 0) /* opaque */
+    {
+      if (!exp->isStored())
+        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
+    }
+    else
+    {
+      if (item_no < 1 || item_no > exp->tuple_decl(ctx).size())
+        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
+    }
     return new ItemExpression(exp, item_no - 1);
   default:
     throw ParseError(EXC_PARSE_NOT_ROWTYPE);

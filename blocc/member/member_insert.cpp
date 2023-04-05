@@ -257,22 +257,29 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
       }
     }
     /* collection INSERT */
-    else if (exp_type != Type::ROWTYPE ||
-            /* not opaque */
-            (exp_type.minor() != 0 && args.back()->type(ctx).minor() != 0))
-    {
-      if (args.back()->type(ctx) != exp_type &&
-              args.back()->type(ctx) != exp_type.levelDown())
-        throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
-    }
     else
     {
-      /* collection INSERT opaque */
-      if (!exp->isStored() || !args.back()->isStored())
-        throw ParseError(EXC_PARSE_OPAQUE_ROWTYPE);
-      if (args.back()->type(ctx).level() != exp_type.level() &&
-              args.back()->type(ctx).level() != exp_type.levelDown().level())
-        throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+      const Type& arg_type = args.back()->type(ctx);
+      /* type opaque or tuple opaque */
+      bool exp_opaque = (exp_type == Type::NO_TYPE || (exp_type == Type::ROWTYPE && exp_type.minor() == 0));
+      bool arg_opaque = (arg_type == Type::NO_TYPE || (arg_type == Type::ROWTYPE && arg_type.minor() == 0));
+
+      /* test opaque is stored */
+      if ((exp_opaque && !exp->isStored()) || (arg_opaque && !args.back()->isStored()))
+        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
+
+      /* test levels of known type or tuple opaque */
+      if ((!exp_opaque || exp_type == Type::ROWTYPE) && (!arg_opaque || arg_type == Type::ROWTYPE))
+      {
+        if (arg_type.level() != exp_type.level() &&
+              arg_type.level() != exp_type.levelDown().level())
+          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+
+        /* test known types are compatible */
+        if (!exp_opaque && !arg_opaque &&
+                arg_type != exp_type && arg_type != exp_type.levelDown())
+          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+      }
     }
     assertClosedMember(p, ctx, KEYWORDS[BTM_INSERT]);
     return new MemberINSERTExpression(exp, std::move(args));

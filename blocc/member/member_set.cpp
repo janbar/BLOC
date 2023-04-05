@@ -108,27 +108,38 @@ MemberSETExpression * MemberSETExpression::parse(Parser& p, Context& ctx, Expres
   if (t->code != TOKEN_INTEGER)
     throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
   unsigned item_no = (unsigned)std::stoul(t->text, 0, 10);
-  const Type& exp_type = exp->type(ctx);
-  switch (exp_type.major())
-  {
-  case Type::NO_TYPE: /* opaque */
-  case Type::ROWTYPE:
-    if (exp_type.minor() != 0 && /* not opaque */
-          (item_no < 1 || item_no > exp->tuple_decl(ctx).size()))
-      throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
-    break;
-  default:
-    throw ParseError(EXC_PARSE_NOT_ROWTYPE);
-  }
-  t = p.pop();
-  if (t->code != '(')
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
+
   try
   {
+    const Type& exp_type = exp->type(ctx);
+    switch (exp_type.major())
+    {
+    case Type::NO_TYPE:
+    case Type::ROWTYPE:
+      break;
+    default:
+      throw ParseError(EXC_PARSE_NOT_ROWTYPE);
+    }
+    t = p.pop();
+    if (t->code != '(')
+      throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
     args.push_back(ParseExpression::expression(p, ctx));
-    if (exp_type.minor() != 0 /* not opaque */ &&
-        !ParseExpression::typeChecking(args.back(), exp->tuple_decl(ctx)[item_no - 1], p, ctx))
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_SET]);
+
+    if (exp_type.minor() == 0) /* opaque */
+    {
+      if (!exp->isStored())
+        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
+    }
+    else
+    {
+      /* test item range */
+      if (item_no < 1 || item_no > exp->tuple_decl(ctx).size())
+        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
+      /* test known types are compatible */
+      if (!ParseExpression::typeChecking(args.back(), exp->tuple_decl(ctx)[item_no - 1], p, ctx))
+        throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_SET]);
+    }
+
     assertClosedMember(p, ctx, KEYWORDS[BTM_SET]);
     return new MemberSETExpression(exp, std::move(args), item_no - 1);
   }

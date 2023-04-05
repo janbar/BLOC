@@ -51,6 +51,7 @@ const char * RuntimeError::RUNTIME_ERROR[] =
   "Bad type of argument calling function '%s'.",
   "Bad type of argument calling method '%s'.",
   "Method '%s' not applicable.",
+  "The OPAQUE expression must be stored in a variable before calling a method or accessing an item.",
   "The context must be purged after a RETURN.",
 };
 

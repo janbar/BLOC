@@ -53,7 +53,8 @@ const Statement * PRINTStatement::doit(Context& ctx) const
       switch (exp_type.major())
       {
       case Type::NO_TYPE:
-        break;
+        throw RuntimeError(EXC_RT_OPAQUE_INLINE);
+
       case Type::LITERAL:
         fputs(exp->literal(ctx).c_str(), ctx.ctxout());
         break;

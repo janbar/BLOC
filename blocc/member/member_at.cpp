@@ -182,24 +182,36 @@ MemberATExpression * MemberATExpression::parse(Parser& p, Context& ctx, Expressi
     throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_AT]);
   try
   {
+    args.push_back(ParseExpression::expression(p, ctx));
+    if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_AT]);
+
     const Type& exp_type = exp->type(ctx);
     /* supported type: collection, literal, tabchar */
     if (exp_type.level() == 0)
     {
       switch (exp_type.major())
       {
+      case Type::NO_TYPE: /* opaque */
       case Type::LITERAL:
       case Type::TABCHAR:
-      case Type::NO_TYPE: /* opaque */
+        break;
+      case Type::ROWTYPE:
+        if (exp_type.minor() == 0 && !exp->isStored()) /* opaque */
+          throw ParseError(EXC_PARSE_OPAQUE_INLINE);
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_AT]);
       }
     }
+    /* collection AT */
+    else
+    {
+      /* test opaque is stored */
+      if (exp_type == Type::NO_TYPE && !exp->isStored())
+        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
+    }
 
-    args.push_back(ParseExpression::expression(p, ctx));
-    if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_AT]);
     assertClosedMember(p, ctx, KEYWORDS[BTM_AT]);
     return new MemberATExpression(exp, std::move(args));
   }
