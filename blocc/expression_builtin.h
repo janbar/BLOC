@@ -87,7 +87,7 @@ public:
     FUNC_ISNUM  = 32, // isnum(x)
     FUNC_RAW    = 33, // raw() | raw(x) | raw(x,y)
     FUNC_TAB    = 34, // tab(x) | tab(x,y)
-    FUNC_TUPLE  = 35, // tuple(...)
+    FUNC_TUP    = 35, // tup(...)
     FUNC_GETSYS = 36, // getsys(x)
     FUNC_GETENV = 37, // getenv(x)
     FUNC_TRUE   = 38, // true

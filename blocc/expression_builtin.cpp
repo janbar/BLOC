@@ -71,7 +71,7 @@
 #include "builtin/builtin_true.h"
 #include "builtin/builtin_upper.h"
 #include "builtin/builtin_num.h"
-#include "builtin/builtin_tuple.h"
+#include "builtin/builtin_tup.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -90,7 +90,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "mod",        "asin",       "acos",       "sinh",       "cosh",
     "tanh",       "",           "",           "",           "",
     "read",       "readln",     "isnum",      "raw",        "tab",
-    "tuple",      "getsys",     "getenv",     "true",       "false",
+    "tup",        "getsys",     "getenv",     "true",       "false",
     "error",      "phi",        "pi",         "ee",         "random",
     "",           "",           "",           "",           "",
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
@@ -282,8 +282,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return SUBRAWExpression::parse(p, ctx);
   case FUNC_TAB:
     return TABExpression::parse(p, ctx);
-  case FUNC_TUPLE:
-    return TUPLEExpression::parse(p, ctx);
+  case FUNC_TUP:
+    return TUPExpression::parse(p, ctx);
 
   default:
     throw ParseError(EXC_PARSE_NOT_A_FUNCTION);
@@ -375,8 +375,8 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nNested element can be any type, or tuple. Nesting level is supported up"
           "\nto 254 dimmensions. Table has the methods at(), put(), insert(), delete(),"
           "\ncount(), and concat({TABLE | ELEMENT}).",
-  /*TUPLE */  "returns a new tuple of 2 or more items."
-          "\n\ntuple( x , y [, ...] )"
+  /*TUP   */  "returns a new tuple of 2 or more items."
+          "\n\ntup( x , y [, ...] )"
           "\n\nItem can be boolean, integer, decimal, string, object, or bytes array."
           "\nNesting and table are not allowed. Tuple is unchangeable, meaning that we"
           "\ncannot change type, add or remove items after the tuple has been created."

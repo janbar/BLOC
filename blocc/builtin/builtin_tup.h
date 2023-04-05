@@ -34,7 +34,7 @@ namespace bloc
 class Context;
 class Parser;
 
-class TUPLEExpression : public BuiltinExpression
+class TUPExpression : public BuiltinExpression
 {
 
   Tuple::Decl _decl;
@@ -42,9 +42,9 @@ class TUPLEExpression : public BuiltinExpression
 
 public:
 
-  virtual ~TUPLEExpression() { }
+  virtual ~TUPExpression() { }
 
-  TUPLEExpression(std::vector<Expression*>&& args, Context& ctx);
+  TUPExpression(std::vector<Expression*>&& args, Context& ctx);
 
   const Type& type(Context& ctx) const override { return _type; }
 
@@ -57,7 +57,7 @@ public:
     return _decl.tupleName();
   }
   
-  static TUPLEExpression * parse(Parser& p, Context& ctx);
+  static TUPExpression * parse(Parser& p, Context& ctx);
 };
 
 }

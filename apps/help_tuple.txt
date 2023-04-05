@@ -2,24 +2,24 @@
 $BTUPLE$N
 
 In BLOC, tuples are ordered group of values from any scalar types, or object
-type. Nesting isn't supported. The constructor function is the $Btuple(...)$N
+type. Nesting isn't supported. The constructor function is the $Btup(...)$N
 function. The structure of tuple cannot be changed, thus adding, removing, or
 changing the type of element is not allowed. Each element has a rank number
 starting from 1.
 
-tuple("Hello", 123, 3.14, true, raw(16), file())
-tuple("Hello", tuple(1, 3.14))                        >>> ERROR
+tup("Hello", 123, 3.14, true, raw(16), file())
+tup("Hello", tup(1, 3.14))                          >>> ERROR
 
 Note embed object constructor will initialize a new object. However, embed
 initialized object (variable), will set a reference of the object instance.
 
 Use operator $B@$N# to access the element at rank #, as shown below.
 
-tuple("Hello", 123, 0.456) @ 1                        >>> string "Hello"
-A = tuple("Hello", 123, 0.456); ... C = A@3;          >>> C is decimal 0.456
-B = tuple(1, file()); ... C = B@2;                    >>> C is file(...)
-X = tuple("Hello", 123, 0.456); ... C = X@1.count();  >>> C is integer 5
+tup("Hello", 123, 0.456) @ 1                        >>> string "Hello"
+A = tup("Hello", 123, 0.456); ... C = A@3;          >>> C is decimal 0.456
+B = tup(1, file()); ... C = B@2;                    >>> C is file(...)
+X = tup("Hello", 123, 0.456); ... C = X@1.count();  >>> C is integer 5
 
 Use member $Bset@$N# to update the value of element at rank #, as shown below.
 
-tuple("Hello", 123, 0.456) . set@ 2 (789) >>> { "Hello", 789, 0.456 }
+tup("Hello", 123, 0.456) . set@ 2 (789)             >>> { "Hello", 789, 0.456 }

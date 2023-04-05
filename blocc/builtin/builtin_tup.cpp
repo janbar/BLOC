@@ -16,7 +16,7 @@
  *
  */
 
-#include "builtin_tuple.h"
+#include "builtin_tup.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/expression_tuple.h>
@@ -27,14 +27,14 @@
 namespace bloc
 {
 
-TUPLEExpression::TUPLEExpression(std::vector<Expression*>&& args, Context& ctx) : BuiltinExpression(FUNC_TUPLE, std::move(args))
+TUPExpression::TUPExpression(std::vector<Expression*>&& args, Context& ctx) : BuiltinExpression(FUNC_TUP, std::move(args))
 {
   for (const Expression * e : _args)
     _decl.push_back(e->type(ctx));
   _type = _decl.make_type(0);
 }
 
-Tuple& TUPLEExpression::tuple(Context & ctx) const
+Tuple& TUPExpression::tuple(Context & ctx) const
 {
   /* build items, then move */
   Tuple::container_t items;
@@ -71,13 +71,13 @@ Tuple& TUPLEExpression::tuple(Context & ctx) const
         items.push_back(new TabcharExpression(a->tabchar(ctx)));
       break;
     default:
-      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUPLE]);
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
     }
   }
   return ctx.allocate(Tuple(std::move(items)));
 }
 
-TUPLEExpression * TUPLEExpression::parse(Parser& p, Context& ctx)
+TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
 {
   std::vector<Expression*> args;
 
@@ -85,13 +85,13 @@ TUPLEExpression * TUPLEExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUPLE]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
     for (;;)
     {
       args.push_back(ParseExpression::expression(p, ctx));
       const Type& arg_type = args.back()->type(ctx);
       if (arg_type.level() > 0)
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUPLE]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
       switch (arg_type.major())
       {
       case Type::BOOLEAN:
@@ -102,7 +102,7 @@ TUPLEExpression * TUPLEExpression::parse(Parser& p, Context& ctx)
       case Type::TABCHAR:
         break;
       default:
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUPLE]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
       }
       t = p.pop();
       if (t->code == Parser::CHAIN)
@@ -111,9 +111,9 @@ TUPLEExpression * TUPLEExpression::parse(Parser& p, Context& ctx)
       break;
     }
     if (args.size() < 2)
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUPLE]);
-    assertClosedFunction(p, ctx, FUNC_TUPLE);
-    return new TUPLEExpression(std::move(args), ctx);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
+    assertClosedFunction(p, ctx, FUNC_TUP);
+    return new TUPExpression(std::move(args), ctx);
   }
   catch (ParseError& pe)
   {

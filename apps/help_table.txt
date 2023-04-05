@@ -24,14 +24,14 @@ Use member $Binsert( x , y )$N to insert table of items, or one item at index.
 Use member $Bdelete( x )$N to erase one item at index.
 Use member $Bput( x , y )$N to update one item at index.
 
-A = tab(0, tuple(str(), 0));        >>> A is empty table of tuple
-A.concat(tuple("Hello", 1));        >>> A is table[1] of tuple
-A.concat(A).concat(A);              >>> A is table[4] of tuple
-A.insert(0, tuple("world", 2));     >>> A is table[5] of tuple
-A.insert(0, tuple(2, "dummy"));     >>> ERROR
-A.insert(2, A);                     >>> A is table[10] of tuple
-B = tab(2, A);                      >>> B is table[2] of [tuple]
-B.at(1).delete(0);                  >>> B is table[2] of [tuple]
-B.at(1).count();                    >>> integer 9
-B.at(1).put(0, tuple("dummy", 3));
-B.at(1).at(0) @ 1                   >>> string "dummy"
+A = tab(0, tup(str(), 0));            >>> A is empty table of tuple
+A.concat(tup("Hello", 1));            >>> A is table[1] of tuple
+A.concat(A).concat(A);                >>> A is table[4] of tuple
+A.insert(0, tup("world", 2));         >>> A is table[5] of tuple
+A.insert(0, tup(2, "dummy"));         >>> ERROR
+A.insert(2, A);                       >>> A is table[10] of tuple
+B = tab(2, A);                        >>> B is table[2] of [tuple]
+B.at(1).delete(0);                    >>> B is table[2] of [tuple]
+B.at(1).count();                      >>> integer 9
+B.at(1).put(0, tup("dummy", 3));
+B.at(1).at(0) @ 1                     >>> string "dummy"
