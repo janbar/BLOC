@@ -497,9 +497,9 @@ static void print_help(const std::string& what)
   std::string w(what);
   std::transform(w.begin(), w.end(), w.begin(), ::tolower);
   /* help from libbloc */
-  if (w == "function")
+  if (w == "builtin")
   {
-    print_btml("\n$BFUNCTION\n\n", UINT16_MAX);
+    print_btml("\n$BBUILTIN FUNCTION\n\n", UINT16_MAX);
     print_table(bloc::BuiltinExpression::keywordSet(), -10, 6);
   }
   else if (w == "statement")
