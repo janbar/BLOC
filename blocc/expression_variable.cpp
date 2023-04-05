@@ -141,7 +141,8 @@ void VariableExpression::store(Context& ctx, Expression * exp) const
       switch (exp_type.major())
       {
       case Type::NO_TYPE:
-        break;
+        throw RuntimeError(EXC_RT_INTERNAL_ERROR_S, __FUNCTION__);
+
       case Type::BOOLEAN:
         ctx.storeVariable(_symbol, std::move(BooleanExpression(exp->boolean(ctx))));
         break;
