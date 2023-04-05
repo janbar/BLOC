@@ -153,6 +153,7 @@ TABExpression * TABExpression::parse(Parser& p, Context& ctx)
     Type b_type = args.back()->type(ctx);
     switch (b_type.major())
     {
+    case Type::NO_TYPE: /* opaque */
     case Type::BOOLEAN:
     case Type::INTEGER:
     case Type::NUMERIC:
