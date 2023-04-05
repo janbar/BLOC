@@ -47,6 +47,21 @@ double NUMExpression::numeric(Context & ctx) const
       throw RuntimeError(EXC_RT_OUT_OF_RANGE);
     }
     break;
+  case Type::TABCHAR:
+    try
+    {
+      TabChar& tmp = _args[0]->tabchar(ctx);
+      d = std::stod(std::string(tmp.data(), tmp.size()));
+    }
+    catch (std::invalid_argument& e)
+    {
+      throw RuntimeError(EXC_RT_STRING_TO_NUM);
+    }
+    catch (std::out_of_range& e)
+    {
+      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+    }
+    break;
   case Type::NUMERIC:
   case Type::INTEGER:
     d = _args[0]->numeric(ctx);
@@ -77,15 +92,14 @@ NUMExpression * NUMExpression::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
     switch (args.back()->type(ctx).major())
     {
-    case Type::LITERAL:
-    case Type::INTEGER:
-    case Type::NUMERIC:
-      assertClosedFunction(p, ctx, FUNC_NUM);
-      return new NUMExpression(std::move(args));
+    case Type::COMPLEX:
+    case Type::ROWTYPE:
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
     default:
       break;
     }
-    throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
+    assertClosedFunction(p, ctx, FUNC_NUM);
+    return new NUMExpression(std::move(args));
   }
   catch (ParseError& pe)
   {
