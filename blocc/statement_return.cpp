@@ -25,7 +25,11 @@
 #include "expression_numeric.h"
 #include "expression_integer.h"
 #include "expression_literal.h"
+#include "expression_complex.h"
+#include "expression_tabchar.h"
 #include "expression_tuple.h"
+#include "expression_collection.h"
+
 #include "debug.h"
 
 #include <cstdio>
@@ -72,12 +76,13 @@ const Statement * RETURNStatement::doit(Context& ctx) const
         ctx.saveReturned(new NumericExpression(_exp->numeric(ctx)));
         break;
       case Type::COMPLEX:
-        _exp->complex(ctx);
-        ctx.saveReturned(nullptr);
+        ctx.saveReturned(new ComplexExpression(_exp->complex(ctx)));
         break;
       case Type::TABCHAR:
-        _exp->tabchar(ctx);
-        ctx.saveReturned(nullptr);
+        if (_exp->isRvalue())
+          ctx.saveReturned(new TabcharExpression(std::move(_exp->tabchar(ctx))));
+        else
+          ctx.saveReturned(new TabcharExpression(_exp->tabchar(ctx)));
         break;
       case Type::ROWTYPE:
         if (_exp->isRvalue())
@@ -91,8 +96,10 @@ const Statement * RETURNStatement::doit(Context& ctx) const
     }
     else
     {
-      _exp->collection(ctx);
-      ctx.saveReturned(nullptr);
+      if (_exp->isRvalue())
+        ctx.saveReturned(new CollectionExpression(std::move(_exp->collection(ctx))));
+      else
+        ctx.saveReturned(new CollectionExpression(_exp->collection(ctx)));
     }
   }
   ctx.returnCondition(true);
