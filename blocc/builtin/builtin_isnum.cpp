@@ -48,6 +48,19 @@ bool ISNUMExpression::boolean(Context & ctx) const
       return false;
     }
     return true;
+  case Type::TABCHAR:
+    /* test for a decimal */
+    try
+    {
+      TabChar& tmp = _args[0]->tabchar(ctx);
+      double d = std::stod(std::string(tmp.data(), tmp.size()));
+      (void)d;
+    }
+    catch (...)
+    {
+      return false;
+    }
+    return true;
   case Type::INTEGER:
   case Type::NUMERIC:
     return true;
