@@ -34,8 +34,6 @@ private:
 
   mutable Tuple v;
 
-  constexpr static const char DEREF = '@';
-
 public:
 
   virtual ~TupleExpression() { }
