@@ -50,6 +50,7 @@ const char * RuntimeError::RUNTIME_ERROR[] =
   "Type mismatch in expression: %s was expected.",
   "Bad type of argument calling function '%s'.",
   "Bad type of argument calling method '%s'.",
+  "Method '%s' not applicable.",
   "The context must be purged after a RETURN.",
 };
 

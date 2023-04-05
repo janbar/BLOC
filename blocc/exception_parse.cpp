@@ -40,7 +40,7 @@ const char * ParseError::PARSE_ERROR[] =
   "Out of range.",
   "Bad type of argument calling function '%s'.",
   "Bad number of argument calling function '%s'.",
-  "Method '%s' not applicable in this context.",
+  "Method '%s' not applicable.",
   "Bad type of argument calling method '%s'.",
   "Bad number of argument calling method '%s'.",
   "Invalid syntax calling method '%s'.",
