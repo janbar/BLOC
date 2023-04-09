@@ -59,11 +59,11 @@ TEST_CASE("isnum")
   e = ctx.parseExpression();
   REQUIRE( e->boolean(ctx) == false );
   delete e;
-  ctx.reset("isnum( tuple(123456.0, 456789) )");
+  ctx.reset("isnum( tup(123456.0, 456789) )");
   e = ctx.parseExpression();
   REQUIRE( e->boolean(ctx) == false );
   delete e;
-  ctx.reset("isnum( tuple(123456.0, 456789)@1 )");
+  ctx.reset("isnum( tup(123456.0, 456789)@1 )");
   e = ctx.parseExpression();
   REQUIRE( e->boolean(ctx) == true );
   delete e;
