@@ -209,7 +209,7 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IN])
       throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FOR.");
     s->_expBeg = ParseExpression::expression(p, ctx);
-    if (s->_expBeg->type(ctx) != Type::INTEGER)
+    if (!ParseExpression::typeChecking(s->_expBeg, Type::NUMERIC, p, ctx))
       throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.");
     t = p.pop();
     if (t->code == ')')
@@ -217,7 +217,7 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_TO])
       throw ParseError(EXC_PARSE_OTHER_S, "Keyword TO required for FOR.");
     s->_expEnd = ParseExpression::expression(p, ctx);
-    if (s->_expEnd->type(ctx) != Type::INTEGER)
+    if (!ParseExpression::typeChecking(s->_expEnd, Type::NUMERIC, p, ctx))
       throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.");
     t = p.pop();
     if (t->code == ')')
