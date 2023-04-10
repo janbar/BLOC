@@ -73,6 +73,7 @@ INTExpression * INTExpression::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INT]);
     switch (args.back()->type(ctx).major())
     {
+    case Type::NO_TYPE:
     case Type::LITERAL:
     case Type::INTEGER:
     case Type::NUMERIC:
