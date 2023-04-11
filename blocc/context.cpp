@@ -105,10 +105,11 @@ void Context::purge()
   if (_returned)
     delete _returned;
   _returned = nullptr;
-  /* clear variables allocation, symbol map, and UID */
+  /* clear variables allocation */
   for (auto e : _storage)
-    delete e;
+    if (e != nullptr) delete e;
   _storage.clear();
+  /* clear symbol map */
   for (auto& e : _symbols)
     delete e.second;
   _symbols.clear();
