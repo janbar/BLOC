@@ -85,6 +85,8 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
   bool rollback = false;
   try
   {
+    if (ctx.execLevel() > 0)
+      throw ParseError(EXC_PARSE_OTHER_S, "A function cannot be defined in nested block.");
     FunctorPtr fct(new Functor());
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
