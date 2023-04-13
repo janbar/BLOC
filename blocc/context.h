@@ -51,11 +51,6 @@ public:
    */
   explicit Context(const Context& ctx, uint8_t recursion, bool trace);
 
-  void reset()
-  {
-    _returnCondition = false;
-  }
-
   /**
    * Purge the context including all symbols and storage pool.
    * Any executables previously built with the context will no longer work.

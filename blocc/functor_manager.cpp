@@ -55,7 +55,7 @@ Functor::Env Functor::createEnv(Context& parent, const std::vector<Expression*>&
     ctx_cache.pop_front();
     _ctx->recursion(r + 1);
     _ctx->trace(parent.trace());
-    _ctx->reset();
+    _ctx->returnCondition(false);
   }
   /* assign args with the given values */
   for (int i = 0; i < params.size(); ++i)
