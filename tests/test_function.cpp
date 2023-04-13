@@ -52,6 +52,48 @@ TEST_CASE("create and replace function")
   REQUIRE( e->run() == 0 );
   delete e;
   REQUIRE( ctx.loadVariable("A")->literal(ctx) == "HELLO WORLD!" );
+
+  ctx.reset(
+          "function func(i) returns integer is\n"
+          "begin\n"
+          "  r = 0;\n"
+          "  for j in 0 to i loop\n"
+          "    r = r + j;\n"
+          "  end loop;\n"
+          "  return r;\n"
+          "end;\n"
+  );
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+
+  ctx.reset("a = func(9);");
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+  REQUIRE( ctx.loadVariable("A")->integer(ctx) == 45 );
+
+  ctx.reset(
+          "function func(a,b,c) returns boolean is\n"
+          "begin\n"
+          "  return a && b && c;\n"
+          "end;\n"
+  );
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+
+  ctx.reset("a = func(true, true, true);");
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+  REQUIRE( ctx.loadVariable("A")->boolean(ctx) == true );
+
+  ctx.reset("a = func(true, false, true);");
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+  REQUIRE( ctx.loadVariable("A")->boolean(ctx) == false );
 }
 
 TEST_CASE("function returns table")
