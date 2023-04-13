@@ -218,7 +218,7 @@ void Context::describeSymbol(const std::pair<std::string, Symbol*>& entry)
 {
   StaticExpression * var = loadVariable(*entry.second);
 
-  fprintf(_sout, "#%04x: %s is ", entry.second->id, entry.second->name.c_str());
+  fprintf(_sout, "[%04x] %s is ", entry.second->id, entry.second->name.c_str());
   if (!var)
     fprintf(_sout, "%s\n", entry.second->typeName().c_str());
   else
@@ -253,44 +253,8 @@ void Context::describeSymbol(const std::pair<std::string, Symbol*>& entry)
 
 void Context::dumpVariables()
 {
-  if (!_symbols.empty())
-  {
-    for (const auto& sym : _symbols)
-      describeSymbol(sym);
-  }
-  else
-  {
-    unsigned i = 0;
-    for (auto var : _storage)
-    {
-      fprintf(_sout, "#%04x is ", i++);
-      fputs(var->toString(*this).c_str(), _sout);
-      fputc('\n', _sout);
-      if (var->refType().level() == 0)
-      {
-        /* print 1 line of content */
-        switch (var->refType().major())
-        {
-        case Type::LITERAL:
-        {
-          char buf[80];
-          snprintf(buf, sizeof (buf) - 4, "%s",
-                   LiteralExpression::readableLiteral(var->refLiteral().substr(0, sizeof (buf))).c_str());
-          fputs(buf, _sout);
-          if (buf[strlen(buf) - 1] != '"')
-            fputs("...", _sout);
-          fputc('\n', _sout);
-          break;
-        }
-        case Type::TABCHAR:
-          TabcharExpression::outputTabchar(var->refTabchar(), _sout, 1);
-          break;
-        default:
-          break;
-        }
-      }
-    }
-  }
+  for (const auto& sym : _symbols)
+    describeSymbol(sym);
 }
 
 /**************************************************************************/
