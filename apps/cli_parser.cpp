@@ -358,11 +358,11 @@ static void print_table(const std::set<std::string>& list, int colw, int coln)
   }
 }
 
+static const char BOLD[4] = { 0x1b, 0x5b, 0x31, 0x6d };
+static const char NORM[4] = { 0x1b, 0x5b, 0x30, 0x6d };
+
 static void print_btml(const void * buf, unsigned len)
 {
-  static const char BOLD[4] = { 0x1b, 0x5b, 0x31, 0x6d };
-  static const char NORM[4] = { 0x1b, 0x5b, 0x30, 0x6d };
-
   const char * cur = (const char *)buf;
   char pc = 0;
   char c;
@@ -408,6 +408,23 @@ static void print_btml(const void * buf, unsigned len)
     fputc(pc, STDOUT);
   if (g_has_color)
     PRINTBUF(NORM, sizeof(NORM), STDOUT);
+}
+
+static void describe_all_functor()
+{
+  for (const bloc::FunctorPtr& func : bloc::FunctorManager::instance().reportDeclarations())
+  {
+    PRINT1("%s (", func->name.c_str());
+    bool n = false;
+    for (const bloc::Symbol& p : func->params)
+    {
+      if (n)
+        PRINT(",");
+      PRINT(p.name.c_str());
+      n = true;
+    }
+    PRINT1(") returns %s\n", func->returns.typeName().c_str());
+  }
 }
 
 static void describe_module(unsigned type_id)
@@ -621,6 +638,19 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
   case CMD_DUMP:
   {
     p.pop();
+    if (g_has_color)
+      PRINTBUF(BOLD, sizeof(BOLD), STDOUT);
+    PRINT("functions:\n");
+    if (g_has_color)
+      PRINTBUF(NORM, sizeof(NORM), STDOUT);
+    FLUSHOUT;
+    describe_all_functor();
+    if (g_has_color)
+      PRINTBUF(BOLD, sizeof(BOLD), STDOUT);
+    PRINT("\nvariables:\n");
+    if (g_has_color)
+      PRINTBUF(NORM, sizeof(NORM), STDOUT);
+    FLUSHOUT;
     ctx.dumpVariables();
     p.clear();
     return 1;
