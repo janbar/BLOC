@@ -72,6 +72,7 @@
 #include "builtin/builtin_upper.h"
 #include "builtin/builtin_num.h"
 #include "builtin/builtin_tup.h"
+#include "builtin/builtin_clamp.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -88,7 +89,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "sin",        "cos",        "tan",        "atan",       "int",
     "pow",        "sqrt",       "log",        "exp",        "log10",
     "mod",        "asin",       "acos",       "sinh",       "cosh",
-    "tanh",       "",           "",           "",           "",
+    "tanh",       "clamp",      "",           "",           "",
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tup",        "getsys",     "getenv",     "true",       "false",
     "error",      "phi",        "pi",         "ee",         "random",
@@ -284,6 +285,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return TABExpression::parse(p, ctx);
   case FUNC_TUP:
     return TUPExpression::parse(p, ctx);
+  case FUNC_CLAMP:
+    return CLAMPExpression::parse(p, ctx);
 
   default:
     throw ParseError(EXC_PARSE_NOT_A_FUNCTION);
@@ -353,7 +356,10 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\ncosh( x )",
   /*TANH  */  "returns the hyperbolic tangent of x."
           "\n\ntanh( x )",
-  "", "", "", "",
+  /*CLAMP */  "restricts the given value x between the lower bound y and upper bound z."
+          "\nIn this way, it acts like a combination of the min() and max() functions."
+          "\n\nclamp( x , y , z )",
+  "", "", "",
   /*READ  */  "returns the count of characters read from the input."
           "\nThe read value, including newline terminator, is stored into var with"
           "\na maximum of y characters. The 'string' variable var must be initialized"

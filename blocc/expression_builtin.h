@@ -81,6 +81,7 @@ public:
     FUNC_SINH   = 23, // sinh(x)
     FUNC_COSH   = 24, // cosh(x)
     FUNC_TANH   = 25, // tanh(x)
+    FUNC_CLAMP  = 26, // clamp(x,y,z)
 
     FUNC_READ   = 30, // read(var,count)
     FUNC_READLN = 31, // readline(x)
