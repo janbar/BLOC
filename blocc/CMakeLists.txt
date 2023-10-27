@@ -56,6 +56,7 @@ file(GLOB blocc_SOURCES
   statement_do.cpp
   statement_end.cpp
   statement_for.cpp
+  statement_forall.cpp
   statement_function.cpp
   statement_if.cpp
   statement_import.cpp
@@ -130,6 +131,7 @@ file(GLOB blocc_PRIVATE_HEADERS
   statement_do.h
   statement_end.h
   statement_for.h
+  statement_forall.h
   statement_function.h
   statement_if.h
   statement_import.h

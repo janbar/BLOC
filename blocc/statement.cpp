@@ -23,7 +23,7 @@ const char * Statement::KEYWORDS[] = {
   "begin",    "break",    "continue", "end",      "end if",
   "end loop", "print",    "put",      "do",       "exception",
   "when",     "raise",    "asc",      "desc",     "is",
-  "returns",
+  "returns",  "forall",
 };
 
 Statement::~Statement()
@@ -198,6 +198,13 @@ const char * Statement::HELPS[] = {
   /*DESC  */  "See statement FOR.",
   /*IS    */  "See statement FUNCTION.",
   /*RETURNS*/ "See statement FUNCTION.",
+  /*FORALL*/  "The FORALL statement provides row fetch construct. It defines a control"
+          "\nvariable that is store current index. Then block of statements after the"
+          "\nLOOP keyword will be executed until last row is reached."
+          "\nThe fetch order could be specified with keywords ASC or DESC."
+          "\n\nforall {var} in {table expression} [asc|desc] loop"
+          "\n    [statement ...]"
+          "\nend loop;",
 };
 
 }

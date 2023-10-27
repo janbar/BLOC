@@ -39,6 +39,7 @@
 #include "statement_trace.h"
 #include "statement_raise.h"
 #include "statement_function.h"
+#include "statement_forall.h"
 #include "expression_item.h"
 
 #include <forward_list>
@@ -97,6 +98,10 @@ Statement * ParseStatement::parse()
 
         case Statement::STMT_FOR:
           s = FORStatement::parse(p, ctx);
+          return s;
+
+        case Statement::STMT_FORALL:
+          s = FORALLStatement::parse(p, ctx);
           return s;
 
         case Statement::STMT_LET:
