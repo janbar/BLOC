@@ -48,7 +48,7 @@ struct Functor
 
   class Env
   {
-    friend class Functor;
+    friend struct Functor;
   public:
     Context& context() { return *ctx; }
     ~Env() { if (ctx) functor.ctx_cache.push_front(ctx); }
