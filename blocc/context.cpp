@@ -211,7 +211,10 @@ void Context::describeSymbol(const std::string& name)
   if (it != _symbols.end())
     describeSymbol(*it);
   else
+  {
     fprintf(_sout, "%s is undefined.\n", _name.c_str());
+    fflush(_sout);
+  }
 }
 
 void Context::describeSymbol(const std::pair<std::string, Symbol*>& entry)
@@ -249,6 +252,7 @@ void Context::describeSymbol(const std::pair<std::string, Symbol*>& entry)
       }
     }
   }
+  fflush(_sout);
 }
 
 void Context::dumpVariables()

@@ -632,6 +632,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     }
     t = p.pop();
     ctx.describeSymbol(t->text);
+    fputc(bloc::Parser::NEWLINE, STDOUT);
     p.clear();
     return 1;
   }
@@ -652,6 +653,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
       PRINTBUF(NORM, sizeof(NORM), STDOUT);
     FLUSHOUT;
     ctx.dumpVariables();
+    fputc(bloc::Parser::NEWLINE, STDOUT);
     p.clear();
     return 1;
   }
