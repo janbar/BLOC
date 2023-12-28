@@ -39,7 +39,7 @@ class Executable;
  * LOOP keyword will be executed while the specified limit isn't reached. The
  * control value is incremented or decremented after each iteration.
  * The syntax is:
- * for {var} in {integer expression} to {integer expression} loop
+ * for {var} in {integer expression} to {integer expression} [asc|desc] loop
  *     [statement ...]
  * end loop
  */
