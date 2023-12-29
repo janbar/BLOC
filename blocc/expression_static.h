@@ -44,8 +44,7 @@ public:
   StaticExpression() : Expression() { }
 
   void safety(bool b) { _safety = b; }
-  bool safety() { return _safety;
-  }
+  bool safety() { return _safety; }
 
   /**
    * Returns the reference to the expression type. The type can be stored in
