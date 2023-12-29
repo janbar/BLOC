@@ -47,18 +47,26 @@ const Statement * FORALLStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
-    if (_exp->isRvalue())
-      /* it must be free later */
-      _data.table = new Collection(std::move(_exp->collection(ctx)));
-    else if (_expSymbol)
+    if (_expSymbol)
     {
-      _expSymbol->safety(true);
       /* reference to the store */
       _data.table = &_exp->collection(ctx);
+      if (_data.table->size() == 0)
+        return _next;
+      _expSymbol->safety(true);
     }
-    if (_data.table->size() == 0)
-      return _next;
-    else if (_order == DESC)
+    else
+    {
+      /* it must be free later */
+      _data.table = new Collection(std::move(_exp->collection(ctx)));
+      if (_data.table->size() == 0)
+      {
+        delete _data.table;
+        return _next;
+      }
+    }
+    /* set fetch order */
+    if (_order == DESC)
     {
       _data.var = &_iterator->store(ctx, IntegerExpression(_data.table->size() - 1));
       _data.step = -1;
