@@ -51,6 +51,7 @@ public:
   const Tuple::Decl& table_decl() const { return _decl; }
 
   void swap(Collection& t) noexcept;
+  void copy(Collection& t) noexcept;
   void clear();
   void reserve(unsigned n) { v.reserve(n) ; }
 

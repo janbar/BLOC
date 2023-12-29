@@ -48,6 +48,7 @@ public:
   const Decl& tuple_decl() const override { return _decl; }
 
   void swap(Tuple& t) noexcept;
+  void copy(Tuple& t) noexcept;
 
   reference operator[](unsigned pos) { return v[pos]; }
   reference at(unsigned pos) { return v.at(pos); }

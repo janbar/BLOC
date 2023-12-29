@@ -41,8 +41,8 @@ FORStatement::~FORStatement()
     delete _expEnd;
   if (_exec)
     delete _exec;
-  if (_iterator)
-    delete _iterator;
+  if (_var)
+    delete _var;
 }
 
 const Statement * FORStatement::doit(Context& ctx) const
@@ -51,7 +51,7 @@ const Statement * FORStatement::doit(Context& ctx) const
   {
     int64_t b = _expBeg->integer(ctx);
     int64_t e = _expEnd->integer(ctx);
-    _data.var = &_iterator->store(ctx, IntegerExpression(b));
+    _data.iterator = static_cast<IntegerExpression*>(&_var->store(ctx, IntegerExpression(b)));
     if (e > b)
     {
       if (_order == DESC)
@@ -69,18 +69,18 @@ const Statement * FORStatement::doit(Context& ctx) const
       _data.step = -1;
     }
     /*  var is type safe in the loop body */
-    _data.var->safety(true);
+    _data.iterator->safety(true);
     ctx.stackControl(this);
   }
   else
   {
     /* var is type safe, so it can be read without care */
-    int64_t& nref = _data.var->refInteger();
+    int64_t& nref = _data.iterator->refInteger();
     if ((_data.step > 0 && nref >= _data.max) ||
         (_data.step < 0 && nref <= _data.min))
     {
       /* now var can be unsafe */
-      _data.var->safety(false);
+      _data.iterator->safety(false);
       ctx.unstackControl();
       return _next;
     }
@@ -93,7 +93,7 @@ const Statement * FORStatement::doit(Context& ctx) const
   }
   catch (...)
   {
-    _data.var->safety(false);
+    _data.iterator->safety(false);
     throw;
   }
   if (!ctx.stopCondition())
@@ -112,7 +112,7 @@ void FORStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
   fputc(' ', out);
-  fputs(_iterator->symbolName().c_str(), out);
+  fputs(_var->symbolName().c_str(), out);
   fputc(' ', out);
   fputs(KEYWORDS[STMT_IN], out);
   fputc(' ', out);
@@ -147,16 +147,11 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
   // iterator must be protected against type change
-  Symbol& vt = *ctx.findSymbol(rof->_iterator->symbolName());
+  Symbol& vt = *ctx.findSymbol(rof->_var->symbolName());
   vt.safety(true);
   // parsing expressions will check types first from existing variables, then
-  // from registered symbols, so reset the variable if any, and make it safe
-  StaticExpression * vv = rof->_iterator->load(ctx);
-  if (vv)
-  {
-    rof->_iterator->store(ctx, IntegerExpression(0));
-    vv->safety(true);
-  }
+  // from registered symbols, so reset the variable if any
+  ctx.clearVariable(vt);
   try
   {
     bool end = false;
@@ -181,8 +176,6 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
   catch (ParseError& pe)
   {
     // cleanup
-    if (vv)
-      vv->safety(false);
     vt.safety(false);
     ctx.execEnd();
     for (auto ss : statements)
@@ -204,7 +197,7 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_OTHER_S, "Symbol of variable required for FOR.");
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
-    s->_iterator = new VariableExpression(ctx.registerSymbol(vname, Type::INTEGER));
+    s->_var = new VariableExpression(ctx.registerSymbol(vname, Type::INTEGER));
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IN])
       throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FOR.");

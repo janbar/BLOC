@@ -39,8 +39,8 @@ FORALLStatement::~FORALLStatement()
     delete _exec;
   if (_exp)
     delete _exp;
-  if (_iterator)
-    delete _iterator;
+  if (_var)
+    delete _var;
 }
 
 const Statement * FORALLStatement::doit(Context& ctx) const
@@ -68,35 +68,34 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     /* set fetch order */
     if (_order == DESC)
     {
-      _data.var = &_iterator->store(ctx, IntegerExpression(_data.table->size() - 1));
+      /* pointer to the store */
+      _data.iterator = static_cast<IteratorExpression*>(&_var->store(ctx, IteratorExpression(*_data.table, _data.table->size()-1)));
       _data.step = -1;
     }
     else
     {
-      _data.var = &_iterator->store(ctx, IntegerExpression(0));
+      /* pointer to the store */
+      _data.iterator = static_cast<IteratorExpression*>(&_var->store(ctx, IteratorExpression(*_data.table, 0)));
       _data.step = 1;
     }
-    /*  var is type safe in the loop body */
-    _data.var->safety(true);
+    /* iterator is type safe in the loop body */
+    _data.iterator->safety(true);
     ctx.stackControl(this);
   }
   else
   {
-    /* var is type safe, so it can be read without care */
-    int64_t& nref = _data.var->refInteger();
-    if ((_data.step > 0 && nref < _data.table->size()-1) ||
-        (_data.step < 0 && nref > 0))
+    if ((_data.step > 0 && _data.iterator->index() < _data.table->size()-1) ||
+        (_data.step < 0 && _data.iterator->index() > 0))
     {
-      nref += _data.step;
+      _data.iterator->index() += _data.step;
     }
     else
     {
-      /* now var can be unsafe */
-      _data.var->safety(false);
-      /* delete temporary data */
+      _var->clear(ctx);
       if (_expSymbol)
         _expSymbol->safety(false);
       else
+        /* delete temporary data */
         delete _data.table;
       ctx.unstackControl();
       return _next;
@@ -109,6 +108,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   }
   catch (...)
   {
+    _var->clear(ctx);
     if (_expSymbol)
       _expSymbol->safety(false);
     else
@@ -131,7 +131,7 @@ void FORALLStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
   fputc(' ', out);
-  fputs(_iterator->symbolName().c_str(), out);
+  fputs(_var->symbolName().c_str(), out);
   fputc(' ', out);
   fputs(KEYWORDS[STMT_IN], out);
   fputc(' ', out);
@@ -162,19 +162,14 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
   // iterator must be protected against type change
-  Symbol& vt = *ctx.findSymbol(rof->_iterator->symbolName());
+  Symbol& vt = *ctx.findSymbol(rof->_var->symbolName());
   vt.safety(true);
-  StaticExpression * vv = rof->_iterator->load(ctx);
-  if (vv)
-  {
-    rof->_iterator->store(ctx, IntegerExpression(0));
-    vv->safety(true);
-  }
+  // parsing expressions will check types first from existing variables, then
+  // from registered symbols, so reset the variable if any
+  ctx.clearVariable(vt);
   // fetched expression must be protected against type change
   if (rof->_expSymbol)
     rof->_expSymbol->safety(true);
-  // parsing expressions will check types first from existing variables, then
-  // from registered symbols, so reset the variable if any, and make it safe
   try
   {
     bool end = false;
@@ -201,6 +196,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
     // cleanup
     if (rof->_expSymbol)
       rof->_expSymbol->safety(false);
+    vt.safety(false);
     ctx.execEnd();
     for (auto ss : statements)
       delete ss;
@@ -208,6 +204,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   }
   if (rof->_expSymbol)
     rof->_expSymbol->safety(false);
+  vt.safety(false);
   ctx.execEnd();
   return new Executable(ctx, statements);
 }
@@ -222,7 +219,6 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_OTHER_S, "Symbol of variable required for FOR.");
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
-    s->_iterator = new VariableExpression(ctx.registerSymbol(vname, Type::INTEGER));
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IN])
       throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FORALL.");
@@ -230,14 +226,28 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     t = p.pop();
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS);
-    /* check the type */
-    const Type& exp_type = s->_exp->type(ctx);
-    if (exp_type.level() == 0)
-      throw ParseError(EXC_PARSE_OTHER_S, "Table expression required for FORALL.");
     /* retrieve the symbol name for a variable expression, that is required to
      * make it safety when processing the clause of the statement */
     if (s->_exp->isStored())
       s->_expSymbol = ctx.findSymbol(dynamic_cast<VariableExpression*>(s->_exp)->symbolName());
+    /* check the type if defined */
+    const Type& exp_type = s->_exp->type(ctx);
+    if (exp_type == Type::NO_TYPE)
+    {
+      s->_var = new VariableExpression(ctx.registerSymbol(vname, exp_type));
+    }
+    else
+    {
+      if (exp_type.level() == 0)
+        throw ParseError(EXC_PARSE_OTHER_S, "Table expression required for FORALL.");
+      /* define the variable to store fetched element */
+      if (exp_type.major() == Type::ROWTYPE)
+        /* register symbol of tuple */
+        s->_var = new VariableExpression(ctx.registerSymbol(vname, s->_exp->tuple_decl(ctx), exp_type.level()-1));
+      else
+        /* register symbol of intrinsic type */
+        s->_var = new VariableExpression(ctx.registerSymbol(vname, exp_type.levelDown()));
+    }
     if (t->code == TOKEN_KEYWORD)
     {
       if (t->text == KEYWORDS[STMT_ASC])

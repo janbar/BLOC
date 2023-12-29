@@ -39,6 +39,12 @@ void Collection::swap(Collection& t) noexcept
   v.swap(t.v);
 }
 
+void Collection::copy(Collection& t) noexcept
+{
+  assert(_type == t._type);
+  v = t.v;
+}
+
 void Collection::clear()
 {
   for (StaticExpression * e : v)

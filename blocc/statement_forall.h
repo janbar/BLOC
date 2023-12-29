@@ -21,6 +21,7 @@
 
 #include "statement.h"
 #include "executable.h"
+#include "expression_iterator.h"
 
 #include <string>
 
@@ -45,7 +46,7 @@ class Executable;
 class FORALLStatement : public Statement
 {
 private:
-  VariableExpression * _iterator = nullptr;
+  VariableExpression * _var = nullptr;
   Expression * _exp = nullptr;
   Executable * _exec = nullptr;
   Symbol * _expSymbol = nullptr; // not freeable
@@ -55,7 +56,7 @@ private:
   {
     Collection * table = nullptr;
     int64_t step = 1;
-    StaticExpression * var = nullptr;
+    IteratorExpression * iterator = nullptr;
   } _data;
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORALLStatement * rof);

@@ -121,6 +121,11 @@ public:
     return ctx.loadVariable(_symbol);
   }
 
+  void clear(Context& ctx)
+  {
+    ctx.clearVariable(_symbol);
+  }
+
   static VariableExpression * parse(Parser& p, Context& ctx, const std::string& symbol_name);
 };
 

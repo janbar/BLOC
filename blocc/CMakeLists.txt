@@ -37,6 +37,7 @@ file(GLOB blocc_SOURCES
   expression_functor.cpp
   expression_integer.cpp
   expression_item.cpp
+  expression_iterator.cpp
   expression_literal.cpp
   expression_member.cpp
   expression_numeric.cpp
@@ -123,6 +124,7 @@ file(GLOB blocc_PUBLIC_HEADERS
 
 file(GLOB blocc_PRIVATE_HEADERS
   tokenizer.lex
+  expression_iterator.h
   parse_expression.h
   parse_statement.h
   statement_begin.h

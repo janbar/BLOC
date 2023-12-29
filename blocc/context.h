@@ -92,6 +92,17 @@ public:
     return nullptr;
   }
 
+  void clearVariable(const Symbol& symbol)
+  {
+    if (symbol.id < _storage.size())
+    {
+      StaticExpression * e = _storage[symbol.id];
+      _storage[symbol.id] = nullptr;
+      if (e)
+        delete e;
+    }
+  }
+
   StaticExpression& storeVariable(const Symbol& symbol, StaticExpression&& e);
 
   void describeSymbol(const std::string& name);

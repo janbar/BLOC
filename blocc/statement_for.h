@@ -21,6 +21,7 @@
 
 #include "statement.h"
 #include "executable.h"
+#include "expression_integer.h"
 
 #include <string>
 
@@ -46,7 +47,7 @@ class Executable;
 class FORStatement : public Statement
 {
 private:
-  VariableExpression * _iterator = nullptr;
+  VariableExpression * _var = nullptr;
   Expression * _expBeg = nullptr;
   Expression * _expEnd = nullptr;
   Executable * _exec = nullptr;
@@ -57,7 +58,7 @@ private:
     int64_t min = 0;
     int64_t max = 0;
     int64_t step = 1;
-    StaticExpression * var = nullptr;
+    IntegerExpression * iterator = nullptr;
   } _data;
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORStatement * rof);

@@ -32,6 +32,7 @@ unittest_project(NAME test_math_constant SOURCES test_math_constant.cpp TARGET b
 unittest_project(NAME test_tuple SOURCES test_tuple.cpp TARGET blocc)
 unittest_project(NAME test_table SOURCES test_table.cpp TARGET blocc)
 unittest_project(NAME test_math_builtin SOURCES test_math_builtin.cpp TARGET blocc)
+unittest_project(NAME test_statement_loop SOURCES test_statement_loop.cpp TARGET blocc)
 unittest_project(NAME perf_hash SOURCES perf_hash.cpp TARGET blocc)
 unittest_project(NAME perf_prim SOURCES perf_prim.cpp TARGET blocc)
 unittest_project(NAME test_exception_handling SOURCES test_exception_handling.cpp TARGET blocc)

@@ -60,4 +60,10 @@ void Tuple::swap(Tuple& t) noexcept
   v.swap(t.v);
 }
 
+void Tuple::copy(Tuple& t) noexcept
+{
+  assert(_type == t._type);
+  v = t.v;
+}
+
 }
