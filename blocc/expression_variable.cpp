@@ -27,8 +27,8 @@ namespace bloc
 
 const Type& VariableExpression::type(Context& ctx) const
 {
-  /* return the symbol registered in the context with this name */
-  return *(ctx.findSymbol(_symbol.name));
+  /* return the symbol registered in the context with this id */
+  return *(ctx.getSymbol(_symbol.id));
 }
 
 bool VariableExpression::boolean(Context& ctx) const {
@@ -86,7 +86,7 @@ const Tuple::Decl& VariableExpression::tuple_decl(Context& ctx) const
   if (z == nullptr) {
     /* memory pointed by this variable has not been populated yet */
     /* so return the decl fixed during semantic analysis */
-    const Symbol * s = ctx.findSymbol(_symbol.name);
+    const Symbol * s = ctx.getSymbol(_symbol.id);
     if (s == nullptr)
       throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
     return s->tuple_decl();
@@ -103,7 +103,7 @@ Complex& VariableExpression::complex(Context& ctx) const {
 
 std::string VariableExpression::typeName(Context& ctx) const
 {
-  const Symbol * s = ctx.findSymbol(_symbol.name);
+  const Symbol * s = ctx.getSymbol(_symbol.id);
   switch (s->major())
   {
   case Type::COMPLEX:

@@ -63,8 +63,17 @@ public:
 
   Symbol * findSymbol(const std::string& name)
   {
-    auto it = _symbols.find(name);
-    return (it != _symbols.end() ? it->second : nullptr);
+    for (auto e : _symbols)
+    {
+      if (e->name == name)
+        return e;
+    }
+    return nullptr;
+  }
+
+  Symbol * getSymbol(unsigned id)
+  {
+    return _symbols[id];
   }
 
   /**
@@ -87,26 +96,21 @@ public:
 
   StaticExpression * loadVariable(const Symbol& symbol)
   {
-    if (symbol.id < _storage.size())
-      return _storage[symbol.id];
-    return nullptr;
+    return _storage[symbol.id];
   }
 
   void clearVariable(const Symbol& symbol)
   {
-    if (symbol.id < _storage.size())
-    {
-      StaticExpression * e = _storage[symbol.id];
-      _storage[symbol.id] = nullptr;
-      if (e)
-        delete e;
-    }
+    StaticExpression * e = _storage[symbol.id];
+    _storage[symbol.id] = nullptr;
+    if (e)
+      delete e;
   }
 
   StaticExpression& storeVariable(const Symbol& symbol, StaticExpression&& e);
 
   void describeSymbol(const std::string& name);
-  void describeSymbol(const std::pair<std::string, Symbol*>& entry);
+  void describeSymbol(const Symbol& symbol);
 
   void dumpVariables();
 
@@ -339,8 +343,8 @@ public:
 private:
   std::chrono::system_clock::time_point _ts_init = std::chrono::system_clock::now();
 
-  /* memory pool and references */
-  std::map<std::string, Symbol*> _symbols;
+  /* memory pool */
+  std::vector<Symbol*> _symbols;
   std::vector<StaticExpression*> _storage;
 
   /* stack of looping statement */

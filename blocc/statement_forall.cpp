@@ -162,7 +162,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
   // iterator must be protected against type change
-  Symbol& vt = *ctx.findSymbol(rof->_var->symbolName());
+  Symbol& vt = *ctx.getSymbol(rof->_var->symbolId());
   vt.safety(true);
   // parsing expressions will check types first from existing variables, then
   // from registered symbols, so reset the variable if any
@@ -229,7 +229,7 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     /* retrieve the symbol name for a variable expression, that is required to
      * make it safety when processing the clause of the statement */
     if (s->_exp->isStored())
-      s->_expSymbol = ctx.findSymbol(dynamic_cast<VariableExpression*>(s->_exp)->symbolName());
+      s->_expSymbol = ctx.getSymbol(dynamic_cast<VariableExpression*>(s->_exp)->symbolId());
     /* check the type if defined */
     const Type& exp_type = s->_exp->type(ctx);
     if (exp_type == Type::NO_TYPE)

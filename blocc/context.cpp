@@ -94,8 +94,9 @@ Context::Context(const Context& ctx, uint8_t recursion, bool trace)
   else
     _serr = ::fdopen(::dup(::fileno(ctx._serr)), "w");
   /* copy table of symbols */
-  for (auto& e : ctx._symbols)
-    _symbols.insert(std::make_pair(e.first, new Symbol(*e.second)));
+  _symbols.reserve(ctx._symbols.size());
+  for (auto e : ctx._symbols)
+    _symbols.push_back(new Symbol(*e));
   _storage.insert(_storage.begin(), ctx._storage.size(), nullptr);
 }
 
@@ -110,8 +111,8 @@ void Context::purge()
     if (e != nullptr) delete e;
   _storage.clear();
   /* clear symbol map */
-  for (auto& e : _symbols)
-    delete e.second;
+  for (auto e : _symbols)
+    delete e;
   _symbols.clear();
   /* reset trace mode */
   _trace = false;
@@ -123,13 +124,14 @@ void Context::purge()
 
 Symbol& Context::registerSymbol(const std::string& name, const Type& type)
 {
-  auto it = _symbols.find(name);
-  if (it == _symbols.end())
+  Symbol * s = findSymbol(name);
+  if (s == nullptr)
   {
     /* allocate new */
-    unsigned nxt_id = _storage.size();
+    unsigned nxt_id = _symbols.size();
     _storage.push_back(nullptr);
-    Symbol& sym = *_symbols.insert(std::make_pair(name, new Symbol(nxt_id, name, type))).first->second;
+    _symbols.push_back(new Symbol(nxt_id, name, type));
+    Symbol& sym = *_symbols.back();
 
     /* implement safety qualifier */
     if (name.front() == Symbol::SAFETY_QUALIFIER)
@@ -137,27 +139,28 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
 
     return sym;
   }
-  if (*it->second == type)
-    return *it->second;
-  if (it->second->safety())
+  if (*s == type)
+    return *s;
+  if (s->safety())
   {
-    if (it->second->major() == Type::ROWTYPE)
-      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, it->second->tuple_decl().tupleName().c_str());
-    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, it->second->typeName().c_str());
+    if (s->major() == Type::ROWTYPE)
+      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
+    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
   }
-  it->second->upgrade(type);
-  return *it->second;
+  s->upgrade(type);
+  return *s;
 }
 
 Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl, Type::TypeLevel level)
 {
-  auto it = _symbols.find(name);
-  if (it == _symbols.end())
+  Symbol * s = findSymbol(name);
+  if (s == nullptr)
   {
     /* allocate new */
-    unsigned nxt_id = _storage.size();
+    unsigned nxt_id = _symbols.size();
     _storage.push_back(nullptr);
-    Symbol& sym = *_symbols.insert(std::make_pair(name, new Symbol(nxt_id, name, decl, level))).first->second;
+    _symbols.push_back(new Symbol(nxt_id, name, decl, level));
+    Symbol& sym = *_symbols.back();
 
     /* implement safety qualifier */
     if (name.front() == Symbol::SAFETY_QUALIFIER)
@@ -165,16 +168,16 @@ Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl
 
     return sym;
   }
-  if (*it->second == decl.make_type(level))
-    return *it->second;
-  if (it->second->safety())
+  if (*s == decl.make_type(level))
+    return *s;
+  if (s->safety())
   {
-    if (it->second->major() == Type::ROWTYPE)
-      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, it->second->tuple_decl().tupleName().c_str());
-    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, it->second->typeName().c_str());
+    if (s->major() == Type::ROWTYPE)
+      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
+    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
   }
-  it->second->upgrade(decl, level);
-  return *it->second;
+  s->upgrade(decl, level);
+  return *s;
 }
 
 StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&& e)
@@ -188,9 +191,9 @@ StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&
     (*it)->safety(symbol.safety());
     /* upgrade the symbol registered in this context for this name */
     if (new_type == Type::ROWTYPE)
-      findSymbol(symbol.name)->upgrade(e.tuple_decl(*this), new_type.level());
+      getSymbol(symbol.id)->upgrade(e.tuple_decl(*this), new_type.level());
     else
-      findSymbol(symbol.name)->upgrade(new_type);
+      getSymbol(symbol.id)->upgrade(new_type);
   }
   else if ((*it)->refType() != new_type)
   {
@@ -202,9 +205,9 @@ StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&
     *it = e.swapNew();
     /* upgrade the symbol registered in this context for this name */
     if (new_type == Type::ROWTYPE)
-      findSymbol(symbol.name)->upgrade(e.tuple_decl(*this), new_type.level());
+      getSymbol(symbol.id)->upgrade(e.tuple_decl(*this), new_type.level());
     else
-      findSymbol(symbol.name)->upgrade(new_type);
+      getSymbol(symbol.id)->upgrade(new_type);
   }
   else
   {
@@ -218,9 +221,9 @@ void Context::describeSymbol(const std::string& name)
 {
   std::string _name(name);
   std::transform(_name.begin(), _name.end(), _name.begin(), ::toupper);
-  auto it = _symbols.find(_name);
-  if (it != _symbols.end())
-    describeSymbol(*it);
+  Symbol * s = findSymbol(name);
+  if (s != nullptr)
+    describeSymbol(*s);
   else
   {
     fprintf(_sout, "%s is undefined.\n", _name.c_str());
@@ -228,13 +231,13 @@ void Context::describeSymbol(const std::string& name)
   }
 }
 
-void Context::describeSymbol(const std::pair<std::string, Symbol*>& entry)
+void Context::describeSymbol(const Symbol& symbol)
 {
-  StaticExpression * var = loadVariable(*entry.second);
+  StaticExpression * var = loadVariable(symbol);
 
-  fprintf(_sout, "[%04x] %s is ", entry.second->id, entry.second->name.c_str());
+  fprintf(_sout, "[%04x] %s is ", symbol.id, symbol.name.c_str());
   if (!var)
-    fprintf(_sout, "%s\n", entry.second->typeName().c_str());
+    fprintf(_sout, "%s\n", symbol.typeName().c_str());
   else
   {
     fputs(var->toString(*this).c_str(), _sout);
@@ -268,8 +271,8 @@ void Context::describeSymbol(const std::pair<std::string, Symbol*>& entry)
 
 void Context::dumpVariables()
 {
-  for (const auto& sym : _symbols)
-    describeSymbol(sym);
+  for (const auto e : _symbols)
+    describeSymbol(*e);
 }
 
 /**************************************************************************/

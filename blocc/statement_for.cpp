@@ -147,7 +147,7 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
   // iterator must be protected against type change
-  Symbol& vt = *ctx.findSymbol(rof->_var->symbolName());
+  Symbol& vt = *ctx.getSymbol(rof->_var->symbolId());
   vt.safety(true);
   // parsing expressions will check types first from existing variables, then
   // from registered symbols, so reset the variable if any

@@ -84,6 +84,12 @@ public:
   const std::string& symbolName() const { return _symbol.name; }
 
   /**
+   * Returns the symbol id of this variable.
+   * @return id
+   */
+  unsigned symbolId() const { return _symbol.id; }
+
+  /**
    * Store a temporary result into memory pointed by this variable. The result
    * instance must be derived from the class "StaticExpression" such as the
    * following types:
