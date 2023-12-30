@@ -1,19 +1,11 @@
 
 ###############################################################################
 # set lib version here
-set (blocc_VERSION_MAJOR 1)
-set (blocc_VERSION_MINOR 0)
-set (blocc_VERSION_PATCH 0)
-
-set (BLOCC_VERSION_REVNO 1)
-
-set (blocc_VERSION ${blocc_VERSION_MAJOR}.${blocc_VERSION_MINOR}.${blocc_VERSION_PATCH})
-set (BLOCC_LIB_VERSION ${blocc_VERSION})
-set (BLOCC_LIB_SOVERSION ${blocc_VERSION_MAJOR})
+set (BLOCC_LIB_VERSION "1.0.0")
+set (BLOCC_LIB_SOVERSION 1)
 
 add_definitions(
   "-DLIBVERSION=\"${BLOCC_LIB_VERSION}\""
-  "-DLIBREVNUM=${BLOCC_VERSION_REVNO}"
   "-DLIBSOVERSION=\"${BLOCC_LIB_SOVERSION}\""
   "-DLIB_DLL_EXPORTS"
 )

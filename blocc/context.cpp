@@ -18,7 +18,6 @@
 
 #ifndef LIBVERSION
 #define LIBVERSION  "[undefined]"
-#define LIBREVNUM   0
 #endif
 
 #include "debug.h"
@@ -58,7 +57,7 @@ const char * Context::versionHeader()
 
 int Context::compatible()
 {
-  return LIBREVNUM;
+  return 1;
 }
 
 Context::Context()
