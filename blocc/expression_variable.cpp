@@ -25,18 +25,10 @@
 namespace bloc
 {
 
-const Type& VariableExpression::type(Context& ctx) const {
-  /* retrieve the type of the stored expression at runtime */
-  const StaticExpression * z = ctx.loadVariable(_symbol);
-  if (z == nullptr) {
-    /* memory pointed by this variable has not been populated yet */
-    /* so return the type fixed during semantic analysis */
-    const Symbol * s = ctx.findSymbol(_symbol.name);
-    if (s == nullptr)
-      throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
-    return *s;
-  }
-  return z->refType();
+const Type& VariableExpression::type(Context& ctx) const
+{
+  /* return the symbol registered in the context with this name */
+  return *(ctx.findSymbol(_symbol.name));
 }
 
 bool VariableExpression::boolean(Context& ctx) const {
@@ -109,26 +101,18 @@ Complex& VariableExpression::complex(Context& ctx) const {
   return z->complex(ctx);
 }
 
-std::string VariableExpression::typeName(Context& ctx) const {
-  /* retrieve the type of the stored expression at runtime */
-  const StaticExpression * z = ctx.loadVariable(_symbol);
-  if (z == nullptr) {
-    /* memory pointed by this variable has not been populated yet */
-    /* so return the type fixed during semantic analysis */
-    const Symbol * s = ctx.findSymbol(_symbol.name);
-    if (s == nullptr)
-      throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
-    switch (s->major())
-    {
-    case Type::COMPLEX:
-      return s->typeName(PluginManager::instance().plugged(s->minor()).interface.name);
-    case Type::ROWTYPE:
-      return s->tuple_decl().tupleName();
-    default:
-      return s->typeName();
-    }
+std::string VariableExpression::typeName(Context& ctx) const
+{
+  const Symbol * s = ctx.findSymbol(_symbol.name);
+  switch (s->major())
+  {
+  case Type::COMPLEX:
+    return s->typeName(PluginManager::instance().plugged(s->minor()).interface.name);
+  case Type::ROWTYPE:
+    return s->tuple_decl().tupleName();
+  default:
+    return s->typeName();
   }
-  return z->typeName(ctx);
 }
 
 void VariableExpression::store(Context& d_ctx, Context& s_ctx, Expression * s_exp) const
@@ -137,7 +121,7 @@ void VariableExpression::store(Context& d_ctx, Context& s_ctx, Expression * s_ex
   {
     const Type& exp_type = s_exp->type(s_ctx);
     StaticExpression * exp = load(d_ctx);
-    if (exp_type == type(d_ctx) && exp)
+    if (exp && exp->type(d_ctx) == exp_type)
     {
       if (exp_type.level() == 0)
       {

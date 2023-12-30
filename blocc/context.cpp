@@ -179,14 +179,20 @@ Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl
 
 StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&& e)
 {
+  const Type& new_type = e.type(*this);
   std::vector<StaticExpression*>::iterator it = _storage.begin() + symbol.id;
   if (*it == nullptr)
   {
     /* store new and forward the safety flag */
     *it = e.swapNew();
     (*it)->safety(symbol.safety());
+    /* upgrade the symbol registered in this context for this name */
+    if (new_type == Type::ROWTYPE)
+      findSymbol(symbol.name)->upgrade(e.tuple_decl(*this), new_type.level());
+    else
+      findSymbol(symbol.name)->upgrade(new_type);
   }
-  else if ((*it)->refType() != e.refType())
+  else if ((*it)->refType() != new_type)
   {
     /* safety flag forbids any change of type */
     if ((*it)->safety())
@@ -194,6 +200,11 @@ StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&
     /* delete old, and store new */
     delete *it;
     *it = e.swapNew();
+    /* upgrade the symbol registered in this context for this name */
+    if (new_type == Type::ROWTYPE)
+      findSymbol(symbol.name)->upgrade(e.tuple_decl(*this), new_type.level());
+    else
+      findSymbol(symbol.name)->upgrade(new_type);
   }
   else
   {
