@@ -37,6 +37,7 @@ class Statement;
 
 class Context
 {
+  friend class Parser;
 
 public:
   virtual ~Context();
@@ -220,6 +221,11 @@ public:
     return (diff.count() - from);
   }
 
+  bool parsing() const
+  {
+    return _parsing;
+  }
+
   void trace(bool b)
   {
     _trace = b;
@@ -368,6 +374,8 @@ private:
   uint8_t _recursion = 0;
 
   RuntimeError _last_error;
+
+  bool _parsing = false;
 };
 
 }

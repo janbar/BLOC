@@ -131,7 +131,6 @@ Parser * Parser::createInteractiveParser(Context& ctx, TOKEN_READER reader)
 
 Statement * Parser::parseStatement()
 {
-  Statement * s = nullptr;
   TokenPtr t;
   state(BEGIN);
   while ((t = front()))
@@ -148,10 +147,22 @@ Statement * Parser::parseStatement()
     default:
       break;
     }
-    state(PARSE);
-    s = ParseStatement::statement(*this, _ctx);
-    state(END);
-    return s;
+
+    try
+    {
+      state(PARSE);
+      _ctx._parsing = true;
+      Statement * s = ParseStatement::statement(*this, _ctx);
+      _ctx._parsing = false;
+      state(END);
+      return s;
+    }
+    catch (...)
+    {
+      _ctx._parsing = false;
+      state(END);
+      throw;
+    }
   }
   state(ABORT);
   return nullptr;
@@ -159,7 +170,18 @@ Statement * Parser::parseStatement()
 
 Expression * Parser::parseExpression()
 {
-  return ParseExpression::expression(*this, _ctx);
+  try
+  {
+    _ctx._parsing = true;
+    Expression * e = ParseExpression::expression(*this, _ctx);
+    _ctx._parsing = false;
+    return e;
+  }
+  catch (...)
+  {
+    _ctx._parsing = false;
+    throw;
+  }
 }
 
 bool Parser::reservedKeyword(const std::string& text)

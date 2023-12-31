@@ -28,7 +28,15 @@ namespace bloc
 const Type& VariableExpression::type(Context& ctx) const
 {
   /* return the symbol registered in the context with this id */
-  return *(ctx.getSymbol(_symbol.id));
+  if (ctx.parsing())
+    return *(ctx.getSymbol(_symbol.id));
+  else
+  {
+    const StaticExpression * z = ctx.loadVariable(_symbol);
+    if (z)
+      return z->refType();
+    return *(ctx.getSymbol(_symbol.id));
+  }
 }
 
 bool VariableExpression::boolean(Context& ctx) const {

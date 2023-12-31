@@ -36,7 +36,6 @@
 #include <blocc/parser.h>
 #include <blocc/readstdin.h>
 #include <blocc/exception_parse.h>
-#include <blocc/parse_expression.h>
 #include <blocc/expression_literal.h>
 #include <blocc/expression_operator.h>
 #include <blocc/expression_builtin.h>
