@@ -36,7 +36,7 @@ int64_t INTExpression::integer(Context & ctx) const
   case Type::LITERAL:
     try
     {
-      l = (int64_t) std::stod(_args[0]->literal(ctx));
+      l = (int64_t) std::stoll(_args[0]->literal(ctx));
     }
     catch (std::invalid_argument& e)
     {
