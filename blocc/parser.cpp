@@ -205,6 +205,7 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
   p.state(PARSE);
   try
   {
+    ctx._parsing = true;
     for (;;)
     {
       TokenPtr t;
@@ -221,12 +222,14 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
       if (s != nullptr)
         statements.push_back(s);
     }
+    ctx._parsing = false;
     if (trace)
       fflush(ctx.ctxerr());
     return new Executable(ctx, statements);
   }
   catch (ParseError& pe)
   {
+    ctx._parsing = false;
     for (auto s : statements)
       delete s;
     /* break current trace line */
