@@ -27,11 +27,12 @@ namespace bloc
 
 const Type& VariableExpression::type(Context& ctx) const
 {
-  /* return the symbol registered in the context with this id */
   if (ctx.parsing())
+    /* return the type registered in the context with this id */
     return *(ctx.getSymbol(_symbol.id));
   else
   {
+    /* return the type of the stored expression */
     const StaticExpression * z = ctx.loadVariable(_symbol);
     if (z)
       return z->refType();
@@ -90,16 +91,17 @@ Tuple& VariableExpression::tuple(Context& ctx) const {
 
 const Tuple::Decl& VariableExpression::tuple_decl(Context& ctx) const
 {
-  const StaticExpression * z = ctx.loadVariable(_symbol);
-  if (z == nullptr) {
-    /* memory pointed by this variable has not been populated yet */
-    /* so return the decl fixed during semantic analysis */
-    const Symbol * s = ctx.getSymbol(_symbol.id);
-    if (s == nullptr)
-      throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, _symbol.name.c_str());
-    return s->tuple_decl();
+  if (ctx.parsing())
+    /* return the decl registered in the context with this id */
+    return ctx.getSymbol(_symbol.id)->tuple_decl();
+  else
+  {
+    /* return the decl of the stored expression */
+    const StaticExpression * z = ctx.loadVariable(_symbol);
+    if (z)
+      return z->tuple_decl(ctx);
+    return ctx.getSymbol(_symbol.id)->tuple_decl();
   }
-  return z->tuple_decl(ctx);
 }
 
 Complex& VariableExpression::complex(Context& ctx) const {
