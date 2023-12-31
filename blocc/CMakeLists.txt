@@ -86,7 +86,7 @@ file(GLOB blocc_PUBLIC_HEADERS
   expression_complex.h
   expression_functor.h
   expression_integer.h
-  expression_item.cpp
+  expression_item.h
   expression_literal.h
   expression_member.h
   expression_numeric.h
@@ -100,7 +100,6 @@ file(GLOB blocc_PUBLIC_HEADERS
   plugin_interface.h
   plugin_manager.h
   intrinsic_type.h
-  parse_expression.h
   parser.h
   string_reader.h
   readstdin.h
