@@ -38,6 +38,7 @@ class Statement;
 class Context
 {
   friend class Parser;
+  friend class FUNCTIONStatement;
 
 public:
   virtual ~Context();
