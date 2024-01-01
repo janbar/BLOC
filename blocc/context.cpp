@@ -244,7 +244,7 @@ void Context::describeSymbol(const std::string& name)
 {
   std::string _name(name);
   std::transform(_name.begin(), _name.end(), _name.begin(), ::toupper);
-  Symbol * s = findSymbol(name);
+  Symbol * s = findSymbol(_name);
   if (s != nullptr)
     describeSymbol(*s);
   else
