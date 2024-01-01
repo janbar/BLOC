@@ -32,19 +32,18 @@ class IteratorExpression : public SwappableExpression<IteratorExpression>
 private:
 
   Collection& v;
-  Type _type;
   size_t _index;
 
 public:
 
   virtual ~IteratorExpression() { }
 
-  IteratorExpression(Collection& c, size_t i) : v(c), _type(c.table_type().levelDown()), _index(i) { }
-  explicit IteratorExpression(Collection& c) : v(c), _type(c.table_type().levelDown()), _index(0) { }
+  IteratorExpression(Collection& c, size_t i) : v(c), _index(i) { }
+  explicit IteratorExpression(Collection& c) : v(c), _index(0) { }
   size_t& index() { return _index; }
 
-  const Type& type(Context& ctx) const override { return _type; }
-  const Type& refType() const override { return _type; }
+  const Type& type(Context& ctx) const override { return v.at(_index)->type(ctx); }
+  const Type& refType() const override { return v.at(_index)->refType(); }
 
   bool boolean(Context& ctx) const override { return v.at(_index)->refBoolean(); }
   int64_t integer(Context& ctx) const override { return v.at(_index)->refInteger(); }
@@ -69,7 +68,7 @@ public:
 
   Tuple& refTuple() override { return v.at(_index)->refTuple(); }
 
-  const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return v.table_decl(); }
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return v.at(_index)->tuple_decl(ctx); }
 
   Complex& refComplex() override { return v.at(_index)->refComplex(); }
 
