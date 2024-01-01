@@ -92,14 +92,16 @@ NUMExpression * NUMExpression::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
     switch (args.back()->type(ctx).major())
     {
-    case Type::COMPLEX:
-    case Type::ROWTYPE:
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
+    case Type::NO_TYPE: /* opaque */
+    case Type::LITERAL:
+    case Type::INTEGER:
+    case Type::NUMERIC:
+      assertClosedFunction(p, ctx, FUNC_NUM);
+      return new NUMExpression(std::move(args));
     default:
       break;
     }
-    assertClosedFunction(p, ctx, FUNC_NUM);
-    return new NUMExpression(std::move(args));
+    throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
   }
   catch (ParseError& pe)
   {

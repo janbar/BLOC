@@ -85,6 +85,7 @@ HASHExpression * HASHExpression::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH]);
     switch (args.back()->type(ctx).major())
     {
+    case Type::NO_TYPE: /* opaque */
     case Type::LITERAL:
     case Type::TABCHAR:
       break;
