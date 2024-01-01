@@ -151,15 +151,15 @@ Statement * Parser::parseStatement()
     try
     {
       state(PARSE);
-      _ctx._parsing = true;
+      _ctx.parsingBegin();
       Statement * s = ParseStatement::statement(*this, _ctx);
-      _ctx._parsing = false;
+      _ctx.parsingEnd();
       state(END);
       return s;
     }
     catch (...)
     {
-      _ctx._parsing = false;
+      _ctx.parsingEnd();
       state(END);
       throw;
     }
@@ -172,14 +172,14 @@ Expression * Parser::parseExpression()
 {
   try
   {
-    _ctx._parsing = true;
+    _ctx.parsingBegin();
     Expression * e = ParseExpression::expression(*this, _ctx);
-    _ctx._parsing = false;
+    _ctx.parsingEnd();
     return e;
   }
   catch (...)
   {
-    _ctx._parsing = false;
+    _ctx.parsingEnd();
     throw;
   }
 }
@@ -205,7 +205,7 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
   p.state(PARSE);
   try
   {
-    ctx._parsing = true;
+    ctx.parsingBegin();
     for (;;)
     {
       TokenPtr t;
@@ -222,14 +222,14 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
       if (s != nullptr)
         statements.push_back(s);
     }
-    ctx._parsing = false;
+    ctx.parsingEnd();
     if (trace)
       fflush(ctx.ctxerr());
     return new Executable(ctx, statements);
   }
   catch (ParseError& pe)
   {
-    ctx._parsing = false;
+    ctx.parsingEnd();
     for (auto s : statements)
       delete s;
     /* break current trace line */

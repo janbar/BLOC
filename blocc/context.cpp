@@ -121,6 +121,26 @@ void Context::purge()
 /* Symbol and pointer                                                     */
 /**************************************************************************/
 
+void Context::parsingBegin()
+{
+  _parsing = true;
+}
+
+void Context::parsingEnd()
+{
+  /* restore all upgraded symbols during parsing */
+  std::vector<Symbol>::const_iterator it = _backed_symbols.cend();
+  while (_backed_symbols.begin() != it--)
+  {
+    if (it->major() == Type::ROWTYPE)
+      _symbols[it->id]->upgrade(it->tuple_decl(), it->level());
+    else
+      _symbols[it->id]->upgrade(*it);
+  }
+  _backed_symbols.clear();
+  _parsing = false;
+}
+
 Symbol& Context::registerSymbol(const std::string& name, const Type& type)
 {
   Symbol * s = findSymbol(name);
@@ -146,6 +166,8 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
       throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
     throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
   }
+  /* stacking old symbol */
+  _backed_symbols.push_back(*s);
   s->upgrade(type);
   return *s;
 }
@@ -175,6 +197,8 @@ Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl
       throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
     throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
   }
+  /* stacking old symbol */
+  _backed_symbols.push_back(*s);
   s->upgrade(decl, level);
   return *s;
 }

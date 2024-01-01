@@ -78,6 +78,15 @@ public:
     return _symbols[id];
   }
 
+  void parsingBegin();
+
+  void parsingEnd();
+
+  bool parsing() const
+  {
+    return _parsing;
+  }
+
   /**
    * Register symbol of intrinsic type
    */
@@ -220,11 +229,6 @@ public:
     auto ts = std::chrono::system_clock::now();
     std::chrono::duration<double> diff = ts - _ts_init;
     return (diff.count() - from);
-  }
-
-  bool parsing() const
-  {
-    return _parsing;
   }
 
   void trace(bool b)
@@ -377,6 +381,7 @@ private:
   RuntimeError _last_error;
 
   bool _parsing = false;
+  std::vector<Symbol> _backed_symbols;
 };
 
 }

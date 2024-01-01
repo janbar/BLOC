@@ -97,7 +97,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     /* create the private context of the functor */
     fct->ctx = new Context(::fileno(ctx.ctxout()), ::fileno(ctx.ctxerr()));
     /* parsing mode is always enabled for the private context */
-    fct->ctx->_parsing = true;
+    fct->ctx->parsingBegin();
 
     t = p.pop();
     if (t->code == '(')
