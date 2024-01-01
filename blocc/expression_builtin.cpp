@@ -91,9 +91,9 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "mod",        "asin",       "acos",       "sinh",       "cosh",
     "tanh",       "clamp",      "",           "",           "",
     "read",       "readln",     "isnum",      "raw",        "tab",
-    "tup",        "getsys",     "getenv",     "true",       "false",
-    "error",      "phi",        "pi",         "ee",         "random",
-    "",           "",           "",           "",           "",
+    "tup",        "getsys",     "getenv",     "true",       "on",
+    "false",      "off",        "error",      "phi",        "pi",
+    "ee",         "random",     "",           "",           "",
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
     "strpos",     "replace",    "subraw",     "hash",
@@ -116,7 +116,9 @@ std::string BuiltinExpression::unparse(Context& ctx) const
   case FUNC_PI:
   case FUNC_EE:
   case FUNC_TRUE:
+  case FUNC_ON:
   case FUNC_FALSE:
+  case FUNC_OFF:
   case FUNC_ERROR:
     break;
   default:
@@ -164,8 +166,10 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
   case FUNC_NIL:
     return new NULLExpression();
   case FUNC_TRUE:
+  case FUNC_ON:
     return new TRUEExpression();
   case FUNC_FALSE:
+  case FUNC_OFF:
     return new FALSEExpression();
   case FUNC_PHI:
     return new PHIExpression();
@@ -395,7 +399,9 @@ const char * BuiltinExpression::HELPS[] = {
   /*GETENV*/  "returns the corresponding value string of the environment variable x."
           "\n\ngetenv( x )",
   /*TRUE  */  "is the boolean expression 'true'",
+  /*ON    */  "is an alias for the boolean expression 'true'",
   /*FALSE */  "is the boolean expression 'false'",
+  /*OFF   */  "is an alias for the boolean expression 'false'",
   /*ERROR */  "is the current thrown error as tuple { string(name), string(message), integer(code) }.",
   /*PHI   */  "is the golden ratio.",
   /*PI    */  "is the number PI.",

@@ -92,12 +92,14 @@ public:
     FUNC_GETSYS = 36, // getsys(x)
     FUNC_GETENV = 37, // getenv(x)
     FUNC_TRUE   = 38, // true
-    FUNC_FALSE  = 39, // false
-    FUNC_ERROR  = 40, // error
-    FUNC_PHI    = 41, // phi (gold number)
-    FUNC_PI     = 42, // pi
-    FUNC_EE     = 43, // e (euler)
-    FUNC_RANDOM = 44, // random | random(x)
+    FUNC_ON     = 39, // true
+    FUNC_FALSE  = 40, // false
+    FUNC_OFF    = 41, // false
+    FUNC_ERROR  = 42, // error
+    FUNC_PHI    = 43, // phi (gold number)
+    FUNC_PI     = 44, // pi
+    FUNC_EE     = 45, // e (euler)
+    FUNC_RANDOM = 46, // random | random(x)
 
     FUNC_LSUB   = 50, // lsubstr(x,count)
     FUNC_RSUB   = 51, // rsubstr(x,count)
