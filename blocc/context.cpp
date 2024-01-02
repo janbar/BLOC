@@ -205,7 +205,6 @@ Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl
 
 StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&& e)
 {
-  const Type& new_type = e.type(*this);
   std::vector<StaticExpression*>::iterator it = _storage.begin() + symbol.id;
   if (*it == nullptr)
   {
@@ -213,12 +212,13 @@ StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&
     *it = e.swapNew();
     (*it)->safety(symbol.safety());
     /* upgrade the symbol registered in this context for this name */
+    const Type& new_type = (*it)->refType();
     if (new_type == Type::ROWTYPE)
-      getSymbol(symbol.id)->upgrade(e.tuple_decl(*this), new_type.level());
+      getSymbol(symbol.id)->upgrade((*it)->tuple_decl(*this), new_type.level());
     else
       getSymbol(symbol.id)->upgrade(new_type);
   }
-  else if ((*it)->refType() != new_type)
+  else if ((*it)->refType() != e.refType())
   {
     /* safety flag forbids any change of type */
     if ((*it)->safety())
@@ -227,8 +227,9 @@ StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&
     delete *it;
     *it = e.swapNew();
     /* upgrade the symbol registered in this context for this name */
+    const Type& new_type = (*it)->refType();
     if (new_type == Type::ROWTYPE)
-      getSymbol(symbol.id)->upgrade(e.tuple_decl(*this), new_type.level());
+      getSymbol(symbol.id)->upgrade((*it)->tuple_decl(*this), new_type.level());
     else
       getSymbol(symbol.id)->upgrade(new_type);
   }

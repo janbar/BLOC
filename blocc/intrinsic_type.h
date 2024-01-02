@@ -53,7 +53,12 @@ public:
 
   Type() : _major(NO_TYPE) { }
 
-  Type(TypeMajor type) : _major(type) { } /* converting ctor */
+  Type(const Type& t) = default;
+  Type& operator=(const Type& t) = default;
+
+  /* converting ctor */
+  Type(TypeMajor type)
+          : _major(type) { }
 
   Type(TypeMajor major, TypeMinor minor, TypeLevel level = 0)
           : _minor(minor), _level(level), _major(major) { }

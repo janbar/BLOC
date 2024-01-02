@@ -57,7 +57,6 @@ Complex::Complex(Complex&& c) noexcept
 , _type(c._type)
 {
   c._refcount = nullptr;
-  c._type = Type(Type::COMPLEX);
   c._instance = nullptr;
 }
 
@@ -123,7 +122,6 @@ void Complex::swap(Complex&& c) noexcept
   _type = c._type;
   c._refcount = nullptr;
   c._instance = nullptr;
-  c._type = Type(Type::COMPLEX);
 }
 
 }
