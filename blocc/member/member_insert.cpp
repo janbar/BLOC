@@ -108,48 +108,76 @@ TabChar& MemberINSERTExpression::tabchar(Context& ctx) const
 
 Collection& MemberINSERTExpression::collection(Context& ctx) const
 {
-  const Type& arg_type = _args[1]->type(ctx);
-  const Type& exp_type = _exp->type(ctx);
   Collection& rv = _exp->collection(ctx);
+  const Type& rv_type = rv.table_type();
   int64_t p = _args[0]->integer(ctx);
   if (p < 0 || p > rv.size())
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  /* same set */
-  if (arg_type == exp_type)
+
+  const Type& arg_type = _args[1]->type(ctx);
+  /* collection */
+  if (arg_type.level() > 0)
   {
     Collection& a = _args[1]->collection(ctx);
-    /* allocate once and for all */
-    rv.reserve(rv.size() + a.size());
-    if (&a == &rv)
+    if (a.table_type() == rv_type)
     {
-      /* clone and move */
-      Collection _a(a);
-      Collection::const_iterator it = rv.begin() + p;
-      for (StaticExpression * e : _a)
-        it = rv.insert(it, e->swapNew());
-      _a.clear();
+      /* allocate once and for all */
+      rv.reserve(rv.size() + a.size());
+      if (&a == &rv)
+      {
+        /* clone and move */
+        Collection _a(a);
+        Collection::const_iterator it = rv.begin() + p;
+        for (StaticExpression * e : _a)
+          it = rv.insert(it, e->swapNew());
+        _a.clear();
+      }
+      else if (_args[1]->isRvalue())
+      {
+        /* move */
+        Collection::const_iterator it = rv.begin() + p;
+        for (StaticExpression * e : a)
+          it = rv.insert(it, e->swapNew());
+        a.clear();
+      }
+      else
+      {
+        /* inline clone */
+        Collection::const_iterator it = rv.begin() + p;
+        for (const StaticExpression * e : a)
+          it = rv.insert(it, e->cloneNew());
+      }
+      return rv;
     }
-    else if (_args[1]->isRvalue())
+    else if (a.table_type() == rv_type.levelDown())
     {
-      /* move */
-      Collection::const_iterator it = rv.begin() + p;
-      for (StaticExpression * e : a)
-        it = rv.insert(it, e->swapNew());
-      a.clear();
+      if (_args[1]->isRvalue())
+        rv.insert(rv.begin() + p, new CollectionExpression(std::move(a)));
+      else
+        rv.insert(rv.begin() + p, new CollectionExpression(a));
+
+      return rv;
     }
-    else
-    {
-      /* inline clone */
-      Collection::const_iterator it = rv.begin() + p;
-      for (const StaticExpression * e : a)
-        it = rv.insert(it, e->cloneNew());
-    }
-    return rv;
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
   }
-  /* one element */
-  else if (arg_type == exp_type.levelDown())
+  else if (arg_type == rv_type.major())
   {
-    if (arg_type.level() == 0)
+    /* tuple */
+    if (arg_type == Type::ROWTYPE)
+    {
+      Tuple& t = _args[1]->tuple(ctx);
+      if (t.tuple_type() == rv_type.levelDown())
+      {
+        if (_args[1]->isRvalue())
+          rv.insert(rv.begin() + p, new TupleExpression(std::move(t)));
+        else
+          rv.insert(rv.begin() + p, new TupleExpression(t));
+        return rv;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+    }
+    /* others */
+    else if (arg_type == rv_type.levelDown())
     {
       switch (arg_type.major())
       {
@@ -180,24 +208,12 @@ Collection& MemberINSERTExpression::collection(Context& ctx) const
         else
           rv.insert(rv.begin() + p, new TabcharExpression(_args[1]->tabchar(ctx)));
         break;
-      case Type::ROWTYPE:
-        if (_args[1]->isRvalue())
-          rv.insert(rv.begin() + p, new TupleExpression(std::move(_args[1]->tuple(ctx))));
-        else
-          rv.insert(rv.begin() + p, new TupleExpression(_args[1]->tuple(ctx)));
-        break;
       default:
         throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
       }
+      return rv;
     }
-    else if (_args[1]->isRvalue())
-      rv.insert(rv.begin() + p, new CollectionExpression(std::move(_args[1]->collection(ctx))));
-    else
-      rv.insert(rv.begin() + p, new CollectionExpression(_args[1]->collection(ctx)));
-
-    return rv;
   }
-
   throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
 }
 
@@ -263,10 +279,6 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
       /* type opaque or tuple opaque */
       bool exp_opaque = (exp_type == Type::NO_TYPE || (exp_type == Type::ROWTYPE && exp_type.minor() == 0));
       bool arg_opaque = (arg_type == Type::NO_TYPE || (arg_type == Type::ROWTYPE && arg_type.minor() == 0));
-
-      /* test opaque is stored */
-      if ((exp_opaque && !exp->isStored()) || (arg_opaque && !args.back()->isStored()))
-        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
 
       /* test levels of known type or tuple opaque */
       if ((!exp_opaque || exp_type == Type::ROWTYPE) && (!arg_opaque || arg_type == Type::ROWTYPE))

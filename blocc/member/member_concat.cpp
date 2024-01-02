@@ -101,43 +101,70 @@ TabChar& MemberCONCATExpression::tabchar(Context& ctx) const
 
 Collection& MemberCONCATExpression::collection(Context& ctx) const
 {
-  const Type& arg_type = _args[0]->type(ctx);
-  const Type& exp_type = _exp->type(ctx);
   Collection& rv = _exp->collection(ctx);
-  /* same set */
-  if (arg_type == exp_type)
+  const Type& rv_type = rv.table_type();
+
+  const Type& arg_type = _args[0]->type(ctx);
+  /* collection */
+  if (arg_type.level() > 0)
   {
     Collection& a = _args[0]->collection(ctx);
-    /* allocate once and for all */
-    rv.reserve(rv.size() + a.size());
-    if (&a == &rv)
+    if (a.table_type() == rv_type)
     {
-      /* clone and move */
-      Collection _a(a);
-      for (StaticExpression * e : _a)
-        rv.push_back(e->swapNew());
-      _a.clear();
-    }
-    else
-    {
-      if (_args[0]->isRvalue())
+      /* allocate once and for all */
+      rv.reserve(rv.size() + a.size());
+      if (&a == &rv)
       {
-        /* move */
-        for (StaticExpression * e : a)
+        /* clone and move */
+        Collection _a(a);
+        for (StaticExpression * e : _a)
           rv.push_back(e->swapNew());
-        a.clear();
+        _a.clear();
       }
       else
-        /* inline clone */
-        for (const StaticExpression * e : a)
-          rv.push_back(e->cloneNew());
+      {
+        if (_args[0]->isRvalue())
+        {
+          /* move */
+          for (StaticExpression * e : a)
+            rv.push_back(e->swapNew());
+          a.clear();
+        }
+        else
+          /* inline clone */
+          for (const StaticExpression * e : a)
+            rv.push_back(e->cloneNew());
+      }
+      return rv;
     }
-    return rv;
+    else if (a.table_type() == rv_type.levelDown())
+    {
+      if (_args[0]->isRvalue())
+        rv.push_back(new CollectionExpression(std::move(a)));
+      else
+        rv.push_back(new CollectionExpression(a));
+      return rv;
+    }
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
   }
-  /* one element */
-  else if (arg_type == exp_type.levelDown())
+  else if (arg_type == rv_type.major())
   {
-    if (arg_type.level() == 0)
+    /* tuple */
+    if (arg_type == Type::ROWTYPE)
+    {
+      Tuple& t = _args[0]->tuple(ctx);
+      if (t.tuple_type() == rv_type.levelDown())
+      {
+        if (_args[0]->isRvalue())
+          rv.push_back(new TupleExpression(std::move(t)));
+        else
+          rv.push_back(new TupleExpression(t));
+        return rv;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+    }
+    /* others */
+    else if (arg_type == rv_type.levelDown())
     {
       switch (arg_type.major())
       {
@@ -168,24 +195,12 @@ Collection& MemberCONCATExpression::collection(Context& ctx) const
         else
           rv.push_back(new TabcharExpression(_args[0]->tabchar(ctx)));
         break;
-      case Type::ROWTYPE:
-        if (_args[0]->isRvalue())
-          rv.push_back(new TupleExpression(std::move(_args[0]->tuple(ctx))));
-        else
-          rv.push_back(new TupleExpression(_args[0]->tuple(ctx)));
-        break;
       default:
         throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
       }
+      return rv;
     }
-    else if (_args[0]->isRvalue())
-      rv.push_back(new CollectionExpression(std::move(_args[0]->collection(ctx))));
-    else
-      rv.push_back(new CollectionExpression(_args[0]->collection(ctx)));
-
-    return rv;
   }
-
   throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
 }
 
@@ -244,10 +259,6 @@ MemberCONCATExpression * MemberCONCATExpression::parse(Parser& p, Context& ctx, 
       /* type opaque or tuple opaque */
       bool exp_opaque = (exp_type == Type::NO_TYPE || (exp_type == Type::ROWTYPE && exp_type.minor() == 0));
       bool arg_opaque = (arg_type == Type::NO_TYPE || (arg_type == Type::ROWTYPE && arg_type.minor() == 0));
-
-      /* test opaque is stored */
-      if ((exp_opaque && !exp->isStored()) || (arg_opaque && !args.back()->isStored()))
-        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
 
       /* test levels of known type or tuple opaque */
       if ((!exp_opaque || exp_type == Type::ROWTYPE) && (!arg_opaque || arg_type == Type::ROWTYPE))

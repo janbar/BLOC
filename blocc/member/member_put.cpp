@@ -68,69 +68,94 @@ Collection& MemberPUTExpression::collection(Context& ctx) const
 {
   /* collection */
   Collection& rv = _exp->collection(ctx);
+  const Type& rv_type = rv.table_type();
   int64_t p = _args[0]->integer(ctx);
   if (p < 0 || p >= rv.size())
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
 
-  /* the existing element will be freed after completion */
-  StaticExpression * old = rv[p];
+  const Type& arg_type = _args[1]->type(ctx);
 
-  /* arg type must be same of the collection else throw */
-  const Type& arg1_type = _args[1]->type(ctx);
-  if (arg1_type.major() != _exp->type(ctx).major())
-    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
-  if (arg1_type.level() == 0)
+  /* collection */
+  if (arg_type.level() > 0)
   {
-    switch (arg1_type.major())
+    Collection& a = _args[1]->collection(ctx);
+    if (a.table_type() == rv_type.levelDown())
     {
-    case Type::BOOLEAN:
-      rv[p] = new BooleanExpression(_args[1]->boolean(ctx));
-      break;
-    case Type::INTEGER:
-      rv[p] = new IntegerExpression(_args[1]->integer(ctx));
-      break;
-    case Type::NUMERIC:
-      rv[p] = new NumericExpression(_args[1]->numeric(ctx));
-      break;
-    case Type::COMPLEX:
+      /* the existing element will be freed after completion */
+      StaticExpression * old = rv[p];
       if (_args[1]->isRvalue())
-        rv[p] = new ComplexExpression(std::move(_args[1]->complex(ctx)));
+        rv[p] = new CollectionExpression(std::move(a));
       else
-        rv[p] = new ComplexExpression(_args[1]->complex(ctx));
-      break;
-    case Type::LITERAL:
-      if (_args[1]->isRvalue())
-        rv[p] = new LiteralExpression(std::move(_args[1]->literal(ctx)));
-      else
-        rv[p] = new LiteralExpression(_args[1]->literal(ctx));
-      break;
-    case Type::TABCHAR:
-      if (_args[1]->isRvalue())
-        rv[p] = new TabcharExpression(std::move(_args[1]->tabchar(ctx)));
-      else
-        rv[p] = new TabcharExpression(_args[1]->tabchar(ctx));
-      break;
-    case Type::ROWTYPE:
-      if (_args[1]->isRvalue())
-        rv[p] = new TupleExpression(std::move(_args[1]->tuple(ctx)));
-      else
-        rv[p] = new TupleExpression(_args[1]->tuple(ctx));
-      break;
-    default:
-      throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+        rv[p] = new CollectionExpression(a);
+      /* free old element */
+      if (old) delete old;
+      return rv;
+    }
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+  }
+  else if (arg_type == rv_type.major())
+  {
+    /* tuple */
+    if (arg_type == Type::ROWTYPE)
+    {
+      Tuple& t = _args[1]->tuple(ctx);
+      if (t.tuple_type() == rv_type.levelDown())
+      {
+        /* the existing element will be freed after completion */
+        StaticExpression * old = rv[p];
+        if (_args[1]->isRvalue())
+          rv[p] = new TupleExpression(std::move(t));
+        else
+          rv[p] = new TupleExpression(t);
+        /* free old element */
+        if (old) delete old;
+        return rv;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+    }
+    /* others */
+    else if (arg_type == rv_type.levelDown())
+    {
+      /* the existing element will be freed after completion */
+      StaticExpression * old = rv[p];
+      switch (arg_type.major())
+      {
+      case Type::BOOLEAN:
+        rv[p] = new BooleanExpression(_args[1]->boolean(ctx));
+        break;
+      case Type::INTEGER:
+        rv[p] = new IntegerExpression(_args[1]->integer(ctx));
+        break;
+      case Type::NUMERIC:
+        rv[p] = new NumericExpression(_args[1]->numeric(ctx));
+        break;
+      case Type::COMPLEX:
+        if (_args[1]->isRvalue())
+          rv[p] = new ComplexExpression(std::move(_args[1]->complex(ctx)));
+        else
+          rv[p] = new ComplexExpression(_args[1]->complex(ctx));
+        break;
+      case Type::LITERAL:
+        if (_args[1]->isRvalue())
+          rv[p] = new LiteralExpression(std::move(_args[1]->literal(ctx)));
+        else
+          rv[p] = new LiteralExpression(_args[1]->literal(ctx));
+        break;
+      case Type::TABCHAR:
+        if (_args[1]->isRvalue())
+          rv[p] = new TabcharExpression(std::move(_args[1]->tabchar(ctx)));
+        else
+          rv[p] = new TabcharExpression(_args[1]->tabchar(ctx));
+        break;
+      default:
+        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+      }
+      /* free old element */
+      if (old) delete old;
+      return rv;
     }
   }
-  else
-  {
-    if (_args[1]->isRvalue())
-      rv[p] = new CollectionExpression(std::move(_args[1]->collection(ctx)));
-    else
-      rv[p] = new CollectionExpression(_args[1]->collection(ctx));
-  }
-
-  /* free old element */
-  if (old) delete old;
-  return rv;
+  throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
 }
 
 MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expression * exp)
@@ -187,10 +212,6 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
       /* type opaque or tuple opaque */
       bool exp_opaque = (exp_type == Type::NO_TYPE || (exp_type == Type::ROWTYPE && exp_type.minor() == 0));
       bool arg_opaque = (arg_type == Type::NO_TYPE || (arg_type == Type::ROWTYPE && arg_type.minor() == 0));
-
-      /* test opaque is stored */
-      if ((exp_opaque && !exp->isStored()) || (arg_opaque && !args.back()->isStored()))
-        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
 
       /* test known types are compatible */
       if (!exp_opaque && !arg_opaque)

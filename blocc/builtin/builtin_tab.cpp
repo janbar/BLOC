@@ -40,12 +40,6 @@ Collection& TABExpression::collection(Context & ctx) const
     throw RuntimeError(EXC_RT_OUT_OF_DIMENSION);
 
   Collection * tab;
-  if (arg1_type.major() == Type::ROWTYPE)
-    tab = &ctx.allocate(Collection(_args[1]->tuple_decl(ctx), arg1_type.level() + 1));
-  else
-    tab = &ctx.allocate(Collection(arg1_type.levelUp()));
-
-  tab->reserve(n);
 
   if (arg1_type.level() == 0)
   {
@@ -54,6 +48,8 @@ Collection& TABExpression::collection(Context & ctx) const
     case Type::BOOLEAN:
     {
       bool b = _args[1]->boolean(ctx);
+      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
+      tab->reserve(n);
       for (int i = 0; i < n; ++i)
         tab->push_back(new BooleanExpression(b));
       break;
@@ -61,6 +57,8 @@ Collection& TABExpression::collection(Context & ctx) const
     case Type::INTEGER:
     {
       int64_t l = _args[1]->integer(ctx);
+      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
+      tab->reserve(n);
       for (int i = 0; i < n; ++i)
         tab->push_back(new IntegerExpression(l));
       break;
@@ -68,6 +66,8 @@ Collection& TABExpression::collection(Context & ctx) const
     case Type::NUMERIC:
     {
       double d = _args[1]->numeric(ctx);
+      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
+      tab->reserve(n);
       for (int i = 0; i < n; ++i)
         tab->push_back(new NumericExpression(d));
       break;
@@ -75,12 +75,16 @@ Collection& TABExpression::collection(Context & ctx) const
     case Type::LITERAL:
     {
       const std::string& s = _args[1]->literal(ctx);
+      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
+      tab->reserve(n);
       for (int i = 0; i < n; ++i)
         tab->push_back(new LiteralExpression(s));
       break;
     }
     case Type::COMPLEX:
     {
+      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
+      tab->reserve(n);
       /* execute ctor or method for each */
       if (_args[1]->isRvalue())
       {
@@ -97,15 +101,25 @@ Collection& TABExpression::collection(Context & ctx) const
     case Type::TABCHAR:
     {
       const TabChar& r = _args[1]->tabchar(ctx);
+      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
+      tab->reserve(n);
       for (int i = 0; i < n; ++i)
         tab->push_back(new TabcharExpression(r));
       break;
     }
     case Type::ROWTYPE:
     {
-      /* tuple item could be complex ctor, so execute ctor for each */
-      for (int i = 0; i < n; ++i)
-        tab->push_back(new TupleExpression(_args[1]->tuple(ctx)));
+      /* first execute to discover any opaque type */
+      Tuple& tuple = _args[1]->tuple(ctx);
+      tab = &ctx.allocate(Collection(tuple.tuple_decl(), 1));
+      if (n > 0)
+      {
+        tab->reserve(n);
+        tab->push_back(new TupleExpression(tuple));
+        /* tuple item could be complex ctor, so execute ctor for each */
+        for (int i = 1; i < n; ++i)
+          tab->push_back(new TupleExpression(_args[1]->tuple(ctx)));
+      }
       break;
     }
     default:
@@ -115,6 +129,11 @@ Collection& TABExpression::collection(Context & ctx) const
   else
   {
     const Collection& t = _args[1]->collection(ctx);
+    if (t.table_type().major() == Type::ROWTYPE)
+      tab = &ctx.allocate(Collection(t.table_decl(), t.table_type().level() + 1));
+    else
+      tab = &ctx.allocate(Collection(t.table_type().levelUp()));
+    tab->reserve(n);
     for (int i = 0; i < n; ++i)
       tab->push_back(new CollectionExpression(t));
   }
