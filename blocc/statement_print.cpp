@@ -48,14 +48,13 @@ const Statement * PRINTStatement::doit(Context& ctx) const
   for (const Expression * exp : _args)
   {
     const Type& exp_type = exp->type(ctx);
-    if (exp_type == Type::NO_TYPE)
-    {
-      /* nop */
-    }
-    else if (exp_type.level() == 0)
+    if (exp_type.level() == 0)
     {
       switch (exp_type.major())
       {
+      case Type::NO_TYPE:
+        throw RuntimeError(EXC_RT_OPAQUE_INLINE);
+
       case Type::LITERAL:
         fputs(exp->literal(ctx).c_str(), ctx.ctxout());
         break;
