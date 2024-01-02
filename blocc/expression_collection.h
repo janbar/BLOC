@@ -40,11 +40,20 @@ public:
   explicit CollectionExpression(const Collection& a) : v(a) { }
   explicit CollectionExpression(Collection &&a) : v(std::move(a)) { }
 
-  const Type& type(Context& ctx) const override { return v.table_type(); }
+  const Type& refType() const override
+  {
+    return v.table_type();
+  }
 
-  const Tuple::Decl& tuple_decl(Context& ctx) const override { return v.table_decl(); }
+  const Tuple::Decl& tuple_decl(Context& ctx) const override
+  {
+    return v.table_decl();
+  }
 
-  Collection& collection(Context& ctx) const override  { return v; }
+  Collection& collection(Context& ctx) const override
+  {
+    return v;
+  }
 
   std::string unparse(Context& ctx) const override
   {
@@ -58,8 +67,6 @@ public:
             .append(std::to_string(v.size()))
             .append(1, ']');
   }
-
-  const Type& refType() const override { return v.table_type(); }
 
   Collection& refCollection() override { return v; }
 

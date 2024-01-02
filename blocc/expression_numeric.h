@@ -41,7 +41,7 @@ public:
 
   explicit NumericExpression(double a) : v(a) { }
 
-  const Type& type(Context& ctx) const override
+  const Type& refType() const override
   {
     return type_static;
   }
@@ -83,8 +83,6 @@ public:
     snprintf(buf, sizeof(buf), "%.16g", d);
     return buf;
   }
-
-  const Type& refType() const override { return type_static; }
 
   double& refNumeric() override { return v; }
 

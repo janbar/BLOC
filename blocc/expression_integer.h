@@ -41,7 +41,7 @@ public:
 
   explicit IntegerExpression(int64_t a) : v(a) { }
 
-  const Type& type(Context& ctx) const override
+  const Type& refType() const override
   {
     return type_static;
   }
@@ -78,8 +78,6 @@ public:
   {
     return std::to_string(l);
   }
-
-  const Type& refType() const override { return type_static; }
 
   int64_t& refInteger() override { return v; }
 

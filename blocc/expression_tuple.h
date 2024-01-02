@@ -41,11 +41,20 @@ public:
   explicit TupleExpression(const Tuple& a) : v(a) { }
   explicit TupleExpression(Tuple &&a) : v(std::move(a)) { }
 
-  const Type& type(Context& ctx) const override { return v.tuple_type(); }
+  const Type& refType() const override
+  {
+    return v.tuple_type();
+  }
 
-  Tuple& tuple(Context& ctx) const override  { return v; }
+  Tuple& tuple(Context& ctx) const override
+  {
+    return v;
+  }
 
-  const Tuple::Decl& tuple_decl(Context& ctx) const override { return v.tuple_decl(); }
+  const Tuple::Decl& tuple_decl(Context& ctx) const override
+  {
+    return v.tuple_decl();
+  }
 
   std::string unparse(Context& ctx) const override
   {
@@ -58,8 +67,6 @@ public:
   }
 
   static std::string readableTuple(const Tuple& c, Context& ctx);
-
-  const Type& refType() const override { return v.tuple_type(); }
 
   Tuple& refTuple() override { return v; }
 

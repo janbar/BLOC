@@ -59,6 +59,9 @@ public:
 
   virtual std::string unparse(Context& ctx) const = 0;
 
+  /**
+   * Returns the reference to the expression type
+   */
   virtual const Type& type(Context& ctx) const = 0;
 
   virtual bool boolean(Context& ctx) const

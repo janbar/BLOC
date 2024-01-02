@@ -43,7 +43,7 @@ public:
 
   explicit BooleanExpression(bool a) : v(a) { }
 
-  const Type& type(Context& ctx) const override
+  const Type& refType() const override
   {
     return type_static;
   }
@@ -66,8 +66,6 @@ public:
   {
     return (b ? TRUE : FALSE);
   }
-
-  const Type& refType() const override { return type_static; }
 
   bool& refBoolean() override { return v; }
 

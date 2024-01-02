@@ -42,12 +42,15 @@ public:
   explicit ComplexExpression(const Complex& c) : v(c) { }
   explicit ComplexExpression(Complex&& c) : v(std::move(c)) { }
 
-  const Type& type(Context& ctx) const override
+  const Type& refType() const override
   {
     return v.complex_type();
   }
 
-  Complex& complex(Context& ctx) const override { return v; }
+  Complex& complex(Context& ctx) const override
+  {
+    return v;
+  }
 
   std::string unparse(Context& ctx) const override
   {
@@ -60,8 +63,6 @@ public:
   }
 
   static std::string readableComplex(const Complex& c);
-
-  const Type& refType() const override { return v.complex_type(); }
 
   Complex& refComplex() override { return v; }
 

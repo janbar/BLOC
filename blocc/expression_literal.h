@@ -43,7 +43,7 @@ public:
   explicit LiteralExpression(const std::string& a) : v(a) { }
   explicit LiteralExpression(std::string &&a) : v(std::move(a)) { }
 
-  const Type& type(Context& ctx) const override
+  const Type& refType() const override
   {
     return type_static;
   }
@@ -69,8 +69,6 @@ public:
   static LiteralExpression * parse(const std::string& text);
 
   static std::string readableLiteral(const std::string& s);
-
-  const Type& refType() const override { return type_static; }
 
   std::string& refLiteral() override { return v; }
 

@@ -42,35 +42,95 @@ public:
   explicit IteratorExpression(Collection& c) : v(c), _index(0) { }
   size_t& index() { return _index; }
 
-  const Type& type(Context& ctx) const override { return v.at(_index)->type(ctx); }
-  const Type& refType() const override { return v.at(_index)->refType(); }
+  const Type& refType() const override
+  {
+    return v.at(_index)->refType();
+  }
 
-  bool boolean(Context& ctx) const override { return v.at(_index)->refBoolean(); }
-  int64_t integer(Context& ctx) const override { return v.at(_index)->refInteger(); }
-  double numeric(Context& ctx) const override { return v.at(_index)->refNumeric(); }
-  std::string& literal(Context& ctx) const override { return v.at(_index)->refLiteral(); }
-  TabChar& tabchar(Context& ctx) const override { return v.at(_index)->refTabchar(); }
-  Collection& collection(Context& ctx) const override { return v.at(_index)->refCollection(); }
-  Tuple& tuple(Context& ctx) const override { return v.at(_index)->refTuple(); }
-  Complex& complex(Context& ctx) const override { return v.at(_index)->refComplex(); }
+  bool boolean(Context& ctx) const override
+  {
+    return v.at(_index)->refBoolean();
+  }
 
-  bool& refBoolean() override { return v.at(_index)->refBoolean(); }
+  int64_t integer(Context& ctx) const override
+  {
+    return v.at(_index)->refInteger();
+  }
 
-  int64_t& refInteger() override { return v.at(_index)->refInteger(); }
+  double numeric(Context& ctx) const override
+  {
+    return v.at(_index)->refNumeric();
+  }
 
-  double& refNumeric() override { return v.at(_index)->refNumeric(); }
+  std::string& literal(Context& ctx) const override
+  {
+    return v.at(_index)->refLiteral();
+  }
 
-  std::string& refLiteral() override { return v.at(_index)->refLiteral(); }
+  TabChar& tabchar(Context& ctx) const override
+  {
+    return v.at(_index)->refTabchar();
+  }
 
-  TabChar& refTabchar() override { return v.at(_index)->refTabchar(); }
+  Collection& collection(Context& ctx) const override
+  {
+    return v.at(_index)->refCollection();
+  }
 
-  Collection& refCollection() override { return v.at(_index)->refCollection(); }
+  Tuple& tuple(Context& ctx) const override
+  {
+    return v.at(_index)->refTuple();
+  }
 
-  Tuple& refTuple() override { return v.at(_index)->refTuple(); }
+  Complex& complex(Context& ctx) const override
+  {
+    return v.at(_index)->refComplex();
+  }
 
-  const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return v.at(_index)->tuple_decl(ctx); }
+  bool& refBoolean() override
+  {
+    return v.at(_index)->refBoolean();
+  }
 
-  Complex& refComplex() override { return v.at(_index)->refComplex(); }
+  int64_t& refInteger() override
+  {
+    return v.at(_index)->refInteger();
+  }
+
+  double& refNumeric() override
+  {
+    return v.at(_index)->refNumeric();
+  }
+
+  std::string& refLiteral() override
+  {
+    return v.at(_index)->refLiteral();
+  }
+
+  TabChar& refTabchar() override
+  {
+    return v.at(_index)->refTabchar();
+  }
+
+  Collection& refCollection() override
+  {
+    return v.at(_index)->refCollection();
+  }
+
+  Tuple& refTuple() override
+  {
+    return v.at(_index)->refTuple();
+  }
+
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override
+  {
+    return v.at(_index)->tuple_decl(ctx);
+  }
+
+  Complex& refComplex() override
+  {
+    return v.at(_index)->refComplex();
+  }
 
   /* opaque can be typed */
   bool isStored() const override { return true; }

@@ -42,7 +42,7 @@ public:
   explicit TabcharExpression(const TabChar& a) : v(a) { }
   explicit TabcharExpression(TabChar &&a) : v(std::move(a)) { }
 
-  const Type& type(Context& ctx) const override
+  const Type& refType() const override
   {
     return type_static;
   }
@@ -64,8 +64,6 @@ public:
             .append(std::to_string(v.size()))
             .append(1, ']');
   }
-
-  const Type& refType() const override { return type_static; }
 
   TabChar& refTabchar() override { return v; }
 

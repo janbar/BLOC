@@ -46,18 +46,21 @@ public:
   void safety(bool b) { _safety = b; }
   bool safety() { return _safety; }
 
+  const Type& type(Context&) const override
+  {
+    return refType();
+  }
+
   /**
-   * Returns the reference to the expression type. The type can be stored in
-   * member variable or defined as static constant, i.e:
-   *
-   * static const Type& _name_ = Type(...)
+   * Returns the reference to the value type
    */
   virtual const Type& refType() const = 0;
 
-  /**
+  /*
    * The following functions provide access to reference of wrapped value.
    * Use should be limited to internal operation.
    */
+
   virtual bool& refBoolean()
   {
     throw RuntimeError(EXC_RT_NOT_BOOLEAN);
