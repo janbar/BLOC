@@ -82,9 +82,10 @@ const Statement * PRINTStatement::doit(Context& ctx) const
     }
     else
     {
+      size_t sz = exp->collection(ctx).size(); /* execute expression */
       fputs(exp->typeName(ctx).c_str(), ctx.ctxout());
       fputc('[', ctx.ctxout());
-      fputs(std::to_string(exp->collection(ctx).size()).c_str(), ctx.ctxout());
+      fputs(std::to_string(sz).c_str(), ctx.ctxout());
       fputc(']', ctx.ctxout());
     }
   }

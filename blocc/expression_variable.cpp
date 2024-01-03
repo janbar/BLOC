@@ -113,15 +113,15 @@ Complex& VariableExpression::complex(Context& ctx) const {
 
 std::string VariableExpression::typeName(Context& ctx) const
 {
-  const Symbol * s = ctx.getSymbol(_symbol.id);
-  switch (s->major())
+  const Type& t = type(ctx);
+  switch (t.major())
   {
   case Type::COMPLEX:
-    return s->typeName(PluginManager::instance().plugged(s->minor()).interface.name);
+    return t.typeName(PluginManager::instance().plugged(t.minor()).interface.name);
   case Type::ROWTYPE:
-    return s->tuple_decl().tupleName();
+    return t.typeName(tuple_decl(ctx).tupleName().c_str());
   default:
-    return s->typeName();
+    return t.typeName();
   }
 }
 
