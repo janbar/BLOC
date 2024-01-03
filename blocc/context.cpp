@@ -57,7 +57,7 @@ const char * Context::versionHeader()
 
 int Context::compatible()
 {
-  return 2;
+  return 3;
 }
 
 Context::Context()
