@@ -23,3 +23,6 @@ X = tup("Hello", 123, 0.456); ... C = X@1.count();  >>> C is integer 5
 Use member $Bset@$N# to update the value of element at rank #, as shown below.
 
 tup("Hello", 123, 0.456) . set@ 2 (789)             >>> { "Hello", 789, 0.456 }
+
+The empty tuple tup() initializes a tuple variable, which can be referenced as
+OUT parameter of a method.

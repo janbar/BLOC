@@ -86,33 +86,36 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
     TokenPtr t = p.pop();
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
-    for (;;)
+    if (p.front()->code != ')')
     {
-      args.push_back(ParseExpression::expression(p, ctx));
-      const Type& arg_type = args.back()->type(ctx);
-      if (arg_type.level() > 0)
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
-      switch (arg_type.major())
+      for (;;)
       {
-      case Type::NO_TYPE: /* opaque */
-      case Type::BOOLEAN:
-      case Type::INTEGER:
-      case Type::NUMERIC:
-      case Type::LITERAL:
-      case Type::COMPLEX:
-      case Type::TABCHAR:
+        args.push_back(ParseExpression::expression(p, ctx));
+        const Type& arg_type = args.back()->type(ctx);
+        if (arg_type.level() > 0)
+          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
+        switch (arg_type.major())
+        {
+        case Type::NO_TYPE: /* opaque */
+        case Type::BOOLEAN:
+        case Type::INTEGER:
+        case Type::NUMERIC:
+        case Type::LITERAL:
+        case Type::COMPLEX:
+        case Type::TABCHAR:
+          break;
+        default:
+          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
+        }
+        t = p.pop();
+        if (t->code == Parser::CHAIN)
+          continue;
+        p.push(t);
         break;
-      default:
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
       }
-      t = p.pop();
-      if (t->code == Parser::CHAIN)
-        continue;
-      p.push(t);
-      break;
     }
-    if (args.size() < 1)
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
+//    if (args.size() < 1)
+//      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
     assertClosedFunction(p, ctx, FUNC_TUP);
     return new TUPExpression(std::move(args), ctx);
   }
