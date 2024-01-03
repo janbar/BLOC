@@ -111,7 +111,7 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
       p.push(t);
       break;
     }
-    if (args.size() < 2)
+    if (args.size() < 1)
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
     assertClosedFunction(p, ctx, FUNC_TUP);
     return new TUPExpression(std::move(args), ctx);

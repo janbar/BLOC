@@ -46,7 +46,10 @@ MemberMETHODExpression::MemberMETHODExpression(const PLUGIN_METHOD& method, unsi
   if (_method)
   {
     _decl_method = plugin::make_decl(_method->ret.decl, _method_type_id);
-    _type_method = _decl_method.make_type(_method->ret.ndim);
+    if (_decl_method.size() == 1)
+      _type_method = Type(_decl_method[0].major(), _decl_method[0].minor(), _method->ret.ndim);
+    else
+      _type_method = _decl_method.make_type(_method->ret.ndim);
   }
   else
     _type_method = ComplexExpression::null;

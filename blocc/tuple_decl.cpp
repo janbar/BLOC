@@ -48,7 +48,7 @@ Type TupleDecl::Decl::make_type(Type::TypeLevel level) const
 {
   unsigned len = this->size();
   /* tuple */
-  if (len > 1)
+  if (len > 0)
   {
     /*
      * DJB Hash Function
@@ -60,9 +60,6 @@ Type TupleDecl::Decl::make_type(Type::TypeLevel level) const
     }
     return Type(Type::ROWTYPE, (Type::TypeMinor) (h % TYPE_MINOR_MAX), level);
   }
-  /* single */
-  else if (len == 1)
-    return Type(this->at(0).major(), this->at(0).minor(), level);
   /* empty */
   return Type(Type::NO_TYPE, 0, level);
 }

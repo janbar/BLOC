@@ -82,7 +82,10 @@ make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id)
 Type
 make_type(PLUGIN_TYPE type_def, Type::TypeMinor type_id)
 {
-  return make_decl(type_def.decl, type_id).make_type(type_def.ndim);
+  Tuple::Decl decl = make_decl(type_def.decl, type_id);
+  if (decl.size() == 1)
+    return Type(decl[0].major(), decl[0].minor(), type_def.ndim);
+  return decl.make_type(type_def.ndim);
 }
 
 } /* namespace import */

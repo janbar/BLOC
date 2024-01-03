@@ -192,11 +192,7 @@ Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl
   if (*s == decl.make_type(level))
     return *s;
   if (s->safety())
-  {
-    if (s->major() == Type::ROWTYPE)
-      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
-    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
-  }
+    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
   /* stacking old symbol */
   _backed_symbols.push_back(*s);
   s->upgrade(decl, level);
