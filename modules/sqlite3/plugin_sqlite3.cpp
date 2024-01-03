@@ -39,12 +39,18 @@ namespace SQLITE3
 /*  Constructors                                                      */
 /**********************************************************************/
 static PLUGIN_TYPE ctor_0_args[]  = {
+  { "C", 0 }, // sqlite3
+};
+
+static PLUGIN_TYPE ctor_1_args[]  = {
   { "L", 0 }, // db filename
 };
 
 static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,  ctor_0_args,
+          "Clone a database connection." },
+  { 1,      1,  ctor_1_args,
           "Opening a new database connection." },
 };
 
@@ -111,6 +117,7 @@ static PLUGIN_METHOD methods[] =
  * The state of handle
  */
 struct Handle {
+  std::string _path;
   struct sqlite3 * _db = nullptr;
   struct sqlite3_stmt * _stmt = nullptr;
 
@@ -154,6 +161,17 @@ void * SQLITE3Plugin::createObject(int ctor_id, bloc::Context& ctx, const std::v
   {
   case 0: /* copy ctor */
   {
+    SQLITE3::Handle * h = new SQLITE3::Handle();
+    bloc::Complex c0 = args[0]->complex(ctx);
+    std::string path = static_cast<SQLITE3::Handle*>(c0.instance())->_path;
+    if (path.empty() || h->open(path) == 1)
+      return h;
+    delete h;
+    break;
+  }
+
+  case 1:
+  {
     std::string fn = args[0]->literal(ctx);
     SQLITE3::Handle * h = new SQLITE3::Handle();
     if (h->open(args[0]->literal(ctx)) == 1)
@@ -189,10 +207,14 @@ bloc::Expression * SQLITE3Plugin::executeMethod(
   switch (method_id)
   {
   case SQLITE3::Open:
+    if (h->isOpen() == 1)
+      h->close();
     return new bloc::BooleanExpression(h->open(args[0]->literal(ctx)));
 
   case SQLITE3::Close:
-    return new bloc::BooleanExpression(h->close());
+    if (h->isOpen() == 1)
+      return new bloc::BooleanExpression(h->close());
+    return new bloc::BooleanExpression(0);
 
   case SQLITE3::IsOpen:
     return new bloc::BooleanExpression(h->isOpen());
@@ -264,13 +286,20 @@ bloc::Expression * SQLITE3Plugin::executeMethod(
 int SQLITE3::Handle::open(const std::string& path)
 {
   int r = sqlite3_open(path.c_str(), &_db);
-  return (r == SQLITE_OK ? 1 : 0);
+  if (r != SQLITE_OK)
+    return 0;
+  _path.assign(path);
+  return 1;
 }
 
 int SQLITE3::Handle::close()
 {
+  if (_stmt)
+    sqlite3_finalize(_stmt);
+  _stmt = nullptr;
   int r = sqlite3_close(_db);
   _db = nullptr;
+  _path.clear();
   return (r == SQLITE_OK ? 1 : 0);
 }
 
