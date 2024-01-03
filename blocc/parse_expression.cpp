@@ -54,10 +54,12 @@ bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p
   return !p.semantic() || exp_type == type ||
           /* opaque */
           type == Type::NO_TYPE || exp_type == Type::NO_TYPE ||
-          /* type mixing */
           (exp_type.level() == type.level() && (
+            /* type mixing */
             (exp_type == Type::NUMERIC && type == Type::INTEGER) ||
-            (exp_type == Type::INTEGER && type == Type::NUMERIC)
+            (exp_type == Type::INTEGER && type == Type::NUMERIC) ||
+            /* tuple opaque */
+            (exp_type == Type::ROWTYPE && type == Type::ROWTYPE && (exp_type.minor() == 0 || type.minor() == 0))
           ));
 }
 
@@ -65,6 +67,7 @@ Expression * ParseExpression::assertType(Expression * exp, const Type& type, Par
 {
   if (typeChecking(exp, type, p, ctx))
     return exp;
+  DBG(DBG_DEBUG, "%s : %s != %s\n", exp->unparse(ctx).c_str(), exp->typeName(ctx).c_str(), type.typeName().c_str());
   if (deleteOnFailure) delete exp;
   throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str());
   return nullptr;
@@ -77,6 +80,7 @@ Expression * ParseExpression::assertTypeUniform(Expression * exp, const Type& ty
       /* opaque */
       type == Type::NO_TYPE || exp_type == Type::NO_TYPE)
     return exp;
+  DBG(DBG_DEBUG, "%s : %s != %s\n", exp->unparse(ctx).c_str(), exp->typeName(ctx).c_str(), type.typeName().c_str());
   if (deleteOnFailure) delete exp;
   throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str());
 }

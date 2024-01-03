@@ -60,8 +60,8 @@ Type TupleDecl::Decl::make_type(Type::TypeLevel level) const
     }
     return Type(Type::ROWTYPE, (Type::TypeMinor) (h % TYPE_MINOR_MAX), level);
   }
-  /* empty */
-  return Type(Type::NO_TYPE, 0, level);
+  /* opaque */
+  return Type(Type::ROWTYPE, 0, level);
 }
 
 }

@@ -65,16 +65,18 @@ make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id)
   for (int i = 0; i < len && cnt < TUPLE_MAX_ITEMS; ++i)
   {
     Type::TypeMajor m = __match_type_code__[(unsigned char) decl_def[i]];
-    if (m == Type::NO_TYPE)
-      continue;
-    cnt++;
-    decl.push_back(Type(m, (m == Type::COMPLEX ? type_id : 0), 0));
-    /* opaque tuple cannot be nested */
+    /* assumptions:
+     * 1. a tuple cannot be nested
+     * 2. opaque tuple has an empty declaration */
     if (m == Type::ROWTYPE)
     {
       assert(i == 0);
       break;
     }
+    if (m == Type::NO_TYPE)
+      continue;
+    cnt++;
+    decl.push_back(Type(m, (m == Type::COMPLEX ? type_id : 0), 0));
   }
   return decl;
 }
