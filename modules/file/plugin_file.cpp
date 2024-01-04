@@ -104,6 +104,10 @@ static PLUGIN_ARG read_s_args[]   = {
   { PLUGIN_IN,    { "I", 0 } }, // read size
 };
 
+static PLUGIN_ARG readln_args[]   = {
+  { PLUGIN_INOUT, { "L", 0 } }, // line read
+};
+
 static PLUGIN_ARG read_b_args[]   = {
   { PLUGIN_INOUT, { "X", 0 } }, // raw read
   { PLUGIN_IN,    { "I", 0 } }, // read size
@@ -129,6 +133,9 @@ static PLUGIN_METHOD methods[] =
   { Read_S,   "read",       { "I", 0 },     2, read_s_args,
           "Reads up to count characters into the variable, and returns the number of"
           "\ncharacter read successfully." },
+  { Readln,   "readln",     { "B", 0 },     1, readln_args,
+          "Reads line of characters into the variable without the newline character."
+          "\nAt EOF it returns false else true.", },
   { SeekSet,  "seekset",    { "I", 0 },     1, seek_args,
           "Moves the file position indicator to an absolute location in a file." },
   { SeekCur,  "seekcur",    { "I", 0 },     1, seek_args,
@@ -155,9 +162,6 @@ static PLUGIN_METHOD methods[] =
   { Dir,      "dir",        { "IL", 1 },    1, dir_args,
           "Returns the entry list of a directory."
           "\nFirst field contains the entry type, second contains the entry name." },
-  { Readln,   "readln",     { "L", 0 },     0, nullptr,
-          "Reads and returns a line of characters from actual file, including the"
-          "\nnewline character. At EOF it returns an empty string.", },
 };
 
 /**
@@ -182,7 +186,7 @@ struct Handle {
   int64_t position();
   int flush();
   int status(const std::string& path);
-  unsigned readln(char * buf, unsigned n);
+  int readln(char * buf, unsigned n);
 };
 
 /**
@@ -309,6 +313,22 @@ bloc::Expression * FilePlugin::executeMethod(
     return new bloc::IntegerExpression(n);
   }
 
+  case file::Readln:
+  {
+    if (!file->_r)
+      throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
+    char * buf = new char[1024]; /* max length */
+    int n = file->readln(buf, 1024);
+    if (n >= 0)
+    {
+      /* INOUT */
+      bloc::VariableExpression * vout = dynamic_cast<bloc::VariableExpression*>(args[0]);
+      vout->store(ctx, bloc::LiteralExpression(std::string(buf, n)));
+    }
+    delete [] buf;
+    return new bloc::BooleanExpression((n < 0 ? 0 : 1));
+  }
+
   case file::SeekSet:
     if (!file->_file)
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
@@ -371,17 +391,6 @@ bloc::Expression * FilePlugin::executeMethod(
     Collection ret(bloc::plugin::make_decl("IL", object_this.typeId()), 1);
     file::_dir(args[0]->literal(ctx), ret);
     return new CollectionExpression(std::move(ret));
-  }
-
-  case file::Readln:
-  {
-    if (!file->_r)
-      throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
-    char * buf = new char[1024]; /* max length */
-    unsigned n = file->readln(buf, 1024);
-    bloc::LiteralExpression * out = new bloc::LiteralExpression(std::string(buf, n));
-    delete [] buf;
-    return out;
   }
 
   }
@@ -457,21 +466,18 @@ int file::Handle::flush()
   return ::fflush(_file);
 }
 
-unsigned file::Handle::readln(char * buf, unsigned n)
+int file::Handle::readln(char * buf, unsigned n)
 {
-  unsigned r = 0;
-  int c;
+  int c, r = 0;
   while (r < n)
   {
-    if ((c = ::fgetc(_file)) <= 0)
+    if ((c = ::fgetc(_file)) <= 0 || c == '\n')
       break;
-    ++r;
     *buf = (char)c;
-    if (c == '\n')
-      break;
     ++buf;
+    ++r;
   }
-  return r;
+  return (c < 0 ? c : r);
 }
 
 } /* namespace import */
