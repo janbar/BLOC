@@ -340,7 +340,7 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nint( x )",
   /*POW*/     "returns x raised to the power of y."
           "\n\npow( x , y )",
-  /*SQTR  */  "returns the square root of x."
+  /*SQRT  */  "returns the square root of x."
           "\n\nsqrt( x )",
   /*LOG   */  "returns the natural logarithm (base-e logarithm) of x."
           "\n\nlog( x )",
@@ -409,7 +409,7 @@ const char * BuiltinExpression::HELPS[] = {
   /*RANDOM*/  "returns pseudo-random number that's greater than or equal to 0 and less"
           "\nthan 1 or optionally x."
           "\n\nrandom( [x] )",
-  "", "", "", "", "",
+  "", "", "",
   /*LSUB  */  "returns left part of string x."
           "\n\nlsubstr( x , count )",
   /*RSUB  */  "returns right part of string x."
