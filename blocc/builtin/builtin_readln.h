@@ -20,7 +20,7 @@
 #define BUILTIN_READLN_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_literal.h>
+#include <blocc/expression_boolean.h>
 
 namespace bloc
 {
@@ -36,9 +36,9 @@ public:
 
   explicit READLNExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_READLN, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return LiteralExpression::type_static; }
+  const Type& type(Context& ctx) const override { return BooleanExpression::type_static; }
 
-  std::string& literal(Context& ctx) const override;
+  bool boolean(Context& ctx) const override;
 
   static READLNExpression * parse(Parser& p, Context& ctx);
 };

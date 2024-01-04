@@ -369,10 +369,11 @@ const char * BuiltinExpression::HELPS[] = {
           "\na maximum of y characters. The 'string' variable var must be initialized"
           "\nfirst."
           "\n\nread( var [, y] )",
-  /*READLN*/  "returns the literal value read from the input."
-          "\nThe value does not include the newline terminator. Optionally x contains"
-          "\nthe desired prompt."
-          "\n\nreadln( [x] )",
+  /*READLN*/  "returns true when new line has been read from the input."
+          "\nThe read value without newline terminator, is stored into var. The 'string'"
+          "\nvariable var must be initialized first. Optionally y contains the desired"
+          "\nprompt."
+          "\n\nreadln( var [, y] )",
   /*ISNUM */  "returns true if x can be converted to number."
           "\n\nisnum( x )",
   /*RAW   */  "returns a new empty bytes array, or filled with string x, or filled with"

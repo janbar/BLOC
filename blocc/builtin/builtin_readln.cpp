@@ -21,6 +21,8 @@
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
+#include <blocc/expression_literal.h>
+#include <blocc/expression_variable.h>
 #include <blocc/readstdin.h>
 #include <blocc/debug.h>
 
@@ -29,22 +31,24 @@
 namespace bloc
 {
 
-std::string& READLNExpression::literal(Context & ctx) const
+bool READLNExpression::boolean(Context & ctx) const
 {
+  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
   int n = 1024;
   char * buf = new char[n];
-  if (!_args.empty())
+  if (_args.size() > 1)
   {
-    fputs(_args[0]->literal(ctx).c_str(), stdout);
+    fputs(_args[1]->literal(ctx).c_str(), stdout);
     fflush(stdout);
   }
   n = bloc_readstdin(buf, n);
+  if (n < 1)
+    return false;
   /* discard nl */
   if (buf[n - 1] == '\n')
     --n;
-  std::string& rv = ctx.allocate(std::string(buf, n));
-  delete [] buf;
-  return rv;
+  var->store(ctx, LiteralExpression(std::string(buf, n)));
+  return true;
 }
 
 READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
@@ -56,8 +60,13 @@ READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
     TokenPtr t = p.pop();
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_READLN]);
-    if (p.front()->code != ')')
+    args.push_back(ParseExpression::expression(p, ctx));
+    VariableExpression * var = dynamic_cast<VariableExpression*>(args.back());
+    if (var == nullptr || !ParseExpression::typeChecking(var, Type::LITERAL, p, ctx))
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN]);
+    if (p.front()->code == Parser::CHAIN)
     {
+      t = p.pop();
       args.push_back(ParseExpression::expression(p, ctx));
       if (!ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
         throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN]);
