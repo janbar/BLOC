@@ -42,6 +42,10 @@ public:
   explicit Collection(const Type& type) : v(), _type(type) { }
   explicit Collection(const Tuple::Decl& decl, Type::TypeLevel level)
   : v(), _decl(decl) { _type = _decl.make_type(level); }
+  Collection(const Type& type, container_t&& c) noexcept
+  : v(std::move(c)), _type(type) { }
+  Collection(const Tuple::Decl& decl, Type::TypeLevel level, container_t&& c) noexcept
+  : v(std::move(c)), _decl(decl) { _type = _decl.make_type(level); }
 
   Collection(const Collection& t);
   Collection(Collection&& t) noexcept

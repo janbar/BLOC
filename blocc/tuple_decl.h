@@ -35,6 +35,7 @@ public:
   {
     virtual ~Decl() = default;
     Decl() : std::vector<Type>() { }
+    Decl(size_t n, const Type& t) : std::vector<Type>(n, t) { }
     std::string tupleName() const;
     Type make_type(Type::TypeLevel level) const;
   };
