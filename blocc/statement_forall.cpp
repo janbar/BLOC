@@ -92,6 +92,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     else
     {
       _var->clear(ctx);
+      ctx.getSymbol(_var->symbolId())->upgrade(Type::NO_TYPE);
       if (_expSymbol)
         _expSymbol->safety(false);
       else
@@ -109,6 +110,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   catch (...)
   {
     _var->clear(ctx);
+    ctx.getSymbol(_var->symbolId())->upgrade(Type::NO_TYPE);
     if (_expSymbol)
       _expSymbol->safety(false);
     else
