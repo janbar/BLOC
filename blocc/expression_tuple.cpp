@@ -27,6 +27,8 @@
 namespace bloc
 {
 
+const Tuple& TupleExpression::null = Tuple(Tuple::container_t());
+
 std::string TupleExpression::readableTuple(const Tuple &c, Context& ctx)
 {
   std::string sb;

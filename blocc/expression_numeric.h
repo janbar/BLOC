@@ -36,6 +36,7 @@ private:
 
 public:
   LIBBLOC_API static const Type& type_static;
+  LIBBLOC_API static const double& null;
 
   virtual ~NumericExpression() { }
 

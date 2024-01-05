@@ -35,6 +35,7 @@ private:
   mutable Tuple v;
 
 public:
+  LIBBLOC_API static const Tuple& null;
 
   virtual ~TupleExpression() { }
 

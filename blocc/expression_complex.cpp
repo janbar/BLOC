@@ -25,6 +25,12 @@ namespace bloc
 
 const Type& ComplexExpression::null = Type(Type::COMPLEX);
 
+ComplexExpression::~ComplexExpression()
+{
+  if (v_null)
+    delete v_null;
+}
+
 std::string ComplexExpression::readableComplex(const Complex& c)
 {
   std::string sb(PluginManager::instance().plugged(c.typeId()).interface.name);

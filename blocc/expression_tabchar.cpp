@@ -22,6 +22,7 @@ namespace bloc
 {
 
 const Type& TabcharExpression::type_static = Type(Type::TABCHAR);
+const TabChar& TabcharExpression::null = TabChar();
 
 void TabcharExpression::outputTabchar(const TabChar& v, FILE * _stdout, unsigned max_lines /*= (-1)*/)
 {

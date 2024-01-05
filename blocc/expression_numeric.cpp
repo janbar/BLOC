@@ -17,10 +17,12 @@
  */
 
 #include "expression_numeric.h"
+#include <cmath>
 
 namespace bloc
 {
 
 const Type& NumericExpression::type_static = Type(Type::NUMERIC);
+const double& NumericExpression::null = NAN;
 
 }

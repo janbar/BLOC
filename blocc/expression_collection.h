@@ -34,6 +34,7 @@ private:
   mutable Collection v;
 
 public:
+  LIBBLOC_API static const Collection& null;
 
   virtual ~CollectionExpression() { }
 

@@ -22,6 +22,8 @@
 namespace bloc
 {
 
+const Collection& CollectionExpression::null = Collection(Type::NO_TYPE);
+
 std::string CollectionExpression::typeName(Context& ctx) const
 {
   switch (type(ctx).major())
