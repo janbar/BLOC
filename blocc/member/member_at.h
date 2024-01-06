@@ -40,27 +40,9 @@ public:
 
   const Type& type(Context& ctx) const override;
 
-  bool boolean(Context& ctx) const override;
-
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
-
-  std::string& literal(Context& ctx) const override;
-
-  TabChar& tabchar(Context& ctx) const override;
-
-  Collection& collection(Context& ctx) const override;
-
-  Tuple& tuple(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   const TupleDecl::Decl& tuple_decl(Context& ctx) const override;
-
-  Complex& complex(Context& ctx) const override;
-
-  bool isRvalue() const override { return _exp->isRvalue(); }
-
-  bool isStored() const override { return _exp->isStored(); }
 
   static MemberATExpression * parse(Parser& p, Context& ctx, Expression * exp);
 };

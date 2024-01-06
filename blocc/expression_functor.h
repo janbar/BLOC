@@ -20,6 +20,7 @@
 #define EXPRESSION_FUNCTOR_H
 
 #include "expression.h"
+#include "complex.h"
 #include "functor_manager.h"
 
 #include <vector>
@@ -52,23 +53,7 @@ public:
     return (*_functor)->returns;
   }
 
-  bool boolean(Context& ctx) const override;
-
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
-
-  bool isRvalue() const override { return true; }
-
-  std::string& literal(Context& ctx) const override;
-
-  TabChar& tabchar(Context& ctx) const override;
-
-  Collection& collection(Context& ctx) const override;
-
-  Tuple& tuple(Context& ctx) const override;
-
-  Complex& complex(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   std::string unparse(Context& ctx) const override;
 

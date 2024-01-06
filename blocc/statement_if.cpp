@@ -46,12 +46,15 @@ const Statement * IFStatement::doit(Context& ctx) const
 {
   for (auto& r : _rules)
   {
-    if (r.first == nullptr || r.first->boolean(ctx))
+    if (r.first)
     {
-      /* it should run with the given context */
-      r.second->run(ctx, r.second->statements());
-      break;
+      Value& val = r.first->value(ctx);
+      if (val.isNull() || !(*val.boolean()))
+        continue;
     }
+    /* it should run with the given context */
+    r.second->run(ctx, r.second->statements());
+    break;
   }
   return _next;
 }

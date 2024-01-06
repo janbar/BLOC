@@ -1,8 +1,8 @@
 
 ###############################################################################
 # set lib version here
-set (BLOCC_LIB_VERSION "1.0.2")
-set (BLOCC_LIB_SOVERSION 1)
+set (BLOCC_LIB_VERSION "2.0.0")
+set (BLOCC_LIB_SOVERSION 2)
 
 add_definitions(
   "-DLIBVERSION=\"${BLOCC_LIB_VERSION}\""
@@ -23,22 +23,16 @@ file(GLOB blocc_SOURCES
   executable.cpp
   expression_boolean.cpp
   expression_builtin.cpp
-  expression_collection.cpp
-  expression_complex.cpp
   expression_complex_ctor.cpp
   expression_functor.cpp
   expression_integer.cpp
   expression_item.cpp
-  expression_iterator.cpp
   expression_literal.cpp
   expression_member.cpp
   expression_numeric.cpp
-  expression_null.cpp
-  expression_operator.cpp
-  expression_tabchar.cpp
-  expression_tuple.cpp
   expression_variable.cpp
   functor_manager.cpp
+  operator.cpp
   plugin.cpp
   plugin_manager.cpp
   parse_expression.cpp
@@ -64,8 +58,10 @@ file(GLOB blocc_SOURCES
   symbol.cpp
   tuple.cpp
   tuple_decl.cpp
-  builtin/*.cpp
+  value.cpp
   member/*.cpp
+  operator/*.cpp
+  builtin/*.cpp
 )
 
 file(GLOB blocc_PUBLIC_HEADERS
@@ -80,24 +76,10 @@ file(GLOB blocc_PUBLIC_HEADERS
   exception_runtime.h
   executable.h
   expression.h
-  expression_boolean.h
   expression_builtin.h
-  expression_collection.h
-  expression_complex_ctor.h
-  expression_complex.h
-  expression_functor.h
-  expression_integer.h
-  expression_item.h
-  expression_literal.h
   expression_member.h
-  expression_numeric.h
-  expression_null.h
-  expression_operator.h
-  expression_static.h
-  expression_tabchar.h
-  expression_tuple.h
-  expression_variable.h
   functor_manager.h
+  operator.h
   plugin.h
   plugin_interface.h
   plugin_manager.h
@@ -108,18 +90,25 @@ file(GLOB blocc_PUBLIC_HEADERS
   statement.h
   symbol.h
   template_stack.h
-  template_temporary.h
   token.h
   tokenizer.h
   tuple_decl.h
   tuple.h
+  value.h
 )
 
 file(GLOB blocc_PRIVATE_HEADERS
   tokenizer.lex
-  expression_iterator.h
   parse_expression.h
   parse_statement.h
+  expression_boolean.h
+  expression_complex_ctor.h
+  expression_functor.h
+  expression_integer.h
+  expression_item.h
+  expression_literal.h
+  expression_numeric.h
+  expression_variable.h
   statement_begin.h
   statement_break.h
   statement_continue.h
@@ -137,8 +126,10 @@ file(GLOB blocc_PRIVATE_HEADERS
   statement_trace.h
   statement_while.h
   statement_raise.h
-  builtin/*.h
+  template_dtor.h
   member/*.h
+  operator/*.h
+  builtin/*.h
 )
 
 add_custom_target(blocc_HEADERS SOURCES ${blocc_PRIVATE_HEADERS} ${blocc_PUBLIC_HEADERS})

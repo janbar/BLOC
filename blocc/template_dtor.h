@@ -16,34 +16,30 @@
  *
  */
 
-#include "expression_tabchar.h"
+#ifndef OBJECT_DTOR_H_
+#define OBJECT_DTOR_H_
+
+#include <cstddef>
 
 namespace bloc
 {
 
-const Type& TabcharExpression::type_static = Type(Type::TABCHAR);
+struct ObjectBase {
+  virtual ~ObjectRefBase() = default;
+};
 
-void TabcharExpression::outputTabchar(const TabChar& v, FILE * _stdout, unsigned max_lines /*= (-1)*/)
+template <typename T> struct ObjectRef : ObjectBase
 {
-  unsigned idx = 0, lno = 0;
-  size_t sz = v.size();
-  while (idx < sz && lno < max_lines)
-  {
-    ++lno;
-    fprintf(_stdout, "%08X:  ", idx);
-    char str[24];
-    int i;
-    for (i = 0; i < 16 && idx < sz; ++i, ++idx)
-    {
-      fprintf(_stdout, "%02x ", (unsigned char) v[idx]);
-      str[i] = (v[idx] > 32 && v[idx] < 127 ? v[idx] : '.');
-    }
-    str[i] = '\0';
-    while (i++ < 16) fputs("   ", _stdout);
-    fputc(' ', _stdout);
-    fputs(str, _stdout);
-    fputc('\n', _stdout);
-  }
-}
+  T * handle;
+  explicit ObjectRef(T * v) : handle(v) { }
+};
+
+template <typename T> struct Object : ObjectBase
+{
+  T handle;
+  explicit Object(T&& v) : handle(std::move(v)) { }
+};
 
 }
+
+#endif /* OBJECT_DTR_H_ */

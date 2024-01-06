@@ -49,19 +49,7 @@ public:
 
   const Type& type(Context& ctx) const override;
 
-  bool boolean(Context& ctx) const override;
-
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
-
-  bool isRvalue() const override { return false; }
-
-  std::string& literal(Context& ctx) const override;
-
-  TabChar& tabchar(Context& ctx) const override;
-
-  Complex& complex(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   std::string toString(Context& ctx) const override
   {

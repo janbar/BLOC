@@ -19,8 +19,7 @@
 #ifndef EXPRESSION_INTEGER_H
 #define EXPRESSION_INTEGER_H
 
-#include "expression_static.h"
-#include "declspec.h"
+#include "expression.h"
 
 namespace bloc
 {
@@ -28,75 +27,40 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a integer value.
  */
-class IntegerExpression : public SwappableExpression<IntegerExpression>
+class IntegerExpression : public Expression
 {
 private:
 
-  int64_t v;
+  mutable Value v;
 
 public:
-  LIBBLOC_API static const Type& type_static;
 
   virtual ~IntegerExpression() { }
 
-  explicit IntegerExpression(int64_t a) : v(a) { }
+  explicit IntegerExpression(Integer a) : v(a) { v.to_lvalue(true); }
+  explicit IntegerExpression(Value&& _v) : v(std::move(_v)) { v.to_lvalue(true); }
 
-  const Type& refType() const override
+  const Type& type(Context& ctx) const override
   {
-    return type_static;
+    return v.type();
   }
 
-  int64_t integer(Context& ctx) const override
+  Value& value(Context& ctx) const override
   {
     return v;
   }
 
-  /* to support type mixing */
-  double numeric(Context& ctx) const override
-  {
-    return (double) v;
-  }
+  bool isConst() const override { return true; }
 
-  std::string unparse(Context& ctx) const override
-  {
-    return readableInteger(v);
-  }
+  std::string unparse(Context& ctx) const override;
 
   std::string toString(Context& ctx) const override
   {
-    return std::string(typeName(ctx))
-            .append(1, ' ')
-            .append(readableInteger(v));
+    return v.toString();
   }
 
-  static IntegerExpression * parse(const std::string& text, int base = 10)
-  {
-    return new IntegerExpression((int64_t)std::stoll(text, 0, base));
-  }
+  static IntegerExpression * parse(const std::string& text);
 
-  static std::string readableInteger(int64_t l)
-  {
-    return std::to_string(l);
-  }
-
-  int64_t& refInteger() override { return v; }
-
-  void swap(IntegerExpression& e) noexcept override
-  {
-    int64_t tmp = e.v;
-    e.v = v;
-    v = tmp;
-  }
-
-  IntegerExpression * swapNew() override
-  {
-    return new IntegerExpression(this->v);
-  }
-
-  IntegerExpression * cloneNew() const override
-  {
-    return new IntegerExpression(this->v);
-  }
 };
 
 }

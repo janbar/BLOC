@@ -18,18 +18,14 @@
 
 #include "expression_boolean.h"
 #include "expression_builtin.h"
+#include <cassert>
 
 namespace bloc
 {
 
-const Type& BooleanExpression::type_static = Type(Type::BOOLEAN);
-
-const char * BooleanExpression::TRUE = "TRUE";
-const char * BooleanExpression::FALSE = "FALSE";
-
 std::string BooleanExpression::unparse(Context& ctx) const
 {
-  return BuiltinExpression::KEYWORDS[(v ? BuiltinExpression::FUNC_TRUE : BuiltinExpression::FUNC_FALSE)];
+  return BuiltinExpression::KEYWORDS[(*v.boolean() ? BuiltinExpression::FUNC_TRUE : BuiltinExpression::FUNC_FALSE)];
 }
 
 }

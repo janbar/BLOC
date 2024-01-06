@@ -20,7 +20,6 @@
 #define BUILTIN_FALSE_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_boolean.h>
 
 namespace bloc
 {
@@ -30,15 +29,19 @@ class Parser;
 
 class FALSEExpression : public BuiltinExpression {
 
+  mutable Value v;
+
 public:
 
   virtual ~FALSEExpression() { }
 
-  FALSEExpression() : BuiltinExpression(FUNC_FALSE) { }
+  FALSEExpression() : BuiltinExpression(FUNC_FALSE), v(Bool(false)) { v.to_lvalue(true); }
 
-  const Type& type(Context& ctx) const override { return BooleanExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_boolean; }
 
-  bool boolean (Context& ctx) const override { return false; }
+  Value& value(Context& ctx) const override { return v; }
+
+  bool isConst() const override { return true; }
 };
 
 }

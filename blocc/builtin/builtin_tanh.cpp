@@ -28,9 +28,32 @@
 namespace bloc
 {
 
-double TANHExpression::numeric(Context & ctx) const
+Value& TANHExpression::value(Context & ctx) const
 {
-  return std::tanh(_args[0]->numeric(ctx));
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
+
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::tanh(*val.integer())));
+    break;
+  case Type::NUMERIC:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::tanh(*val.numeric())));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 TANHExpression * TANHExpression::parse(Parser& p, Context& ctx)

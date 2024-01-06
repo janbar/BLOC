@@ -17,7 +17,6 @@
  */
 
 #include "collection.h"
-#include "expression_static.h"
 
 #include <cassert>
 
@@ -29,39 +28,44 @@ Collection::Collection(const Collection& t)
 {
   /* clone elements */
   v.reserve(t.size());
-  for (const StaticExpression * e : t.v)
-    v.push_back(e->cloneNew());
+  for (const Value& e : t.v)
+    v.push_back(e.clone());
 }
 
 void Collection::swap(Collection& t) noexcept
 {
-  assert(_type == t._type);
+  Type tmp_t = _type;
+  TupleDecl::Decl tmp_d = _decl;
+  _type = t._type;
+  _decl = t._decl;
   v.swap(t.v);
+  t._type = tmp_t;
+  t._decl = tmp_d;
 }
 
 void Collection::copy(Collection& t) noexcept
 {
-  assert(_type == t._type);
-  v = t.v;
+  v.clear();
+  /* clone elements */
+  v.reserve(t.size());
+  _type = t._type;
+  _decl = t._decl;
+  for (const Value& e : t)
+    v.push_back(e.clone());
 }
 
 void Collection::clear()
 {
-  for (StaticExpression * e : v)
-    delete e;
   v.clear();
 }
 
 Collection::iterator Collection::erase(const_iterator pos)
 {
-  delete *pos;
   return v.erase(pos);
 }
 
 Collection::iterator Collection::erase(const_iterator first, const_iterator last)
 {
-  for (const_iterator it = first; it != last; ++it)
-    delete *it;
   return v.erase(first, last);
 }
 

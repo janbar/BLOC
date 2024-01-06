@@ -55,10 +55,10 @@ private:
 
   mutable struct RT
   {
-    int64_t min = 0;
-    int64_t max = 0;
-    int64_t step = 1;
-    IntegerExpression * iterator = nullptr;
+    Integer min = 0;
+    Integer max = 0;
+    Integer step = 1;
+    Value * iterator = nullptr;
   } _data;
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORStatement * rof);

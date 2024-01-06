@@ -20,12 +20,6 @@
 #define BUILTIN_HASH_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_complex.h>
 
 namespace bloc
 {
@@ -41,11 +35,9 @@ public:
 
   explicit HASHExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_HASH, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return IntegerExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_integer; }
 
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override { return (double) integer(ctx); }
+  Value& value(Context& ctx) const override;
 
   static HASHExpression * parse(Parser& p, Context& ctx);
 };

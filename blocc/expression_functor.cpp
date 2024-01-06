@@ -22,14 +22,6 @@
 #include "parser.h"
 #include "debug.h"
 #include "exception_runtime.h"
-#include "expression_boolean.h"
-#include "expression_integer.h"
-#include "expression_numeric.h"
-#include "expression_literal.h"
-#include "expression_complex.h"
-#include "expression_tabchar.h"
-#include "expression_tuple.h"
-#include "expression_collection.h"
 
 #include <memory>
 
@@ -43,87 +35,16 @@ FunctorExpression::~FunctorExpression()
   _args.clear();
 }
 
-bool FunctorExpression::boolean(Context& ctx) const
+Value& FunctorExpression::value(Context& ctx) const
 {
   auto env = (*_functor)->createEnv(ctx, _args);
   (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-    return ret->boolean(env.context());
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-}
-
-int64_t FunctorExpression::integer(Context& ctx) const
-{
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-    return ret->integer(env.context());
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-}
-
-double FunctorExpression::numeric(Context& ctx) const
-{
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-    return ret->numeric(env.context());
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-}
-
-std::string& FunctorExpression::literal(Context& ctx) const
-{
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-    return ctx.allocate(std::move(ret->literal(env.context())));
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-}
-
-TabChar& FunctorExpression::tabchar(Context& ctx) const
-{
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-    return ctx.allocate(std::move(ret->tabchar(env.context())));
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-}
-
-Collection& FunctorExpression::collection(Context& ctx) const
-{
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-    return ctx.allocate(std::move(ret->collection(env.context())));
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-}
-
-Tuple& FunctorExpression::tuple(Context& ctx) const
-{
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-    return ctx.allocate(std::move(ret->tuple(env.context())));
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-}
-
-Complex& FunctorExpression::complex(Context& ctx) const
-{
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
-  std::unique_ptr<Expression> ret(env.context().dropReturned());
-  if (ret)
-  {
-    _tmp = ret->complex(env.context());
-    return _tmp;
-  }
-  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
+  Value * ret = env.context().dropReturned();
+  if (ret == nullptr)
+    throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
+  Value& val = ctx.allocate(std::move(*ret));
+  delete ret;
+  return val;
 }
 
 std::string FunctorExpression::unparse(Context& ctx) const

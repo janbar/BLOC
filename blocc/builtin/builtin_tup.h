@@ -20,13 +20,6 @@
 #define BUILTIN_TUPLE_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_tuple.h>
 
 namespace bloc
 {
@@ -37,7 +30,7 @@ class Parser;
 class TUPExpression : public BuiltinExpression
 {
 
-  Tuple::Decl _decl;
+  TupleDecl::Decl _decl;
   Type _type;
 
 public:
@@ -48,9 +41,9 @@ public:
 
   const Type& type(Context& ctx) const override { return _type; }
 
-  Tuple& tuple(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
-  const Tuple::Decl& tuple_decl(Context& ctx) const override { return _decl; }
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return _decl; }
 
   std::string typeName(Context& ctx) const override
   {

@@ -31,24 +31,25 @@
 namespace bloc
 {
 
-bool READLNExpression::boolean(Context & ctx) const
+Value& READLNExpression::value(Context & ctx) const
 {
-  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
-  int n = 1024;
-  char * buf = new char[n];
-  if (_args.size() > 1)
-  {
-    fputs(_args[1]->literal(ctx).c_str(), stdout);
-    fflush(stdout);
-  }
-  n = bloc_readstdin(buf, n);
-  if (n < 1)
-    return false;
-  /* discard nl */
-  if (buf[n - 1] == '\n')
-    --n;
-  var->store(ctx, LiteralExpression(std::string(buf, n)));
-  return true;
+  return ctx.allocate(Value(Bool(false)));
+//  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
+//  int n = 1024;
+//  char * buf = new char[n];
+//  if (_args.size() > 1)
+//  {
+//    fputs(_args[1]->literal(ctx).c_str(), stdout);
+//    fflush(stdout);
+//  }
+//  n = bloc_readstdin(buf, n);
+//  if (n < 1)
+//    return false;
+//  /* discard nl */
+//  if (buf[n - 1] == '\n')
+//    --n;
+//  var->store(ctx, LiteralExpression(std::string(buf, n)));
+//  return true;
 }
 
 READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)

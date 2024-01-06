@@ -40,29 +40,11 @@ public:
 
   const Type& type(Context& ctx) const override { return _exp->type(ctx); }
 
-  bool boolean(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]); }
+  Value& value(Context& ctx) const override;
 
-  int64_t integer(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]); }
-
-  double numeric(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]); }
-
-  std::string& literal(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]); }
-
-  TabChar& tabchar(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]); }
-
-  Collection& collection(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]); }
-
-  Tuple& tuple(Context& ctx) const override;
-
-  Complex& complex(Context& ctx) const override { throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]); }
-
-  const Tuple::Decl& tuple_decl(Context& ctx) const override { return _exp->tuple_decl(ctx); }
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return _exp->tuple_decl(ctx); }
 
   std::string typeName(Context& ctx) const override { return _exp->typeName(ctx); }
-
-  bool isRvalue() const override { return _exp->isRvalue(); }
-
-  bool isStored() const override { return _exp->isStored(); }
 
   std::string unparse(Context& ctx) const override;
 

@@ -20,57 +20,18 @@
 #include "context.h"
 #include "parser.h"
 #include "expression.h"
-#include "expression_static.h"
 #include "exception_runtime.h"
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
 #include "string_reader.h"
-#include "expression_boolean.h"
-#include "expression_integer.h"
-#include "expression_numeric.h"
-#include "expression_literal.h"
-#include "expression_tabchar.h"
-#include "expression_complex.h"
-#include "expression_tuple.h"
-#include "expression_collection.h"
+#include "collection.h"
+#include "tuple.h"
+#include "value.h"
 
 #define to_bool(a) (a == bloc_true ? true : false)
 
 static struct { const char * msg; int no; } bloc_error = { "", 0 };
-
-static bloc::StaticExpression*
-bloc_cast_as_static(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e)
-{
-  bloc::Context * _ctx = reinterpret_cast<bloc::Context*>(ctx);
-  const bloc::Expression * _exp = reinterpret_cast<bloc::Expression*>(e);
-  if (_exp->type(*_ctx).level() == 0)
-  {
-    switch (_exp->type(*_ctx).major())
-    {
-    case bloc::Type::BOOLEAN:
-      return new bloc::BooleanExpression(_exp->boolean(*_ctx));
-    case bloc::Type::INTEGER:
-      return new bloc::IntegerExpression(_exp->integer(*_ctx));
-    case bloc::Type::NUMERIC:
-      return new bloc::NumericExpression(_exp->numeric(*_ctx));
-    case bloc::Type::LITERAL:
-      return new bloc::LiteralExpression(_exp->literal(*_ctx));
-    case bloc::Type::COMPLEX:
-      return new bloc::ComplexExpression(_exp->complex(*_ctx));
-    case bloc::Type::TABCHAR:
-      return new bloc::TabcharExpression(_exp->tabchar(*_ctx));
-    case bloc::Type::ROWTYPE:
-      return new bloc::TupleExpression(_exp->tuple(*_ctx));
-    default:
-      throw bloc::RuntimeError(bloc::EXC_RT_NOT_IMPLEMENTED);
-    }
-  }
-  else
-  {
-    return new bloc::CollectionExpression(_exp->collection(*_ctx));
-  }
-}
 
 const char*
 bloc_strerror() {
@@ -140,22 +101,18 @@ bloc_ctx_register_symbol(BLOC_CONTEXT *ctx, const char *name, bloc_type type)
 }
 
 bloc_bool
-bloc_ctx_store_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol, BLOC_EXPRESSION *e)
+bloc_ctx_store_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol, BLOC_VALUE *v)
 {
-  bloc::StaticExpression* se = nullptr;
   try
   {
-    se = bloc_cast_as_static(ctx, e);
     reinterpret_cast<bloc::Context*>(ctx)->storeVariable(
             *reinterpret_cast<const bloc::Symbol*>(symbol),
-            std::move(*se));
-    delete se;
+            std::move(*reinterpret_cast<bloc::Value*>(v)));
     return bloc_true;
   }
   catch (bloc::RuntimeError& re)
   {
     bloc_error_set(re.what(), re.no);
-    if (se) delete se;
     return bloc_false;
   }
 }
@@ -166,12 +123,12 @@ bloc_ctx_find_symbol(BLOC_CONTEXT *ctx, const char *name)
   return reinterpret_cast<BLOC_SYMBOL*>(reinterpret_cast<bloc::Context*>(ctx)->findSymbol(name));
 }
 
-BLOC_EXPRESSION*
+BLOC_VALUE*
 bloc_ctx_load_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol)
 {
-  bloc::StaticExpression * e = reinterpret_cast<bloc::Context*>(ctx)->loadVariable(
+  bloc::Value& v = reinterpret_cast<bloc::Context*>(ctx)->loadVariable(
           *reinterpret_cast<const bloc::Symbol*>(symbol));
-  return reinterpret_cast<BLOC_EXPRESSION*>(e);
+  return reinterpret_cast<BLOC_VALUE*>(&v);
 }
 
 void
@@ -205,43 +162,43 @@ bloc_ctx_err(BLOC_CONTEXT *ctx)
 }
 
 void
-bloc_free_expression(BLOC_EXPRESSION *e)
+bloc_free_value(BLOC_VALUE *v)
 {
-  if (e)
-    delete reinterpret_cast<bloc::Expression*>(e);
+  if (v)
+    delete reinterpret_cast<bloc::Value*>(v);
 }
 
-BLOC_EXPRESSION*
+BLOC_VALUE*
 bloc_create_boolean(bloc_bool v)
 {
-  return reinterpret_cast<BLOC_EXPRESSION*>(new bloc::BooleanExpression(to_bool(v)));
+  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(bloc::Bool(to_bool(v))));
 }
 
-BLOC_EXPRESSION*
+BLOC_VALUE*
 bloc_create_integer(int64_t v)
 {
-  return reinterpret_cast<BLOC_EXPRESSION*>(new bloc::IntegerExpression(v));
+  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(bloc::Integer(v)));
 }
 
-BLOC_EXPRESSION*
+BLOC_VALUE*
 bloc_create_numeric(double v)
 {
-  return reinterpret_cast<BLOC_EXPRESSION*>(new bloc::NumericExpression(v));
+  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(bloc::Numeric(v)));
 }
 
-BLOC_EXPRESSION*
+BLOC_VALUE*
 bloc_create_literal(const char *v)
 {
-  return reinterpret_cast<BLOC_EXPRESSION*>(new bloc::LiteralExpression(v));
+  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(new bloc::Literal(v)));
 }
 
 
-BLOC_EXPRESSION*
+BLOC_VALUE*
 bloc_create_tabchar(const char *v, unsigned len)
 {
-  bloc::TabChar tv;
-  tv.assign(v, v + len);
-  return reinterpret_cast<BLOC_EXPRESSION*>(new bloc::TabcharExpression(std::move(tv)));
+  bloc::TabChar * tv = new bloc::TabChar(len);
+  tv->assign(v, v + len);
+  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(tv));
 }
 
 bloc_type
@@ -252,13 +209,35 @@ bloc_expression_type(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e)
   return t;
 }
 
-bloc_bool
-bloc_boolean(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, bloc_bool *buf)
+BLOC_VALUE*
+bloc_evaluate_expression(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e)
 {
   try
   {
-    bool b = reinterpret_cast<bloc::Expression*>(e)->boolean(*reinterpret_cast<bloc::Context*>(ctx));
-    *buf = (b ? 1 : 0);
+    bloc::Value& v = reinterpret_cast<bloc::Expression*>(e)->value(*reinterpret_cast<bloc::Context*>(ctx));
+    return reinterpret_cast<BLOC_VALUE*>(&v);
+  }
+  catch (bloc::RuntimeError& re)
+  {
+    bloc_error_set(re.what(), re.no);
+    return nullptr;
+  }
+}
+
+bloc_type
+bloc_value_type(BLOC_VALUE *v)
+{
+  const bloc::Type& type = reinterpret_cast<bloc::Value*>(v)->type();
+  bloc_type t = { (bloc_type_major)type.major(), type.level() };
+  return t;
+}
+
+bloc_bool
+bloc_boolean(BLOC_VALUE* v, bloc_bool **buf)
+{
+  try
+  {
+    *buf = reinterpret_cast<bloc_bool*>(reinterpret_cast<bloc::Value*>(v)->boolean());
     return bloc_true;
   }
   catch (bloc::RuntimeError& re)
@@ -269,11 +248,11 @@ bloc_boolean(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, bloc_bool *buf)
 }
 
 bloc_bool
-bloc_integer(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, int64_t *buf)
+bloc_integer(BLOC_VALUE* v, int64_t **buf)
 {
   try
   {
-    *buf = reinterpret_cast<bloc::Expression*>(e)->integer(*reinterpret_cast<bloc::Context*>(ctx));
+    *buf = reinterpret_cast<bloc::Value*>(v)->integer();
     return bloc_true;
   }
   catch (bloc::RuntimeError& re)
@@ -284,11 +263,11 @@ bloc_integer(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, int64_t *buf)
 }
 
 bloc_bool
-bloc_numeric(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, double *buf)
+bloc_numeric(BLOC_VALUE* v, double **buf)
 {
   try
   {
-    *buf = reinterpret_cast<bloc::Expression*>(e)->numeric(*reinterpret_cast<bloc::Context*>(ctx));
+    *buf = reinterpret_cast<bloc::Value*>(v)->numeric();
     return bloc_true;
   }
   catch (bloc::RuntimeError& re)
@@ -299,12 +278,12 @@ bloc_numeric(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, double *buf)
 }
 
 bloc_bool
-bloc_literal(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, const char **buf)
+bloc_literal(BLOC_VALUE* v, const char **buf)
 {
   try
   {
-    const std::string& str = reinterpret_cast<bloc::Expression*>(e)->literal(*reinterpret_cast<bloc::Context*>(ctx));
-    *buf = str.data();
+    bloc::Literal * str = reinterpret_cast<bloc::Value*>(v)->literal();
+    *buf = str->data();
     return bloc_true;
   }
   catch (bloc::RuntimeError& re)
@@ -315,13 +294,13 @@ bloc_literal(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, const char **buf)
 }
 
 bloc_bool
-bloc_tabchar(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, const char **buf, unsigned *len)
+bloc_tabchar(BLOC_VALUE* v, const char **buf, unsigned *len)
 {
   try
   {
-    bloc::TabChar& tc = reinterpret_cast<bloc::Expression*>(e)->tabchar(*reinterpret_cast<bloc::Context*>(ctx));
-    *buf = tc.data();
-    *len = (unsigned)tc.size();
+    bloc::TabChar * tc = reinterpret_cast<bloc::Value*>(v)->tabchar();
+    *buf = tc->data();
+    *len = (unsigned)tc->size();
     return bloc_true;
   }
   catch (bloc::RuntimeError& re)
@@ -350,6 +329,13 @@ bloc_parse_expression(BLOC_CONTEXT *ctx, const char *text)
     bloc_error_set(pe.what(), pe.no);
     return nullptr;
   }
+}
+
+void
+bloc_free_expression(BLOC_EXPRESSION *e)
+{
+  if (e)
+    delete reinterpret_cast<bloc::Expression*>(e);
 }
 
 void
@@ -391,8 +377,8 @@ bloc_execute(BLOC_EXECUTABLE *exec)
   }
 }
 
-BLOC_EXPRESSION*
+BLOC_VALUE*
 bloc_drop_returned(BLOC_CONTEXT *ctx)
 {
-  return reinterpret_cast<BLOC_EXPRESSION*>(reinterpret_cast<bloc::Context*>(ctx)->dropReturned());
+  return reinterpret_cast<BLOC_VALUE*>(reinterpret_cast<bloc::Context*>(ctx)->dropReturned());
 }

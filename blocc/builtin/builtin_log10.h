@@ -20,7 +20,6 @@
 #define BUILTIN_LOG10_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_numeric.h>
 
 namespace bloc
 {
@@ -36,9 +35,9 @@ public:
 
   explicit LOG10Expression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_LOG10, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return NumericExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_numeric; }
 
-  double numeric(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static LOG10Expression * parse(Parser& p, Context& ctx);
 };

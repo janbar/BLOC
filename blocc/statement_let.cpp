@@ -21,15 +21,6 @@
 #include "parse_expression.h"
 #include "parser.h"
 #include "context.h"
-#include "expression_boolean.h"
-#include "expression_integer.h"
-#include "expression_numeric.h"
-#include "expression_literal.h"
-#include "expression_complex.h"
-#include "expression_tabchar.h"
-#include "expression_collection.h"
-#include "expression_tuple.h"
-#include "expression_item.h"
 #include "debug.h"
 
 #include <string>
@@ -46,8 +37,30 @@ LETStatement::~LETStatement()
 
 const Statement * LETStatement::doit(Context& ctx) const
 {
-  _var.store(ctx, ctx, _exp);
-  return _next;
+  /* assign variable */
+  if (_var.symbol()->major() != Type::POINTER)
+  {
+    /* ASSIGNMENT */
+    _var.store(ctx, ctx, _exp);
+    return _next;
+  }
+  else
+  /* update reference */
+  {
+    Value * ptr = ctx.loadVariable(*_var.symbol()).value();
+    /* the pointer CANNOT be null */
+    if (ptr == nullptr)
+      throw RuntimeError(EXC_RT_INTERNAL_ERROR_S, "Invalid pointer");
+    Value& val = _exp->value(ctx); /* execute expression */
+    /* values MUST be of the same type */
+    if (val.type() != ptr->type())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, ptr->typeName().c_str());
+    if (ptr->lvalue())
+      ptr->swap(val.clone());
+    else
+      ptr->swap(val);
+    return _next;
+  }
 }
 
 void LETStatement::unparse(Context&ctx, FILE * out) const

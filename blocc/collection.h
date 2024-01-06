@@ -20,7 +20,8 @@
 #define COLLECTION_H_
 
 #include "intrinsic_type.h"
-#include "tuple.h"
+#include "value.h"
+#include "tuple_decl.h"
 
 #include <vector>
 
@@ -32,19 +33,19 @@ class StaticExpression;
 class Collection
 {
 public:
-  typedef std::vector<StaticExpression*> container_t;
+  typedef std::vector<Value> container_t;
   typedef container_t::iterator iterator;
   typedef container_t::const_iterator const_iterator;
-  typedef StaticExpression*& reference;
-  typedef const StaticExpression*& const_reference;
+  typedef Value& reference;
+  typedef const Value& const_reference;
 
   virtual ~Collection() { this->clear(); }
   explicit Collection(const Type& type) : v(), _type(type) { }
-  explicit Collection(const Tuple::Decl& decl, Type::TypeLevel level)
+  explicit Collection(const TupleDecl::Decl& decl, Type::TypeLevel level)
   : v(), _decl(decl) { _type = _decl.make_type(level); }
   Collection(const Type& type, container_t&& c) noexcept
   : v(std::move(c)), _type(type) { }
-  Collection(const Tuple::Decl& decl, Type::TypeLevel level, container_t&& c) noexcept
+  Collection(const TupleDecl::Decl& decl, Type::TypeLevel level, container_t&& c) noexcept
   : v(std::move(c)), _decl(decl) { _type = _decl.make_type(level); }
 
   Collection(const Collection& t);
@@ -52,7 +53,7 @@ public:
   : v(std::move(t.v)), _decl(std::move(t._decl)), _type(t._type) { }
 
   const Type& table_type() const { return _type; }
-  const Tuple::Decl& table_decl() const { return _decl; }
+  const TupleDecl::Decl& table_decl() const { return _decl; }
 
   void swap(Collection& t) noexcept;
   void copy(Collection& t) noexcept;
@@ -64,17 +65,16 @@ public:
   const_reference operator[](unsigned pos) const { return const_cast<const_reference>(v[pos]); }
   const_reference at(unsigned pos) const { return const_cast<const_reference>(v.at(pos)); }
   size_t size() const { return v.size(); }
-  const_iterator begin() const { return v.begin(); }
-  const_iterator end() const { return v.end(); }
-  void push_back(StaticExpression* const& e) { v.push_back(e); }
-  void push_back(StaticExpression*&& e) { v.push_back(std::move(e)); }
-  iterator insert(const_iterator pos, StaticExpression* const& e) { return v.insert(pos, e); }
+  iterator begin() { return v.begin(); }
+  iterator end() { return v.end(); }
+  void push_back(Value&& e) { v.push_back(std::move(e)); }
+  iterator insert(const_iterator pos, Value&& e) { return v.insert(pos, std::move(e)); }
   iterator erase(const_iterator pos);
   iterator erase(const_iterator first, const_iterator last);
 
 private:
   container_t v;
-  Tuple::Decl _decl;
+  TupleDecl::Decl _decl;
   Type _type;
 };
 

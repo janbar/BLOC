@@ -20,6 +20,7 @@
 #define EXPRESSION_COMPLEX_CTOR_H
 
 #include "expression.h"
+#include "complex.h"
 #include "plugin_interface.h"
 
 #include <vector>
@@ -39,7 +40,6 @@ private:
   Type _type;
   const PLUGIN_CTOR * _ctor = nullptr;
   std::vector<Expression*> _args;
-  mutable Complex _tmp; /* rvalue */
 
 public:
 
@@ -55,9 +55,7 @@ public:
     return _type;
   }
 
-  Complex& complex(Context& ctx) const override;
-
-  bool isRvalue() const override { return true; }
+  Value& value(Context& ctx) const override;
 
   std::string unparse(Context& ctx) const override;
 

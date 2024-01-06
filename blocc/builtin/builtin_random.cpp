@@ -26,12 +26,32 @@
 namespace bloc
 {
 
-double RANDOMExpression::numeric(Context & ctx) const
+Value& RANDOMExpression::value(Context & ctx) const
 {
-  double d = 1.0;
-  if (!_args.empty())
-    d = _args[0]->numeric(ctx);
-  return Context::random(d);
+  if (_args.empty())
+    return ctx.allocate(Value(Numeric(Context::random(1.0))));
+  else
+  {
+    Value& val = _args[0]->value(ctx);
+    double d = 1.0;
+    switch (val.type().major())
+    {
+    case Type::INTEGER:
+      if (!val.isNull())
+        d = *val.integer();
+      break;
+    case Type::NUMERIC:
+      if (!val.isNull())
+        d = *val.numeric();
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    if (val.lvalue())
+      return ctx.allocate(Value(Numeric(Context::random(d))));
+    val.swap(Value(Numeric(Context::random(d))));
+    return val;
+  }
 }
 
 RANDOMExpression * RANDOMExpression::parse(Parser& p, Context& ctx)

@@ -22,15 +22,8 @@
 #include "plugin_interface.h"
 #include "declspec.h"
 #include "context.h"
-#include "expression_variable.h"
-#include "expression_boolean.h"
-#include "expression_integer.h"
-#include "expression_numeric.h"
-#include "expression_literal.h"
-#include "expression_complex.h"
-#include "expression_tabchar.h"
-#include "expression_collection.h"
-#include "expression_tuple.h"
+#include "expression.h"
+#include "complex.h"
 
 #include <vector>
 
@@ -48,7 +41,7 @@ namespace plugin
  * @param decl_def the tuple definition
  * @param type_id the identifier of the this module
  */
-Tuple::Decl
+TupleDecl::Decl
 make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id);
 
 /**
@@ -109,9 +102,9 @@ public:
    * @param method_id     identifier of the method to execute
    * @param ctx           the bloc context
    * @param args          list of arguments
-   * @return              new expression
+   * @return              new value or nullptr
    */
-  virtual Expression * executeMethod(
+  virtual Value * executeMethod(
           bloc::Complex& object_this,
           int method_id,
           bloc::Context& ctx,

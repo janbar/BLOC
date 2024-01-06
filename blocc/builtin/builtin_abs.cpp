@@ -28,15 +28,37 @@
 namespace bloc
 {
 
-int64_t ABSExpression::integer(Context & ctx) const
+Value& ABSExpression::value(Context & ctx) const
 {
-  int64_t l = _args[0]->integer(ctx);
-  return (l < 0 ? -l : l);
-}
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
 
-double ABSExpression::numeric(Context & ctx) const
-{
-  return std::abs(_args[0]->numeric(ctx));
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+  {
+    if (val.isNull())
+      return val;
+    Integer l = *val.integer();
+    v = Value(Integer(l < 0 ? -l : l));
+    break;
+  }
+  case Type::NUMERIC:
+  {
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::abs(*val.numeric())));
+    break;
+  }
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 ABSExpression * ABSExpression::parse(Parser& p, Context& ctx)

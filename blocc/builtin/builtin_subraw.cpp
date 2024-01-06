@@ -26,39 +26,84 @@
 namespace bloc
 {
 
-TabChar& SUBRAWExpression::tabchar(Context & ctx) const
+Value& SUBRAWExpression::value(Context & ctx) const
 {
-  int64_t a, b, c;
-  if (_args[0]->isRvalue())
+  Value& val = _args[0]->value(ctx);
+
+  switch (val.type().major())
   {
-    TabChar& rv = _args[0]->tabchar(ctx);
-    if ((c = rv.size()) == 0)
-      return rv;
-    b = (_args.size() > 2 ? _args[2]->integer(ctx) : c);
-    a = _args[1]->integer(ctx);
+  case Type::NO_TYPE:
+    if (val.lvalue())
+      return ctx.allocate(Value(Value::type_tabchar));
+    val.swap(Value(Value::type_tabchar));
+    return val;
+  case Type::TABCHAR:
+  {
+    Value& a1 = _args[1]->value(ctx);
+    int64_t a;
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      return val;
+    case Type::INTEGER:
+      if (a1.isNull())
+        return val;
+      a = *a1.integer();
+      break;
+    case Type::NUMERIC:
+      if (a1.isNull())
+        return val;
+      a = Integer(*a1.numeric());
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    if (val.isNull())
+      return val;
+    int64_t b, c;
+    c = val.tabchar()->size();
+    b = c;
+    if (_args.size() > 2)
+    {
+      Value& a2 = _args[2]->value(ctx);
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return val;
+      case Type::INTEGER:
+        if (a2.isNull())
+          return val;
+        b = *a2.integer();
+        break;
+      case Type::NUMERIC:
+        if (a2.isNull())
+          return val;
+        b = Integer(*a2.numeric());
+        break;
+      default:
+        throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+      }
+    }
+    if (c == 0)
+      return val;
     a = (a < 0 ? a + c : a);
     b = std::max<int64_t>(std::min(b, c - a), 0L);
     if (a >= 0 && b > 0)
     {
-      rv.erase(rv.begin(), rv.begin() + a);
-      rv.erase(rv.begin() + b, rv.end());
+      if (val.lvalue())
+        return ctx.allocate(Value(new TabChar(val.tabchar()->begin() + a, val.tabchar()->begin() + a + b)));
+      val.tabchar()->erase(val.tabchar()->begin(), val.tabchar()->begin() + a);
+      val.tabchar()->erase(val.tabchar()->begin() + b, val.tabchar()->end());
+      return val;
     }
-    else
-      rv.clear();
-    return rv;
+    if (val.lvalue())
+      return ctx.allocate(Value(new TabChar()));
+    val.tabchar()->clear();
+    return val;
   }
-  const TabChar& var = _args[0]->tabchar(ctx);
-  if ((c = var.size()) == 0)
-    return ctx.allocate(TabChar());
-  b = (_args.size() > 2 ? _args[2]->integer(ctx) : c);
-  a = _args[1]->integer(ctx);
-  a = (a < 0 ? a + c : a);
-  b = std::max<int64_t>(std::min(b, c - a), 0L);
-  if (a >= 0 && b > 0)
-  {
-    return ctx.allocate(TabChar(var.begin() + a, var.begin() + a + b));
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }
-  return ctx.allocate(TabChar());
 }
 
 SUBRAWExpression * SUBRAWExpression::parse(Parser& p, Context& ctx)

@@ -11,69 +11,69 @@ int main(int argc, char** argv)
   printf("BLOC compatible = %d\n", bloc_compatible());
 
   {
-    BLOC_EXPRESSION * tmp_a = bloc_create_boolean(bloc_true);
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "B", bloc_expression_type(ctx, tmp_a));
+    BLOC_VALUE * tmp_a = bloc_create_boolean(bloc_true);
+    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "B", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
-    bloc_free_expression(tmp_a);
+    bloc_free_value(tmp_a);
 
-    BLOC_EXPRESSION * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
-    bloc_bool val;
-    if (bloc_boolean(ctx, sto_a, &val))
-      printf("B        = %u\n", val);
+    bloc_bool  * val;
+    if (bloc_boolean(sto_a, &val))
+      printf("B        = %u\n", *val);
   }
 
   {
-    BLOC_EXPRESSION * tmp_a = bloc_create_integer(123456789);
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "I", bloc_expression_type(ctx, tmp_a));
+    BLOC_VALUE * tmp_a = bloc_create_integer(123456789);
+    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "I", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
-    bloc_free_expression(tmp_a);
+    bloc_free_value(tmp_a);
 
-    BLOC_EXPRESSION * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
-    int64_t val;
-    if (bloc_integer(ctx, sto_a, &val))
-      printf("I        = %ld\n", (long) val);
+    int64_t * val;
+    if (bloc_integer(sto_a, &val))
+      printf("I        = %ld\n", (long) *val);
   }
 
   {
-    BLOC_EXPRESSION * tmp_a = bloc_create_numeric(1.23456);
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "N", bloc_expression_type(ctx, tmp_a));
+    BLOC_VALUE * tmp_a = bloc_create_numeric(1.23456);
+    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "N", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
-    bloc_free_expression(tmp_a);
+    bloc_free_value(tmp_a);
 
-    BLOC_EXPRESSION * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
-    double val;
-    if (bloc_numeric(ctx, sto_a, &val))
-      printf("N        = %g\n", val);
+    double * val;
+    if (bloc_numeric(sto_a, &val))
+      printf("N        = %g\n", *val);
   }
 
   {
-    BLOC_EXPRESSION * tmp_a = bloc_create_literal("abcdefgh");
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_expression_type(ctx, tmp_a));
+    BLOC_VALUE * tmp_a = bloc_create_literal("abcdefgh");
+    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
-    bloc_free_expression(tmp_a);
+    bloc_free_value(tmp_a);
 
-    BLOC_EXPRESSION * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
     const char* val;
-    if (bloc_literal(ctx, sto_a, &val))
+    if (bloc_literal(sto_a, &val))
       printf("L        = %s\n", val);
   }
 
   {
     char raw[8] = { 65, 0, 67, 0, 69, 0, 71, 127 };
-    BLOC_EXPRESSION * tmp_a = bloc_create_tabchar(raw, sizeof(raw));
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_expression_type(ctx, tmp_a));
+    BLOC_VALUE * tmp_a = bloc_create_tabchar(raw, sizeof(raw));
+    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
-    bloc_free_expression(tmp_a);
+    bloc_free_value(tmp_a);
 
-    BLOC_EXPRESSION * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
     const char* val;
     unsigned len;
-    if (bloc_tabchar(ctx, sto_a, &val, &len))
+    if (bloc_tabchar(sto_a, &val, &len))
     {
       printf("X        =");
       for (unsigned i = 0; i < len; ++i)
@@ -83,11 +83,12 @@ int main(int argc, char** argv)
   }
 
   {
-    double val;
+    double * val;
     BLOC_EXPRESSION * e = bloc_parse_expression(ctx, "sqrt( sin(3*pi/4)**2 + cos(3*pi/4)**2 )\n");
-    if (e && bloc_numeric(ctx, e, &val))
+    BLOC_VALUE * v;
+    if (e && (v = bloc_evaluate_expression(ctx, e)) && bloc_numeric(v, &val))
     {
-      printf("expr     = %3f\n", val);
+      printf("expr     = %3f\n", *val);
     }
     else
     {
@@ -96,7 +97,7 @@ int main(int argc, char** argv)
     bloc_free_expression(e);
 
     e = bloc_parse_expression(ctx, "sqrt( sin(3*pi/4)**2 + cos(3*pi/4)**2\n");
-    if (e && bloc_numeric(ctx, e, &val))
+    if (e && (v = bloc_evaluate_expression(ctx, e)) && bloc_numeric(v, &val))
     {
       printf("ERROR: No throw\n");
     }
@@ -109,10 +110,10 @@ int main(int argc, char** argv)
 
   {
     bloc_ctx_purge(ctx);
-    BLOC_EXPRESSION * tmp_1 = bloc_create_integer(100);
-    BLOC_SYMBOL * sym_1 = bloc_ctx_register_symbol(ctx, "$1", bloc_expression_type(ctx, tmp_1));
+    BLOC_VALUE * tmp_1 = bloc_create_integer(100);
+    BLOC_SYMBOL * sym_1 = bloc_ctx_register_symbol(ctx, "$1", bloc_value_type(tmp_1));
     bloc_ctx_store_variable(ctx, sym_1, tmp_1);
-    bloc_free_expression(tmp_1);
+    bloc_free_value(tmp_1);
 
     BLOC_EXECUTABLE * x = bloc_parse_executable(ctx,
           "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
@@ -128,13 +129,13 @@ int main(int argc, char** argv)
       }
       else
       {
-        BLOC_EXPRESSION * r = bloc_drop_returned(ctx);
+        BLOC_VALUE * r = bloc_drop_returned(ctx);
         if (r)
         {
-          int64_t val;
-          bloc_integer(ctx, r, &val);
-          printf("\nreturn   = %ld\n", (long) val);
-          bloc_free_expression(r);
+          int64_t * val;
+          bloc_integer(r, &val);
+          printf("\nreturn   = %ld\n", (long) *val);
+          bloc_free_value(r);
         }
         else
         {

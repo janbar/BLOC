@@ -36,12 +36,13 @@
 #include <blocc/parser.h>
 #include <blocc/readstdin.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_operator.h>
 #include <blocc/expression_builtin.h>
 #include <blocc/expression_member.h>
 #include <blocc/plugin_manager.h>
 #include <blocc/functor_manager.h>
+#include <blocc/operator.h>
+#include <blocc/collection.h>
+#include <blocc/tuple.h>
 
 #include <cstdlib>
 #include <cstdio>
@@ -150,7 +151,7 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   for (int i = 0; i < args.size(); ++i)
   {
     const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
-    ctx.storeVariable(symbol, bloc::LiteralExpression(args[i]));
+    ctx.storeVariable(symbol, bloc::Value(new bloc::Literal(args[i])));
   }
   bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &read_input);
   if (!p)
@@ -274,45 +275,49 @@ static void reset_color(void)
 
 static void output_cli(bloc::Context& ctx)
 {
-  bloc::Expression * exp = ctx.dropReturned();
-  if (exp)
+  bloc::Value * val = ctx.dropReturned();
+  if (val != nullptr)
   {
     set_color(fgGREEN);
     try
     {
-      if (exp->type(ctx).level() == 0)
+      if (val->isNull())
       {
-        switch (exp->type(ctx).major())
+        PRINT(bloc::Value::STR_NIL);
+        PRINT("\n");
+      }
+      else if (val->type().level() == 0)
+      {
+        switch (val->type().major())
         {
         case bloc::Type::BOOLEAN:
-          PRINT(bloc::BooleanExpression::readableBoolean(exp->boolean(ctx)).c_str());
+          PRINT(bloc::Value::readableBoolean(*(val->boolean())).c_str());
           PRINT("\n");
           break;
         case bloc::Type::INTEGER:
-          PRINT(bloc::IntegerExpression::readableInteger(exp->integer(ctx)).c_str());
+          PRINT(bloc::Value::readableInteger(*(val->integer())).c_str());
           PRINT("\n");
           break;
         case bloc::Type::NUMERIC:
-          PRINT(bloc::NumericExpression::readableNumeric(exp->numeric(ctx)).c_str());
+          PRINT(bloc::Value::readableNumeric(*(val->numeric())).c_str());
           PRINT("\n");
           break;
         case bloc::Type::LITERAL:
         {
           /* print sub string to the standard output */
           char buf[80];
-          snprintf(buf, sizeof(buf), "%s", exp->literal(ctx).c_str());
+          snprintf(buf, sizeof(buf), "%s", val->literal()->c_str());
           PRINT(buf);
           PRINT("\n");
           break;
         }
         case bloc::Type::TABCHAR:
         {
-          const bloc::TabChar& r = exp->tabchar(ctx);
-          bloc::TabcharExpression::outputTabchar(r, STDOUT, 1);
+          bloc::Value::outputTabchar(*(val->tabchar()), STDOUT, 1);
           break;
         }
         case bloc::Type::ROWTYPE:
-          PRINT(bloc::TupleExpression::readableTuple(exp->tuple(ctx), ctx).c_str());
+          PRINT(bloc::Value::readableTuple(*(val->tuple())).c_str());
           PRINT("\n");
           break;
         default:
@@ -322,8 +327,8 @@ static void output_cli(bloc::Context& ctx)
       }
       else
       {
-        const bloc::Collection& c = exp->collection(ctx);
-        PRINT(exp->typeName(ctx).append(1, '[').append(std::to_string(c.size())).append(1, ']').c_str());
+        const bloc::Collection * c = val->collection();
+        PRINT(val->typeName().append(1, '[').append(std::to_string(c->size())).append(1, ']').c_str());
         PRINT("\n");
       }
     }
@@ -331,7 +336,7 @@ static void output_cli(bloc::Context& ctx)
     {
       set_color(fgRED); PRINT1("Error: %s\n", re.what());
     }
-    delete exp;
+    delete val;
     ctx.purgeWorkingMemory();
     reset_color();
   }
@@ -446,7 +451,7 @@ static void describe_module(unsigned type_id)
         PRINT(", ");
       if (t.major() == bloc::Type::ROWTYPE)
       {
-        bloc::Tuple::Decl decl = bloc::plugin::make_decl(plug.interface.ctors[i].args[j].decl, type_id);
+        bloc::TupleDecl::Decl decl = bloc::plugin::make_decl(plug.interface.ctors[i].args[j].decl, type_id);
         PRINT(t.typeName(decl.tupleName().c_str()).c_str());
       }
       else
@@ -472,7 +477,7 @@ static void describe_module(unsigned type_id)
         PRINT(", ");
       if (t.major() == bloc::Type::ROWTYPE)
       {
-        bloc::Tuple::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].args[j].type.decl, type_id);
+        bloc::TupleDecl::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].args[j].type.decl, type_id);
         PRINT1("%s", t.typeName(decl.tupleName().c_str()).c_str());
       }
       else
@@ -495,7 +500,7 @@ static void describe_module(unsigned type_id)
     bloc::Type t = bloc::plugin::make_type(plug.interface.methods[i].ret, type_id);
     if (t.major() == bloc::Type::ROWTYPE)
     {
-      bloc::Tuple::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].ret.decl, type_id);
+      bloc::TupleDecl::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].ret.decl, type_id);
       PRINT(t.typeName(decl.tupleName().c_str()).c_str());
     }
     else
@@ -527,12 +532,12 @@ static void print_help(const std::string& what)
   else if (w == "operator")
   {
     print_btml("\n$BOPERATOR\n\n", UINT16_MAX);
-    for (auto& op :bloc::OperatorExpression::operatorSet())
+    for (auto& op : bloc::Operator::operatorSet())
     {
       char buf[16];
-      snprintf(buf, 16, "$B%s$N$T  ", bloc::OperatorExpression::OPVALS[op]);
+      snprintf(buf, 16, "$B%s$N$T  ", bloc::Operator::OPVALS[op]);
       print_btml(buf, 16);
-      print_btml(bloc::OperatorExpression::HELPS[op], UINT16_MAX);
+      print_btml(bloc::Operator::HELPS[op], UINT16_MAX);
       PRINT("\n");
     }
     PRINT("\n");
@@ -681,24 +686,26 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
   case CMD_EXPR:
   {
     /* perform inline expression */
+    bloc::Expression * exp = nullptr;
     p.pop();
     try
     {
-      ctx.saveReturned(p.parseExpression());
+      exp = p.parseExpression();
       /* eat extra terminators */
       while ((t = p.pop())->code == bloc::Parser::SEPARATOR) { }
       if (t->code != bloc::Parser::NEWLINE)
-      {
-        delete ctx.dropReturned();
         throw bloc::ParseError(bloc::EXC_PARSE_EXPRESSION_END_S, t->text.c_str());
-      }
+      ctx.saveReturned(exp->value(ctx));
       output_cli(ctx);
+      delete exp;
     }
-    catch (bloc::ParseError& pe)
+    catch (bloc::Error& ee)
     {
+      if (exp)
+        delete exp;
       if ((t = p.pop())->code != bloc::Parser::NEWLINE)
         p.clear();
-      set_color(fgRED); PRINT1("Error: %s\n", pe.what()); reset_color();
+      set_color(fgRED); PRINT1("Error: %s\n", ee.what()); reset_color();
     }
     return 1;
   }
@@ -714,9 +721,8 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     }
     else if (t->code == TOKEN_LITERALSTR)
     {
-      bloc::LiteralExpression * str = bloc::LiteralExpression::parse(t->text);
-      path.assign(str->literal(ctx));
-      delete str;
+      bloc::Value str = bloc::Value::parseLiteral(t->text);
+      path.assign(*str.literal());
       if (p.front()->code != bloc::Parser::NEWLINE)
         p.clear();
     }
@@ -775,9 +781,8 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     }
     else if (t->code == TOKEN_LITERALSTR)
     {
-      bloc::LiteralExpression * str = bloc::LiteralExpression::parse(t->text);
-      path.assign(str->literal(ctx));
-      delete str;
+      bloc::Value str = bloc::Value::parseLiteral(t->text);
+      path.assign(*str.literal());
       if (p.front()->code != bloc::Parser::NEWLINE)
         p.clear();
     }

@@ -26,21 +26,53 @@
 namespace bloc
 {
 
-std::string& RSUBSTRExpression::literal(Context & ctx) const
+Value& RSUBSTRExpression::value(Context & ctx) const
 {
-  int64_t a, c;
-  if (_args[0]->isRvalue())
+  Value& val = _args[0]->value(ctx);
+
+  switch (val.type().major())
   {
-    std::string& rv = _args[0]->literal(ctx);
-    c = rv.size();
-    a = std::max<int64_t>(std::min<int64_t>(_args[1]->integer(ctx), c), 0L);
-    rv.assign(rv.substr(c - a));
-    return rv;
+  case Type::NO_TYPE:
+    if (val.lvalue())
+      return ctx.allocate(Value(Value::type_literal));
+    val.swap(Value(Value::type_literal));
+    return val;
+  case Type::LITERAL:
+  {
+    Value& a1 = _args[1]->value(ctx);
+    Integer b;
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      return val;
+    case Type::INTEGER:
+      if (a1.isNull())
+        return val;
+      b = *a1.integer();
+      break;
+    case Type::NUMERIC:
+      if (a1.isNull())
+        return val;
+      b = Integer(*a1.numeric());
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    if (val.isNull())
+      return val;
+    int64_t a, c;
+    c = val.literal()->size();
+    if (c == 0)
+      return val;
+    a = std::max<int64_t>(std::min<int64_t>(b, c), 0L);
+    if (val.lvalue())
+      return ctx.allocate(Value(new Literal(val.literal()->substr(c - a))));
+    val.literal()->assign(val.literal()->substr(c - a));
+    return val;
   }
-  const std::string& var = _args[0]->literal(ctx);
-  c = var.size();
-  a = std::max<int64_t>(std::min<int64_t>(_args[1]->integer(ctx), c), 0L);
-  return ctx.allocate(var.substr(c - a));
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
 }
 
 RSUBSTRExpression * RSUBSTRExpression::parse(Parser& p, Context& ctx)

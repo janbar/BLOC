@@ -26,8 +26,8 @@
 #include "context.h"
 #include "statement.h"
 #include "exception_parse.h"
-#include "expression_literal.h"
-#include "expression_tabchar.h"
+#include "collection.h"
+#include "tuple.h"
 
 #include <cstdio>
 #include <cstring>
@@ -57,7 +57,7 @@ const char * Context::versionHeader()
 
 int Context::compatible()
 {
-  return 4;
+  return 5;
 }
 
 Context::Context()
@@ -96,18 +96,15 @@ Context::Context(const Context& ctx, uint8_t recursion, bool trace)
   _symbols.reserve(ctx._symbols.size());
   for (auto e : ctx._symbols)
     _symbols.push_back(new Symbol(*e));
-  _storage.insert(_storage.begin(), ctx._storage.size(), nullptr);
+  for (int i = 0; i < ctx._storage.size(); ++i)
+    _storage.push_back(Value());
 }
 
 void Context::purge()
 {
   returnCondition(false);
-  if (_returned)
-    delete _returned;
   _returned = nullptr;
   /* clear variables allocation */
-  for (auto e : _storage)
-    if (e != nullptr) delete e;
   _storage.clear();
   /* clear symbol map */
   for (auto e : _symbols)
@@ -148,7 +145,7 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
   {
     /* allocate new */
     unsigned nxt_id = _symbols.size();
-    _storage.push_back(nullptr);
+    _storage.push_back(Value());
     _symbols.push_back(new Symbol(nxt_id, name, type));
     Symbol& sym = *_symbols.back();
 
@@ -172,14 +169,14 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
   return *s;
 }
 
-Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl, Type::TypeLevel level)
+Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& decl, Type::TypeLevel level)
 {
   Symbol * s = findSymbol(name);
   if (s == nullptr)
   {
     /* allocate new */
     unsigned nxt_id = _symbols.size();
-    _storage.push_back(nullptr);
+    _storage.push_back(Value());
     _symbols.push_back(new Symbol(nxt_id, name, decl, level));
     Symbol& sym = *_symbols.back();
 
@@ -199,42 +196,54 @@ Symbol& Context::registerSymbol(const std::string& name, const Tuple::Decl& decl
   return *s;
 }
 
-StaticExpression& Context::storeVariable(const Symbol& symbol, StaticExpression&& e)
+Value& Context::storeVariable(const Symbol& symbol, Value&& e)
 {
-  std::vector<StaticExpression*>::iterator it = _storage.begin() + symbol.id;
-  if (*it == nullptr)
+  std::vector<Value>::iterator it = _storage.begin() + symbol.id;
+  if (it->type() == Type::NO_TYPE)
   {
-    /* store new and forward the safety flag */
-    *it = e.swapNew();
-    (*it)->safety(symbol.safety());
+    /* move new and forward the safety flag */
+    it->swap(std::move(e));
+    it->safety(symbol.safety());
+    it->to_lvalue(true);
     /* upgrade the symbol registered in this context for this name */
-    const Type& new_type = (*it)->refType();
-    if (new_type == Type::ROWTYPE)
-      getSymbol(symbol.id)->upgrade((*it)->tuple_decl(*this), new_type.level());
+    const Type& new_type = it->type();
+    if (!it->isNull() && new_type == Type::ROWTYPE)
+    {
+      if (new_type.level() > 0)
+        getSymbol(symbol.id)->upgrade(it->collection()->table_decl(), new_type.level());
+      else
+        getSymbol(symbol.id)->upgrade(it->tuple()->tuple_decl(), new_type.level());
+    }
     else
       getSymbol(symbol.id)->upgrade(new_type);
   }
-  else if ((*it)->refType() != e.refType())
+  else if (it->type() != e.type())
   {
     /* safety flag forbids any change of type */
-    if ((*it)->safety())
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, (*it)->typeName(*this).c_str());
-    /* delete old, and store new */
-    delete *it;
-    *it = e.swapNew();
+    if (it->safety())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, it->typeName().c_str());
+    /* move new */
+    it->swap(std::move(e));
+    it->to_lvalue(true);
     /* upgrade the symbol registered in this context for this name */
-    const Type& new_type = (*it)->refType();
-    if (new_type == Type::ROWTYPE)
-      getSymbol(symbol.id)->upgrade((*it)->tuple_decl(*this), new_type.level());
+    const Type& new_type = it->type();
+    if (!it->isNull() && new_type == Type::ROWTYPE)
+    {
+      if (new_type.level() > 0)
+        getSymbol(symbol.id)->upgrade(it->collection()->table_decl(), new_type.level());
+      else
+        getSymbol(symbol.id)->upgrade(it->tuple()->tuple_decl(), new_type.level());
+    }
     else
       getSymbol(symbol.id)->upgrade(new_type);
   }
   else
   {
-    /* swap */
-    (*it)->_swap(e);
+    /* move new */
+    it->swap(std::move(e));
+    it->to_lvalue(true);
   }
-  return **it;
+  return *it;
 }
 
 void Context::describeSymbol(const std::string& name)
@@ -253,25 +262,26 @@ void Context::describeSymbol(const std::string& name)
 
 void Context::describeSymbol(const Symbol& symbol)
 {
-  StaticExpression * var = loadVariable(symbol);
+  Value& var = loadVariable(symbol);
 
   fprintf(_sout, "[%04x] %s is ", symbol.id, symbol.name.c_str());
-  if (!var)
+  if (var.type() == Type::NO_TYPE)
     fprintf(_sout, "%s\n", symbol.typeName().c_str());
   else
   {
-    fputs(var->toString(*this).c_str(), _sout);
+    fputs(var.toString().c_str(), _sout);
     fputc('\n', _sout);
-    if (var->refType().level() == 0)
+    if (!var.isNull() && var.type().level() == 0)
     {
       /* print 1 line of content */
-      switch (var->refType().major())
+      switch (var.type().major())
       {
       case Type::LITERAL:
       {
         char buf[80];
+        std::string tmp = var.literal()->substr(0, sizeof (buf));
         snprintf(buf, sizeof (buf) - 4, "%s",
-                 LiteralExpression::readableLiteral(var->refLiteral().substr(0, sizeof (buf))).c_str());
+                 Value::readableLiteral(tmp).c_str());
         fputs(buf, _sout);
         if (buf[strlen(buf) - 1] != '"')
           fputs("...", _sout);
@@ -279,7 +289,7 @@ void Context::describeSymbol(const Symbol& symbol)
         break;
       }
       case Type::TABCHAR:
-        TabcharExpression::outputTabchar(var->refTabchar(), _sout, 1);
+//TODO        TabcharExpression::outputTabchar(var->refTabchar(), _sout, 1);
         break;
       default:
         break;
@@ -299,18 +309,21 @@ void Context::dumpVariables()
 /* Control and stack                                                      */
 /**************************************************************************/
 
-void Context::saveReturned(Expression* ret)
+void Context::saveReturned(Value& ret)
 {
   if (_returned)
     delete _returned;
-  _returned = ret;
+  if (ret.lvalue())
+    _returned = new Value(ret.clone());
+  else
+    _returned = new Value(std::move(ret));
 }
 
-Expression* Context::dropReturned()
+Value * Context::dropReturned()
 {
-  Expression * r = _returned;
+  Value * ret = _returned;
   _returned = nullptr;
-  return r;
+  return ret;
 }
 
 /**************************************************************************/

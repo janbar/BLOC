@@ -20,12 +20,6 @@
 #define BUILTIN_GETSYS_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_complex.h>
 
 namespace bloc
 {
@@ -41,9 +35,9 @@ public:
 
   explicit GETSYSExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_GETSYS, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return LiteralExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_no_type; }
 
-  std::string& literal(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static GETSYSExpression * parse(Parser& p, Context& ctx);
 };

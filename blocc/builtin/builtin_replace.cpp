@@ -26,26 +26,72 @@
 namespace bloc
 {
 
-std::string& REPLACEExpression::literal(Context & ctx) const
+Value& REPLACEExpression::value(Context & ctx) const
 {
-  const std::string& a = _args[0]->literal(ctx);
-  const std::string& b = _args[1]->literal(ctx);
-  const std::string& c = _args[2]->literal(ctx);
-  std::string& rv = ctx.allocate(std::string());
-  size_t p = 0;
-  while (p < a.size())
+  Value& val = _args[0]->value(ctx);
+  Value& a1 = _args[1]->value(ctx);
+  Value v(Value::type_literal);
+
+  switch (val.type().major())
   {
-    size_t e = a.find(b, p);
-    rv.append(a, p, e - p);
-    if (e != std::string::npos)
+  case Type::NO_TYPE:
+    break;
+  case Type::LITERAL:
+  {
+    switch (a1.type().major())
     {
-      rv.append(c);
-      p = e + b.size();
+    case Type::NO_TYPE:
+      return val;
+    case Type::LITERAL:
+      if (a1.isNull())
+        return val;
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
     }
-    else
-      p = e;
+    if (val.isNull())
+      return val;
+    Value& a2 = _args[2]->value(ctx);
+    switch (a2.type().major())
+    {
+    case Type::NO_TYPE: /* undef as null */
+    case Type::LITERAL:
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    Literal * tmp = new Literal();
+    size_t p = 0;
+    while (p < val.literal()->size())
+    {
+      size_t e = val.literal()->find(*a1.literal(), p);
+      tmp->append(*val.literal(), p, e - p);
+      if (e != std::string::npos)
+      {
+        if (!a2.isNull())
+          tmp->append(*a2.literal());
+        p = e + a1.literal()->size();
+      }
+      else
+        p = e;
+    }
+    v = Value(tmp);
+    break;
   }
-  return rv;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (!val.lvalue())
+  {
+    val.swap(Value(std::move(v)));
+    return val;
+  }
+  if (!a1.lvalue())
+  {
+    a1.swap(Value(std::move(v)));
+    return a1;
+  }
+  return ctx.allocate(std::move(v));
 }
 
 REPLACEExpression * REPLACEExpression::parse(Parser& p, Context& ctx)

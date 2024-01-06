@@ -18,9 +18,19 @@
 
 #include "expression_integer.h"
 
+#include <string>
+
 namespace bloc
 {
 
-const Type& IntegerExpression::type_static = Type(Type::INTEGER);
+std::string IntegerExpression::unparse(Context& ctx) const
+{
+  return Value::readableInteger(*v.integer());
+}
+
+IntegerExpression * IntegerExpression::parse(const std::string& text)
+{
+  return new IntegerExpression(std::stoll(text));
+}
 
 }

@@ -21,7 +21,6 @@
 
 #include "statement.h"
 #include "executable.h"
-#include "expression_iterator.h"
 
 #include <string>
 
@@ -33,6 +32,7 @@ class Context;
 class Expression;
 class VariableExpression;
 class Executable;
+class Collection;
 
 /**
  * The FORALL statement provides row fetch construct. It defines a control
@@ -49,14 +49,15 @@ private:
   VariableExpression * _var = nullptr;
   Expression * _exp = nullptr;
   Executable * _exec = nullptr;
-  Symbol * _expSymbol = nullptr; // not freeable
+  const Symbol * _expSymbol = nullptr; // not freeable
   enum { AUTO = 0, ASC, DESC } _order = AUTO;
 
   mutable struct RT
   {
+    Value * tmp = nullptr;
     Collection * table = nullptr;
-    int64_t step = 1;
-    IteratorExpression * iterator = nullptr;
+    Integer step = 1;
+    Integer index = 0;
   } _data;
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORALLStatement * rof);

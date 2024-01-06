@@ -26,9 +26,28 @@
 namespace bloc
 {
 
-std::string& CHRExpression::literal(Context & ctx) const
+Value& CHRExpression::value(Context & ctx) const
 {
-  return ctx.allocate(std::string(1, (char)(_args[0]->integer(ctx))));
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_literal);
+
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    v = Value(new Literal(1, (char)(*val.integer())));
+    break;
+  case Type::NUMERIC:
+    v = Value(new Literal(1, (char)(*val.numeric())));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 CHRExpression * CHRExpression::parse(Parser& p, Context& ctx)

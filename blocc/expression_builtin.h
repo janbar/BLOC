@@ -82,6 +82,7 @@ public:
     FUNC_COSH   = 24, // cosh(x)
     FUNC_TANH   = 25, // tanh(x)
     FUNC_CLAMP  = 26, // clamp(x,y,z)
+    FUNC_ISNIL  = 27, // isnull(x)
 
     FUNC_READ   = 30, // read(var,count)
     FUNC_READLN = 31, // readline(x)
@@ -116,8 +117,6 @@ public:
     FUNC_SUBRAW = 62, // subraw(x,begin) | subraw(x,begin,count)
     FUNC_HASH   = 63, // hash(x) | hash(x,max)
   };
-
-  bool isRvalue() const override { return true; }
 
   std::string unparse(Context& ctx) const override;
 

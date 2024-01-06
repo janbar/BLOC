@@ -20,7 +20,6 @@
 #define BUILTIN_SUBSTR_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_literal.h>
 
 namespace bloc
 {
@@ -36,9 +35,9 @@ public:
 
   explicit SUBSTRExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_SUBSTR, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return LiteralExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_literal; }
 
-  std::string& literal(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static SUBSTRExpression * parse(Parser& p, Context& ctx);
 };

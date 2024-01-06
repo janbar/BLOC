@@ -21,6 +21,7 @@
 
 #include "context.h"
 #include "statement.h"
+#include "expression.h"
 
 #include <string>
 #include <memory>

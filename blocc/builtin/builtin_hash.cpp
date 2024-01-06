@@ -43,32 +43,50 @@ static uint32_t bloc_builtin_hash(uint32_t maxsize, const char * buf, unsigned l
   return h % maxsize;
 }
 
-int64_t HASHExpression::integer(Context & ctx) const
+Value& HASHExpression::value(Context & ctx) const
 {
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_integer);
   uint32_t max_size = UINT32_MAX;
+
   if (_args.size() > 1)
   {
-    int64_t l = _args[1]->integer(ctx);
-    if (l <= 0)
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    if (l < UINT32_MAX)
-    max_size = (uint32_t) l;
+    Value& a1 = _args[1]->value(ctx);
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      break;
+    case Type::INTEGER:
+      if (!a1.isNull())
+        max_size = (uint32_t)*a1.integer();
+      break;
+    case Type::NUMERIC:
+      if (!a1.isNull())
+        max_size = (uint32_t)*a1.numeric();
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
   }
-  switch (_args[0]->type(ctx).major())
+  switch (val.type().major())
   {
+  case Type::NO_TYPE:
+    break;
   case Type::LITERAL:
-  {
-    const std::string& rv = _args[0]->literal(ctx);
-    return (int64_t) bloc_builtin_hash(max_size, rv.data(), rv.size());
-  }
+    if (!val.isNull())
+      v = Value(Integer(bloc_builtin_hash(max_size, val.literal()->data(), val.literal()->size())));
+    break;
   case Type::TABCHAR:
-  {
-    const TabChar& rv = _args[0]->tabchar(ctx);
-    return (int64_t) bloc_builtin_hash(max_size, rv.data(), rv.size());
-  }
+    if (!val.isNull())
+      v = Value(Integer(bloc_builtin_hash(max_size, val.tabchar()->data(), val.tabchar()->size())));
+    break;
   default:
-    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH]);
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 HASHExpression * HASHExpression::parse(Parser& p, Context& ctx)

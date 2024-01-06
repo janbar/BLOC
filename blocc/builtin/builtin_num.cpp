@@ -23,59 +23,66 @@
 #include <blocc/parser.h>
 #include <blocc/debug.h>
 
-#include <cstring>
+#include <string>
 
 namespace bloc
 {
 
-double NUMExpression::numeric(Context & ctx) const
+Value& NUMExpression::value(Context & ctx) const
 {
-  double d;
-  switch (_args[0]->type(ctx).major())
-  {
-  case Type::LITERAL:
-    try
+  if (_args.empty())
+    return ctx.allocate(Value(Value::type_numeric));
+
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
+
+  if (!val.isNull())
+    switch (val.type().major())
     {
-      d = std::stod(_args[0]->literal(ctx));
+    case Type::LITERAL:
+      try
+      {
+        v = Value(Numeric(std::stod(*val.literal())));
+      }
+      catch (std::invalid_argument& e)
+      {
+        throw RuntimeError(EXC_RT_STRING_TO_NUM);
+      }
+      catch (std::out_of_range& e)
+      {
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      }
+      break;
+    case Type::TABCHAR:
+      try
+      {
+        v = Value(Numeric(std::stod(std::string(val.tabchar()->data(), val.tabchar()->size()))));
+      }
+      catch (std::invalid_argument& e)
+      {
+        throw RuntimeError(EXC_RT_STRING_TO_NUM);
+      }
+      catch (std::out_of_range& e)
+      {
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      }
+      break;
+    case Type::NUMERIC:
+      v = Value(Numeric(*val.numeric()));
+      break;
+    case Type::INTEGER:
+      v = Value(Numeric(*val.integer()));
+      break;
+    case Type::BOOLEAN:
+      v = Value(Numeric(*val.boolean() ? 1.0 : 0.0));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
     }
-    catch (std::invalid_argument& e)
-    {
-      throw RuntimeError(EXC_RT_STRING_TO_NUM);
-    }
-    catch (std::out_of_range& e)
-    {
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    }
-    break;
-  case Type::TABCHAR:
-    try
-    {
-      TabChar& tmp = _args[0]->tabchar(ctx);
-      d = std::stod(std::string(tmp.data(), tmp.size()));
-    }
-    catch (std::invalid_argument& e)
-    {
-      throw RuntimeError(EXC_RT_STRING_TO_NUM);
-    }
-    catch (std::out_of_range& e)
-    {
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    }
-    break;
-  case Type::NUMERIC:
-  case Type::INTEGER:
-    d = _args[0]->numeric(ctx);
-    break;
-  case Type::BOOLEAN:
-    d = (_args[0]->boolean(ctx) ? 1.0 : 0.0);
-    break;
-  case Type::COMPLEX:
-    d = (_args[0]->complex(ctx).typeId() != 0 ? 1.0 : 0.0);
-    break;
-  default:
-    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
-  }
-  return d;
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 NUMExpression * NUMExpression::parse(Parser& p, Context& ctx)
@@ -87,21 +94,25 @@ NUMExpression * NUMExpression::parse(Parser& p, Context& ctx)
     TokenPtr t = p.pop();
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_NUM]);
-    args.push_back(ParseExpression::expression(p, ctx));
-    if (args.back()->type(ctx).level() > 0)
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
-    switch (args.back()->type(ctx).major())
+    if (p.front()->code != ')')
     {
-    case Type::NO_TYPE: /* opaque */
-    case Type::LITERAL:
-    case Type::INTEGER:
-    case Type::NUMERIC:
-      assertClosedFunction(p, ctx, FUNC_NUM);
-      return new NUMExpression(std::move(args));
-    default:
-      break;
+      args.push_back(ParseExpression::expression(p, ctx));
+      if (args.back()->type(ctx).level() > 0)
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
+      switch (args.back()->type(ctx).major())
+      {
+      case Type::NO_TYPE: /* opaque */
+      case Type::BOOLEAN:
+      case Type::LITERAL:
+      case Type::INTEGER:
+      case Type::NUMERIC:
+        break;
+      default:
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
+      }
     }
-    throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);
+    assertClosedFunction(p, ctx, FUNC_NUM);
+    return new NUMExpression(std::move(args));
   }
   catch (ParseError& pe)
   {

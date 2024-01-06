@@ -34,6 +34,7 @@
 #include "builtin/builtin_getsys.h"
 #include "builtin/builtin_hash.h"
 #include "builtin/builtin_int.h"
+#include "builtin/builtin_isnull.h"
 #include "builtin/builtin_isnum.h"
 #include "builtin/builtin_log.h"
 #include "builtin/builtin_log10.h"
@@ -44,6 +45,7 @@
 #include "builtin/builtin_min.h"
 #include "builtin/builtin_mod.h"
 #include "builtin/builtin_null.h"
+#include "builtin/builtin_num.h"
 #include "builtin/builtin_phi.h"
 #include "builtin/builtin_pi.h"
 #include "builtin/builtin_pow.h"
@@ -70,7 +72,6 @@
 #include "builtin/builtin_trim.h"
 #include "builtin/builtin_true.h"
 #include "builtin/builtin_upper.h"
-#include "builtin/builtin_num.h"
 #include "builtin/builtin_tup.h"
 #include "builtin/builtin_clamp.h"
 
@@ -89,7 +90,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "sin",        "cos",        "tan",        "atan",       "int",
     "pow",        "sqrt",       "log",        "exp",        "log10",
     "mod",        "asin",       "acos",       "sinh",       "cosh",
-    "tanh",       "clamp",      "",           "",           "",
+    "tanh",       "clamp",      "isnull",     "",           "",
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tup",        "getsys",     "getenv",     "true",       "on",
     "false",      "off",        "error",      "phi",        "pi",
@@ -245,6 +246,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return INTExpression::parse(p, ctx);
   case FUNC_HASH:
     return HASHExpression::parse(p, ctx);
+  case FUNC_ISNIL:
+    return ISNULLExpression::parse(p, ctx);
 
     /* READ input */
   case FUNC_READLN:
@@ -307,7 +310,7 @@ void BuiltinExpression::assertClosedFunction(Parser& p, Context& ctx, FUNCTION f
 }
 
 const char * BuiltinExpression::HELPS[] = {
-  /*NIL   */  "is the object null.",
+  /*NIL   */  "is the null value.",
   /*MAX   */  "returns the largest value among numbers x and y."
           "\n\nmax( x , y )",
   /*MIN   */  "returns the smallest value among numbers x and y."
@@ -323,7 +326,7 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nString has the method at(), put(), insert(), delete(), count(),"
           "\nand concat({STRING | INTEGER}).",
   /*NUM   */  "returns the decimal value of x, else throw error."
-          "\n\nnum( x )",
+          "\n\nnum( [ x ] )",
   /*CEIL  */  "returns the smallest integer value greater than or equal to x."
           "\n\nceil( x )",
   /*ROUND */  "returns a value to the nearest integer, or round to the decimal place y."
@@ -337,7 +340,7 @@ const char * BuiltinExpression::HELPS[] = {
   /*ATAN  */  "returns the arc tangent of x in radians."
           "\n\natan( x )",
   /*INT   */  "returns the integer value of x, else throw error."
-          "\n\nint( x )",
+          "\n\nint( [ x ] )",
   /*POW*/     "returns x raised to the power of y."
           "\n\npow( x , y )",
   /*SQRT  */  "returns the square root of x."
@@ -363,7 +366,9 @@ const char * BuiltinExpression::HELPS[] = {
   /*CLAMP */  "restricts the given value x between the lower bound y and upper bound z."
           "\nIn this way, it acts like a combination of the min() and max() functions."
           "\n\nclamp( x , y , z )",
-  "", "", "",
+  /*ISNIL*/  "returns true if x is null."
+          "\n\nisnull( x )",
+  "", "",
   /*READ  */  "returns the count of characters read from the input."
           "\nThe read value, including newline terminator, is stored into var with"
           "\na maximum of y characters. The 'string' variable var must be initialized"
@@ -382,12 +387,12 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nBytes array has the method at(), put(), insert(), delete(), count(),"
           "\nand concat({BYTES | INTEGER}).",
   /*TAB   */  "returns a new uniform table filled with x element(s) y."
-          "\n\ntab( [ x , y] )"
+          "\n\ntab( [ x , y ] )"
           "\n\nNested element can be any type, or tuple. Nesting level is supported up"
           "\nto 254 dimmensions. Table has the methods at(), put(), insert(), delete(),"
           "\ncount(), and concat({TABLE | ELEMENT}).",
   /*TUP   */  "returns a new tuple of 2 or more items."
-          "\n\ntup( x , y [, ...] )"
+          "\n\ntup( [ x [, ...] ] )"
           "\n\nItem can be boolean, integer, decimal, string, object, or bytes array."
           "\nNesting and table are not allowed. Tuple is unchangeable, meaning that we"
           "\ncannot change type, add or remove items after the tuple has been created."
@@ -440,7 +445,7 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nsubraw( x , begin [, count] )",
   /*HASH  */  "returns the DJB Hash value (32 bits) of string or bytes array."
           "\nOptionally the number of buckets is specified by y [1..n]."
-          "\n\nhash( x [, y ] )",
+          "\n\nhash( x [, y] )",
 };
 
 }

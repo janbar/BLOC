@@ -16,13 +16,11 @@
  *
  */
 
-#ifndef EXPRESSION_OPERATOR_H
-#define EXPRESSION_OPERATOR_H
+#ifndef OPERATOR_H
+#define OPERATOR_H
 
-#include "expression.h"
 #include "declspec.h"
 
-#include <string>
 #include <set>
 
 namespace bloc
@@ -43,14 +41,8 @@ namespace bloc
  *     Out of range.
  */
 
-class OperatorExpression : public Expression {
-
-private:
-  int oper = OP_NIL;
-  Expression * arg1 = nullptr;
-  Expression * arg2 = nullptr;
-
-public:
+struct Operator
+{
 
   /**
    * These are the valid operator types.
@@ -94,42 +86,9 @@ public:
     OP_MATCH = 35, // String matches regular expression
   };
 
-  virtual ~OperatorExpression();
-
-  OperatorExpression() : Expression() { }
-
-  /**
-   * Create a unary expression.
-   */
-  OperatorExpression(int op, Expression * a) : Expression(), oper(op), arg2(a) { }
-
-  /**
-   * Create a binary expression.
-   */
-  OperatorExpression(int op, Expression * a, Expression * b) : Expression(), oper(op), arg1(a), arg2(b) { }
-
-  std::string unparse(Context& ctx) const override;
-
-  const Type& type(Context& ctx) const override;
-
-  bool boolean(Context& ctx) const override;
-
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
-
-  bool isRvalue() const override { return true; }
-
-  std::string& literal(Context& ctx) const override;
-
-  std::string toString(Context& ctx) const override
-  {
-    return OPVALS[oper];
-  }
-
   static std::set<OP> operatorSet();
 };
 
 }
 
-#endif /* EXPRESSION_OPERATOR_H */
+#endif /* OPERATOR_H */

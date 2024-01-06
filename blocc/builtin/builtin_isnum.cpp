@@ -29,44 +29,52 @@
 namespace bloc
 {
 
-bool ISNUMExpression::boolean(Context & ctx) const
+Value& ISNUMExpression::value(Context & ctx) const
 {
-  const Type& arg_type = _args[0]->type(ctx);
-  if (arg_type.level() > 0)
-    return false;
-  switch (arg_type.major())
-  {
-  case Type::LITERAL:
-    /* test for a decimal */
-    try
+  Value& val = _args[0]->value(ctx);
+  Value v;
+  if (val.isNull() || val.type().level() > 0)
+    v = Value(Bool(false));
+  else
+    switch (val.type().major())
     {
-      double d = std::stod(_args[0]->literal(ctx));
-      (void)d;
+    case Type::LITERAL:
+      /* test for a decimal */
+      try
+      {
+        double d = std::stod(*val.literal());
+        (void)d;
+        v = Value(Bool(true));
+      }
+      catch (...)
+      {
+        v = Value(Bool(false));
+      }
+      break;
+    case Type::TABCHAR:
+      /* test for a decimal */
+      try
+      {
+        double d = std::stod(std::string(val.tabchar()->data(), val.tabchar()->size()));
+        (void)d;
+        v = Value(Bool(true));
+      }
+      catch (...)
+      {
+        v = Value(Bool(false));
+      }
+      break;
+    case Type::INTEGER:
+    case Type::NUMERIC:
+      v = Value(Bool(true));
+      break;
+    default:
+      v = Value(Bool(false));
     }
-    catch (...)
-    {
-      return false;
-    }
-    return true;
-  case Type::TABCHAR:
-    /* test for a decimal */
-    try
-    {
-      TabChar& tmp = _args[0]->tabchar(ctx);
-      double d = std::stod(std::string(tmp.data(), tmp.size()));
-      (void)d;
-    }
-    catch (...)
-    {
-      return false;
-    }
-    return true;
-  case Type::INTEGER:
-  case Type::NUMERIC:
-    return true;
-  default:
-    return false;
-  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 ISNUMExpression * ISNUMExpression::parse(Parser& p, Context& ctx)

@@ -20,7 +20,6 @@
 #define BUILTIN_PI_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_numeric.h>
 
 namespace bloc
 {
@@ -30,15 +29,19 @@ class Parser;
 
 class PIExpression : public BuiltinExpression {
 
+  mutable Value v;
+
 public:
 
   virtual ~PIExpression() { }
 
-  PIExpression() : BuiltinExpression(FUNC_PI) { }
+  PIExpression() : BuiltinExpression(FUNC_PI), v(Numeric(3.141592653589793)) { v.to_lvalue(true); }
 
-  const Type& type(Context& ctx) const override { return NumericExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_numeric; }
 
-  double numeric(Context& ctx) const override { return 3.141592653589793; }
+  Value& value(Context& ctx) const override { return v; }
+
+  bool isConst() const override { return true; }
 };
 
 }

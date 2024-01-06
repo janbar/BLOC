@@ -26,19 +26,62 @@
 namespace bloc
 {
 
-int64_t STRPOSExpression::integer(Context & ctx) const
+Value& STRPOSExpression::value(Context & ctx) const
 {
-  int64_t l = 0;
-  if (_args.size() > 2)
+  Value& val = _args[0]->value(ctx);
+  Value& a1 = _args[1]->value(ctx);
+  Value v(Value::type_integer);
+
+  switch (val.type().major())
   {
-    l = _args[2]->integer(ctx);
-    if (l < 0)
-      throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(l).c_str());
+  case Type::NO_TYPE:
+    break;
+  case Type::LITERAL:
+  {
+    if (val.isNull() || a1.isNull())
+      break;
+    Integer s = 0;
+    if (_args.size() > 2)
+    {
+      Value& a2 = _args[2]->value(ctx);
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        if (val.lvalue())
+          return ctx.allocate(std::move(v));
+        val.swap(std::move(v));
+        return val;
+      case Type::INTEGER:
+        s = *a2.integer();
+        break;
+      case Type::NUMERIC:
+        s = *a2.numeric();
+        break;
+      default:
+        throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+      }
+      if (s < 0)
+        throw RuntimeError(EXC_RT_INDEX_RANGE_S, a2.toString().c_str());
+    }
+    size_t p = val.literal()->find(*a1.literal(), (size_t)s);
+    if (p != std::string::npos)
+      v = Value(Integer(p));
+    break;
   }
-  size_t p = _args[0]->literal(ctx).find(_args[1]->literal(ctx), (unsigned)l);
-  if (p == std::string::npos)
-    return (int64_t)(-1);
-  return (int64_t)p;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (!val.lvalue())
+  {
+    val.swap(Value(std::move(v)));
+    return val;
+  }
+  if (!a1.lvalue())
+  {
+    a1.swap(Value(std::move(v)));
+    return a1;
+  }
+  return ctx.allocate(std::move(v));
 }
 
 STRPOSExpression * STRPOSExpression::parse(Parser& p, Context& ctx)

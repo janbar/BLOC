@@ -19,15 +19,6 @@
 #include "member_complex.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_variable.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_null.h>
-#include <blocc/expression_collection.h>
-#include <blocc/expression_tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -53,157 +44,37 @@ MemberMETHODExpression::MemberMETHODExpression(const PLUGIN_METHOD& method, unsi
       _type_method = _decl_method.make_type(_method->ret.ndim);
   }
   else
-    _type_method = NullExpression::null;
+    _type_method = Type::NO_TYPE;
 }
 
-bool MemberMETHODExpression::boolean(Context& ctx) const
+Value& MemberMETHODExpression::value(Context& ctx) const
 {
-  if (_method)
+  if (!_method)
+    throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
+
+  Value& val = _exp->value(ctx);
+  if (val.isNull())
+    return val;
+  const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
+  if (val.type().minor() != _method_type_id)
+    throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
+
+  Value * ret = plug.instance->executeMethod(
+          *val.complex(), _method->id, ctx, _args);
+  if (ret == nullptr)
+    throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
+  if (ret->lvalue())
   {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    if (!ret)
-      throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
-    bool b = ret->boolean(ctx);
+    Value& v = ctx.allocate(ret->clone());
     delete ret;
-    return b;
+    return v;
   }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
-}
-
-int64_t MemberMETHODExpression::integer(Context& ctx) const
-{
-  if (_method)
+  else
   {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    if (!ret)
-      throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
-    int64_t l = ret->integer(ctx);
+    Value& v = ctx.allocate(std::move(*ret));
     delete ret;
-    return l;
+    return v;
   }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
-}
-
-double MemberMETHODExpression::numeric(Context& ctx) const
-{
-  if (_method)
-  {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    if (!ret)
-      throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
-    double d = ret->numeric(ctx);
-    delete ret;
-    return d;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
-}
-
-std::string& MemberMETHODExpression::literal(Context& ctx) const
-{
-  if (_method)
-  {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    if (!ret)
-      throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
-    std::string& rv = ctx.allocate(std::move(ret->literal(ctx)));
-    delete ret;
-    return rv;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
-}
-
-TabChar& MemberMETHODExpression::tabchar(Context& ctx) const
-{
-  if (_method)
-  {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    if (!ret)
-      throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
-    TabChar& rv = ctx.allocate(std::move(ret->tabchar(ctx)));
-    delete ret;
-    return rv;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
-}
-
-Tuple& MemberMETHODExpression::tuple(Context& ctx) const
-{
-  if (_method)
-  {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    if (!ret)
-      throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
-    Tuple& rv = ctx.allocate(std::move(ret->tuple(ctx)));
-    delete ret;
-    return rv;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
-}
-
-Collection& MemberMETHODExpression::collection(Context& ctx) const
-{
-  if (_method)
-  {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    if (!ret)
-      throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
-    Collection& rv = ctx.allocate(std::move(ret->collection(ctx)));
-    delete ret;
-    return rv;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
-}
-
-Complex& MemberMETHODExpression::complex(Context& ctx) const
-{
-  if (_method)
-  {
-    const PLUGGED_MODULE& plug = PluginManager::instance().plugged(_method_type_id);
-    if (_exp->type(ctx).minor() != _method_type_id)
-      throw RuntimeError(EXC_RT_BAD_COMPLEX_S, plug.interface.name);
-    Expression * ret = plug.instance->executeMethod(
-            _exp->complex(ctx), _method->id, ctx, _args);
-    Complex& c = ret->complex(ctx);
-    delete ret;
-    return c;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_FAILED_S, KEYWORDS[_builtin]);
 }
 
 std::string MemberMETHODExpression::typeName(Context& ctx) const
@@ -288,8 +159,8 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
           case PLUGIN_INOUT:
           {
             /* must be variable expression with same type */
-            const VariableExpression * var = dynamic_cast<VariableExpression*>(args[a]);
-            found = (var != nullptr && ParseExpression::typeChecking(args[a], m_arg_type, p, ctx));
+            const Symbol * symbol = args[a]->symbol();
+            found = (symbol != nullptr && ParseExpression::typeChecking(args[a], m_arg_type, p, ctx));
             break;
           }
           default:

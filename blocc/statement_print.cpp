@@ -19,16 +19,9 @@
 #include "statement_print.h"
 #include "exception_parse.h"
 #include "parse_expression.h"
+#include "collection.h"
 #include "parser.h"
 #include "context.h"
-#include "expression_boolean.h"
-#include "expression_numeric.h"
-#include "expression_integer.h"
-#include "expression_complex.h"
-#include "expression_tabchar.h"
-#include "expression_collection.h"
-#include "expression_tuple.h"
-#include "plugin_manager.h"
 #include "debug.h"
 
 #include <cstdio>
@@ -47,46 +40,52 @@ const Statement * PRINTStatement::doit(Context& ctx) const
 {
   for (const Expression * exp : _args)
   {
-    const Type& exp_type = exp->type(ctx);
-    if (exp_type.level() == 0)
+    Value& val = exp->value(ctx);
+    const Type& val_type = val.type();
+    if (val_type.level() == 0)
     {
-      switch (exp_type.major())
-      {
-      case Type::NO_TYPE:
-        throw RuntimeError(EXC_RT_OPAQUE_INLINE);
-
-      case Type::LITERAL:
-        fputs(exp->literal(ctx).c_str(), ctx.ctxout());
-        break;
-      case Type::BOOLEAN:
-        fputs(BooleanExpression::readableBoolean(exp->boolean(ctx)).c_str(), ctx.ctxout());
-        break;
-      case Type::INTEGER:
-        fputs(IntegerExpression::readableInteger(exp->integer(ctx)).c_str(), ctx.ctxout());
-        break;
-      case Type::NUMERIC:
-        fputs(NumericExpression::readableNumeric(exp->numeric(ctx)).c_str(), ctx.ctxout());
-        break;
-      case Type::COMPLEX:
-        fputs(ComplexExpression::readableComplex(exp->complex(ctx)).c_str(), ctx.ctxout());
-        break;
-      case Type::TABCHAR:
-        TabcharExpression::outputTabchar(exp->tabchar(ctx), ctx.ctxout());
-        break;
-      case Type::ROWTYPE:
-        fputs(TupleExpression::readableTuple(exp->tuple(ctx), ctx).c_str(), ctx.ctxout());
-        break;
-      default:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
-      }
+      //if (val_type == Type::NO_TYPE)
+      //  throw RuntimeError(EXC_RT_OPAQUE_INLINE);
+      if (val.isNull())
+        fputs(Value::STR_NIL, ctx.ctxout());
+      else
+        switch (val_type.major())
+        {
+        case Type::LITERAL:
+          fputs(val.literal()->c_str(), ctx.ctxout());
+          break;
+        case Type::BOOLEAN:
+          fputs(Value::readableBoolean(*val.boolean()).c_str(), ctx.ctxout());
+          break;
+        case Type::INTEGER:
+          fputs(Value::readableInteger(*val.integer()).c_str(), ctx.ctxout());
+          break;
+        case Type::NUMERIC:
+          fputs(Value::readableNumeric(*val.numeric()).c_str(), ctx.ctxout());
+          break;
+        case Type::COMPLEX:
+          fputs(Value::readableComplex(*val.complex()).c_str(), ctx.ctxout());
+          break;
+        case Type::TABCHAR:
+          Value::outputTabchar(*val.tabchar(), ctx.ctxout());
+          break;
+        case Type::ROWTYPE:
+          fputs(Value::readableTuple(*val.tuple()).c_str(), ctx.ctxout());
+          break;
+        default:
+          throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+        }
     }
     else
     {
-      size_t sz = exp->collection(ctx).size(); /* execute expression */
-      fputs(exp->typeName(ctx).c_str(), ctx.ctxout());
-      fputc('[', ctx.ctxout());
-      fputs(std::to_string(sz).c_str(), ctx.ctxout());
-      fputc(']', ctx.ctxout());
+      fputs(val.typeName().c_str(), ctx.ctxout());
+      if (!val.isNull())
+      {
+        size_t sz = val.collection()->size(); /* execute expression */
+        fputc('[', ctx.ctxout());
+        fputs(std::to_string(sz).c_str(), ctx.ctxout());
+        fputc(']', ctx.ctxout());
+      }
     }
   }
   fputc('\n', ctx.ctxout());

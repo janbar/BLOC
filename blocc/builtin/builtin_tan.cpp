@@ -28,9 +28,32 @@
 namespace bloc
 {
 
-double TANExpression::numeric(Context & ctx) const
+Value& TANExpression::value(Context & ctx) const
 {
-  return std::tan(_args[0]->numeric(ctx));
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
+
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::tan(*val.integer())));
+    break;
+  case Type::NUMERIC:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::tan(*val.numeric())));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 TANExpression * TANExpression::parse(Parser& p, Context& ctx)

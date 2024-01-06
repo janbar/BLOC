@@ -21,7 +21,6 @@
 #include "parse_expression.h"
 #include "parser.h"
 #include "context.h"
-#include "expression_boolean.h"
 #include "debug.h"
 
 #include <string>
@@ -37,7 +36,9 @@ TRACEStatement::~TRACEStatement()
 
 const Statement * TRACEStatement::doit(Context& ctx) const
 {
-  ctx.trace(_exp->boolean(ctx));
+  Value& val = _exp->value(ctx);
+  if (!val.isNull())
+    ctx.trace(*val.boolean());
   return _next;
 }
 

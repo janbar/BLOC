@@ -19,8 +19,7 @@
 #ifndef EXPRESSION_BOOLEAN_H
 #define EXPRESSION_BOOLEAN_H
 
-#include "expression_static.h"
-#include "declspec.h"
+#include "expression.h"
 
 namespace bloc
 {
@@ -28,63 +27,38 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a boolean value.
  */
-class BooleanExpression : public SwappableExpression<BooleanExpression>
+class BooleanExpression : public Expression
 {
 private:
 
-  bool v;
+  mutable Value v;
 
 public:
-  LIBBLOC_API static const Type& type_static;
-  LIBBLOC_API static const char * TRUE;
-  LIBBLOC_API static const char * FALSE;
 
   virtual ~BooleanExpression() { }
 
-  explicit BooleanExpression(bool a) : v(a) { }
+  explicit BooleanExpression(Bool a) : v(a) { v.to_lvalue(true); }
+  explicit BooleanExpression(Value&& _v) : v(std::move(_v)) { v.to_lvalue(true); }
 
-  const Type& refType() const override
+  const Type& type(Context& ctx) const override
   {
-    return type_static;
+    return v.type();
   }
 
-  bool boolean(Context& ctx) const override
+  Value& value(Context& ctx) const override
   {
     return v;
   }
+
+  bool isConst() const override { return true; }
 
   std::string unparse(Context& ctx) const override;
 
   std::string toString(Context& ctx) const override
   {
-    return std::string(typeName(ctx))
-            .append(1, ' ')
-            .append(readableBoolean(v));
+    return v.toString();
   }
 
-  static std::string readableBoolean(bool b)
-  {
-    return (b ? TRUE : FALSE);
-  }
-
-  bool& refBoolean() override { return v; }
-
-  void swap(BooleanExpression& e) noexcept override
-  {
-    bool tmp = e.v;
-    e.v = v;
-    v = tmp;
-  }
-
-  BooleanExpression * swapNew() override
-  {
-    return new BooleanExpression(this->v);
-  }
-
-  BooleanExpression * cloneNew() const override
-  {
-    return new BooleanExpression(this->v);
-  }
 };
 
 }

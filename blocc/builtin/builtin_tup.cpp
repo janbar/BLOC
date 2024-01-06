@@ -19,7 +19,7 @@
 #include "builtin_tup.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_tuple.h>
+#include <blocc/tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -34,47 +34,22 @@ TUPExpression::TUPExpression(std::vector<Expression*>&& args, Context& ctx) : Bu
   _type = _decl.make_type(0);
 }
 
-Tuple& TUPExpression::tuple(Context & ctx) const
+Value& TUPExpression::value(Context & ctx) const
 {
+  if (_args.empty())
+    return ctx.allocate(Value(Value::type_rowtype));
+
   /* build items, then move */
   Tuple::container_t items;
   for (const Expression * a : _args)
   {
-    const Type& arg_type = a->type(ctx);
-    switch(arg_type.major())
-    {
-    case Type::BOOLEAN:
-      items.push_back(new BooleanExpression(a->boolean(ctx)));
-      break;
-    case Type::INTEGER:
-      items.push_back(new IntegerExpression(a->integer(ctx)));
-      break;
-    case Type::NUMERIC:
-      items.push_back(new NumericExpression(a->numeric(ctx)));
-      break;
-    case Type::LITERAL:
-      if (a->isRvalue())
-        items.push_back(new LiteralExpression(std::move(a->literal(ctx))));
-      else
-        items.push_back(new LiteralExpression(a->literal(ctx)));
-      break;
-    case Type::COMPLEX:
-      if (a->isRvalue())
-        items.push_back(new ComplexExpression(std::move(a->complex(ctx))));
-      else
-        items.push_back(new ComplexExpression(a->complex(ctx)));
-      break;
-    case Type::TABCHAR:
-      if (a->isRvalue())
-        items.push_back(new TabcharExpression(std::move(a->tabchar(ctx))));
-      else
-        items.push_back(new TabcharExpression(a->tabchar(ctx)));
-      break;
-    default:
-      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
-    }
+    Value& val = a->value(ctx); /* execute expression */
+    if (val.lvalue())
+      items.push_back(val.clone());
+    else
+      items.push_back(std::move(val));
   }
-  return ctx.allocate(Tuple(std::move(items)));
+  return ctx.allocate(Value(new Tuple(std::move(items))));
 }
 
 TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
@@ -114,8 +89,8 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
         break;
       }
     }
-//    if (args.size() < 1)
-//      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
+    //if (args.size() < 1)
+    //  throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
     assertClosedFunction(p, ctx, FUNC_TUP);
     return new TUPExpression(std::move(args), ctx);
   }

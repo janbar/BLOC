@@ -23,7 +23,7 @@
 #include "token.h"
 #include "executable.h"
 #include "statement.h"
-#include "template_stack.h"
+#include "expression.h"
 
 #include <list>
 

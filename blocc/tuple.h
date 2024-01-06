@@ -21,24 +21,23 @@
 
 #include "intrinsic_type.h"
 #include "tuple_decl.h"
+#include "value.h"
 
 #include <vector>
 
 namespace bloc
 {
 
-class StaticExpression;
-
 class Tuple : public TupleDecl
 {
 public:
-  typedef std::vector<StaticExpression*> container_t;
+  typedef std::vector<Value> container_t;
   typedef container_t::iterator iterator;
   typedef container_t::const_iterator const_iterator;
-  typedef StaticExpression*& reference;
-  typedef const StaticExpression*& const_reference;
+  typedef Value& reference;
+  typedef const Value& const_reference;
 
-  virtual ~Tuple();
+  virtual ~Tuple() { }
   explicit Tuple(container_t&& items);
 
   Tuple(const Tuple& t);
@@ -48,15 +47,15 @@ public:
   const Decl& tuple_decl() const override { return _decl; }
 
   void swap(Tuple& t) noexcept;
-  void copy(Tuple& t) noexcept;
+  void copy(const Tuple& t) noexcept;
 
   reference operator[](unsigned pos) { return v[pos]; }
   reference at(unsigned pos) { return v.at(pos); }
   const_reference operator[](unsigned pos) const { return const_cast<const_reference>(v[pos]); }
   const_reference at(unsigned pos) const { return const_cast<const_reference>(v.at(pos)); }
   size_t size() const { return v.size(); }
-  const_iterator begin() const { return v.begin(); }
-  const_iterator end() const { return v.end(); }
+  iterator begin() { return v.begin(); }
+  iterator end() { return v.end(); }
 
 private:
   container_t v;

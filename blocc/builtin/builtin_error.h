@@ -20,7 +20,7 @@
 #define BUILTIN_ERROR_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_tuple.h>
+#include <blocc/tuple.h>
 
 namespace bloc
 {
@@ -41,9 +41,9 @@ public:
 
   const Type& type(Context& ctx) const override { return v.tuple_type(); }
 
-  const Tuple::Decl& tuple_decl(Context& ctx) const override { return v.tuple_decl(); }
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return v.tuple_decl(); }
 
-  Tuple& tuple(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 };
 
 }

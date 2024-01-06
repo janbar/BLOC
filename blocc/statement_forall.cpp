@@ -21,8 +21,8 @@
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
-#include "expression_integer.h"
 #include "expression_variable.h"
+#include "collection.h"
 #include "parser.h"
 #include "context.h"
 #include "debug.h"
@@ -47,59 +47,57 @@ const Statement * FORALLStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
+    Value& val = _exp->value(ctx);
+    if (val.isNull() || val.collection()->size() == 0)
+      return _next;
     if (_expSymbol)
     {
-      /* reference to the store */
-      _data.table = &_exp->collection(ctx);
-      if (_data.table->size() == 0)
-        return _next;
+      /* make the symbol safe */
       _expSymbol->safety(true);
+      /* lvalue */
+      _data.tmp = nullptr;
+      _data.table = val.collection();
     }
     else
     {
-      /* it must be free later */
-      _data.table = new Collection(std::move(_exp->collection(ctx)));
-      if (_data.table->size() == 0)
-      {
-        delete _data.table;
-        return _next;
-      }
+      /* store rvalue */
+      _data.tmp = new Value(std::move(val));
+      _data.tmp->to_lvalue(true);
+      _data.table = _data.tmp->collection();
     }
     /* set fetch order */
     if (_order == DESC)
     {
-      /* pointer to the store */
-      _data.iterator = static_cast<IteratorExpression*>(&_var->store(ctx, IteratorExpression(*_data.table, _data.table->size()-1)));
       _data.step = -1;
+      _data.index = _data.table->size()-1;
     }
     else
     {
-      /* pointer to the store */
-      _data.iterator = static_cast<IteratorExpression*>(&_var->store(ctx, IteratorExpression(*_data.table, 0)));
       _data.step = 1;
+      _data.index = 0;
     }
-    /* iterator is type safe in the loop body */
-    _data.iterator->safety(true);
+    /* store a pointer to the value as lvalue */
+    _var->store(ctx, Value(&(_data.table->at(_data.index).to_lvalue(true)))).safety(true);
     ctx.stackControl(this);
   }
   else
   {
-    if ((_data.step > 0 && _data.iterator->index() < _data.table->size()-1) ||
-        (_data.step < 0 && _data.iterator->index() > 0))
-    {
-      _data.iterator->index() += _data.step;
-    }
-    else
+    _data.index += _data.step;
+    if (_data.index < 0 || _data.index >= _data.table->size())
     {
       _var->clear(ctx);
       ctx.getSymbol(_var->symbolId())->upgrade(Type::NO_TYPE);
       if (_expSymbol)
         _expSymbol->safety(false);
       else
-        /* delete temporary data */
-        delete _data.table;
+        delete _data.tmp;
       ctx.unstackControl();
       return _next;
+    }
+    else
+    {
+      /* store a pointer to the value as lvalue */
+      _var->store(ctx, Value(&(_data.table->at(_data.index).to_lvalue(true)))).safety(true);
     }
   }
   try
@@ -114,7 +112,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     if (_expSymbol)
       _expSymbol->safety(false);
     else
-      delete _data.table;
+      delete _data.tmp;
     throw;
   }
   if (!ctx.stopCondition())
@@ -230,8 +228,7 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_MM_PARENTHESIS);
     /* retrieve the symbol name for a variable expression, that is required to
      * make it safety when processing the clause of the statement */
-    if (s->_exp->isStored())
-      s->_expSymbol = ctx.getSymbol(dynamic_cast<VariableExpression*>(s->_exp)->symbolId());
+    s->_expSymbol = s->_exp->symbol();
     /* check the type if defined */
     const Type& exp_type = s->_exp->type(ctx);
     if (exp_type == Type::NO_TYPE)

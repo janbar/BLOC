@@ -45,7 +45,8 @@ const Statement * WHILEStatement::doit(Context& ctx) const
   {
     ctx.stackControl(this);
   }
-  if (exp->boolean(ctx))
+  Value& val = exp->value(ctx);
+  if (!val.isNull() && *val.boolean())
   {
     /* it should run with the given context */
     _exec->run(ctx, _exec->statements());

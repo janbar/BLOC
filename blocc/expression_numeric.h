@@ -19,8 +19,7 @@
 #ifndef EXPRESSION_NUMERIC_H
 #define EXPRESSION_NUMERIC_H
 
-#include "expression_static.h"
-#include "declspec.h"
+#include "expression.h"
 
 namespace bloc
 {
@@ -28,80 +27,40 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a numeric value.
  */
-class NumericExpression : public SwappableExpression<NumericExpression>
+class NumericExpression : public Expression
 {
 private:
 
-  double v;
+  mutable Value v;
 
 public:
-  LIBBLOC_API static const Type& type_static;
 
   virtual ~NumericExpression() { }
 
-  explicit NumericExpression(double a) : v(a) { }
+  explicit NumericExpression(Numeric a) : v(a) { v.to_lvalue(true); }
+  explicit NumericExpression(Value&& _v) : v(std::move(_v)) { v.to_lvalue(true); }
 
-  const Type& refType() const override
+  const Type& type(Context& ctx) const override
   {
-    return type_static;
+    return v.type();
   }
 
-  /* to support type mixing */
-  int64_t integer(Context& ctx) const override
-  {
-    return (int64_t) v;
-  }
-
-  double numeric(Context& ctx) const override
+  Value& value(Context& ctx) const override
   {
     return v;
   }
 
-  std::string unparse(Context& ctx) const override
-  {
-    std::string str = readableNumeric(v);
-    if (str.find('.') == std::string::npos)
-      str.append(".0");
-    return str;
-  }
+  bool isConst() const override { return true; }
+
+  std::string unparse(Context& ctx) const override;
 
   std::string toString(Context& ctx) const override
   {
-    return std::string(typeName(ctx))
-            .append(1, ' ')
-            .append(readableNumeric(v));
+    return v.toString();
   }
 
-  static NumericExpression * parse(const std::string& text)
-  {
-    return new NumericExpression(std::stod(text));
-  }
+  static NumericExpression * parse(const std::string& text);
 
-  static std::string readableNumeric(double d)
-  {
-    char buf[32];
-    snprintf(buf, sizeof(buf), "%.16g", d);
-    return buf;
-  }
-
-  double& refNumeric() override { return v; }
-
-  void swap(NumericExpression& e) noexcept override
-  {
-    double tmp = e.v;
-    e.v = v;
-    v = tmp;
-  }
-
-  NumericExpression * swapNew() override
-  {
-    return new NumericExpression(this->v);
-  }
-
-  NumericExpression * cloneNew() const override
-  {
-    return new NumericExpression(this->v);
-  }
 };
 
 }

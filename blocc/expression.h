@@ -20,14 +20,9 @@
 #define EXPRESSION_H_
 
 #include "intrinsic_type.h"
-#include "complex.h"
-#include "collection.h"
-#include "tuple.h"
+#include "tuple_decl.h"
+#include "value.h"
 #include "exception_runtime.h"
-
-#include <cinttypes>
-#include <string>
-#include <vector>
 
 namespace bloc
 {
@@ -45,8 +40,8 @@ namespace bloc
  */
 
 class Context;
-
-typedef std::vector<char> TabChar;
+class Value;
+class Symbol;
 
 class Expression
 {
@@ -64,75 +59,26 @@ public:
    */
   virtual const Type& type(Context& ctx) const = 0;
 
-  virtual bool boolean(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_BOOLEAN);
-  }
 
-  virtual int64_t integer(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_INTEGER);
-  }
-
-  virtual double numeric(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_NUMERIC);
-  }
+  virtual Value& value(Context& ctx) const = 0;
 
   /**
-   * Proves this expression provides an "rvalue".
-   * The "rvalue" is temporary static expression, and its content can be
-   * modified and forwarded throughout the duration of the running statement,
-   * thus avoiding copying or new memory allocation.
+   * Returns true if the expression returns an immutable value, i.e constant.
    */
-  virtual bool isRvalue() const
-  {
-    return false;
-  }
+  virtual bool isConst() const { return false; }
 
   /**
-   * Proves this expression provides a stored value, loaded from a variable.
-   * The stored value is static expression, and its type cannot be opaque.
+   * Returns the possible symbol allowing access to the value pointed to by
+   * an expression of the variable type. Defaut none.
    */
-  virtual bool isStored() const
+  virtual const Symbol * symbol() const { return nullptr; }
+
+  virtual const TupleDecl::Decl& tuple_decl(Context& ctx) const
   {
-    return false;
+    return TupleDecl::no_decl;
   }
 
-  virtual std::string& literal(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_LITERAL);
-  }
-
-  virtual TabChar& tabchar(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_TABCHAR);
-  }
-
-  virtual Collection& collection(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_COLLECT);
-  }
-
-  virtual Tuple& tuple(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_ROWTYPE);
-  }
-
-  virtual const Tuple::Decl& tuple_decl(Context& ctx) const
-  {
-    return Tuple::no_decl;
-  }
-
-  virtual Complex& complex(Context& ctx) const
-  {
-    throw RuntimeError(EXC_RT_NOT_COMPLEX);
-  }
-
-  virtual std::string toString(Context& ctx) const
-  {
-    return "undefined";
-  }
+  virtual std::string toString(Context& ctx) const { return "undefined"; }
 
   virtual std::string typeName(Context& ctx) const
   {

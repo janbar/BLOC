@@ -38,11 +38,18 @@ typedef struct bloc_context             BLOC_CONTEXT;
 typedef struct bloc_symbol              BLOC_SYMBOL;
 typedef struct bloc_expression          BLOC_EXPRESSION;
 typedef struct bloc_executable          BLOC_EXECUTABLE;
+typedef struct bloc_value               BLOC_VALUE;
 
 typedef enum
 {
-  BOOLEAN = 1, INTEGER = 2, LITERAL = 3, COMPLEX = 4, TABCHAR = 5,
-  ROWTYPE = 6
+  NO_TYPE   = 0,
+  BOOLEAN   = 1,
+  INTEGER,
+  NUMERIC,
+  LITERAL,
+  COMPLEX,
+  TABCHAR,
+  ROWTYPE,
 } bloc_type_major;
 
 typedef struct
@@ -89,12 +96,12 @@ LIBBLOC_API BLOC_SYMBOL*
 bloc_ctx_register_symbol(BLOC_CONTEXT *ctx, const char *name, bloc_type type);
 
 LIBBLOC_API bloc_bool
-bloc_ctx_store_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol, BLOC_EXPRESSION *e);
+bloc_ctx_store_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol, BLOC_VALUE *v);
 
 LIBBLOC_API BLOC_SYMBOL*
 bloc_ctx_find_symbol(BLOC_CONTEXT *ctx, const char *name);
 
-LIBBLOC_API BLOC_EXPRESSION*
+LIBBLOC_API BLOC_VALUE*
 bloc_ctx_load_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol);
 
 LIBBLOC_API void
@@ -115,41 +122,41 @@ bloc_ctx_err(BLOC_CONTEXT *ctx);
 /* */
 
 LIBBLOC_API void
-bloc_free_expression(BLOC_EXPRESSION *e);
+bloc_free_value(BLOC_VALUE *v);
 
 /**
- * Returns new boolean expression.
- * Returned pointer must be freed using bloc_free_expression().
+ * Returns new boolean value.
+ * Returned pointer must be freed using bloc_free_value().
  */
-LIBBLOC_API BLOC_EXPRESSION*
+LIBBLOC_API BLOC_VALUE*
 bloc_create_boolean(bloc_bool v);
 
 /**
- * Returns new integer expression.
- * Returned pointer must be freed using bloc_free_expression().
+ * Returns new integer value.
+ * Returned pointer must be freed using bloc_free_value().
  */
-LIBBLOC_API BLOC_EXPRESSION*
+LIBBLOC_API BLOC_VALUE*
 bloc_create_integer(int64_t v);
 
 /**
- * Returns new numeric expression.
- * Returned pointer must be freed using bloc_free_expression().
+ * Returns new numeric value.
+ * Returned pointer must be freed using bloc_free_value().
  */
-LIBBLOC_API BLOC_EXPRESSION*
+LIBBLOC_API BLOC_VALUE*
 bloc_create_numeric(double v);
 
 /**
- * Returns new literal expression.
- * Returned pointer must be freed using bloc_free_expression().
+ * Returns new literal value.
+ * Returned pointer must be freed using bloc_free_value().
  */
-LIBBLOC_API BLOC_EXPRESSION*
+LIBBLOC_API BLOC_VALUE*
 bloc_create_literal(const char *v);
 
 /**
- * Returns new tabchar expression.
- * Returned pointer must be freed using bloc_free_expression().
+ * Returns new tabchar value.
+ * Returned pointer must be freed using bloc_free_value().
  */
-LIBBLOC_API BLOC_EXPRESSION*
+LIBBLOC_API BLOC_VALUE*
 bloc_create_tabchar(const char *v, unsigned len);
 
 /* */
@@ -157,36 +164,34 @@ bloc_create_tabchar(const char *v, unsigned len);
 LIBBLOC_API bloc_type
 bloc_expression_type(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e);
 
+/**
+ * Process an expression
+ */
+LIBBLOC_API BLOC_VALUE*
+bloc_evaluate_expression(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e);
+
+/* */
 
 /**
- * Process boolean expression
+ * Returns the value type
  */
-LIBBLOC_API bloc_bool
-bloc_boolean(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, bloc_bool *buf);
+LIBBLOC_API bloc_type
+bloc_value_type(BLOC_VALUE *v);
 
-/**
- * Process integer expression
- */
 LIBBLOC_API bloc_bool
-bloc_integer(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, int64_t *buf);
+bloc_boolean(BLOC_VALUE *v, bloc_bool **buf);
 
-/**
- * Process numeric expression
- */
 LIBBLOC_API bloc_bool
-bloc_numeric(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, double *buf);
+bloc_integer(BLOC_VALUE *v, int64_t **buf);
 
-/**
- * Process literal expression
- */
 LIBBLOC_API bloc_bool
-bloc_literal(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, const char **buf);
+bloc_numeric(BLOC_VALUE *v, double **buf);
 
-/**
- * Process tabchar expression
- */
 LIBBLOC_API bloc_bool
-bloc_tabchar(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e, const char **buf, unsigned *len);
+bloc_literal(BLOC_VALUE *v, const char **buf);
+
+LIBBLOC_API bloc_bool
+bloc_tabchar(BLOC_VALUE *v, const char **buf, unsigned *len);
 
 /* */
 
@@ -198,7 +203,7 @@ LIBBLOC_API BLOC_EXPRESSION*
 bloc_parse_expression(BLOC_CONTEXT *ctx, const char *text);
 
 LIBBLOC_API void
-bloc_free_executable(BLOC_EXECUTABLE *exec);
+bloc_free_expression(BLOC_EXPRESSION *e);
 
 /**
  * Returns executable from source.
@@ -207,6 +212,9 @@ bloc_free_executable(BLOC_EXECUTABLE *exec);
 LIBBLOC_API BLOC_EXECUTABLE*
 bloc_parse_executable(BLOC_CONTEXT *ctx, const char *text);
 
+LIBBLOC_API void
+bloc_free_executable(BLOC_EXECUTABLE *exec);
+
 /**
  * Run executable.
  */
@@ -214,10 +222,10 @@ LIBBLOC_API bloc_bool
 bloc_execute(BLOC_EXECUTABLE *exec);
 
 /**
- * Retrieve last returned result (expression).
- * Returned pointer must be freed using bloc_free_expression().
+ * Retrieve last returned result (value).
+ * Returned pointer must be freed using bloc_free_value().
  */
-LIBBLOC_API BLOC_EXPRESSION*
+LIBBLOC_API BLOC_VALUE*
 bloc_drop_returned(BLOC_CONTEXT *ctx);
 
 #ifdef __cplusplus

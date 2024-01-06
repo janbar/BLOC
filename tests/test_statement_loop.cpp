@@ -5,7 +5,6 @@
 
 #include <test.h>
 #include <hashvalue.c>
-#include <blocc/expression_integer.h>
 
 TestingContext ctx;
 
@@ -24,7 +23,7 @@ TEST_CASE("for loop")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("I")->refInteger() == 14 );
+  REQUIRE( *(ctx.loadVariable("I")->integer()) == 14 );
 
   ctx.reset(
     "i=null, t=0;\n"
@@ -33,8 +32,8 @@ TEST_CASE("for loop")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("I")->refInteger() == 1 );
-  REQUIRE( ctx.loadVariable("T")->refInteger() == 55 );
+  REQUIRE( *(ctx.loadVariable("I")->integer()) == 1 );
+  REQUIRE( *(ctx.loadVariable("T")->integer()) == 55 );
 
   ctx.reset(
     "for i in 10 to 1 desc loop break; end loop;\n"
@@ -42,7 +41,7 @@ TEST_CASE("for loop")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("I")->refInteger() == 10 );
+  REQUIRE( *(ctx.loadVariable("I")->integer()) == 10 );
 
   ctx.reset("for i in 0 to 1 loop i=true; break; end loop;\n");
   try { e = ctx.parse(); FAIL("No throw"); }
@@ -65,7 +64,7 @@ TEST_CASE("forall loop")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("T")->refInteger() == 50 );
+  REQUIRE( *(ctx.loadVariable("T")->integer()) == 50 );
 
   ctx.reset(
     "i=null, t=0;\n"
@@ -75,7 +74,7 @@ TEST_CASE("forall loop")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("R")->refLiteral() == "abcdefghijk" );
+  REQUIRE( *(ctx.loadVariable("R")->literal()) == "abcdefghijk" );
 
   ctx.reset(
     "a=tab(10, ee), j=0, t=0;\n"
@@ -85,7 +84,7 @@ TEST_CASE("forall loop")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( fequal(ctx.loadVariable("T")->refNumeric(), 149.505501) );
+  REQUIRE( fequal(*(ctx.loadVariable("T")->numeric()), 149.505501) );
 
   ctx.reset("forall i in a loop i=true; break; end loop;\n");
   try { e = ctx.parse(); FAIL("No throw"); }

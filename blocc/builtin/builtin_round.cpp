@@ -28,14 +28,78 @@
 namespace bloc
 {
 
-double ROUNDExpression::numeric(Context & ctx) const
+Value& ROUNDExpression::value(Context & ctx) const
 {
+  Value& val = _args[0]->value(ctx);
   if (_args.size() > 1)
   {
-    double d = std::pow(10, _args[1]->numeric(ctx));
-    return (std::floor(_args[0]->numeric(ctx) * d + 0.5) / d);
+    double d = 1.0;
+    Value& a1 = _args[1]->value(ctx);
+    Value v(Value::type_numeric);
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      break;
+    case Type::INTEGER:
+      if (!a1.isNull())
+        d = std::pow(10, *a1.integer());
+      break;
+    case Type::NUMERIC:
+      if (!a1.isNull())
+        d = std::pow(10, Integer(*a1.numeric()));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    switch (val.type().major())
+    {
+    case Type::NO_TYPE:
+      break;
+    case Type::INTEGER:
+      if (val.isNull())
+        v = Value(Value::type_numeric);
+      else
+        v = Value(Numeric(std::floor(*val.integer() * d + 0.5) / d));
+      break;
+    case Type::NUMERIC:
+      if (val.isNull())
+        return val;
+      else
+        v = Value(Numeric(std::floor(*val.numeric() * d + 0.5) / d));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    if (val.lvalue())
+      return ctx.allocate(std::move(v));
+    val.swap(Value(std::move(v)));
+    return val;
   }
-  return std::floor(_args[0]->numeric(ctx) + 0.5);
+  else
+  {
+    Value v;
+    switch (val.type().major())
+    {
+    case Type::INTEGER:
+      if (val.isNull())
+        v = Value(Value::type_numeric);
+      else
+        v = Value(Numeric(std::floor(*val.integer() + 0.5)));
+      break;
+    case Type::NUMERIC:
+      if (val.isNull())
+        return val;
+      else
+        v = Value(Numeric(std::floor(*val.numeric() + 0.5)));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    if (val.lvalue())
+      return ctx.allocate(std::move(v));
+    val.swap(Value(std::move(v)));
+    return val;
+  }
 }
 
 ROUNDExpression * ROUNDExpression::parse(Parser& p, Context& ctx)

@@ -26,9 +26,26 @@
 namespace bloc
 {
 
-int64_t STRLENExpression::integer(Context & ctx) const
+Value& STRLENExpression::value(Context & ctx) const
 {
-  return _args[0]->literal(ctx).size();
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_integer);
+
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::LITERAL:
+    if (!val.isNull())
+      v = Value(Integer(val.literal()->size()));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 STRLENExpression * STRLENExpression::parse(Parser& p, Context& ctx)

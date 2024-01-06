@@ -17,15 +17,11 @@
  */
 
 #include "member_delete.h"
+#include "blocc/expression.h"
+#include "blocc/value.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_collection.h>
+#include <blocc/collection.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -36,37 +32,57 @@
 namespace bloc
 {
 
-std::string& MemberDELETEExpression::literal(Context& ctx) const
+Value& MemberDELETEExpression::value(Context& ctx) const
 {
-  /* literal */
-  std::string& rv = _exp->literal(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  rv.erase(rv.begin() + p);
-  return rv;
-}
+  Value& val = _exp->value(ctx);
+  Value& a0 = _args[0]->value(ctx);
+  if (val.isNull() || a0.isNull())
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
 
-TabChar& MemberDELETEExpression::tabchar(Context& ctx) const
-{
-  /* tabchar */
-  TabChar& rv = _exp->tabchar(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  rv.erase(rv.begin() + p);
-  return rv;
-}
+  if (val.type().level() > 0)
+  {
+    /* collection */
+    Collection * rv = val.collection();
+    Integer p = *a0.integer();
+    if (p < 0 || p >= rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    rv->erase(rv->begin() + p);
+    return val;
+  }
 
-Collection& MemberDELETEExpression::collection(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  rv.erase(rv.begin() + p);
-  return rv;
+  switch (val.type().major())
+  {
+    /* literal */
+  case Type::LITERAL:
+  {
+    Literal * rv = val.literal();
+    Integer p = *a0.integer();
+    if (p < 0 || p >= rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    if (_exp->isConst())
+    {
+      Value v(new Literal(*rv));
+      Literal * tmp = v.literal();
+      tmp->erase(tmp->begin() + p);
+      return ctx.allocate(std::move(v));
+    }
+    rv->erase(rv->begin() + p);
+    return val;
+  }
+    /* tabchar */
+  case Type::TABCHAR:
+  {
+    TabChar * rv = val.tabchar();
+    Integer p = *a0.integer();
+    if (p < 0 || p >= rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    rv->erase(rv->begin() + p);
+    return val;
+  }
+  default:
+    break;
+  }
+  throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_DELETE]);
 }
 
 MemberDELETEExpression * MemberDELETEExpression::parse(Parser& p, Context& ctx, Expression * exp)

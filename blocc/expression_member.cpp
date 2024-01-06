@@ -129,25 +129,6 @@ MemberExpression * MemberExpression::parse_builtin(Parser& p, Context& ctx, Expr
   if (mc == unknown)
     throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, t->text.c_str());
 
-  /* member expression could alter the content of the source,
-   * so the targeted expression must be rvalue else an instance
-   * of variable or member, but NOT a constant */
-  switch (mc)
-  {
-    /* exceptions */
-  case BTM_COUNT:
-  case BTM_AT:
-    break;
-  default:
-    if (!exp->isRvalue())
-    {
-      if (!dynamic_cast<VariableExpression*>(exp) &&
-              !dynamic_cast<MemberExpression*>(exp) &&
-              !dynamic_cast<ItemExpression*>(exp))
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, t->text.c_str());
-    }
-  }
-
   switch (mc)
   {
   case BTM_CONCAT:

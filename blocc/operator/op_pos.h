@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2022 Jean-Luc Barriere
+ *      Copyright (C) 2023 Jean-Luc Barriere
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,24 +16,42 @@
  *
  */
 
-#ifndef TEMPORARY_H_
-#define TEMPORARY_H_
+#ifndef OP_POS_H_
+#define OP_POS_H_
 
-#include <cstddef>
+#include <blocc/operator.h>
+#include <blocc/expression.h>
 
 namespace bloc
 {
 
-struct TemporaryBase {
-  virtual ~TemporaryBase() = default;
-};
+class Context;
+class Parser;
 
-template <typename T> struct Temporary : TemporaryBase
+class OpPOSExpression : public Expression
 {
-  T handle;
-  explicit Temporary(T&& hdl) : handle(std::move(hdl)) { }
+  Expression * arg1 = nullptr;
+
+public:
+
+  virtual ~OpPOSExpression();
+
+  OpPOSExpression(Expression * a)
+  : arg1(a) { }
+
+  const Type& type(Context& ctx) const override;
+
+  Value& value(Context& ctx) const override;
+
+  std::string unparse(Context& ctx) const override;
+
+  std::string toString(Context& ctx) const override
+  {
+    return Operator::OPVALS[Operator::OP_POS];
+  }
 };
 
 }
 
-#endif /* TEMPORARY_H_ */
+#endif /* OP_POS_H */
+

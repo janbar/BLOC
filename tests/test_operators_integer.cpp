@@ -14,7 +14,7 @@ TEST_CASE("operator I + I")
 {
   ctx.reset("7687 + 43453");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 51140 );
+  REQUIRE( *(e->value(ctx).integer()) == 51140 );
   delete e;
 }
 
@@ -22,7 +22,7 @@ TEST_CASE("operator I - I")
 {
   ctx.reset("7687 - 43453");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == -35766 );
+  REQUIRE( *(e->value(ctx).integer()) == -35766 );
   delete e;
 }
 
@@ -30,7 +30,7 @@ TEST_CASE("operator I * I")
 {
   ctx.reset("7687 * 43453");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 334023211 );
+  REQUIRE( *(e->value(ctx).integer()) == 334023211 );
   delete e;
 }
 
@@ -38,7 +38,7 @@ TEST_CASE("operator I / I")
 {
   ctx.reset("43453 / 7687");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 5 );
+  REQUIRE( *(e->value(ctx).integer()) == 5 );
   delete e;
 }
 
@@ -46,7 +46,7 @@ TEST_CASE("operator I % I")
 {
   ctx.reset("43453 % 7687");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 5018 );
+  REQUIRE( *(e->value(ctx).integer()) == 5018 );
   delete e;
 }
 
@@ -55,11 +55,11 @@ TEST_CASE("operator I ** I (POWER)")
   Expression * e;
   ctx.reset("7687 ** 3");
   e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 454224591703LL );
+  REQUIRE( *(e->value(ctx).integer()) == 454224591703LL );
   delete e;
   ctx.reset("7687 power 3");
   e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 454224591703LL );
+  REQUIRE( *(e->value(ctx).integer()) == 454224591703LL );
   delete e;
 }
 
@@ -67,7 +67,7 @@ TEST_CASE("operator I & I")
 {
   ctx.reset("43453 & 7687");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 2053 );
+  REQUIRE( *(e->value(ctx).integer()) == 2053 );
   delete e;
 }
 
@@ -75,7 +75,7 @@ TEST_CASE("operator I | I")
 {
   ctx.reset("43453 | 7687");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 49087 );
+  REQUIRE( *(e->value(ctx).integer()) == 49087 );
   delete e;
 }
 
@@ -83,7 +83,7 @@ TEST_CASE("operator I ^ I (XOR)")
 {
   ctx.reset("43453 ^ 7687");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 47034 );
+  REQUIRE( *(e->value(ctx).integer()) == 47034 );
   delete e;
 }
 
@@ -92,19 +92,19 @@ TEST_CASE("operator ~ I (bitwise NOT)")
   Expression * e;
   ctx.reset("~0");
   e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == INT64_MAX );
+  REQUIRE( *(e->value(ctx).integer()) == INT64_MAX );
   delete e;
   ctx.reset("~(~0)");
   e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 0 );
+  REQUIRE( *(e->value(ctx).integer()) == 0 );
   delete e;
   ctx.reset("~(-1)");
   e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == INT64_MIN );
+  REQUIRE( *(e->value(ctx).integer()) == INT64_MIN );
   delete e;
   ctx.reset("~(~(-1))");
   e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == -1L );
+  REQUIRE( *(e->value(ctx).integer()) == -1L );
   delete e;
 }
 
@@ -112,7 +112,7 @@ TEST_CASE("operator I << I")
 {
   ctx.reset("43453 << 3");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 347624 );
+  REQUIRE( *(e->value(ctx).integer()) == 347624 );
   delete e;
 }
 
@@ -120,6 +120,6 @@ TEST_CASE("operator I >> I")
 {
   ctx.reset("347624 >> 3");
   Expression * e = ctx.parseExpression();
-  REQUIRE( e->integer(ctx) == 43453 );
+  REQUIRE( *(e->value(ctx).integer()) == 43453 );
   delete e;
 }

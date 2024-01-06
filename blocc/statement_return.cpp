@@ -21,14 +21,8 @@
 #include "parse_expression.h"
 #include "parser.h"
 #include "context.h"
-#include "expression_boolean.h"
-#include "expression_numeric.h"
-#include "expression_integer.h"
-#include "expression_literal.h"
-#include "expression_complex.h"
-#include "expression_tabchar.h"
-#include "expression_tuple.h"
-#include "expression_collection.h"
+#include "collection.h"
+#include "tuple.h"
 
 #include "debug.h"
 
@@ -46,62 +40,8 @@ RETURNStatement::~RETURNStatement()
 
 const Statement * RETURNStatement::doit(Context& ctx) const
 {
-  if (_exp == nullptr)
-  {
-    ctx.saveReturned(nullptr);
-  }
-  else
-  {
-    const Type& exp_type = _exp->type(ctx);
-    if (exp_type.level() == 0)
-    {
-      switch (exp_type.major())
-      {
-      case Type::NO_TYPE:
-        ctx.saveReturned(nullptr);
-        break;
-      case Type::LITERAL:
-        if (_exp->isRvalue())
-          ctx.saveReturned(new LiteralExpression(std::move(_exp->literal(ctx))));
-        else
-          ctx.saveReturned(new LiteralExpression(_exp->literal(ctx)));
-        break;
-      case Type::BOOLEAN:
-        ctx.saveReturned(new BooleanExpression(_exp->boolean(ctx)));
-        break;
-      case Type::INTEGER:
-        ctx.saveReturned(new IntegerExpression(_exp->integer(ctx)));
-        break;
-      case Type::NUMERIC:
-        ctx.saveReturned(new NumericExpression(_exp->numeric(ctx)));
-        break;
-      case Type::COMPLEX:
-        ctx.saveReturned(new ComplexExpression(_exp->complex(ctx)));
-        break;
-      case Type::TABCHAR:
-        if (_exp->isRvalue())
-          ctx.saveReturned(new TabcharExpression(std::move(_exp->tabchar(ctx))));
-        else
-          ctx.saveReturned(new TabcharExpression(_exp->tabchar(ctx)));
-        break;
-      case Type::ROWTYPE:
-        if (_exp->isRvalue())
-          ctx.saveReturned(new TupleExpression(std::move(_exp->tuple(ctx))));
-        else
-          ctx.saveReturned(new TupleExpression(_exp->tuple(ctx)));
-        break;
-      default:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
-      }
-    }
-    else
-    {
-      if (_exp->isRvalue())
-        ctx.saveReturned(new CollectionExpression(std::move(_exp->collection(ctx))));
-      else
-        ctx.saveReturned(new CollectionExpression(_exp->collection(ctx)));
-    }
-  }
+  if (_exp != nullptr)
+    ctx.saveReturned(_exp->value(ctx));
   ctx.returnCondition(true);
   return _next;
 }

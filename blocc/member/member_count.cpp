@@ -19,10 +19,7 @@
 #include "member_count.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_collection.h>
+#include <blocc/collection.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -33,24 +30,28 @@
 namespace bloc
 {
 
-int64_t MemberCOUNTExpression::integer(Context& ctx) const
+Value& MemberCOUNTExpression::value(Context& ctx) const
 {
-  const Type& exp_type = _exp->type(ctx);
+  Value& val = _exp->value(ctx);
+  if (val.isNull())
+    return val;
+
+  const Type& exp_type = val.type();
   if (exp_type.level() == 0)
   {
     switch (exp_type.major())
     {
     case Type::LITERAL:
-      return (int64_t)_exp->literal(ctx).size();
+      return ctx.allocate(Value(Integer(val.literal()->size())));
     case Type::TABCHAR:
-      return (int64_t)_exp->tabchar(ctx).size();
+      return ctx.allocate(Value(Integer(val.tabchar()->size())));
     default:
       throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
     }
   }
   else
   {
-    return (int64_t)_exp->collection(ctx).size();
+    return ctx.allocate(Value(Integer(val.collection()->size())));
   }
 }
 

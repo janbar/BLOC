@@ -26,29 +26,69 @@
 namespace bloc
 {
 
-TabChar& RAWExpression::tabchar(Context & ctx) const
+Value& RAWExpression::value(Context & ctx) const
 {
-  int64_t n = 0, v = 0;
-  /* return empty raw */
   if (_args.empty())
-    return ctx.allocate(TabChar());
-  /* return raw of string */
-  if (_args[0]->type(ctx) == Type::LITERAL)
+    return ctx.allocate(Value(Value::type_tabchar));
+
+  Value& val = _args[0]->value(ctx);
+  Integer n = 0, v = 0;
+
+  if (!val.isNull())
   {
-    std::string& str = _args[0]->literal(ctx);
-    TabChar& rv = ctx.allocate(TabChar(str.size()));
-    rv.assign(str.begin(), str.end());
-    return rv;
+    switch (val.type().major())
+    {
+    case Type::LITERAL:
+    {
+      /* return raw of string */
+      TabChar * tmp = new TabChar(val.literal()->size());
+      tmp->assign(val.literal()->begin(), val.literal()->end());
+      if (val.lvalue())
+        return ctx.allocate(Value(tmp));
+      val.swap(Value(tmp));
+      return val;
+    }
+    case Type::INTEGER:
+      n = *val.integer();
+      break;
+    case Type::NUMERIC:
+      n = Integer(*val.numeric());
+      break;
+    case Type::TABCHAR:
+      return val;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_RAW]);
+    }
+
+    if (n < 0)
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
+    if (_args.size() > 1)
+    {
+      Value& a1 = _args[1]->value(ctx);
+      if (!a1.isNull())
+        switch (a1.type().major())
+        {
+        case Type::INTEGER:
+          v = *a1.integer();
+          break;
+        case Type::NUMERIC:
+          v = Integer(*a1.numeric());
+          break;
+        default:
+          throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_RAW]);
+        }
+      if (v < 0 || v > 255)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+    }
+    if (val.lvalue())
+      return ctx.allocate(Value(new TabChar(n, (char)v)));
+    val.swap(Value(new TabChar(n, (char)v)));
+    return val;
   }
-  /* return raw of n byte */
-  n = _args[0]->integer(ctx);
-  if (n < 0)
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
-  if (_args.size() > 1)
-    v = _args[1]->integer(ctx);
-  if (v < 0 || v > 255)
-    throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-  return ctx.allocate(TabChar(n, (char)v));
+  if (val.lvalue())
+    return ctx.allocate(Value(Value::type_tabchar));
+  val.swap(Value(Value::type_tabchar));
+  return val;
 }
 
 RAWExpression * RAWExpression::parse(Parser& p, Context& ctx)

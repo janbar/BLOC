@@ -21,8 +21,6 @@
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_literal.h>
 #include <blocc/debug.h>
 
 namespace bloc
@@ -31,23 +29,24 @@ namespace bloc
 Tuple::container_t ERRORExpression::empty_error()
 {
   Tuple::container_t items;
-  items.push_back(new LiteralExpression(std::string())); /* name */
-  items.push_back(new LiteralExpression(std::string())); /* message */
-  items.push_back(new IntegerExpression(0)); /* internal id */
+  items.push_back(Value(Value::type_literal)); /* name */
+  items.push_back(Value(Value::type_literal)); /* message */
+  items.push_back(Value(Value::type_integer)); /* internal id */
   return items;
 }
 
-Tuple& ERRORExpression::tuple(Context & ctx) const
+Value& ERRORExpression::value(Context & ctx) const
 {
   /* load error from context */
   const RuntimeError& rt = ctx.error();
+  Value& tmp = ctx.allocate(Value(new Tuple(empty_error())));
   if (rt.no == EXC_RT_USER_S)
-    v.at(0)->refLiteral().assign(rt.what());
+    tmp.tuple()->at(0) = Value(new Literal(rt.what()));
   else
-    v.at(0)->refLiteral().assign(RuntimeError::THROWABLES[RuntimeError::throwable(rt.no)].keyword);
-  v.at(1)->refLiteral().assign(rt.what());
-  v.at(2)->refInteger() = rt.no;
-  return v;
+    tmp.tuple()->at(0) = Value(new Literal(RuntimeError::THROWABLES[RuntimeError::throwable(rt.no)].keyword));
+  tmp.tuple()->at(1) = Value(new Literal(rt.what()));
+  tmp.tuple()->at(2) = Value(Integer(rt.no));
+  return tmp;
 }
 
 }

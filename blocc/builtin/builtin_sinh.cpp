@@ -28,9 +28,32 @@
 namespace bloc
 {
 
-double SINHExpression::numeric(Context & ctx) const
+Value& SINHExpression::value(Context & ctx) const
 {
-  return std::sinh(_args[0]->numeric(ctx));
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
+
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::sinh(*val.integer())));
+    break;
+  case Type::NUMERIC:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::sinh(*val.numeric())));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 SINHExpression * SINHExpression::parse(Parser& p, Context& ctx)

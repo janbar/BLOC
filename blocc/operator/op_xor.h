@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2022 Jean-Luc Barriere
+ *      Copyright (C) 2023 Jean-Luc Barriere
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,31 +16,43 @@
  *
  */
 
-#include "expression_complex.h"
-#include "plugin_manager.h"
-#include "parser.h"
+#ifndef OP_XOR_H_
+#define OP_XOR_H_
+
+#include <blocc/operator.h>
+#include <blocc/expression.h>
 
 namespace bloc
 {
 
-std::string ComplexExpression::readableComplex(const Complex& c)
+class Context;
+class Parser;
+
+class OpXORExpression : public Expression
 {
-  std::string sb(PluginManager::instance().plugged(c.typeId()).interface.name);
-  if (c.typeId())
+  Expression * arg1 = nullptr;
+  Expression * arg2 = nullptr;
+
+public:
+
+  virtual ~OpXORExpression();
+
+  OpXORExpression(Expression * a, Expression * b)
+  : arg1(a), arg2(b) { }
+
+  const Type& type(Context& ctx) const override;
+
+  Value& value(Context& ctx) const override;
+
+  std::string unparse(Context& ctx) const override;
+
+  std::string toString(Context& ctx) const override
   {
-    char buf[24];
-    snprintf(buf, sizeof(buf), "%p", c.instance());
-    sb.append(1, '(');
-    sb.append(buf);
-    sb.append(1, ')');
+    return Operator::OPVALS[Operator::OP_XOR];
   }
-  return sb;
-}
-
-std::string ComplexExpression::typeName(Context& ctx) const
-{
-  const PLUGGED_MODULE& plugin = PluginManager::instance().plugged(v.typeId());
-  return plugin.interface.name;
-}
+};
 
 }
+
+#endif /* OP_XOR_H */
+

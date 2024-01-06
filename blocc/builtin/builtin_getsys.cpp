@@ -29,18 +29,36 @@
 namespace bloc
 {
 
-std::string& GETSYSExpression::literal(Context & ctx) const
+Value& GETSYSExpression::value(Context & ctx) const
 {
-  const std::string& rv = _args[0]->literal(ctx);
-  if (rv == "compatible")
-    return ctx.allocate(std::to_string(Context::compatible()));
-  if (rv == "language")
-    return ctx.allocate(std::string(Context::language()));
-  if (rv == "country")
-    return ctx.allocate(std::string(Context::country()));
-  if (rv == "integer_max")
-    return ctx.allocate(std::to_string(INT64_MAX));
-  throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+  Value& val = _args[0]->value(ctx);
+  Value v;
+
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::LITERAL:
+    if (val.isNull())
+      break;
+    else if (*(val.literal()) == "compatible")
+      v = Value(Integer(Context::compatible()));
+    else if (*(val.literal()) == "language")
+      v = Value(new Literal(Context::language()));
+    else if (*(val.literal()) == "country")
+      v = Value(new Literal(Context::country()));
+    else if (*(val.literal()) == "integer_max")
+      v = Value(Integer(INT64_MAX));
+    else
+      throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 GETSYSExpression * GETSYSExpression::parse(Parser& p, Context& ctx)

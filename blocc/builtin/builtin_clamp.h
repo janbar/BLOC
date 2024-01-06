@@ -21,8 +21,6 @@
 #define BUILTIN_CLAMP_H
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
 
 namespace bloc
 {
@@ -38,11 +36,9 @@ public:
 
   explicit CLAMPExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_CLAMP, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override;
+  const Type& type(Context& ctx) const override { return _args[0]->type(ctx); }
 
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static CLAMPExpression * parse(Parser& p, Context& ctx);
 };

@@ -30,30 +30,31 @@
 namespace bloc
 {
 
-int64_t READExpression::integer(Context & ctx) const
+Value& READExpression::value(Context & ctx) const
 {
-  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
-  int64_t n = 1024;
-  if (_args.size() > 1)
-    n = _args[1]->integer(ctx);
-  std::string str;
-  if (n < 0)
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
-  if (n > 32)
-  {
-    char * buf = new char[n];
-    n = bloc_readstdin(buf, n);
-    str.assign(buf, n);
-    delete [] buf;
-  }
-  else
-  {
-    char buf[32];
-    n = bloc_readstdin(buf, n);
-    str.assign(buf, n);
-  }
-  var->store(ctx, LiteralExpression(std::move(str)));
-  return n;
+  return ctx.allocate(Value(Integer(0)));
+//  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
+//  int64_t n = 1024;
+//  if (_args.size() > 1)
+//    n = _args[1]->integer(ctx);
+//  std::string str;
+//  if (n < 0)
+//    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
+//  if (n > 32)
+//  {
+//    char * buf = new char[n];
+//    n = bloc_readstdin(buf, n);
+//    str.assign(buf, n);
+//    delete [] buf;
+//  }
+//  else
+//  {
+//    char buf[32];
+//    n = bloc_readstdin(buf, n);
+//    str.assign(buf, n);
+//  }
+//  var->store(ctx, LiteralExpression(std::move(str)));
+//  return n;
 }
 
 READExpression * READExpression::parse(Parser& p, Context& ctx)

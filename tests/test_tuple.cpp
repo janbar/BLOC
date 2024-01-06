@@ -6,6 +6,7 @@
 #include <test.h>
 #include <hashvalue.c>
 #include <blocc/exception_parse.h>
+#include <blocc/tuple.h>
 
 TestingContext ctx;
 
@@ -16,7 +17,7 @@ TEST_CASE("tuple CTOR")
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)");
   e = ctx.parseExpression();
-  REQUIRE_NOTHROW( e->tuple(ctx) );
+  REQUIRE_NOTHROW( e->value(ctx).tuple() );
   delete e;
 }
 
@@ -43,23 +44,23 @@ TEST_CASE("tuple item@")
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@1");
   e = ctx.parseExpression();
-  REQUIRE( (e->type(ctx) == Type::LITERAL && e->literal(ctx) == "abcd") );
+  REQUIRE( (e->type(ctx) == Type::LITERAL && *(e->value(ctx).literal()) == "abcd") );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@2");
   e = ctx.parseExpression();
-  REQUIRE( (e->type(ctx) == Type::INTEGER && e->integer(ctx) == 1234) );
+  REQUIRE( (e->type(ctx) == Type::INTEGER && *(e->value(ctx).integer()) == 1234) );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@3");
   e = ctx.parseExpression();
-  REQUIRE( (e->type(ctx) == Type::NUMERIC && e->numeric(ctx) == 0.123) );
+  REQUIRE( (e->type(ctx) == Type::NUMERIC && *(e->value(ctx).numeric()) == 0.123) );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@4");
   e = ctx.parseExpression();
-  REQUIRE( (e->type(ctx) == Type::TABCHAR && e->tabchar(ctx).size() == 16) );
+  REQUIRE( (e->type(ctx) == Type::TABCHAR && e->value(ctx).tabchar()->size() == 16) );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@5");
   e = ctx.parseExpression();
-  REQUIRE( (e->type(ctx) == Type::BOOLEAN && e->boolean(ctx) == true) );
+  REQUIRE( (e->type(ctx) == Type::BOOLEAN && *(e->value(ctx).boolean()) == true) );
   delete e;
 }
 
@@ -68,23 +69,23 @@ TEST_CASE("tuple item.set@")
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@1(\"xxxx\")");
   e = ctx.parseExpression();
-  REQUIRE( e->tuple(ctx).at(0)->literal(ctx) == "xxxx" );
+  REQUIRE( *(e->value(ctx).tuple()->at(0).literal()) == "xxxx" );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@2(5678)");
   e = ctx.parseExpression();
-  REQUIRE( e->tuple(ctx).at(1)->integer(ctx) == 5678 );
+  REQUIRE( *(e->value(ctx).tuple()->at(1).integer()) == 5678 );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@3(0.456)");
   e = ctx.parseExpression();
-  REQUIRE( e->tuple(ctx).at(2)->numeric(ctx) == 0.456 );
+  REQUIRE( *(e->value(ctx).tuple()->at(2).numeric()) == 0.456 );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@4(raw(4,0x41))");
   e = ctx.parseExpression();
-  REQUIRE( e->tuple(ctx).at(3)->tabchar(ctx).size() == 4 );
+  REQUIRE( e->value(ctx).tuple()->at(3).tabchar()->size() == 4 );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@5(false)");
   e = ctx.parseExpression();
-  REQUIRE( e->tuple(ctx).at(4)->boolean(ctx) == false );
+  REQUIRE( *(e->value(ctx).tuple()->at(4).boolean()) == false );
   delete e;
 }
 
@@ -122,10 +123,10 @@ TEST_CASE("tuple item.set@ type mixing")
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@2(4.56)");
   e = ctx.parseExpression();
-  REQUIRE( e->tuple(ctx).at(1)->integer(ctx) == 4 );
+  REQUIRE( *(e->value(ctx).tuple()->at(1).integer()) == 4 );
   delete e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@3(5678)");
   e = ctx.parseExpression();
-  REQUIRE( e->tuple(ctx).at(2)->numeric(ctx) == 5678.0 );
+  REQUIRE( *(e->value(ctx).tuple()->at(2).numeric()) == 5678.0 );
   delete e;
 }

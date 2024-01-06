@@ -21,7 +21,6 @@
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
-#include "expression_integer.h"
 #include "expression_variable.h"
 #include "parser.h"
 #include "context.h"
@@ -49,9 +48,14 @@ const Statement * FORStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
-    int64_t b = _expBeg->integer(ctx);
-    int64_t e = _expEnd->integer(ctx);
-    _data.iterator = static_cast<IntegerExpression*>(&_var->store(ctx, IntegerExpression(b)));
+    Value& vb = _expBeg->value(ctx);
+    if (vb.isNull())
+      return _next;
+    Value& ve = _expEnd->value(ctx);
+    if (ve.isNull())
+      return _next;
+    Integer b = *vb.integer();
+    Integer e = *ve.integer();
     if (e > b)
     {
       if (_order == DESC)
@@ -69,22 +73,26 @@ const Statement * FORStatement::doit(Context& ctx) const
       _data.step = -1;
     }
     /*  var is type safe in the loop body */
+    if (vb.lvalue())
+      _data.iterator = &(_var->store(ctx, Value(vb.clone())));
+    else
+      _data.iterator = &(_var->store(ctx, Value(std::move(vb))));
     _data.iterator->safety(true);
     ctx.stackControl(this);
   }
   else
   {
     /* var is type safe, so it can be read without care */
-    int64_t& nref = _data.iterator->refInteger();
-    if ((_data.step > 0 && nref >= _data.max) ||
-        (_data.step < 0 && nref <= _data.min))
+    Integer * nref = _data.iterator->integer();
+    if ((_data.step > 0 && *nref >= _data.max) ||
+        (_data.step < 0 && *nref <= _data.min))
     {
       /* now var can be unsafe */
       _data.iterator->safety(false);
       ctx.unstackControl();
       return _next;
     }
-    nref += _data.step;
+    *nref += _data.step;
   }
   try
   {

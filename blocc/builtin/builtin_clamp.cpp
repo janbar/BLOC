@@ -28,35 +28,54 @@
 namespace bloc
 {
 
-const Type& CLAMPExpression::type (Context &ctx) const
+Value& CLAMPExpression::value(Context & ctx) const
 {
-  if (_args[0]->type(ctx) == Type::INTEGER)
-    return IntegerExpression::type_static;
-  return NumericExpression::type_static;
-}
+  Value& a0 = _args[0]->value(ctx);
+  Value& a1 = _args[1]->value(ctx);
+  Value& a2 = _args[2]->value(ctx);
+  Value v(Value::type_numeric);
 
-int64_t CLAMPExpression::integer(Context & ctx) const
-{
-  int64_t x = _args[0]->integer(ctx);
-  int64_t y = _args[1]->integer(ctx);
-  int64_t z = _args[2]->integer(ctx);
-  if (x < y)
-    return y;
-  if (x > z)
-    return z;
-  return x;
-}
-
-double CLAMPExpression::numeric(Context & ctx) const
-{
-  double x = _args[0]->numeric(ctx);
-  double y = _args[1]->numeric(ctx);
-  double z = _args[2]->numeric(ctx);
-  if (x < y)
-    return y;
-  if (x > z)
-    return z;
-  return x;
+  switch (a0.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      return a0;
+    {
+      Integer x = *a0.integer();
+      Integer y = *a1.integer();
+      Integer z = *a2.integer();
+      if (x < y)
+        v = Value(y);
+      if (x > z)
+        v = Value(z);
+      else
+        v = Value(x);
+    }
+    break;
+  case Type::NUMERIC:
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      return a0;
+    {
+      Numeric x = *a0.numeric();
+      Numeric y = *a1.numeric();
+      Numeric z = *a2.numeric();
+      if (x < y)
+        v = Value(y);
+      if (x > z)
+        v = Value(z);
+      else
+        v = Value(x);
+    }
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (a0.lvalue())
+    return ctx.allocate(std::move(v));
+  a0.swap(Value(std::move(v)));
+  return a0;
 }
 
 CLAMPExpression * CLAMPExpression::parse(Parser& p, Context& ctx)

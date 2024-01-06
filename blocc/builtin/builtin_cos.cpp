@@ -28,9 +28,32 @@
 namespace bloc
 {
 
-double COSExpression::numeric(Context & ctx) const
+Value& COSExpression::value(Context & ctx) const
 {
-  return std::cos(_args[0]->numeric(ctx));
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
+
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::cos(*val.integer())));
+    break;
+  case Type::NUMERIC:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::cos(*val.numeric())));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 COSExpression * COSExpression::parse(Parser& p, Context& ctx)

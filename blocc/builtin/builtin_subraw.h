@@ -20,7 +20,6 @@
 #define BUILTIN_SUBRAW_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_tabchar.h>
 
 namespace bloc
 {
@@ -36,9 +35,9 @@ public:
 
   explicit SUBRAWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_SUBRAW, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return TabcharExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_tabchar; }
 
-  TabChar& tabchar(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static SUBRAWExpression * parse(Parser& p, Context& ctx);
 };

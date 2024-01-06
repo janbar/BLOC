@@ -20,7 +20,6 @@
 #define BUILTIN_EE_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_numeric.h>
 
 namespace bloc
 {
@@ -30,15 +29,19 @@ class Parser;
 
 class EEExpression : public BuiltinExpression {
 
+  mutable Value v;
+
 public:
 
   virtual ~EEExpression() { }
 
-  EEExpression() : BuiltinExpression(FUNC_EE) { }
+  EEExpression() : BuiltinExpression(FUNC_EE), v(Numeric(2.718281828459045)) { v.to_lvalue(true); }
 
-  const Type& type(Context& ctx) const override { return NumericExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_numeric; }
 
-  double numeric(Context& ctx) const override { return 2.718281828459045; }
+  Value& value(Context& ctx) const override { return v; }
+
+  bool isConst() const override { return true; }
 };
 
 }

@@ -19,15 +19,9 @@
 #include "member_concat.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_tuple.h>
-#include <blocc/expression_collection.h>
 #include <blocc/context.h>
+#include <blocc/collection.h>
+#include <blocc/tuple.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
 
@@ -37,171 +31,241 @@
 namespace bloc
 {
 
-std::string& MemberCONCATExpression::literal(Context& ctx) const
+Value& MemberCONCATExpression::value(Context& ctx) const
 {
-  /* literal */
-  switch (_args[0]->type(ctx).major())
-  {
-  case Type::LITERAL:
-    return _exp->literal(ctx).append(_args[0]->literal(ctx));
-  case Type::INTEGER:
-  {
-    int64_t c = _args[0]->integer(ctx);
-    if (c < 1 || c > 255)
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    return _exp->literal(ctx).append(1, (char)c);
-  }
-  default:
-    break;
-  }
+  Value& val = _exp->value(ctx);
+  Value& a0 = _args[0]->value(ctx);
+  if (a0.isNull())
+    return val;
 
-  throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
-}
-
-TabChar& MemberCONCATExpression::tabchar(Context& ctx) const
-{
-  /* tabchar */
-  switch (_args[0]->type(ctx).major())
-  {
-  case Type::TABCHAR:
-  {
-    TabChar& rv = _exp->tabchar(ctx);
-    TabChar& a = _args[0]->tabchar(ctx);
-    if (&a == &rv)
-    {
-      TabChar _a(a);
-      rv.insert(rv.end(), _a.begin(), _a.end());
-    }
-    else
-      rv.insert(rv.end(), a.begin(), a.end());
-    return rv;
-  }
-  case Type::LITERAL:
-  {
-    TabChar& rv = _exp->tabchar(ctx);
-    std::string& a = _args[0]->literal(ctx);
-    rv.insert(rv.end(), a.begin(), a.end());
-    return rv;
-  }
-  case Type::INTEGER:
-  {
-    TabChar& rv = _exp->tabchar(ctx);
-    int64_t c = _args[0]->integer(ctx);
-    if (c < 0 || c > 255)
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    rv.push_back((char)c);
-    return rv;
-  }
-  default:
-    break;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
-}
-
-Collection& MemberCONCATExpression::collection(Context& ctx) const
-{
-  Collection& rv = _exp->collection(ctx);
-  const Type& rv_type = rv.table_type();
-
-  const Type& arg_type = _args[0]->type(ctx);
   /* collection */
-  if (arg_type.level() > 0)
+  if (val.type().level() > 0)
   {
-    Collection& a = _args[0]->collection(ctx);
-    if (a.table_type() == rv_type)
+    if (val.isNull())
     {
-      /* allocate once and for all */
-      rv.reserve(rv.size() + a.size());
-      if (&a == &rv)
-      {
-        /* clone and move */
-        Collection _a(a);
-        for (StaticExpression * e : _a)
-          rv.push_back(e->swapNew());
-        _a.clear();
-      }
+      if (a0.type().level() > 0)
+        return a0;
+      Collection * rv;
+      if (a0.type() == Type::ROWTYPE)
+        rv = new Collection(a0.tuple()->tuple_decl(), 1);
       else
+        rv = new Collection(a0.type().levelUp());
+      if (a0.lvalue())
+        rv->push_back(a0.clone());
+      else
+        rv->push_back(std::move(a0));
+      if (val.lvalue())
+        return ctx.allocate(Value(rv));
+      val.swap(Value(rv));
+      return val;
+    }
+
+    Collection * rv = val.collection();
+    const Type& rv_type = rv->table_type();
+    const Type& a0_type = a0.type();
+    /* collection */
+    if (a0_type.level() > 0)
+    {
+      Collection * a = a0.collection();
+      if (a->table_type() == rv_type)
       {
-        if (_args[0]->isRvalue())
+        /* allocate once and for all */
+        rv->reserve(rv->size() + a->size());
+        if (a == rv)
         {
-          /* move */
-          for (StaticExpression * e : a)
-            rv.push_back(e->swapNew());
-          a.clear();
+          /* clone and move */
+          Collection _a(*a);
+          for (Value& e : _a)
+            rv->push_back(std::move(e));
+          _a.clear();
         }
         else
-          /* inline clone */
-          for (const StaticExpression * e : a)
-            rv.push_back(e->cloneNew());
+        {
+          if (a0.lvalue())
+          {
+            /* inline clone */
+            for (const Value& e : *a)
+              rv->push_back(e.clone());
+          }
+          else
+          {
+            /* move */
+            for (Value& e : *a)
+              rv->push_back(std::move(e));
+          }
+        }
+        return val;
       }
-      return rv;
+      else if (a->table_type() == rv_type.levelDown())
+      {
+        if (a0.lvalue())
+          rv->push_back(a0.clone());
+        else
+          rv->push_back(std::move(a0));
+        return val;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
     }
-    else if (a.table_type() == rv_type.levelDown())
+    else if (a0_type == rv_type.major())
     {
-      if (_args[0]->isRvalue())
-        rv.push_back(new CollectionExpression(std::move(a)));
-      else
-        rv.push_back(new CollectionExpression(a));
-      return rv;
+      /* tuple */
+      if (a0_type == Type::ROWTYPE)
+      {
+        if (a0.tuple()->tuple_type() == rv_type.levelDown())
+        {
+          if (a0.lvalue())
+            rv->push_back(a0.clone());
+          else
+            rv->push_back(std::move(a0));
+          return val;
+        }
+        throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
+      }
+      /* others */
+      else if (a0_type == rv_type.levelDown())
+      {
+        if (a0.lvalue())
+          rv->push_back(a0.clone());
+        else
+          rv->push_back(std::move(a0));
+        return val;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
     }
-    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
   }
-  else if (arg_type == rv_type.major())
+
+  switch (val.type().major())
   {
-    /* tuple */
-    if (arg_type == Type::ROWTYPE)
+    /* literal */
+  case Type::NO_TYPE:
+    switch (a0.type().major())
     {
-      Tuple& t = _args[0]->tuple(ctx);
-      if (t.tuple_type() == rv_type.levelDown())
-      {
-        if (_args[0]->isRvalue())
-          rv.push_back(new TupleExpression(std::move(t)));
-        else
-          rv.push_back(new TupleExpression(t));
-        return rv;
-      }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
-    }
-    /* others */
-    else if (arg_type == rv_type.levelDown())
+    case Type::LITERAL:
+      return a0;
+    case Type::INTEGER:
     {
-      switch (arg_type.major())
+      Integer c = *a0.integer();
+      if (c < 0 || c > 255)
+        break;
+      if (c == 0)
       {
-      case Type::BOOLEAN:
-        rv.push_back(new BooleanExpression(_args[0]->boolean(ctx)));
-        break;
-      case Type::INTEGER:
-        rv.push_back(new IntegerExpression(_args[0]->integer(ctx)));
-        break;
-      case Type::NUMERIC:
-        rv.push_back(new NumericExpression(_args[0]->numeric(ctx)));
-        break;
-      case Type::COMPLEX:
-        if (_args[0]->isRvalue())
-          rv.push_back(new ComplexExpression(std::move(_args[0]->complex(ctx))));
-        else
-          rv.push_back(new ComplexExpression(_args[0]->complex(ctx)));
-        break;
-      case Type::LITERAL:
-        if (_args[0]->isRvalue())
-          rv.push_back(new LiteralExpression(std::move(_args[0]->literal(ctx))));
-        else
-          rv.push_back(new LiteralExpression(_args[0]->literal(ctx)));
-        break;
-      case Type::TABCHAR:
-        if (_args[0]->isRvalue())
-          rv.push_back(new TabcharExpression(std::move(_args[0]->tabchar(ctx))));
-        else
-          rv.push_back(new TabcharExpression(_args[0]->tabchar(ctx)));
-        break;
-      default:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+        if (val.lvalue())
+          return ctx.allocate(Value(new TabChar(1, (char)c)));
+        val.swap(Value(new TabChar(1, (char)c)));
+        return val;
       }
-      return rv;
+      if (val.lvalue())
+        return ctx.allocate(Value(new Literal(1, (char)c)));
+      val.swap(Value(new Literal(1, (char)c)));
+      return val;
     }
+    default:
+      break;
+    }
+    break;
+  case Type::LITERAL:
+    switch (a0.type().major())
+    {
+      /* literal + literal */
+    case Type::LITERAL:
+      if (val.isNull())
+        return a0;
+      if (_exp->isConst())
+      {
+        Value v(new Literal(*val.literal()));
+        v.literal()->append(*a0.literal());
+        return ctx.allocate(std::move(v));
+      }
+      val.literal()->append(*a0.literal());
+      return val;
+      /* literal + char */
+    case Type::INTEGER:
+    {
+      Integer c = *a0.integer();
+      if (c < 1 || c > 255)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      if (val.isNull())
+      {
+        if (val.lvalue())
+          return ctx.allocate(Value(new Literal(1, (char)c)));
+        val.swap(Value(new Literal(1, (char)c)));
+        return val;
+      }
+      if (_exp->isConst())
+      {
+        Value v(new Literal(*val.literal()));
+        v.literal()->append(1, (char)c);
+        return ctx.allocate(std::move(v));
+      }
+      val.literal()->append(1, (char)c);
+      return val;
+    }
+    default:
+      break;
+    }
+
+    /* tabchar */
+  case Type::TABCHAR:
+    switch (a0.type().major())
+    {
+      /* tabchar + tabchar */
+    case Type::TABCHAR:
+    {
+      if (val.isNull())
+        return a0;
+      TabChar * rv = val.tabchar();
+      TabChar * a = a0.tabchar();
+      if (a == rv)
+      {
+        TabChar _a(*a);
+        rv->insert(rv->end(), _a.begin(), _a.end());
+      }
+      else
+        rv->insert(rv->end(), a->begin(), a->end());
+      return val;
+    }
+      /* tabchar + literal */
+    case Type::LITERAL:
+    {
+      Literal * a = a0.literal();
+      if (val.isNull())
+      {
+        TabChar * rv = new TabChar();
+        rv->insert(rv->end(), a->begin(), a->end());
+        if (val.lvalue())
+          return ctx.allocate(Value(rv));
+        val.swap(Value(rv));
+        return val;
+      }
+      TabChar * rv = val.tabchar();
+      rv->insert(rv->end(), a->begin(), a->end());
+      return val;
+    }
+      /* tabchar + char */
+    case Type::INTEGER:
+    {
+      Integer c = *a0.integer();
+      if (c < 0 || c > 255)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      if (val.isNull())
+      {
+        if (val.lvalue())
+          return ctx.allocate(Value(new TabChar(1, (char)c)));
+        val.swap(Value(new TabChar(1, (char)c)));
+        return val;
+      }
+      TabChar * rv = val.tabchar();
+      rv->push_back((char)c);
+      return val;
+    }
+    default:
+      break;
+    }
+  default:
+    break;
   }
-  throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+  throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
 }
 
 MemberCONCATExpression * MemberCONCATExpression::parse(Parser& p, Context& ctx, Expression * exp)

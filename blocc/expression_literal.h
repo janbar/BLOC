@@ -19,8 +19,7 @@
 #ifndef EXPRESSION_LITERAL_H
 #define EXPRESSION_LITERAL_H
 
-#include "expression_static.h"
-#include "declspec.h"
+#include "expression.h"
 
 namespace bloc
 {
@@ -28,64 +27,41 @@ namespace bloc
 /**
  * This class implements the simplest possible expression, a literal value.
  */
-class LiteralExpression : public SwappableExpression<LiteralExpression>
+class LiteralExpression : public Expression
 {
 private:
 
-  mutable std::string v;
+  mutable Value v;
 
 public:
-  LIBBLOC_API static const Type& type_static;
 
   virtual ~LiteralExpression() { }
 
   LiteralExpression() { }
-  explicit LiteralExpression(const std::string& a) : v(a) { }
-  explicit LiteralExpression(std::string &&a) : v(std::move(a)) { }
+  explicit LiteralExpression(const Literal& a) : v(new Literal(a)) { v.to_lvalue(true); }
+  explicit LiteralExpression(Value&& _v) : v(std::move(_v)) { v.to_lvalue(true); }
 
-  const Type& refType() const override
+  const Type& type(Context& ctx) const override
   {
-    return type_static;
+    return v.type();
   }
 
-  std::string& literal(Context& ctx) const override
+  Value& value(Context& ctx) const override
   {
     return v;
   }
 
-  std::string unparse(Context& ctx) const override
-  {
-    return readableLiteral(v);
-  }
+  bool isConst() const override { return true; }
+
+  std::string unparse(Context& ctx) const override;
 
   std::string toString(Context& ctx) const override
   {
-    return std::string(typeName(ctx))
-            .append(1, '[')
-            .append(std::to_string(v.size()))
-            .append(1, ']');
+    return v.toString();
   }
 
-  static LiteralExpression * parse(const std::string& text);
+  LiteralExpression * parse(const std::string& text);
 
-  static std::string readableLiteral(const std::string& s);
-
-  std::string& refLiteral() override { return v; }
-
-  void swap(LiteralExpression& e) noexcept override
-  {
-    v.swap(e.v);
-  }
-
-  LiteralExpression * swapNew() override
-  {
-    return new LiteralExpression(std::move(this->v));
-  }
-
-  LiteralExpression * cloneNew() const override
-  {
-    return new LiteralExpression(this->v);
-  }
 };
 
 }

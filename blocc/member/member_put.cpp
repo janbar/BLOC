@@ -19,14 +19,8 @@
 #include "member_put.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_collection.h>
-#include <blocc/expression_tuple.h>
+#include <blocc/collection.h>
+#include <blocc/tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -37,125 +31,129 @@
 namespace bloc
 {
 
-std::string& MemberPUTExpression::literal(Context& ctx) const
+Value& MemberPUTExpression::value(Context& ctx) const
 {
-  /* literal */
-  std::string& rv = _exp->literal(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  int64_t c = _args[1]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  if (c < 1 || c > 255)
-    throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-  return rv.replace(p, 1, 1, (char)c);
-}
+  Value& val = _exp->value(ctx);
+  Value& a0 = _args[0]->value(ctx);
+  if (val.isNull() || a0.isNull())
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
 
-TabChar& MemberPUTExpression::tabchar(Context& ctx) const
-{
-  /* tabchar */
-  TabChar& rv = _exp->tabchar(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  int64_t c = _args[1]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  if (c < 0 || c > 255)
-    throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-  rv[p] = (char)c;
-  return rv;
-}
-
-Collection& MemberPUTExpression::collection(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  const Type& rv_type = rv.table_type();
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-
-  const Type& arg_type = _args[1]->type(ctx);
-
-  /* collection */
-  if (arg_type.level() > 0)
+  if (val.type().level() > 0)
   {
-    Collection& a = _args[1]->collection(ctx);
-    if (a.table_type() == rv_type.levelDown())
+    /* collection */
+    Collection * rv = val.collection();
+    const Type& rv_type = rv->table_type();
+    Integer p = *a0.integer();
+    if (p < 0 || p >= rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    Value& a1 = _args[1]->value(ctx);
+    const Type& a1_type = a1.type();
+
+    /* collection */
+    if (a1_type.level() > 0)
     {
-      /* the existing element will be freed after completion */
-      StaticExpression * old = rv[p];
-      if (_args[1]->isRvalue())
-        rv[p] = new CollectionExpression(std::move(a));
-      else
-        rv[p] = new CollectionExpression(a);
-      /* free old element */
-      if (old) delete old;
-      return rv;
+      if (!a1.isNull() && a1.collection()->table_type() == rv_type.levelDown())
+      {
+        if (a1.lvalue())
+          rv->at(p).swap(a1.clone());
+        else
+          rv->at(p).swap(std::move(a1));
+        return val;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
     }
-    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+    else if (a1_type == rv_type.major())
+    {
+      /* tuple */
+      if (a1_type == Type::ROWTYPE)
+      {
+        if (!a1.isNull() && a1.tuple()->tuple_type() == rv_type.levelDown())
+        {
+          if (a1.lvalue())
+            rv->at(p).swap(a1.clone());
+          else
+            rv->at(p).swap(std::move(a1));
+          return val;
+        }
+        throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
+      }
+      /* others */
+      else if (a1_type == rv_type.levelDown())
+      {
+        if (a1.lvalue())
+          rv->at(p).swap(a1.clone());
+        else
+          rv->at(p).swap(std::move(a1));
+        return val;
+      }
+    }
+    /* type mixing */
+    switch (rv_type.major())
+    {
+    case Type::INTEGER:
+      if (a1_type == Type::NUMERIC)
+      {
+        rv->at(p).swap(Value(Integer(*a1.numeric())));
+        return val;
+      }
+      break;
+    case Type::NUMERIC:
+      if (a1_type == Type::INTEGER)
+      {
+        rv->at(p).swap(Value(Numeric(*a1.integer())));
+        return val;
+      }
+      break;
+    default:
+      break;
+    }
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
   }
-  else if (arg_type == rv_type.major())
+
+  switch (val.type().major())
   {
-    /* tuple */
-    if (arg_type == Type::ROWTYPE)
+    /* literal */
+  case Type::LITERAL:
+  {
+    Literal * rv = val.literal();
+    Integer p = *a0.integer();
+    if (p < 0 || p >= rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    Value& a1 = _args[1]->value(ctx);
+    if (a1.isNull())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
+    Integer c = *a1.integer();
+    if (c < 1 || c > 255)
+      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+    if (_exp->isConst())
     {
-      Tuple& t = _args[1]->tuple(ctx);
-      if (t.tuple_type() == rv_type.levelDown())
-      {
-        /* the existing element will be freed after completion */
-        StaticExpression * old = rv[p];
-        if (_args[1]->isRvalue())
-          rv[p] = new TupleExpression(std::move(t));
-        else
-          rv[p] = new TupleExpression(t);
-        /* free old element */
-        if (old) delete old;
-        return rv;
-      }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+      Value v(new Literal(*rv));
+      v.literal()->replace(p, 1, 1, (char)c);
+      return ctx.allocate(std::move(v));
     }
-    /* others */
-    else if (arg_type == rv_type.levelDown())
-    {
-      /* the existing element will be freed after completion */
-      StaticExpression * old = rv[p];
-      switch (arg_type.major())
-      {
-      case Type::BOOLEAN:
-        rv[p] = new BooleanExpression(_args[1]->boolean(ctx));
-        break;
-      case Type::INTEGER:
-        rv[p] = new IntegerExpression(_args[1]->integer(ctx));
-        break;
-      case Type::NUMERIC:
-        rv[p] = new NumericExpression(_args[1]->numeric(ctx));
-        break;
-      case Type::COMPLEX:
-        if (_args[1]->isRvalue())
-          rv[p] = new ComplexExpression(std::move(_args[1]->complex(ctx)));
-        else
-          rv[p] = new ComplexExpression(_args[1]->complex(ctx));
-        break;
-      case Type::LITERAL:
-        if (_args[1]->isRvalue())
-          rv[p] = new LiteralExpression(std::move(_args[1]->literal(ctx)));
-        else
-          rv[p] = new LiteralExpression(_args[1]->literal(ctx));
-        break;
-      case Type::TABCHAR:
-        if (_args[1]->isRvalue())
-          rv[p] = new TabcharExpression(std::move(_args[1]->tabchar(ctx)));
-        else
-          rv[p] = new TabcharExpression(_args[1]->tabchar(ctx));
-        break;
-      default:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
-      }
-      /* free old element */
-      if (old) delete old;
-      return rv;
-    }
+    rv->replace(p, 1, 1, (char)c);
+    return val;
   }
-  throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+    /* tabchar */
+  case Type::TABCHAR:
+  {
+    TabChar * rv = val.tabchar();
+    Integer p = *a0.integer();
+    if (p < 0 || p >= rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    Value& a1 = _args[1]->value(ctx);
+    if (a1.isNull())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
+    Integer c = *a1.integer();
+    if (c < 0 || c > 255)
+      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+    rv->at(p) = (char)c;
+    return val;
+  }
+  default:
+    break;
+  }
+  throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]);
 }
 
 MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expression * exp)

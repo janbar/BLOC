@@ -35,42 +35,7 @@ DOStatement::~DOStatement()
 const Statement * DOStatement::doit(Context& ctx) const
 {
   if (_exp != nullptr)
-  {
-    const Type& exp_type = _exp->type(ctx);
-    if (exp_type.level() == 0)
-    {
-      switch (exp_type.major())
-      {
-      case Type::NO_TYPE:
-        break;
-      case Type::BOOLEAN:
-        _exp->boolean(ctx);
-        break;
-      case Type::INTEGER:
-        _exp->integer(ctx);
-        break;
-      case Type::NUMERIC:
-        _exp->numeric(ctx);
-        break;
-      case Type::LITERAL:
-        _exp->literal(ctx);
-        break;
-      case Type::COMPLEX:
-        _exp->complex(ctx);
-        break;
-      case Type::TABCHAR:
-        _exp->tabchar(ctx);
-        break;
-      case Type::ROWTYPE:
-        _exp->tuple(ctx);
-        break;
-      }
-    }
-    else
-    {
-      _exp->collection(ctx);
-    }
-  }
+    _exp->value(ctx);
   return _next;
 }
 

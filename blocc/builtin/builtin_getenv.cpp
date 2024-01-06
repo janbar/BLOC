@@ -28,19 +28,32 @@
 namespace bloc
 {
 
-std::string& GETENVExpression::literal(Context & ctx) const
+Value& GETENVExpression::value(Context & ctx) const
 {
-  std::string& rv = _args[0]->literal(ctx);
-  const char * buf = ::getenv(rv.c_str());
-  if (buf != nullptr)
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_literal);
+
+  switch (val.type().major())
   {
-    if (_args[0]->isRvalue())
-      return rv.assign(buf);
-    return ctx.allocate(std::string(buf));
+  case Type::NO_TYPE:
+    break;
+  case Type::LITERAL:
+    if (val.isNull())
+      return val;
+    else
+    {
+      const char * buf = ::getenv(val.literal()->c_str());
+      if (buf != nullptr)
+      v = Value(new Literal(buf));
+    }
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }
-  if (_args[0]->isRvalue())
-    return rv.assign("");
-  return ctx.allocate(std::string());
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 GETENVExpression * GETENVExpression::parse(Parser& p, Context& ctx)

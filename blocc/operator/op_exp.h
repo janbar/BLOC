@@ -16,23 +16,43 @@
  *
  */
 
-#include "expression_iterator.h"
-#include "plugin_manager.h"
+#ifndef OP_EXP_H_
+#define OP_EXP_H_
+
+#include <blocc/operator.h>
+#include <blocc/expression.h>
 
 namespace bloc
 {
 
-std::string IteratorExpression::typeName(Context& ctx) const
+class Context;
+class Parser;
+
+class OpEXPExpression : public Expression
 {
-  switch (type(ctx).major())
+  Expression * arg1 = nullptr;
+  Expression * arg2 = nullptr;
+
+public:
+
+  virtual ~OpEXPExpression();
+
+  OpEXPExpression(Expression * a, Expression * b)
+  : arg1(a), arg2(b) { }
+
+  const Type& type(Context& ctx) const override;
+
+  Value& value(Context& ctx) const override;
+
+  std::string unparse(Context& ctx) const override;
+
+  std::string toString(Context& ctx) const override
   {
-  case Type::COMPLEX:
-    return type(ctx).typeName(PluginManager::instance().plugged(type(ctx).minor()).interface.name);
-  case Type::ROWTYPE:
-    return type(ctx).typeName(tuple_decl(ctx).tupleName().c_str());
-  default:
-    return type(ctx).typeName();
+    return Operator::OPVALS[Operator::OP_EXP];
   }
-}
+};
 
 }
+
+#endif /* OP_EXP_H */
+

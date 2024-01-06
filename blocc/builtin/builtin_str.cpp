@@ -26,31 +26,41 @@
 namespace bloc
 {
 
-std::string& STRExpression::literal(Context & ctx) const
+Value& STRExpression::value(Context & ctx) const
 {
   if (_args.empty())
-    return ctx.allocate(std::string());
+    return ctx.allocate(Value(Value::type_literal));
 
-  switch (_args[0]->type(ctx).major())
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_literal);
+
+  switch (val.type().major())
   {
+  case Type::NO_TYPE:
+    break;
   case Type::BOOLEAN:
-    return ctx.allocate((std::string(_args[0]->boolean(ctx) ? BooleanExpression::TRUE : BooleanExpression::FALSE)));
+    v = Value(new Literal(Value::readableBoolean(*val.boolean())));
+    break;
   case Type::INTEGER:
-    return ctx.allocate((IntegerExpression::readableInteger(_args[0]->integer(ctx))));
+    v = Value(new Literal(Value::readableInteger(*val.integer())));
+    break;
   case Type::NUMERIC:
-    return ctx.allocate((NumericExpression::readableNumeric(_args[0]->numeric(ctx))));
+    v = Value(new Literal(Value::readableNumeric(*val.numeric())));
+    break;
   case Type::LITERAL:
-    if (_args[0]->isRvalue())
-      return _args[0]->literal(ctx);
-    return ctx.allocate(std::string(_args[0]->literal(ctx)));
+    if (val.lvalue())
+      return ctx.allocate(val.clone());
+    return val;
   case Type::TABCHAR:
-  {
-    const TabChar& tab = _args[0]->tabchar(ctx);
-    return ctx.allocate(std::string(tab.data(), tab.size()));
-  }
+    v = Value(new Literal(val.tabchar()->data(), val.tabchar()->size()));
+    break;
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STR]);
   }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 STRExpression * STRExpression::parse(Parser& p, Context& ctx)

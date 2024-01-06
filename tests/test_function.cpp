@@ -35,7 +35,7 @@ TEST_CASE("create and replace function")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("A")->numeric(ctx) == 1.618034 );
+  REQUIRE( *(ctx.loadVariable("A")->numeric()) == 1.618034 );
 
   ctx.reset(
           "function func(s) returns string is\n"
@@ -51,7 +51,7 @@ TEST_CASE("create and replace function")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("A")->literal(ctx) == "HELLO WORLD!" );
+  REQUIRE( *(ctx.loadVariable("A")->literal()) == "HELLO WORLD!" );
 
   ctx.reset(
           "function func(i) returns integer is\n"
@@ -71,7 +71,7 @@ TEST_CASE("create and replace function")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("A")->integer(ctx) == 45 );
+  REQUIRE( *(ctx.loadVariable("A")->integer()) == 45 );
 
   ctx.reset(
           "function func(a,b,c) returns boolean is\n"
@@ -87,13 +87,13 @@ TEST_CASE("create and replace function")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("A")->boolean(ctx) == true );
+  REQUIRE( *(ctx.loadVariable("A")->boolean()) == true );
 
   ctx.reset("a = func(true, false, true);");
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("A")->boolean(ctx) == false );
+  REQUIRE( *(ctx.loadVariable("A")->boolean()) == false );
 }
 
 TEST_CASE("function returns table")
@@ -117,7 +117,7 @@ TEST_CASE("function returns table")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("B")->integer(ctx) == 100 );
+  REQUIRE( *(ctx.loadVariable("B")->integer()) == 100 );
 }
 
 TEST_CASE("function returns tuple")
@@ -140,5 +140,5 @@ TEST_CASE("function returns tuple")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  REQUIRE( ctx.loadVariable("B")->literal(ctx) == "HELLO" );
+  REQUIRE( *(ctx.loadVariable("B")->literal()) == "HELLO" );
 }

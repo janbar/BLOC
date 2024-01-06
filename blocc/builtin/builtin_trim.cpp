@@ -28,34 +28,55 @@
 namespace bloc
 {
 
-std::string& TRIMExpression::literal(Context & ctx) const
+Value& TRIMExpression::value(Context & ctx) const
 {
-  int64_t a, b, c;
-  if (_args[0]->isRvalue())
+  Value& val = _args[0]->value(ctx);
+
+  switch (val.type().major())
   {
-    std::string& rv = _args[0]->literal(ctx);
-    b = rv.length() - 1;
-    while (b >= 0 && rv[b] == ' ') --b;
-    if (b < 0)
-      rv.clear();
+  case Type::NO_TYPE:
+    if (val.lvalue())
+      return ctx.allocate(Value(Value::type_literal));
+    val.swap(Value(Value::type_literal));
+    return val;
+  case Type::LITERAL:
+  {
+    if (val.isNull())
+      return val;
+    if (val.lvalue())
+    {
+      int64_t a, b, c;
+      Literal * rv = val.literal();
+      b = rv->size() - 1;
+      while (b >= 0 && rv->at(b) == ' ') --b;
+      if (b < 0)
+        return ctx.allocate(Value(new Literal()));
+      c = rv->size();
+      a = 0;
+      while (a < c && rv->at(a) == ' ') ++a;
+      return ctx.allocate(Value(new Literal(rv->substr(a, b - a + 1))));
+    }
     else
     {
-      c = rv.length();
-      a = 0;
-      while (a < c && rv[a] == ' ') ++a;
-      rv.assign(rv.substr(a, b - a + 1));
+      int64_t a, b, c;
+      Literal * rv = val.literal();
+      b = rv->size() - 1;
+      while (b >= 0 && rv->at(b) == ' ') --b;
+      if (b < 0)
+        rv->clear();
+      else
+      {
+        c = rv->size();
+        a = 0;
+        while (a < c && rv->at(a) == ' ') ++a;
+        rv->assign(rv->substr(a, b - a + 1));
+      }
+      return val;
     }
-    return rv;
   }
-  const std::string& var = _args[0]->literal(ctx);
-  b = var.length() - 1;
-  while (b >= 0 && var[b] == ' ') --b;
-  if (b < 0)
-    return ctx.allocate(std::string());
-  c = var.length();
-  a = 0;
-  while (a < c && var[a] == ' ') ++a;
-  return ctx.allocate(var.substr(a, b - a + 1));
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
 }
 
 TRIMExpression * TRIMExpression::parse(Parser& p, Context& ctx)

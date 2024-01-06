@@ -20,8 +20,6 @@
 #define BUILTIN_MOD_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
 
 namespace bloc
 {
@@ -39,9 +37,7 @@ public:
 
   const Type& type(Context& ctx) const override;
 
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static MODExpression * parse(Parser& p, Context& ctx);
 };

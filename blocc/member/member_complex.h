@@ -33,7 +33,7 @@ class Parser;
 
 class MemberMETHODExpression : public MemberExpression
 {
-  Tuple::Decl _decl_method;
+  TupleDecl::Decl _decl_method;
   Type _type_method;
 
   const PLUGIN_METHOD * _method = nullptr;
@@ -53,23 +53,9 @@ public:
 
   const Type& type(Context& ctx) const override { return _type_method; }
 
-  bool boolean(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
-
-  std::string& literal(Context& ctx) const override;
-
-  TabChar& tabchar(Context& ctx) const override;
-
-  Tuple& tuple(Context& ctx) const override;
-
-  const Tuple::Decl& tuple_decl(Context& ctx) const override { return _decl_method; }
-
-  Collection& collection(Context& ctx) const override;
-
-  Complex& complex(Context& ctx) const override;
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return _decl_method; }
 
   std::string typeName(Context& ctx) const override;
 

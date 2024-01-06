@@ -23,20 +23,27 @@
 #include <blocc/parser.h>
 #include <blocc/debug.h>
 
-#include <cmath>
+#include <string>
 
 namespace bloc
 {
 
-int64_t INTExpression::integer(Context & ctx) const
+Value& INTExpression::value(Context & ctx) const
 {
-  int64_t l;
-  switch (_args[0]->type(ctx).major())
+  if (_args.empty())
+    return ctx.allocate(Value(Value::type_integer));
+
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_integer);
+
+  switch (val.type().major())
   {
+  case Type::NO_TYPE:
+    break;
   case Type::LITERAL:
     try
     {
-      l = (int64_t) std::stoll(_args[0]->literal(ctx));
+      v = Value(Integer(std::stoll(*val.literal())));
     }
     catch (std::invalid_argument& e)
     {
@@ -48,15 +55,21 @@ int64_t INTExpression::integer(Context & ctx) const
     }
     break;
   case Type::NUMERIC:
-    l = (int64_t)_args[0]->numeric(ctx);
+    v = Value(Integer(*val.numeric()));
     break;
   case Type::INTEGER:
-    l = _args[0]->integer(ctx);
+    v = Value(*val.integer());
+    break;
+  case Type::BOOLEAN:
+    v = Value(Integer(*val.boolean() ? 1 : 0));
     break;
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }
-  return l;
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 INTExpression * INTExpression::parse(Parser& p, Context& ctx)
@@ -68,21 +81,25 @@ INTExpression * INTExpression::parse(Parser& p, Context& ctx)
     TokenPtr t = p.pop();
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_INT]);
-    args.push_back(ParseExpression::expression(p, ctx));
-    if (args.back()->type(ctx).level() > 0)
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INT]);
-    switch (args.back()->type(ctx).major())
+    if (p.front()->code != ')')
     {
-    case Type::NO_TYPE:
-    case Type::LITERAL:
-    case Type::INTEGER:
-    case Type::NUMERIC:
-      assertClosedFunction(p, ctx, FUNC_INT);
-      return new INTExpression(std::move(args));
-    default:
-      break;
+      args.push_back(ParseExpression::expression(p, ctx));
+      if (args.back()->type(ctx).level() > 0)
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INT]);
+      switch (args.back()->type(ctx).major())
+      {
+      case Type::NO_TYPE:
+      case Type::BOOLEAN:
+      case Type::LITERAL:
+      case Type::INTEGER:
+      case Type::NUMERIC:
+        break;
+      default:
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INT]);
+      }
     }
-    throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INT]);
+    assertClosedFunction(p, ctx, FUNC_INT);
+    return new INTExpression(std::move(args));
   }
   catch (ParseError& pe)
   {

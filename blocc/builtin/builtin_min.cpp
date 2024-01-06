@@ -31,18 +31,66 @@ namespace bloc
 const Type& MINExpression::type (Context &ctx) const
 {
   if (_args[0]->type(ctx) == Type::INTEGER && _args[1]->type(ctx) == Type::INTEGER)
-    return IntegerExpression::type_static;
-  return NumericExpression::type_static;
+    return Value::type_integer;
+  return Value::type_numeric;
 }
 
-int64_t MINExpression::integer(Context & ctx) const
+Value& MINExpression::value(Context & ctx) const
 {
-  return std::min<int64_t>(_args[0]->integer(ctx), _args[1]->integer(ctx));
-}
+  Value& a0 = _args[0]->value(ctx);
+  Value& a1 = _args[1]->value(ctx);
+  Value v(Value::type_numeric);
 
-double MINExpression::numeric(Context & ctx) const
-{
-  return std::min<double>(_args[0]->numeric(ctx), _args[1]->numeric(ctx));
+  switch (a0.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      v = Value(Value::type_integer);
+      break;
+    case Type::INTEGER:
+      v = Value(Integer(std::min<int64_t>(*a0.integer(), *a1.integer())));
+      break;
+    case Type::NUMERIC:
+      v = Value(Numeric(std::min<double>((double)*a0.integer(), *a1.numeric())));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    break;
+  case Type::NUMERIC:
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      v = Value(Value::type_numeric);
+      break;
+    case Type::INTEGER:
+      v = Value(Numeric(std::min<double>(*a0.numeric(), (double)*a1.integer())));
+      break;
+    case Type::NUMERIC:
+      v = Value(Numeric(std::min<double>(*a0.numeric(), *a1.numeric())));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    }
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (!a0.lvalue())
+  {
+    a0.swap(Value(std::move(v)));
+    return a0;
+  }
+  if (!a1.lvalue())
+  {
+    a1.swap(Value(std::move(v)));
+    return a1;
+  }
+  return ctx.allocate(std::move(v));
 }
 
 MINExpression * MINExpression::parse(Parser& p, Context& ctx)

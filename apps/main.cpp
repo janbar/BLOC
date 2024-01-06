@@ -112,14 +112,18 @@ int main(int argc, char **argv) {
     reader.append(";");
     bloc::Context ctx(::fileno(STDOUT), ::fileno(STDERR));
     bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &reader, bloc::StringReader::read_input);
+    bloc::Expression * exp = nullptr;
     try
     {
-      bloc::Expression * exp = p->parseExpression();
-      ctx.saveReturned(exp);
+      exp = p->parseExpression();
+      ctx.saveReturned(exp->value(ctx));
       ret = output(ctx);
+      delete exp;
     }
     catch (bloc::Error& ee)
     {
+      if (exp)
+        delete exp;
       ret = false;
       fprintf(ctx.ctxerr(), "Error: %s\n", ee.what());
       fflush(ctx.ctxerr());
@@ -157,7 +161,7 @@ int main(int argc, char **argv) {
     for (int i = 0; i < prog.size(); ++i)
     {
       const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
-      ctx.storeVariable(symbol, bloc::LiteralExpression(prog[i]));
+      ctx.storeVariable(symbol, bloc::Value(new bloc::Literal(prog[i])));
     }
     bloc::Executable * exec = nullptr;
     try { exec = bloc::Parser::parse(ctx, progfile, &read_file); }
@@ -194,29 +198,33 @@ int main(int argc, char **argv) {
 static bool output(bloc::Context& ctx)
 {
   bool ret = true;
-  bloc::Expression * exp = ctx.dropReturned();
-  if (exp)
+  bloc::Value * val = ctx.dropReturned();
+  if (val != nullptr)
   {
     try
     {
-      if (exp->type(ctx).level() == 0)
+      if (val->isNull())
       {
-        switch (exp->type(ctx).major())
+        ::fputs(bloc::Value::STR_NIL, ctx.ctxout());
+      }
+      else if (val->type().level() == 0)
+      {
+        switch (val->type().major())
         {
         case bloc::Type::BOOLEAN:
-          ::fputs(bloc::BooleanExpression::readableBoolean(exp->boolean(ctx)).c_str(), ctx.ctxout());
+          ::fputs(bloc::Value::readableBoolean(*(val->boolean())).c_str(), ctx.ctxout());
           break;
         case bloc::Type::INTEGER:
-          ::fputs(bloc::IntegerExpression::readableInteger(exp->integer(ctx)).c_str(), ctx.ctxout());
+          ::fputs(bloc::Value::readableInteger(*(val->integer())).c_str(), ctx.ctxout());
           break;
         case bloc::Type::NUMERIC:
-          ::fputs(bloc::NumericExpression::readableNumeric(exp->numeric(ctx)).c_str(), ctx.ctxout());
+          ::fputs(bloc::Value::readableNumeric(*(val->numeric())).c_str(), ctx.ctxout());
           break;
         case bloc::Type::LITERAL:
-          ::fputs(exp->literal(ctx).c_str(), ctx.ctxout());
+          ::fputs(val->literal()->c_str(), ctx.ctxout());
           break;
         case bloc::Type::ROWTYPE:
-          ::fputs(bloc::TupleExpression::readableTuple(exp->tuple(ctx), ctx).c_str(), ctx.ctxout());
+          ::fputs(bloc::Value::readableTuple(*(val->tuple())).c_str(), ctx.ctxout());
           break;
         default:
           /* not printable */
@@ -230,7 +238,7 @@ static bool output(bloc::Context& ctx)
       ret = false;
       PRINT1("Error: %s\n", re.what());
     }
-    delete exp;
+    delete val;
     ctx.purgeWorkingMemory();
   }
   return ret;

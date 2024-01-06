@@ -33,12 +33,12 @@ ComplexCTORExpression::~ComplexCTORExpression()
   _args.clear();
 }
 
-Complex& ComplexCTORExpression::complex(Context& ctx) const
+Value& ComplexCTORExpression::value(Context& ctx) const
 {
-  _tmp.swap(Complex(_type.minor()));
+  Value& tmp = ctx.allocate(Value(new Complex(_type.minor())));
   int ctor_id = (_ctor == nullptr ? (-1) : _ctor->id);
-  if (_tmp.CTOR(ctor_id, ctx, _args))
-    return _tmp;
+  if (tmp.complex()->CTOR(ctor_id, ctx, _args))
+    return tmp;
   throw RuntimeError(EXC_RT_CTOR_FAILED_S, unparse(ctx).c_str());
 }
 

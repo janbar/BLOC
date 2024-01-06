@@ -20,6 +20,7 @@
 #define PARSE_EXPRESSION_H
 
 #include "expression.h"
+#include "operator.h"
 
 namespace bloc
 {

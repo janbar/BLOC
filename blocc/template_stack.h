@@ -31,6 +31,8 @@ public:
   Stack() {}
   virtual ~Stack() {}
 
+  void reserve(unsigned sz) { _stack.reserve(sz); }
+
   bool empty() const { return (_stack.empty()); }
 
   size_t size() const { return _stack.size(); }

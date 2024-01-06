@@ -20,13 +20,6 @@
 #define BUILTIN_TAB_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_tuple.h>
 
 namespace bloc
 {
@@ -36,7 +29,7 @@ class Parser;
 
 class TABExpression : public BuiltinExpression {
 
-  Tuple::Decl _decl;
+  TupleDecl::Decl _decl;
   mutable Type _type_volatile;
 
 public:
@@ -48,15 +41,15 @@ public:
   const Type& type(Context& ctx) const override
   {
     /* return upper level of volatile level */
-    _type_volatile = _args[1]->type(ctx).levelUp();
+    _type_volatile = (_args.empty() ? Value::type_no_type.levelUp() : _args[1]->type(ctx).levelUp());
     return _type_volatile;
   }
 
-  Collection& collection(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
-  const Tuple::Decl& tuple_decl(Context& ctx) const override
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override
   {
-    return _args[1]->tuple_decl(ctx);
+    return (_args.empty() ? TupleDecl::no_decl : _args[1]->tuple_decl(ctx));
   }
 
   std::string typeName(Context& ctx) const override;

@@ -5,7 +5,6 @@
 
 #include <test.h>
 #include <hashvalue.c>
-#include <blocc/expression_integer.h>
 
 TestingContext ctx;
 
@@ -27,8 +26,8 @@ TEST_CASE("raise user")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  Expression * r = ctx.dropReturned();
-  REQUIRE( r->integer(ctx) == 2 );
+  Value * r = ctx.dropReturned();
+  REQUIRE( *(r->integer()) == 2 );
   delete r;
 }
 
@@ -48,8 +47,8 @@ TEST_CASE("raise divide_by_zero")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  Expression * r = ctx.dropReturned();
-  REQUIRE( r->integer(ctx) == 4 );
+  Value * r = ctx.dropReturned();
+  REQUIRE( *(r->integer()) == 4 );
   delete r;
 }
 
@@ -69,8 +68,8 @@ TEST_CASE("throw divide_by_zero")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  Expression * r = ctx.dropReturned();
-  REQUIRE( r->integer(ctx) == 8 );
+  Value * r = ctx.dropReturned();
+  REQUIRE( *(r->integer()) == 8 );
   delete r;
 }
 
@@ -90,8 +89,8 @@ TEST_CASE("raise out_of_range")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  Expression * r = ctx.dropReturned();
-  REQUIRE( r->integer(ctx) == 11 );
+  Value * r = ctx.dropReturned();
+  REQUIRE( *(r->integer()) == 11 );
   delete r;
 }
 
@@ -111,8 +110,8 @@ TEST_CASE("raise others")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  Expression * r = ctx.dropReturned();
-  REQUIRE( r->integer(ctx) == 15 );
+  Value * r = ctx.dropReturned();
+  REQUIRE( *(r->integer()) == 15 );
   delete r;
 }
 
@@ -138,7 +137,7 @@ TEST_CASE("unstacking on exception")
   ctx.purge();
   Executable * e;
   Symbol& a1 = ctx.registerSymbol("$1", Type::INTEGER);
-  ctx.storeVariable(a1, IntegerExpression(100));
+  ctx.storeVariable(a1, Value(Integer(100)));
   ctx.reset(
           "brk=$1*2, cnt=0;\n"
           "for i in 1 to $1 loop\n"
@@ -156,8 +155,8 @@ TEST_CASE("unstacking on exception")
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
-  Expression * r = ctx.dropReturned();
+  Value * r = ctx.dropReturned();
   REQUIRE( r != nullptr );
-  REQUIRE( r->integer(ctx) == 26 );
+  REQUIRE( *(r->integer()) == 26 );
   delete r;
 }

@@ -17,13 +17,6 @@
  */
 
 #include "tuple.h"
-#include "expression_static.h"
-#include "expression_boolean.h"
-#include "expression_integer.h"
-#include "expression_numeric.h"
-#include "expression_literal.h"
-#include "expression_complex.h"
-#include "expression_tabchar.h"
 
 #include <cstring>
 #include <cassert>
@@ -31,17 +24,11 @@
 namespace bloc
 {
 
-Tuple::~Tuple()
-{
-  for (StaticExpression * e : v)
-    delete e;
-}
-
 Tuple::Tuple(container_t&& items)
 {
   _decl.reserve(items.size());
-  for (const StaticExpression * e : items)
-    _decl.push_back(e->refType());
+  for (const Value& e : items)
+    _decl.push_back(e.type());
   _type = _decl.make_type(0);
   v.swap(items);
 }
@@ -50,8 +37,8 @@ Tuple::Tuple(const Tuple& t) : v(), _decl(t._decl), _type(t._type)
 {
   /* clone elements */
   v.reserve(t.size());
-  for (const StaticExpression * e : t.v)
-    v.push_back(e->cloneNew());
+  for (const Value& e : t.v)
+    v.push_back(e.clone());
 }
 
 void Tuple::swap(Tuple& t) noexcept
@@ -60,10 +47,15 @@ void Tuple::swap(Tuple& t) noexcept
   v.swap(t.v);
 }
 
-void Tuple::copy(Tuple& t) noexcept
+void Tuple::copy(const Tuple& t) noexcept
 {
-  assert(_type == t._type);
-  v = t.v;
+  v.clear();
+  /* clone elements */
+  v.reserve(t.size());
+  _type = t._type;
+  _decl = t._decl;
+  for (const Value& e : t.v)
+    v.push_back(e.clone());
 }
 
 }

@@ -19,14 +19,8 @@
 #include "member_set.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_collection.h>
 #include "blocc/expression_item.h"
+#include <blocc/tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -37,47 +31,53 @@
 namespace bloc
 {
 
-Tuple& MemberSETExpression::tuple(Context& ctx) const
+Value& MemberSETExpression::value(Context& ctx) const
 {
-  /* tuple */
-  Tuple& rv = _exp->tuple(ctx);
-  if (_index < rv.tuple_decl().size())
+  Value& val = _exp->value(ctx);
+  if (val.isNull())
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
+  Value& a0 = _args[0]->value(ctx);
+
+  if (val.type() == Type::ROWTYPE
+          && val.type().level() == 0 && a0.type().level() == 0)
   {
-    switch (rv.tuple_decl()[_index].major())
+    /* tuple */
+    Tuple * rv = val.tuple();
+    if (_index < rv->tuple_decl().size())
     {
-    case Type::BOOLEAN:
-      rv[_index]->refBoolean() = _args[0]->boolean(ctx);
-      break;
-    case Type::INTEGER:
-      rv[_index]->refInteger() = _args[0]->integer(ctx);
-      break;
-    case Type::NUMERIC:
-      rv[_index]->refNumeric() = _args[0]->numeric(ctx);
-      break;
-    case Type::LITERAL:
-      if (_args[0]->isRvalue())
-        rv[_index]->refLiteral().swap(_args[0]->literal(ctx));
-      else
-        rv[_index]->refLiteral() = _args[0]->literal(ctx);
-      break;
-    case Type::COMPLEX:
-      if (_args[0]->isRvalue())
-        rv[_index]->refComplex().swap(_args[0]->complex(ctx));
-      else
-        rv[_index]->refComplex() = _args[0]->complex(ctx);
-      break;
-    case Type::TABCHAR:
-      if (_args[0]->isRvalue())
-        rv[_index]->refTabchar().swap(_args[0]->tabchar(ctx));
-      else
-        rv[_index]->refTabchar() = _args[0]->tabchar(ctx);
-      break;
-    default:
-      throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+      if (rv->tuple_decl()[_index] == a0.type())
+      {
+        if (a0.lvalue())
+          rv->at(_index).swap(a0.clone());
+        else
+          rv->at(_index).swap(std::move(a0));
+        return val;
+      }
+      /* type mixing */
+      switch (rv->tuple_decl()[_index].major())
+      {
+      case Type::INTEGER:
+        if (a0.type() == Type::NUMERIC)
+        {
+          rv->at(_index).swap(Value(Integer(*a0.numeric())));
+          return val;
+        }
+        break;
+      case Type::NUMERIC:
+        if (a0.type() == Type::INTEGER)
+        {
+          rv->at(_index).swap(Value(Numeric(*a0.integer())));
+          return val;
+        }
+        break;
+      default:
+        break;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, rv->tuple_decl()[_index].typeName().c_str());
     }
-    return rv;
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
   }
-  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
+  throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_SET]);
 }
 
 std::string MemberSETExpression::unparse(Context& ctx) const
@@ -125,12 +125,7 @@ MemberSETExpression * MemberSETExpression::parse(Parser& p, Context& ctx, Expres
       throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
     args.push_back(ParseExpression::expression(p, ctx));
 
-    if (exp_type.minor() == 0) /* opaque */
-    {
-      if (!exp->isStored())
-        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
-    }
-    else
+    if (exp_type.minor() != 0) /* not opaque */
     {
       /* test item range */
       if (item_no < 1 || item_no > exp->tuple_decl(ctx).size())

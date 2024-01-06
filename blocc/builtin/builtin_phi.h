@@ -20,7 +20,6 @@
 #define BUILTIN_PHI_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_numeric.h>
 
 namespace bloc
 {
@@ -30,15 +29,19 @@ class Parser;
 
 class PHIExpression : public BuiltinExpression {
 
+  mutable Value v;
+
 public:
 
   virtual ~PHIExpression() { }
 
-  PHIExpression() : BuiltinExpression(FUNC_PHI) { }
+  PHIExpression() : BuiltinExpression(FUNC_PHI), v(Numeric(1.618033988749895)) { v.to_lvalue(true); }
 
-  const Type& type(Context& ctx) const override { return NumericExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_numeric; }
 
-  double numeric(Context& ctx) const override { return 1.618033988749895; }
+  Value& value(Context& ctx) const override { return v; }
+
+  bool isConst() const override { return true; }
 };
 
 }

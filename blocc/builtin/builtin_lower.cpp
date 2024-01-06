@@ -26,17 +26,31 @@
 namespace bloc
 {
 
-std::string& LOWERExpression::literal(Context & ctx) const
+Value& LOWERExpression::value(Context & ctx) const
 {
-  if (_args[0]->isRvalue())
+  Value& val = _args[0]->value(ctx);
+
+  switch (val.type().major())
   {
-    std::string& rv = _args[0]->literal(ctx);
-    std::transform(rv.begin(), rv.end(), rv.begin(), ::tolower);
-    return rv;
+  case Type::NO_TYPE:
+    if (val.lvalue())
+      return ctx.allocate(Value(Value::type_literal));
+    val.swap(Value(Value::type_literal));
+    return val;
+  case Type::LITERAL:
+    if (val.isNull())
+      return val;
+    if (val.lvalue())
+    {
+      Literal * tmp = new Literal(*val.literal());
+      std::transform(tmp->begin(), tmp->end(), tmp->begin(), ::tolower);
+      return ctx.allocate(Value(tmp));
+    }
+    std::transform(val.literal()->begin(), val.literal()->end(), val.literal()->begin(), ::tolower);
+    return val;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }
-  std::string& rv = ctx.allocate(std::string(_args[0]->literal(ctx)));
-  std::transform(rv.begin(), rv.end(), rv.begin(), ::tolower);
-  return rv;
 }
 
 LOWERExpression * LOWERExpression::parse(Parser& p, Context& ctx)

@@ -20,7 +20,6 @@
 #define BUILTIN_RAW_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_tabchar.h>
 
 namespace bloc
 {
@@ -36,9 +35,9 @@ public:
 
   explicit RAWExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_RAW, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return TabcharExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_tabchar; }
 
-  TabChar& tabchar(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static RAWExpression * parse(Parser& p, Context& ctx);
 };

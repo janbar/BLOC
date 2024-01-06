@@ -21,15 +21,15 @@
 
 #include "symbol.h"
 #include "template_stack.h"
-#include "template_temporary.h"
-#include "expression_static.h"
+#include "exception_runtime.h"
+#include "value.h"
 
 #include <string>
 #include <forward_list>
 #include <map>
 #include <algorithm>
 #include <chrono>
-
+#include "debug.h"
 namespace bloc
 {
 
@@ -93,30 +93,27 @@ public:
   /**
    * Register symbol of tuple type
    */
-  Symbol& registerSymbol(const std::string& name, const Tuple::Decl& decl, Type::TypeLevel level);
+  Symbol& registerSymbol(const std::string& name, const TupleDecl::Decl& decl, Type::TypeLevel level);
 
-  StaticExpression * loadVariable(const std::string& symbolName)
+  Value * loadVariable(const std::string& symbolName)
   {
     const Symbol * symbol = findSymbol(symbolName);
     if (symbol)
-      return loadVariable(*symbol);
+      return &loadVariable(*symbol);
     return nullptr;
   }
 
-  StaticExpression * loadVariable(const Symbol& symbol)
+  Value& loadVariable(const Symbol& symbol)
   {
     return _storage[symbol.id];
   }
 
   void clearVariable(const Symbol& symbol)
   {
-    StaticExpression * e = _storage[symbol.id];
-    _storage[symbol.id] = nullptr;
-    if (e)
-      delete e;
+    _storage[symbol.id] = Value();
   }
 
-  StaticExpression& storeVariable(const Symbol& symbol, StaticExpression&& e);
+  Value& storeVariable(const Symbol& symbol, Value&& e);
 
   void describeSymbol(const std::string& name);
   void describeSymbol(const Symbol& symbol);
@@ -197,8 +194,8 @@ public:
     return _returnCondition;
   }
 
-  void saveReturned(Expression * ret);
-  Expression * dropReturned();
+  void saveReturned(Value& ret);
+  Value * dropReturned();
 
   /**************************************************************************/
   /* Events                                                                 */
@@ -206,7 +203,7 @@ public:
 
   void onStatementEnd(const Statement * s)
   {
-    purgeWorkingMemory();
+    _temporary_storage.clear();
   }
 
   void onRuntimeError();
@@ -253,35 +250,12 @@ public:
   /* Temporary management                                                   */
   /**************************************************************************/
 
-  std::string& allocate(std::string&& v)
+  Value& allocate(Value&& v)
   {
-    Temporary<std::string> * tmp = new Temporary<std::string>(std::move(v));
-    _temporary_storage.push_back(tmp);
-    return tmp->handle;
+    return _temporary_storage.keep(std::move(v));
   }
 
-  TabChar& allocate(TabChar&& v)
-  {
-    Temporary<TabChar> * tmp = new Temporary<TabChar>(std::move(v));
-    _temporary_storage.push_back(tmp);
-    return tmp->handle;
-  }
-
-  Collection& allocate(Collection&& v)
-  {
-    Temporary<Collection> * tmp = new Temporary<Collection>(std::move(v));
-    _temporary_storage.push_back(tmp);
-    return tmp->handle;
-  }
-
-  Tuple& allocate(Tuple&& v)
-  {
-    Temporary<Tuple> * tmp = new Temporary<Tuple>(std::move(v));
-    _temporary_storage.push_back(tmp);
-    return tmp->handle;
-  }
-
-  size_t allocationCount() const { return _temporary_storage.size(); }
+  size_t allocationCount() const { return _temporary_storage.count(); }
 
   /**
    * Purge temporary storage allocated by a standalone expression or statement.
@@ -289,7 +263,7 @@ public:
    * failure, a manual purge of working allocations is required:
    *
    * Processing an Expression:
-   * It is obvious that the working memory is needed as int64_t as the payload has
+   * It is obvious that the working memory is needed as long as the payload has
    * not been processed. Also the memory is not freed on exception. So in any
    * case we have to perform the purge, either after the payload has been
    * processed, or catching exception RuntimeError.
@@ -322,9 +296,7 @@ public:
    */
   void purgeWorkingMemory()
   {
-    for (auto tmp : _temporary_storage)
-      delete tmp;
-    _temporary_storage.clear();
+    _temporary_storage.purge();
   }
 
   /**************************************************************************/
@@ -354,7 +326,7 @@ private:
 
   /* memory pool */
   std::vector<Symbol*> _symbols;
-  std::vector<StaticExpression*> _storage;
+  std::vector<Value> _storage;
 
   /* stack of looping statement */
   Stack<const Statement*> _controlstack;
@@ -363,13 +335,46 @@ private:
   Stack<const Statement*> _execstack;
 
   /* temporary pool */
-  std::vector<TemporaryBase*> _temporary_storage;
+  class Pool
+  {
+    unsigned wm = 0;
+    std::vector<Value*> pool;
+  public:
+    Pool() { }
+    ~Pool()
+    {
+      for (Value * v : pool)
+        delete v;
+    }
+    Value& keep(Value&& v)
+    {
+      if (wm < pool.size())
+        pool[wm]->swap(std::move(v));
+      else
+        pool.push_back(new Value(std::move(v)));
+      return *pool[wm++];
+    }
+    void clear()
+    {
+      wm = 0;
+    }
+    void purge()
+    {
+      wm = 0;
+      for (Value * v : pool)
+        v->swap(Value());
+    }
+    size_t count() const { return pool.size(); }
+    size_t reserved() const { return pool.max_size(); }
+  };
+
+  Pool _temporary_storage;
 
   bool _trace = false;
   bool _breakCondition = false;
   bool _continueCondition = false;
   bool _returnCondition = false;
-  Expression * _returned = nullptr;
+  Value * _returned = nullptr;
 
   FILE * _sout = nullptr; // stream for output
   FILE * _serr = nullptr; // stream for errors

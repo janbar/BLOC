@@ -17,7 +17,7 @@
  */
 
 #include "expression_item.h"
-#include "expression_null.h"
+#include "tuple.h"
 #include "parse_expression.h"
 #include "exception_parse.h"
 #include "context.h"
@@ -41,49 +41,15 @@ const Type& ItemExpression::type(Context&ctx) const
     return _opaque;
   if (_index < _exp->tuple_decl(ctx).size())
     return _exp->tuple_decl(ctx)[_index];
-  return NullExpression::null;
+  return Value::type_no_type;
 }
 
-bool ItemExpression::boolean(Context& ctx) const
+Value& ItemExpression::value(Context& ctx) const
 {
-  if (_index < _exp->tuple_decl(ctx).size())
-    return _exp->tuple(ctx)[_index]->boolean(ctx);
-  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
-}
-
-int64_t ItemExpression::integer(Context& ctx) const
-{
-  if (_index < _exp->tuple_decl(ctx).size())
-    return _exp->tuple(ctx)[_index]->integer(ctx);
-  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
-}
-
-double ItemExpression::numeric(Context& ctx) const
-{
-  if (_index < _exp->tuple_decl(ctx).size())
-    return _exp->tuple(ctx)[_index]->numeric(ctx);
-  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
-}
-
-std::string& ItemExpression::literal(Context& ctx) const
-{
-  if (_index < _exp->tuple_decl(ctx).size())
-    return _exp->tuple(ctx)[_index]->literal(ctx);
-  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
-}
-
-TabChar& ItemExpression::tabchar(Context& ctx) const
-{
-  if (_index < _exp->tuple_decl(ctx).size())
-    return _exp->tuple(ctx)[_index]->tabchar(ctx);
-  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
-}
-
-Complex& ItemExpression::complex(Context& ctx) const
-{
-  if (_index < _exp->tuple_decl(ctx).size())
-    return _exp->tuple(ctx)[_index]->complex(ctx);
-  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index).c_str());
+  Value& val = _exp->value(ctx);
+  if (!val.isNull() && val.tuple()->tuple_decl().size() > _index)
+    return val.tuple()->at(_index).to_lvalue(val.lvalue());
+  throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(_index + 1).c_str());
 }
 
 std::string ItemExpression::unparse(Context& ctx) const
@@ -103,12 +69,7 @@ ItemExpression * ItemExpression::parse(Parser& p, Context& ctx, Expression * exp
   {
   case Type::NO_TYPE:
   case Type::ROWTYPE:
-    if (exp_type.minor() == 0) /* opaque */
-    {
-      if (!exp->isStored())
-        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
-    }
-    else
+    if (exp_type.minor() != 0) /* not opaque */
     {
       if (item_no < 1 || item_no > exp->tuple_decl(ctx).size())
         throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());

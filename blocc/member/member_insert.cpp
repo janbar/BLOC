@@ -19,14 +19,8 @@
 #include "member_insert.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_tabchar.h>
-#include <blocc/expression_tuple.h>
-#include <blocc/expression_collection.h>
+#include <blocc/collection.h>
+#include <blocc/tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -37,184 +31,179 @@
 namespace bloc
 {
 
-std::string& MemberINSERTExpression::literal(Context& ctx) const
+Value& MemberINSERTExpression::value(Context& ctx) const
 {
-  /* literal */
-  std::string& rv = _exp->literal(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p > rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  switch (_args[0]->type(ctx).major())
-  {
-  case Type::LITERAL:
-    rv.insert(p, _args[1]->literal(ctx));
-    return rv;
-  case Type::INTEGER:
-  {
-    int64_t c = _args[1]->integer(ctx);
-    if (c < 1 || c > 255)
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    rv.insert(p, 1, (char)c);
-    return rv;
-  }
-  default:
-    break;
-  }
+  Value& val = _exp->value(ctx);
+  Value& a0 = _args[0]->value(ctx);
+  if (a0.isNull())
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+  Value& a1 = _args[1]->value(ctx);
 
-  throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
-}
-
-TabChar& MemberINSERTExpression::tabchar(Context& ctx) const
-{
-  /* tabchar */
-  TabChar& rv = _exp->tabchar(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p > rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  switch (_args[0]->type(ctx).major())
+  if (val.type().level() > 0)
   {
-  case Type::TABCHAR:
-  {
-    TabChar& a = _args[1]->tabchar(ctx);
-    if (&a == &rv)
+    Collection * rv = val.collection();
+    const Type& rv_type = rv->table_type();
+    Integer p = *a0.integer();
+    if (p < 0 || p > rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    if (a1.isNull())
+      return val;
+    const Type& a1_type = a1.type();
+    /* collection */
+    if (a1_type.level() > 0)
     {
-      TabChar _a(a);
-      rv.insert(rv.begin() + p, _a.begin(), _a.end());
-    }
-    else
-      rv.insert(rv.begin() + p, a.begin(), a.end());
-    return rv;
-  }
-  case Type::LITERAL:
-  {
-    std::string& a = _args[1]->literal(ctx);
-    rv.insert(rv.begin() + p, a.begin(), a.end());
-    return rv;
-  }
-  case Type::INTEGER:
-  {
-    int64_t c = _args[1]->integer(ctx);
-    if (c < 0 || c > 255)
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    rv.insert(rv.begin() + p, (char)c);
-    return rv;
-  }
-  default:
-    break;
-  }
-
-  throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
-}
-
-Collection& MemberINSERTExpression::collection(Context& ctx) const
-{
-  Collection& rv = _exp->collection(ctx);
-  const Type& rv_type = rv.table_type();
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p > rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-
-  const Type& arg_type = _args[1]->type(ctx);
-  /* collection */
-  if (arg_type.level() > 0)
-  {
-    Collection& a = _args[1]->collection(ctx);
-    if (a.table_type() == rv_type)
-    {
-      /* allocate once and for all */
-      rv.reserve(rv.size() + a.size());
-      if (&a == &rv)
+      if (val.isNull())
+        return val;
+      Collection * a = a1.collection();
+      if (a->table_type() == rv_type)
       {
-        /* clone and move */
-        Collection _a(a);
-        Collection::const_iterator it = rv.begin() + p;
-        for (StaticExpression * e : _a)
-          it = rv.insert(it, e->swapNew());
-        _a.clear();
-      }
-      else if (_args[1]->isRvalue())
-      {
-        /* move */
-        Collection::const_iterator it = rv.begin() + p;
-        for (StaticExpression * e : a)
-          it = rv.insert(it, e->swapNew());
-        a.clear();
-      }
-      else
-      {
-        /* inline clone */
-        Collection::const_iterator it = rv.begin() + p;
-        for (const StaticExpression * e : a)
-          it = rv.insert(it, e->cloneNew());
-      }
-      return rv;
-    }
-    else if (a.table_type() == rv_type.levelDown())
-    {
-      if (_args[1]->isRvalue())
-        rv.insert(rv.begin() + p, new CollectionExpression(std::move(a)));
-      else
-        rv.insert(rv.begin() + p, new CollectionExpression(a));
-
-      return rv;
-    }
-    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
-  }
-  else if (arg_type == rv_type.major())
-  {
-    /* tuple */
-    if (arg_type == Type::ROWTYPE)
-    {
-      Tuple& t = _args[1]->tuple(ctx);
-      if (t.tuple_type() == rv_type.levelDown())
-      {
-        if (_args[1]->isRvalue())
-          rv.insert(rv.begin() + p, new TupleExpression(std::move(t)));
+        /* allocate once and for all */
+        rv->reserve(rv->size() + a->size());
+        if (a == rv)
+        {
+          /* clone and move */
+          Collection _a(*a);
+          Collection::const_iterator it = rv->begin() + p;
+          for (Value& e : _a)
+            it = rv->insert(it, std::move(e));
+          _a.clear();
+        }
+        else if (a1.lvalue())
+        {
+          /* inline clone */
+          Collection::const_iterator it = rv->begin() + p;
+          for (Value& e : *a)
+            it = rv->insert(it, e.clone());
+        }
         else
-          rv.insert(rv.begin() + p, new TupleExpression(t));
-        return rv;
+        {
+          /* move */
+          Collection::const_iterator it = rv->begin() + p;
+          for (Value& e : *a)
+            it = rv->insert(it, std::move(e));
+        }
+        return val;
       }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+      else if (a->table_type() == rv_type.levelDown())
+      {
+        if (a1.lvalue())
+          rv->insert(rv->begin() + p, a1.clone());
+        else
+          rv->insert(rv->begin() + p, std::move(a1));
+        return val;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
+    }
+    /* tuple */
+    if (a1_type == Type::ROWTYPE)
+    {
+      if (a1.tuple()->tuple_type() == rv_type.levelDown())
+      {
+        if (a1.lvalue())
+          rv->insert(rv->begin() + p, a1.clone());
+        else
+          rv->insert(rv->begin() + p, std::move(a1));
+        return val;
+      }
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
     }
     /* others */
-    else if (arg_type == rv_type.levelDown())
+    if (a1_type == rv_type.levelDown())
     {
-      switch (arg_type.major())
+      if (a1.lvalue())
+        rv->insert(rv->begin() + p, a1.clone());
+      else
+        rv->insert(rv->begin() + p, std::move(a1));
+      return val;
+    }
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
+  }
+
+  switch (val.type().major())
+  {
+    /* literal */
+  case Type::LITERAL:
+  {
+    Literal * rv = val.literal();
+    Integer p = *a0.integer();
+    if (p < 0 || p > rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    if (a1.isNull())
+      return val;
+    switch (a1.type().major())
+    {
+    case Type::LITERAL:
+      if (_exp->isConst())
       {
-      case Type::BOOLEAN:
-        rv.insert(rv.begin() + p, new BooleanExpression(_args[1]->boolean(ctx)));
-        break;
-      case Type::INTEGER:
-        rv.insert(rv.begin() + p, new IntegerExpression(_args[1]->integer(ctx)));
-        break;
-      case Type::NUMERIC:
-        rv.insert(rv.begin() + p, new NumericExpression(_args[1]->numeric(ctx)));
-        break;
-      case Type::COMPLEX:
-        if (_args[1]->isRvalue())
-          rv.insert(rv.begin() + p, new ComplexExpression(std::move(_args[1]->complex(ctx))));
-        else
-          rv.insert(rv.begin() + p, new ComplexExpression(_args[1]->complex(ctx)));
-        break;
-      case Type::LITERAL:
-        if (_args[1]->isRvalue())
-          rv.insert(rv.begin() + p, new LiteralExpression(std::move(_args[1]->literal(ctx))));
-        else
-          rv.insert(rv.begin() + p, new LiteralExpression(_args[1]->literal(ctx)));
-        break;
-      case Type::TABCHAR:
-        if (_args[1]->isRvalue())
-          rv.insert(rv.begin() + p, new TabcharExpression(std::move(_args[1]->tabchar(ctx))));
-        else
-          rv.insert(rv.begin() + p, new TabcharExpression(_args[1]->tabchar(ctx)));
-        break;
-      default:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+        Value v(new Literal(*rv));
+        v.literal()->insert(p, *a1.literal());
+        return ctx.allocate(std::move(v));
       }
-      return rv;
+      rv->insert(p, *a1.literal());
+      return val;
+    case Type::INTEGER:
+    {
+      Integer c = *a1.integer();
+      if (c < 1 || c > 255)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      if (_exp->isConst())
+      {
+        Value v(new Literal(*rv));
+        v.literal()->insert(p, 1, (char)c);
+        return ctx.allocate(std::move(v));
+      }
+      rv->insert(p, 1, (char)c);
+      return val;
+    }
+    default:
+      break;
     }
   }
-  throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, _exp->typeName(ctx).c_str());
+    /* tabchar */
+  case Type::TABCHAR:
+  {
+    TabChar * rv = val.tabchar();
+    Integer p = *a0.integer();
+    if (p < 0 || p > rv->size())
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+    if (a1.isNull())
+      return val;
+    switch (a1.type().major())
+    {
+    case Type::TABCHAR:
+    {
+      TabChar * a = a1.tabchar();
+      if (a == rv)
+      {
+        TabChar _a(*a);
+        rv->insert(rv->begin() + p, _a.begin(), _a.end());
+      }
+      else
+        rv->insert(rv->begin() + p, a->begin(), a->end());
+      return val;
+    }
+    case Type::LITERAL:
+    {
+      std::string * a = a1.literal();
+      rv->insert(rv->begin() + p, a->begin(), a->end());
+      return val;
+    }
+    case Type::INTEGER:
+    {
+      Integer c = *a1.integer();
+      if (c < 0 || c > 255)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      rv->insert(rv->begin() + p, (char)c);
+      return val;
+    }
+    default:
+      break;
+    }
+  }
+  default:
+    break;
+  }
+  throw RuntimeError(EXC_RT_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT]);
 }
 
 MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, Expression * exp)

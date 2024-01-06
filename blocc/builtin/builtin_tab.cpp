@@ -17,127 +17,56 @@
  */
 
 #include "builtin_tab.h"
-#include <blocc/expression_collection.h>
-#include <blocc/expression_tuple.h>
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/plugin_manager.h>
+#include <blocc/collection.h>
+#include <blocc/tuple.h>
 #include <blocc/debug.h>
 
 namespace bloc
 {
 
-Collection& TABExpression::collection(Context & ctx) const
+Value& TABExpression::value(Context & ctx) const
 {
-  int64_t n = _args[0]->integer(ctx);
+  if (_args.empty())
+    return ctx.allocate(Value(Value::type_no_type.levelUp()));
+  Value& a0 = _args[0]->value(ctx);
+  if (a0.isNull())
+    return ctx.allocate(Value(_args[1]->value(ctx).type().levelUp()));
+  Integer n = *a0.integer();
   if (n < 0)
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
 
-  const Type& arg1_type = _args[1]->type(ctx);
-  if (arg1_type.level() == TYPE_LEVEL_MAX - 1)
-    throw RuntimeError(EXC_RT_OUT_OF_DIMENSION);
-
-  Collection * tab;
-
-  if (arg1_type.level() == 0)
+  Collection * tab = nullptr;
+  do
   {
-    switch (arg1_type.major())
+    Value& a1 = _args[1]->value(ctx); /* execute expression */
+    if (tab == nullptr)
     {
-    case Type::BOOLEAN:
-    {
-      bool b = _args[1]->boolean(ctx);
-      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
-      tab->reserve(n);
-      for (int i = 0; i < n; ++i)
-        tab->push_back(new BooleanExpression(b));
-      break;
-    }
-    case Type::INTEGER:
-    {
-      int64_t l = _args[1]->integer(ctx);
-      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
-      tab->reserve(n);
-      for (int i = 0; i < n; ++i)
-        tab->push_back(new IntegerExpression(l));
-      break;
-    }
-    case Type::NUMERIC:
-    {
-      double d = _args[1]->numeric(ctx);
-      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
-      tab->reserve(n);
-      for (int i = 0; i < n; ++i)
-        tab->push_back(new NumericExpression(d));
-      break;
-    }
-    case Type::LITERAL:
-    {
-      const std::string& s = _args[1]->literal(ctx);
-      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
-      tab->reserve(n);
-      for (int i = 0; i < n; ++i)
-        tab->push_back(new LiteralExpression(s));
-      break;
-    }
-    case Type::COMPLEX:
-    {
-      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
-      tab->reserve(n);
-      /* execute ctor or method for each */
-      if (_args[1]->isRvalue())
-      {
-        for (int i = 0; i < n; ++i)
-          tab->push_back(new ComplexExpression(std::move(_args[1]->complex(ctx))));
-      }
+      /* initialize the collection */
+      if (a1.type().level() == TYPE_LEVEL_MAX - 1)
+        throw RuntimeError(EXC_RT_OUT_OF_DIMENSION);
+      /* initialize with the type of value */
+      if (a1.type() != Type::ROWTYPE || a1.isNull())
+        tab = new Collection(a1.type().levelUp());
+      else if (a1.type().level() > 0)
+        tab = new Collection(a1.collection()->table_decl(), a1.type().level()+1);
       else
-      {
-        for (int i = 0; i < n; ++i)
-          tab->push_back(new ComplexExpression(_args[1]->complex(ctx)));
-      }
-      break;
-    }
-    case Type::TABCHAR:
-    {
-      const TabChar& r = _args[1]->tabchar(ctx);
-      tab = &ctx.allocate(Collection(arg1_type.levelUp()));
+        tab = new Collection(a1.tuple()->tuple_decl(), a1.type().level()+1);
       tab->reserve(n);
-      for (int i = 0; i < n; ++i)
-        tab->push_back(new TabcharExpression(r));
+    }
+    /* break now for an empty collection */
+    if (n == 0)
       break;
-    }
-    case Type::ROWTYPE:
-    {
-      /* first execute to discover any opaque type */
-      Tuple& tuple = _args[1]->tuple(ctx);
-      tab = &ctx.allocate(Collection(tuple.tuple_decl(), 1));
-      if (n > 0)
-      {
-        tab->reserve(n);
-        tab->push_back(new TupleExpression(tuple));
-        /* tuple item could be complex ctor, so execute ctor for each */
-        for (int i = 1; i < n; ++i)
-          tab->push_back(new TupleExpression(_args[1]->tuple(ctx)));
-      }
-      break;
-    }
-    default:
-      throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[FUNC_TAB]);
-    }
-  }
-  else
-  {
-    const Collection& t = _args[1]->collection(ctx);
-    if (t.table_type().major() == Type::ROWTYPE)
-      tab = &ctx.allocate(Collection(t.table_decl(), t.table_type().level() + 1));
+    if (a1.lvalue())
+      tab->push_back(a1.clone());
     else
-      tab = &ctx.allocate(Collection(t.table_type().levelUp()));
-    tab->reserve(n);
-    for (int i = 0; i < n; ++i)
-      tab->push_back(new CollectionExpression(t));
-  }
-  return *tab;
+      tab->push_back(std::move(a1));
+  } while (--n > 0);
+  return ctx.allocate(Value(tab));
 }
 
 std::string TABExpression::typeName(Context& ctx) const
@@ -162,30 +91,33 @@ TABExpression * TABExpression::parse(Parser& p, Context& ctx)
     TokenPtr t = p.pop();
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TAB]);
-    args.push_back(ParseExpression::expression(p, ctx));
-    if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TAB]);
-    t = p.pop();
-    if (t->code != Parser::CHAIN)
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TAB]);
-    args.push_back(ParseExpression::expression(p, ctx));
-    Type b_type = args.back()->type(ctx);
-    switch (b_type.major())
+    if (p.front()->code != ')')
     {
-    case Type::NO_TYPE: /* opaque */
-    case Type::BOOLEAN:
-    case Type::INTEGER:
-    case Type::NUMERIC:
-    case Type::LITERAL:
-    case Type::COMPLEX:
-    case Type::TABCHAR:
-    case Type::ROWTYPE:
-      break;
-    default:
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[FUNC_TAB]);
+      args.push_back(ParseExpression::expression(p, ctx));
+      if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TAB]);
+      t = p.pop();
+      if (t->code != Parser::CHAIN)
+        throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TAB]);
+      args.push_back(ParseExpression::expression(p, ctx));
+      Type b_type = args.back()->type(ctx);
+      switch (b_type.major())
+      {
+      case Type::NO_TYPE: /* opaque */
+      case Type::BOOLEAN:
+      case Type::INTEGER:
+      case Type::NUMERIC:
+      case Type::LITERAL:
+      case Type::COMPLEX:
+      case Type::TABCHAR:
+      case Type::ROWTYPE:
+        break;
+      default:
+        throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[FUNC_TAB]);
+      }
+      if (b_type.level() == TYPE_LEVEL_MAX)
+        throw ParseError(EXC_PARSE_OUT_OF_DIMENSION);
     }
-    if (b_type.level() == TYPE_LEVEL_MAX)
-      throw ParseError(EXC_PARSE_OUT_OF_DIMENSION);
     assertClosedFunction(p, ctx, FUNC_TAB);
     return new TABExpression(std::move(args));
   }

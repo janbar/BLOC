@@ -16,26 +16,43 @@
  *
  */
 
-#include "expression_null.h"
+#ifndef OP_ADD_H_
+#define OP_ADD_H_
 
-#include <cmath>
+#include <blocc/operator.h>
+#include <blocc/expression.h>
 
 namespace bloc
 {
 
-const Type& NullExpression::null = Type(Type::COMPLEX);
-const Complex& NullExpression::null_complex = Complex(0);
+class Context;
+class Parser;
 
-const double& NullExpression::null_numeric = NAN;
-const std::string& NullExpression::null_literal = std::string("");
-const TabChar& NullExpression::null_tabchar = TabChar();
-const Collection& NullExpression::null_collection = Collection(Type::NO_TYPE);
-const Tuple& NullExpression::null_tuple = Tuple(Tuple::container_t());
-
-NullExpression::~NullExpression()
+class OpADDExpression : public Expression
 {
-  if (v)
-    delete v;
-}
+  Expression * arg1 = nullptr;
+  Expression * arg2 = nullptr;
+
+public:
+
+  virtual ~OpADDExpression();
+
+  OpADDExpression(Expression * a, Expression * b)
+  : arg1(a), arg2(b) { }
+
+  const Type& type(Context& ctx) const override;
+
+  Value& value(Context& ctx) const override;
+
+  std::string unparse(Context& ctx) const override;
+
+  std::string toString(Context& ctx) const override
+  {
+    return Operator::OPVALS[Operator::OP_ADD];
+  }
+};
 
 }
+
+#endif /* OP_ADD_H */
+

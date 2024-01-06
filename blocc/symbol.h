@@ -41,7 +41,7 @@ public:
 
   Symbol(const Symbol&) = default;
 
-  void safety(bool b) { _safety = b; }
+  void safety(bool b) const { _safety = b; }
   bool safety() const { return _safety; }
 
   void upgrade(const Type& to_type);
@@ -52,7 +52,7 @@ public:
 
 private:
   Decl _decl;
-  bool _safety = false;
+  mutable bool _safety = false;
 };
 
 }

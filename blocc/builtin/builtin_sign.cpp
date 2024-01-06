@@ -26,16 +26,28 @@
 namespace bloc
 {
 
-int64_t SIGNExpression::integer(Context & ctx) const
+Value& SIGNExpression::value(Context & ctx) const
 {
-  int64_t l = _args[0]->integer(ctx);
-  return (l < 0 ? -1L : l > 0 ? 1L : 0L);
-}
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
 
-double SIGNExpression::numeric(Context & ctx) const
-{
-  double d = _args[0]->numeric(ctx);
-  return (d < 0 ? -1.0 : d > 0 ? 1.0 : 0.0);
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    v = Value(Integer(*val.integer() < 0 ? -1 : *val.integer() > 0 ? 1 : 0));
+    break;
+  case Type::NUMERIC:
+    v = Value(Numeric(*val.numeric() < 0.0 ? -1.0 : *val.numeric() > 0.0 ? 1.0 : 0.0));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 SIGNExpression * SIGNExpression::parse(Parser& p, Context& ctx)

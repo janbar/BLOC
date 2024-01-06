@@ -26,26 +26,40 @@
 namespace bloc
 {
 
-std::string& RTRIMExpression::literal(Context & ctx) const
+Value& RTRIMExpression::value(Context & ctx) const
 {
-  int64_t a;
-  if (_args[0]->isRvalue())
+  Value& val = _args[0]->value(ctx);
+
+  switch (val.type().major())
   {
-    std::string& rv = _args[0]->literal(ctx);
-    a = rv.length() - 1;
-    while (a >= 0 && rv[a] == ' ') --a;
+  case Type::NO_TYPE:
+    if (val.lvalue())
+      return ctx.allocate(Value(Value::type_literal));
+    val.swap(Value(Value::type_literal));
+    return val;
+  case Type::LITERAL:
+  {
+    if (val.isNull())
+      return val;
+    int64_t a;
+    Literal * rv = val.literal();
+    a = rv->size() - 1;
+    while (a >= 0 && rv->at(a) == ' ') --a;
     if (a >= 0)
-      rv.assign(rv.substr(0, a + 1));
-    else
-      rv.clear();
-    return rv;
+    {
+      if (val.lvalue())
+        return ctx.allocate(Value(new Literal(rv->substr(0, a + 1))));
+      val.literal()->assign(rv->substr(0, a + 1));
+      return val;
+    }
+    if (val.lvalue())
+      return ctx.allocate(Value(new Literal()));
+    val.literal()->clear();
+    return val;
   }
-  const std::string& var = _args[0]->literal(ctx);
-  a = var.length() - 1;
-  while (a >= 0 && var[a] == ' ') --a;
-  if (a >= 0)
-    return ctx.allocate(var.substr(0, a + 1));
-  return ctx.allocate(std::string());
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
 }
 
 RTRIMExpression * RTRIMExpression::parse(Parser& p, Context& ctx)

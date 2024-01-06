@@ -21,10 +21,7 @@
 #include "parse_expression.h"
 #include "parser.h"
 #include "context.h"
-#include "expression_boolean.h"
-#include "expression_integer.h"
-#include "expression_numeric.h"
-#include "expression_tabchar.h"
+#include "value.h"
 #include "debug.h"
 
 #include <cstdio>
@@ -43,42 +40,37 @@ const Statement * PUTStatement::doit(Context& ctx) const
 {
   for (const Expression * exp : _args)
   {
-    const Type& exp_type = exp->type(ctx);
-    if (exp_type.level() == 0)
+    Value& val = exp->value(ctx);
+    if (!val.isNull())
     {
-      switch (exp_type.major())
+      const Type& val_type = val.type();
+      if (val_type.level() == 0)
       {
-      case Type::NO_TYPE:
-        throw RuntimeError(EXC_RT_OPAQUE_INLINE);
+        switch (val_type.major())
+        {
+        case Type::NO_TYPE:
+          throw RuntimeError(EXC_RT_OPAQUE_INLINE);
 
-      case Type::LITERAL:
-        fputs(exp->literal(ctx).c_str(), ctx.ctxout());
-        break;
-      case Type::BOOLEAN:
-        fputs(BooleanExpression::readableBoolean(exp->boolean(ctx)).c_str(), ctx.ctxout());
-        break;
-      case Type::INTEGER:
-        fputs(IntegerExpression::readableInteger(exp->integer(ctx)).c_str(), ctx.ctxout());
-        break;
-      case Type::NUMERIC:
-        fputs(NumericExpression::readableNumeric(exp->numeric(ctx)).c_str(), ctx.ctxout());
-        break;
-      case Type::COMPLEX:
-        exp->complex(ctx); /* execute expression */
-        break;
-      case Type::TABCHAR:
-        exp->tabchar(ctx); /* execute expression */
-        break;
-      case Type::ROWTYPE:
-        exp->tuple(ctx); /* execute expression */
-        break;
-      default:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+        case Type::LITERAL:
+          fputs(val.literal()->c_str(), ctx.ctxout());
+          break;
+        case Type::BOOLEAN:
+          fputs(Value::readableBoolean(*val.boolean()).c_str(), ctx.ctxout());
+          break;
+        case Type::INTEGER:
+          fputs(Value::readableInteger(*val.integer()).c_str(), ctx.ctxout());
+          break;
+        case Type::NUMERIC:
+          fputs(Value::readableNumeric(*val.numeric()).c_str(), ctx.ctxout());
+          break;
+        case Type::COMPLEX:
+        case Type::TABCHAR:
+        case Type::ROWTYPE:
+          break;
+        default:
+          throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+        }
       }
-    }
-    else
-    {
-      exp->collection(ctx); /* execute expression */
     }
   }
   fflush(ctx.ctxout());

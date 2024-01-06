@@ -20,7 +20,6 @@
 #define BUILTIN_ASIN_H_
 
 #include <blocc/expression_builtin.h>
-#include <blocc/expression_numeric.h>
 
 namespace bloc
 {
@@ -36,9 +35,9 @@ public:
 
   explicit ASINExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_ASIN, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return NumericExpression::type_static; }
+  const Type& type(Context& ctx) const override { return Value::type_numeric; }
 
-  double numeric(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static ASINExpression * parse(Parser& p, Context& ctx);
 };

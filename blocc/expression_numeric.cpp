@@ -18,9 +18,22 @@
 
 #include "expression_numeric.h"
 
+#include <string>
+
 namespace bloc
 {
 
-const Type& NumericExpression::type_static = Type(Type::NUMERIC);
+std::string NumericExpression::unparse(Context& ctx) const
+{
+  std::string str = Value::readableNumeric(*v.numeric());
+  if (str.find('.') == std::string::npos)
+    str.append(".0");
+  return str;
+}
+
+NumericExpression * NumericExpression::parse(const std::string& text)
+{
+  return new NumericExpression(std::stod(text));
+}
 
 }

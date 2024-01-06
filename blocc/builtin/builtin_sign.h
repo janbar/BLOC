@@ -37,9 +37,7 @@ public:
 
   const Type& type(Context& ctx) const override { return _args[0]->type(ctx); }
 
-  int64_t integer(Context& ctx) const override;
-
-  double numeric(Context& ctx) const override;
+  Value& value(Context& ctx) const override;
 
   static SIGNExpression * parse(Parser& p, Context& ctx);
 };

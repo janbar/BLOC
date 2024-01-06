@@ -45,25 +45,17 @@ public:
 
   const Type& type(Context& ctx) const override;
 
-  bool boolean (Context& ctx) const override;
+  const TupleDecl::Decl& tuple_decl(Context& ctx) const override;
 
-  int64_t integer(Context& ctx) const override;
+  Value& value(Context& ctx) const override
+  {
+    Value& val = ctx.loadVariable(_symbol);
+    if (val.type() != Type::POINTER)
+      return val;
+    return (val.isNull() ? val : *val.value());
+  }
 
-  double numeric(Context& ctx) const override;
-
-  std::string& literal(Context& ctx) const override;
-
-  TabChar& tabchar(Context& ctx) const override;
-
-  Collection& collection(Context& ctx) const override;
-
-  Tuple& tuple(Context& ctx) const override;
-
-  const Tuple::Decl& tuple_decl(Context& ctx) const override;
-
-  Complex& complex(Context& ctx) const override;
-
-  bool isStored() const override { return true; }
+  const Symbol * symbol() const override { return &_symbol; }
 
   std::string unparse(Context& ctx) const override
   {
@@ -90,19 +82,14 @@ public:
   unsigned symbolId() const { return _symbol.id; }
 
   /**
-   * Store a temporary result into memory pointed by this variable. The result
-   * instance must be derived from the class "StaticExpression" such as the
-   * following types:
-   *   BooleanExpression, IntegerExpression, NumericExpression,
-   *   LiteralExpression, ComplexExpression
-   *
+   * Store a temporary value into memory pointed by this variable.
    * @param ctx
-   * @param exp
-   * @return a reference to the stored expression
+   * @param val
+   * @return a reference to the stored value
    */
-  StaticExpression& store(Context& ctx, StaticExpression&& exp) const
+  Value& store(Context& ctx, Value&& val) const
   {
-    return ctx.storeVariable(_symbol, std::move(exp));
+    return ctx.storeVariable(_symbol, std::move(val));
   }
 
   /**
@@ -112,9 +99,15 @@ public:
    * @param d_ctx storage context
    * @param s_ctx running context
    * @param s_exp
-   * @return a reference to the stored expression
    */
-  void store(Context& d_ctx, Context& s_ctx, Expression * s_exp) const;
+  void store(Context& d_ctx, Context& s_ctx, Expression * s_exp) const
+  {
+    Value& val(s_exp->value(s_ctx));
+    if (val.lvalue())
+      d_ctx.storeVariable(_symbol, val.clone());
+    else
+      d_ctx.storeVariable(_symbol, std::move(val));
+  }
 
   /**
    * Returns the reference of the content in memory pointed by this variable.
@@ -122,7 +115,7 @@ public:
    * @param ctx
    * @return the reference of the stored expression or null
    */
-  StaticExpression * load(Context& ctx) const
+  Value& load(Context& ctx) const
   {
     return ctx.loadVariable(_symbol);
   }

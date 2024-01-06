@@ -26,30 +26,42 @@
 namespace bloc
 {
 
-std::string& LTRIMExpression::literal(Context& ctx) const
+Value& LTRIMExpression::value(Context& ctx) const
 {
-  int64_t a, c;
-  if (_args[0]->isRvalue())
-  {
-    std::string& rv = _args[0]->literal(ctx);
-    c = rv.length();
-    a = 0;
-    while (a < c && rv[a] == ' ') ++a;
-    if (a < c)
-      rv.assign(rv.substr(a));
-    else
-      rv.clear();
-    return rv;
-  }
-  const std::string& var = _args[0]->literal(ctx);
-  c = var.length();
-  a = 0;
-  while (a < c && var[a] == ' ') ++a;
-  if (a < c)
-    return ctx.allocate(var.substr(a));
-  return ctx.allocate(std::string());
-}
+  Value& val = _args[0]->value(ctx);
 
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    if (val.lvalue())
+      return ctx.allocate(Value(Value::type_literal));
+    val.swap(Value(Value::type_literal));
+    return val;
+  case Type::LITERAL:
+  {
+    if (val.isNull())
+      return val;
+    int64_t a, c;
+    Literal * rv = val.literal();
+    c = rv->size();
+    a = 0;
+    while (a < c && rv->at(a) == ' ') ++a;
+    if (a < c)
+    {
+      if (val.lvalue())
+        return ctx.allocate(Value(new Literal(rv->substr(a))));
+      val.literal()->assign(rv->substr(a));
+      return val;
+    }
+    if (val.lvalue())
+      return ctx.allocate(Value(new Literal()));
+    val.literal()->clear();
+    return val;
+  }
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+}
 
 LTRIMExpression * LTRIMExpression::parse(Parser& p, Context& ctx)
 {

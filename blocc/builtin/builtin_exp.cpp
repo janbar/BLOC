@@ -28,10 +28,32 @@
 namespace bloc
 {
 
-double EXPExpression::numeric(Context & ctx) const
+Value& EXPExpression::value(Context & ctx) const
 {
-  return std::exp(_args[0]->numeric(ctx));
+  Value& val = _args[0]->value(ctx);
+  Value v(Value::type_numeric);
 
+  switch (val.type().major())
+  {
+  case Type::NO_TYPE:
+    break;
+  case Type::INTEGER:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::exp(*val.integer())));
+    break;
+  case Type::NUMERIC:
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::exp(*val.numeric())));
+    break;
+  default:
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(Value(std::move(v)));
+  return val;
 }
 
 EXPExpression * EXPExpression::parse(Parser& p, Context& ctx)

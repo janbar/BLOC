@@ -58,9 +58,11 @@ void IMPORTStatement::loadModule(Context& ctx)
   }
   else
   {
-    const std::string& path = _exp->literal(ctx);
-    if ((type_id = PluginManager::instance().importModuleByPath(path.c_str())) == 0)
-      throw ParseError(EXC_PARSE_IMPORT_FAILED_S, path.c_str());
+    Value& val = _exp->value(ctx);
+    if (val.isNull())
+      throw ParseError(EXC_PARSE_INV_EXPRESSION);
+    if ((type_id = PluginManager::instance().importModuleByPath(val.literal()->c_str())) == 0)
+      throw ParseError(EXC_PARSE_IMPORT_FAILED_S, val.literal()->c_str());
   }
   const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
   DBG(DBG_DEBUG, "%s: id=%d name=%s instance=%p dlhandle=%p\n", __FUNCTION__,

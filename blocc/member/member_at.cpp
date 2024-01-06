@@ -19,15 +19,8 @@
 #include "member_at.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
-#include <blocc/expression_variable.h>
-#include <blocc/expression_boolean.h>
-#include <blocc/expression_integer.h>
-#include <blocc/expression_numeric.h>
-#include <blocc/expression_literal.h>
-#include <blocc/expression_complex.h>
-#include <blocc/expression_null.h>
-#include <blocc/expression_collection.h>
-#include <blocc/expression_tuple.h>
+#include <blocc/collection.h>
+#include <blocc/tuple.h>
 #include <blocc/context.h>
 #include <blocc/parser.h>
 #include <blocc/debug.h>
@@ -47,11 +40,11 @@ const Type& MemberATExpression::type(Context& ctx) const
     {
     case Type::LITERAL:
     case Type::TABCHAR:
-      return IntegerExpression::type_static;
+      return Value::type_integer;
     case Type::NO_TYPE: /* opaque */
       return exp_type;
     default:
-      return NullExpression::null;
+      return Value::type_no_type;
     }
   }
   else
@@ -62,116 +55,52 @@ const Type& MemberATExpression::type(Context& ctx) const
   }
 }
 
-bool MemberATExpression::boolean(Context& ctx) const
+Value& MemberATExpression::value(Context& ctx) const
 {
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  return rv.at((unsigned)p)->boolean(ctx);
-}
+  Value& val = _exp->value(ctx);
+  if (val.isNull())
+    return val;
+  Value& a0 = _args[0]->value(ctx);
+  if (a0.isNull())
+    return a0;
 
-int64_t MemberATExpression::integer(Context& ctx) const
-{
-  const Type& exp_type = _exp->type(ctx);
-  if (exp_type.level() == 0)
+  /* collection */
+  if (val.type().level() > 0)
   {
-    switch (exp_type.major())
-    {
-    case Type::LITERAL:
-    {
-      std::string& rv = _exp->literal(ctx);
-      int64_t p = _args[0]->integer(ctx);
-      if (p < 0 || p >= rv.size())
-        throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-      return (int64_t) ((unsigned char) rv.at((unsigned) p));
-    }
-    case Type::TABCHAR:
-    {
-      TabChar& rv = _exp->tabchar(ctx);
-      int64_t p = _args[0]->integer(ctx);
-      if (p < 0 || p >= rv.size())
-        throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-      return (int64_t) ((unsigned char) rv.at((unsigned) p));
-    }
-    default:
-      throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
-    }
+    Collection * rv = val.collection();
+    Integer p = *a0.integer();
+    if (p >= 0 && p < rv->size())
+      return rv->at((unsigned)p).to_lvalue(val.lvalue());
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
   }
-  else
+
+  switch (val.type().major())
   {
-    Collection& rv = _exp->collection(ctx);
-    int64_t p = _args[0]->integer(ctx);
-    if (p < 0 || p >= rv.size())
-      throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-    return rv.at((unsigned) p)->integer(ctx);
+  case Type::LITERAL:
+  {
+    Literal * rv = val.literal();
+    Integer p = *a0.integer();
+    if (p >= 0 && p < rv->size())
+      return ctx.allocate(Value(Integer(rv->at((unsigned) p))));
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
   }
-}
-
-double MemberATExpression::numeric(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
+  case Type::TABCHAR:
+  {
+    TabChar * rv = val.tabchar();
+    Integer p = *a0.integer();
+    if (p >= 0 && p < rv->size())
+      return ctx.allocate(Value(Integer(rv->at((unsigned) p))));
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  return rv.at((unsigned) p)->numeric(ctx);
-}
-
-std::string& MemberATExpression::literal(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  return rv.at((unsigned) p)->literal(ctx);
-}
-
-TabChar& MemberATExpression::tabchar(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  return rv.at((unsigned) p)->tabchar(ctx);
-}
-
-Collection& MemberATExpression::collection(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  return rv.at((unsigned) p)->collection(ctx);
-}
-
-Tuple& MemberATExpression::tuple(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  return rv.at((unsigned) p)->tuple(ctx);
+  }
+  default:
+    break;
+  }
+  throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
 }
 
 const TupleDecl::Decl& MemberATExpression::tuple_decl(Context& ctx) const
 {
   return _exp->tuple_decl(ctx);
-}
-
-Complex& MemberATExpression::complex(Context& ctx) const
-{
-  /* collection */
-  Collection& rv = _exp->collection(ctx);
-  int64_t p = _args[0]->integer(ctx);
-  if (p < 0 || p >= rv.size())
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
-  return rv.at((unsigned) p)->complex(ctx);
 }
 
 MemberATExpression * MemberATExpression::parse(Parser& p, Context& ctx, Expression * exp)
@@ -197,20 +126,9 @@ MemberATExpression * MemberATExpression::parse(Parser& p, Context& ctx, Expressi
       case Type::LITERAL:
       case Type::TABCHAR:
         break;
-      case Type::ROWTYPE:
-        if (exp_type.minor() == 0 && !exp->isStored()) /* opaque */
-          throw ParseError(EXC_PARSE_OPAQUE_INLINE);
-        break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_AT]);
       }
-    }
-    /* collection AT */
-    else
-    {
-      /* test opaque is stored */
-      if (exp_type == Type::NO_TYPE && !exp->isStored())
-        throw ParseError(EXC_PARSE_OPAQUE_INLINE);
     }
 
     assertClosedMember(p, ctx, KEYWORDS[BTM_AT]);

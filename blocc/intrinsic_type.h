@@ -40,13 +40,14 @@ public:
   enum TypeMajor : uint8_t
   {
     NO_TYPE   = 0,
-    BOOLEAN,
+    BOOLEAN   = 1,
     INTEGER,
     NUMERIC,
     LITERAL,
     COMPLEX,
     TABCHAR,
     ROWTYPE,
+    POINTER,
   };
 
   virtual ~Type() { }
@@ -97,6 +98,7 @@ public:
   constexpr static const char * STR_COMPLEX = "object";
   constexpr static const char * STR_TABCHAR = "bytes";
   constexpr static const char * STR_ROWTYPE = "tuple";
+  constexpr static const char * STR_POINTER = "pointer";
 
   static const char * typeName(TypeMajor type)
   {
@@ -118,6 +120,8 @@ public:
       return STR_TABCHAR;
     case ROWTYPE:
       return STR_ROWTYPE;
+    case POINTER:
+      return STR_POINTER;
     }
     return "?";
   }
@@ -138,6 +142,8 @@ public:
       return Type::TABCHAR;
     if (text == STR_ROWTYPE)
       return Type::ROWTYPE;
+    if (text == STR_POINTER)
+      return Type::POINTER;
     return Type::NO_TYPE;
   }
 
