@@ -123,8 +123,7 @@ Complex& FunctorExpression::complex(Context& ctx) const
     _tmp = ret->complex(env.context());
     return _tmp;
   }
-  _tmp = Complex();
-  return _tmp;
+  throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
 }
 
 std::string FunctorExpression::unparse(Context& ctx) const

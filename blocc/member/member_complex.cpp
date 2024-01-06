@@ -25,6 +25,7 @@
 #include <blocc/expression_numeric.h>
 #include <blocc/expression_literal.h>
 #include <blocc/expression_complex.h>
+#include <blocc/expression_null.h>
 #include <blocc/expression_collection.h>
 #include <blocc/expression_tuple.h>
 #include <blocc/context.h>
@@ -52,7 +53,7 @@ MemberMETHODExpression::MemberMETHODExpression(const PLUGIN_METHOD& method, unsi
       _type_method = _decl_method.make_type(_method->ret.ndim);
   }
   else
-    _type_method = ComplexExpression::null;
+    _type_method = NullExpression::null;
 }
 
 bool MemberMETHODExpression::boolean(Context& ctx) const

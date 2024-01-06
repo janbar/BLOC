@@ -18,6 +18,7 @@
 
 #include "plugin_sqlite3.h"
 #include <sqlite3.h>
+#include <blocc/expression_null.h>
 #include <blocc/debug.h>
 /*
  * Create the module SQLITE3Import
@@ -366,7 +367,7 @@ int SQLITE3::Handle::fetchall(bloc::Collection ** rs)
           break;
         }
         default:
-          t.push_back(new bloc::ComplexExpression(bloc::Complex()));
+          t.push_back(new bloc::NullExpression());
           /* do not upgrade type */
           break;
         }
@@ -637,7 +638,7 @@ int SQLITE3::Handle::fetch(bloc::Tuple ** row)
         break;
       }
       default:
-        t.push_back(new bloc::ComplexExpression(bloc::Complex()));
+        t.push_back(new bloc::NullExpression());
         break;
       }
     }

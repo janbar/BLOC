@@ -17,7 +17,7 @@
  */
 
 #include "expression_item.h"
-#include "expression_complex.h"
+#include "expression_null.h"
 #include "parse_expression.h"
 #include "exception_parse.h"
 #include "context.h"
@@ -41,7 +41,7 @@ const Type& ItemExpression::type(Context&ctx) const
     return _opaque;
   if (_index < _exp->tuple_decl(ctx).size())
     return _exp->tuple_decl(ctx)[_index];
-  return ComplexExpression::null;
+  return NullExpression::null;
 }
 
 bool ItemExpression::boolean(Context& ctx) const

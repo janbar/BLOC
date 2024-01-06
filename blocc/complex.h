@@ -41,9 +41,8 @@ public:
   bool operator==(const Complex& c) const { return (this->_instance == c._instance); }
   bool operator!=(const Complex& c) const { return !(*this == c); }
 
-  Complex() : _type(Type::COMPLEX, 0) { _refcount = new int(1); }
-
   explicit Complex(Type::TypeMinor type_id) : _type(Type::COMPLEX, type_id) { _refcount = new int(1); }
+  Complex() : Complex(0) { }
 
   ~Complex();
 

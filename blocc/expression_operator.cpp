@@ -23,6 +23,7 @@
 #include "expression_literal.h"
 #include "expression_tabchar.h"
 #include "expression_complex.h"
+#include "expression_null.h"
 #include "exception_parse.h"
 #include "context.h"
 #include "debug.h"
@@ -109,7 +110,7 @@ const Type& OperatorExpression::type(Context&ctx) const
     return BooleanExpression::type_static;
 
   default:
-    return ComplexExpression::null;
+    return NullExpression::null;
   }
 }
 
@@ -133,11 +134,7 @@ bool OperatorExpression::boolean(Context&ctx) const
     if (t1.level() > 0)
     {
       /* check null */
-      if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-      {
-        Collection& c = arg1->collection(ctx);
-        return (c.size() == 0 && c.table_type() == CollectionExpression::null.table_type());
-      }
+      return NullExpression::isNull(t2) && NullExpression::isNull(arg1->collection(ctx));
       return false;
     }
     switch (t1.major())
@@ -157,44 +154,35 @@ bool OperatorExpression::boolean(Context&ctx) const
     case Type::NUMERIC:
       if (t2 == Type::NUMERIC || t2 == Type::INTEGER)
         return (arg1->numeric(ctx) == arg2->numeric(ctx));
-      else if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-      {
-        double d = arg1->numeric(ctx);
-        return (d != d); /* check NaN */
-      }
+      else if (NullExpression::isNull(t2))
+        return NullExpression::isNull(arg1->numeric(ctx));
       return false;
     case Type::LITERAL:
       if (t2 == Type::LITERAL)
         return (arg1->literal(ctx).compare(arg2->literal(ctx)) == 0);
-      else if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-        return (arg1->literal(ctx) == LiteralExpression::null);
+      else if (NullExpression::isNull(t2))
+        return NullExpression::isNull(arg1->literal(ctx));
       return false;
     case Type::COMPLEX:
       if (t2 == Type::COMPLEX)
         return (arg1->complex(ctx) == arg2->complex(ctx));
       /* check null */
-      else if (arg1->complex(ctx).typeId() == 0)
+      else if (NullExpression::isNull(arg1->complex(ctx)))
       {
         if (t2.level() > 0)
-        {
-          Collection& c = arg2->collection(ctx);
-          return (c.size() == 0 && c.table_type() == CollectionExpression::null.table_type());
-        }
+          return NullExpression::isNull(arg2->collection(ctx));
         else
         {
           switch (t2.major())
           {
           case Type::NUMERIC:
-          {
-            double d = arg2->numeric(ctx);
-            return (d != d); /* check NaN */
-          }
+            return NullExpression::isNull(arg2->numeric(ctx));
           case Type::LITERAL:
-            return (arg2->literal(ctx) == LiteralExpression::null);
+            return NullExpression::isNull(arg2->literal(ctx));
           case Type::TABCHAR:
-            return (arg2->tabchar(ctx) == TabcharExpression::null);
+            return NullExpression::isNull(arg2->tabchar(ctx));
           case Type::ROWTYPE:
-            return (arg2->tuple(ctx).tuple_type() == TupleExpression::null.tuple_type());
+            return NullExpression::isNull(arg2->tuple(ctx));
           default:
             break;
           }
@@ -202,16 +190,16 @@ bool OperatorExpression::boolean(Context&ctx) const
       }
       return false;
     case Type::TABCHAR:
-      if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-        return (arg1->tabchar(ctx) == TabcharExpression::null);
+      if (NullExpression::isNull(t2))
+        return NullExpression::isNull(arg1->tabchar(ctx));
       else if (t2 == Type::TABCHAR)
         return (arg1->tabchar(ctx) == arg2->tabchar(ctx));
       return false;
     case Type::ROWTYPE:
-      if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-        return (arg1->tuple(ctx).tuple_type() == TupleExpression::null.tuple_type());
-      if (t2 == Type::ROWTYPE && arg2->tuple(ctx).tuple_type() == TupleExpression::null.tuple_type())
-        return (arg1->tuple(ctx).tuple_type() == TupleExpression::null.tuple_type());
+      if (NullExpression::isNull(t2))
+        return NullExpression::isNull(arg1->tuple(ctx));
+      if (t2 == Type::ROWTYPE && NullExpression::isNull(arg2->tuple(ctx)))
+        return NullExpression::isNull(arg1->tuple(ctx));
       return false;
     default:
       return false;
@@ -225,11 +213,8 @@ bool OperatorExpression::boolean(Context&ctx) const
     if (t1.level() > 0)
     {
       /* check null */
-      if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-      {
-        Collection& c = arg1->collection(ctx);
-        return (c.size() > 0 || c.table_type() != CollectionExpression::null.table_type());
-      }
+      if (NullExpression::isNull(t2))
+        return !NullExpression::isNull(arg1->collection(ctx));
       return true;
     }
     switch (t1.major())
@@ -249,44 +234,35 @@ bool OperatorExpression::boolean(Context&ctx) const
     case Type::NUMERIC:
       if (t2 == Type::NUMERIC || t2 == Type::INTEGER)
         return (arg1->numeric(ctx) != arg2->numeric(ctx));
-      else if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-      {
-        double d = arg1->numeric(ctx);
-        return (d == d); /* check NaN */
-      }
+      else if (NullExpression::isNull(t2))
+        return !NullExpression::isNull(arg1->numeric(ctx));
       return true;
     case Type::LITERAL:
       if (t2 == Type::LITERAL)
         return (arg1->literal(ctx).compare(arg2->literal(ctx)) != 0);
-      else if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-        return (arg1->literal(ctx) != LiteralExpression::null);
+      else if (NullExpression::isNull(t2))
+        return !NullExpression::isNull(arg1->literal(ctx));
       return true;
     case Type::COMPLEX:
       if (t2 == Type::COMPLEX)
         return (arg1->complex(ctx) != arg2->complex(ctx));
       /* check null */
-      else if (arg1->complex(ctx).typeId() == 0)
+      else if (NullExpression::isNull(arg1->complex(ctx)))
       {
         if (t2.level() > 0)
-        {
-          Collection& c = arg2->collection(ctx);
-          return (c.size() > 0 || c.table_type() != CollectionExpression::null.table_type());
-        }
+          return !NullExpression::isNull(arg2->collection(ctx));
         else
         {
           switch (t2.major())
           {
           case Type::NUMERIC:
-          {
-            double d = arg2->numeric(ctx);
-            return (d == d); /* check NaN */
-          }
+            return !NullExpression::isNull(arg2->numeric(ctx));
           case Type::LITERAL:
-            return (arg2->literal(ctx) != LiteralExpression::null);
+            return !NullExpression::isNull(arg2->literal(ctx));
           case Type::TABCHAR:
-            return (arg2->tabchar(ctx) != TabcharExpression::null);
+            return !NullExpression::isNull(arg2->tabchar(ctx));
           case Type::ROWTYPE:
-            return (arg2->tuple(ctx).tuple_type() != TupleExpression::null.tuple_type());
+            return !NullExpression::isNull(arg2->tuple(ctx));
           default:
             break;
           }
@@ -294,16 +270,16 @@ bool OperatorExpression::boolean(Context&ctx) const
       }
       return true;
     case Type::TABCHAR:
-      if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-        return (arg1->tabchar(ctx) != TabcharExpression::null);
+      if (NullExpression::isNull(t2))
+        return !NullExpression::isNull(arg1->tabchar(ctx));
       else if (t2 == Type::TABCHAR)
         return (arg1->tabchar(ctx) != arg2->tabchar(ctx));
       return true;
     case Type::ROWTYPE:
-      if (t2 == Type::COMPLEX && arg2->complex(ctx).typeId() == 0)
-        return (arg1->tuple(ctx).tuple_type() != TupleExpression::null.tuple_type());
-      if (t2 == Type::ROWTYPE && arg2->tuple(ctx).tuple_type() == TupleExpression::null.tuple_type())
-        return (arg1->tuple(ctx).tuple_type() != TupleExpression::null.tuple_type());
+      if (NullExpression::isNull(t2))
+        return !NullExpression::isNull(arg1->tuple(ctx));
+      if (t2 == Type::ROWTYPE && NullExpression::isNull(arg2->tuple(ctx)))
+        return !NullExpression::isNull(arg1->tuple(ctx));
       return true;
     default:
       return true;

@@ -20,13 +20,6 @@
 #define EXPRESSION_COMPLEX_H
 
 #include "expression_static.h"
-#include "expression_boolean.h"
-#include "expression_integer.h"
-#include "expression_numeric.h"
-#include "expression_literal.h"
-#include "expression_tabchar.h"
-#include "expression_collection.h"
-#include "expression_tuple.h"
 #include "declspec.h"
 
 namespace bloc
@@ -40,12 +33,10 @@ class ComplexExpression : public SwappableExpression<ComplexExpression>
 private:
 
   mutable Complex v;
-  mutable StaticExpression * v_null = nullptr;
 
 public:
-  LIBBLOC_API static const Type& null;
 
-  virtual ~ComplexExpression();
+  virtual ~ComplexExpression() { }
 
   explicit ComplexExpression(const Complex& c) : v(c) { }
   explicit ComplexExpression(Complex&& c) : v(std::move(c)) { }
@@ -58,67 +49,6 @@ public:
   Complex& complex(Context& ctx) const override
   {
     return v;
-  }
-
-  bool boolean(Context& ctx) const override
-  {
-    if (v.typeId())
-      throw RuntimeError(EXC_RT_NOT_BOOLEAN);
-    return false; /* boolean cannot be null */
-  }
-
-  int64_t integer(Context& ctx) const override
-  {
-    if (v.typeId())
-      throw RuntimeError(EXC_RT_NOT_INTEGER);
-    return 0; /* integer cannot be null */
-  }
-
-  double numeric(Context& ctx) const override
-  {
-    if (v.typeId())
-      throw RuntimeError(EXC_RT_NOT_NUMERIC);
-    return NumericExpression::null;
-  }
-
-  std::string& literal(Context& ctx) const override
-  {
-    if (v.typeId())
-      throw RuntimeError(EXC_RT_NOT_LITERAL);
-    if (v_null)
-      delete v_null;
-    v_null = new LiteralExpression(LiteralExpression::null);
-    return v_null->refLiteral();
-  }
-
-  TabChar& tabchar(Context& ctx) const override
-  {
-    if (v.typeId())
-      throw RuntimeError(EXC_RT_NOT_TABCHAR);
-    if (v_null)
-      delete v_null;
-    v_null = new TabcharExpression(TabcharExpression::null);
-    return v_null->refTabchar();
-  }
-
-  Collection& collection(Context& ctx) const override
-  {
-    if (v.typeId())
-      throw RuntimeError(EXC_RT_NOT_COLLECT);
-    if (v_null)
-      delete v_null;
-    v_null = new CollectionExpression(CollectionExpression::null);
-    return v_null->refCollection();
-  }
-
-  Tuple& tuple(Context& ctx) const override
-  {
-    if (v.typeId())
-      throw RuntimeError(EXC_RT_NOT_ROWTYPE);
-    if (v_null)
-      delete v_null;
-    v_null = new TupleExpression(TupleExpression::null);
-    return v_null->refTuple();
   }
 
   std::string unparse(Context& ctx) const override

@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2022 Jean-Luc Barriere
+ *      Copyright (C) 2023 Jean-Luc Barriere
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,31 +16,26 @@
  *
  */
 
-#include "expression_complex.h"
-#include "plugin_manager.h"
-#include "parser.h"
+#include "expression_null.h"
+
+#include <cmath>
 
 namespace bloc
 {
 
-std::string ComplexExpression::readableComplex(const Complex& c)
-{
-  std::string sb(PluginManager::instance().plugged(c.typeId()).interface.name);
-  if (c.typeId())
-  {
-    char buf[24];
-    snprintf(buf, sizeof(buf), "%p", c.instance());
-    sb.append(1, '(');
-    sb.append(buf);
-    sb.append(1, ')');
-  }
-  return sb;
-}
+const Type& NullExpression::null = Type(Type::COMPLEX);
+const Complex& NullExpression::null_complex = Complex(0);
 
-std::string ComplexExpression::typeName(Context& ctx) const
+const double& NullExpression::null_numeric = NAN;
+const std::string& NullExpression::null_literal = std::string("");
+const TabChar& NullExpression::null_tabchar = TabChar();
+const Collection& NullExpression::null_collection = Collection(Type::NO_TYPE);
+const Tuple& NullExpression::null_tuple = Tuple(Tuple::container_t());
+
+NullExpression::~NullExpression()
 {
-  const PLUGGED_MODULE& plugin = PluginManager::instance().plugged(v.typeId());
-  return plugin.interface.name;
+  if (v)
+    delete v;
 }
 
 }

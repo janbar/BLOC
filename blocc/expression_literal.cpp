@@ -22,7 +22,6 @@ namespace bloc
 {
 
 const Type& LiteralExpression::type_static = Type(Type::LITERAL);
-const std::string& LiteralExpression::null = std::string("");
 
 LiteralExpression * LiteralExpression::parse(const std::string& text)
 {

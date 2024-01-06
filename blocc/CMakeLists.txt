@@ -33,6 +33,7 @@ file(GLOB blocc_SOURCES
   expression_literal.cpp
   expression_member.cpp
   expression_numeric.cpp
+  expression_null.cpp
   expression_operator.cpp
   expression_tabchar.cpp
   expression_tuple.cpp
@@ -90,6 +91,7 @@ file(GLOB blocc_PUBLIC_HEADERS
   expression_literal.h
   expression_member.h
   expression_numeric.h
+  expression_null.h
   expression_operator.h
   expression_static.h
   expression_tabchar.h

@@ -25,6 +25,7 @@
 #include <blocc/expression_numeric.h>
 #include <blocc/expression_literal.h>
 #include <blocc/expression_complex.h>
+#include <blocc/expression_null.h>
 #include <blocc/expression_collection.h>
 #include <blocc/expression_tuple.h>
 #include <blocc/context.h>
@@ -50,7 +51,7 @@ const Type& MemberATExpression::type(Context& ctx) const
     case Type::NO_TYPE: /* opaque */
       return exp_type;
     default:
-      return ComplexExpression::null;
+      return NullExpression::null;
     }
   }
   else
