@@ -35,11 +35,11 @@ ComplexCTORExpression::~ComplexCTORExpression()
 
 Value& ComplexCTORExpression::value(Context& ctx) const
 {
-  Value& tmp = ctx.allocate(Value(new Complex(_type.minor())));
   int ctor_id = (_ctor == nullptr ? (-1) : _ctor->id);
-  if (tmp.complex()->CTOR(ctor_id, ctx, _args))
-    return tmp;
-  throw RuntimeError(EXC_RT_CTOR_FAILED_S, unparse(ctx).c_str());
+  Complex * c = Complex::newInstance(_type.minor(), ctor_id, ctx, _args);
+  if (c == nullptr)
+    throw RuntimeError(EXC_RT_CTOR_FAILED_S, unparse(ctx).c_str());
+  return ctx.allocate(Value(c));
 }
 
 std::string ComplexCTORExpression::unparse(Context& ctx) const

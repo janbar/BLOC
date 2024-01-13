@@ -39,7 +39,6 @@ class FunctorExpression : public Expression
 private:
   FunctorManager::entry _functor;
   std::vector<Expression*> _args;
-  mutable Complex _tmp; /* rvalue */
 
 public:
 

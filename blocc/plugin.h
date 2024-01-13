@@ -68,7 +68,8 @@ public:
   virtual void declareInterface(PLUGIN_INTERFACE * interface) = 0;
 
   /**
-   * Create object instance and return its pointer.
+   * Create and return a new object instance. On failure it could return the
+   * null pointer or throw a runtime exception.
    * @param ctx           the bloc context
    * @param args          list of CTOR arguments
    * @return              pointer to new instance

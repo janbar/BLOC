@@ -20,26 +20,56 @@
 #include "context.h"
 #include "expression.h"
 #include "plugin_manager.h"
+#include "debug.h"
 
+#include <string>
 #include <cassert>
+
+//#define DEBUG_COMPLEX
 
 namespace bloc
 {
 
+Complex::Complex(Type::TypeMinor type_id, void * handle)
+: _type(Type::COMPLEX, type_id)
+, _instance(handle)
+{
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
+  assert(_instance);
+  _refcount = new int(1);
+}
+
+Complex * Complex::newInstance(
+        Type::TypeMinor type_id,
+        int ctor_id,
+        Context& ctx,
+        const std::vector<Expression*>& args)
+{
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
+  const PLUGGED_MODULE& module = PluginManager::instance().plugged(type_id);
+  if (module.instance)
+  {
+    void * handle = module.instance->createObject(ctor_id, ctx, args);
+    if (handle)
+      return new Complex(type_id, handle);
+  }
+  return nullptr;
+}
+
 Complex::~Complex()
 {
-  if (_refcount)
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
+  if ((*_refcount -= 1) == 0)
   {
-    if ((*_refcount -= 1) == 0)
-    {
-      delete _refcount;
-      _refcount = nullptr;
-      if (_instance)
-      {
-        PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
-        _instance = nullptr;
-      }
-    }
+    delete _refcount;
+    _refcount = nullptr;
+    PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
   }
 }
 
@@ -48,6 +78,9 @@ Complex::Complex(const Complex& c)
 , _instance(c._instance)
 , _type(c._type)
 {
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
   *_refcount += 1;
 }
 
@@ -56,20 +89,26 @@ Complex::Complex(Complex&& c) noexcept
 , _instance(c._instance)
 , _type(c._type)
 {
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
   c._refcount = nullptr;
   c._instance = nullptr;
 }
 
 Complex& Complex::operator=(const Complex& c)
 {
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
   if (this == &c)
     return *this;
   /* reset */
   if ((*_refcount -= 1) == 0)
   {
     delete _refcount;
-    if (_instance)
-      PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
+    _refcount = nullptr;
+    PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
   }
   /* and set */
   _refcount = c._refcount;
@@ -83,16 +122,11 @@ Complex& Complex::operator=(const Complex& c)
   return *this;
 }
 
-bool Complex::CTOR(int ctor_id, Context& ctx, const std::vector<Expression*>& args)
-{
-  assert(_type.minor());
-  assert(_instance == nullptr);
-  _instance = PluginManager::instance().plugged(typeId()).instance->createObject(ctor_id, ctx, args);
-  return (_instance ? true : false);
-}
-
 void Complex::swap(Complex& c) noexcept
 {
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
   int * tmp_ref = _refcount;
   void * tmp_ptr = _instance;
   Type tmp_typ = _type;
@@ -106,15 +140,15 @@ void Complex::swap(Complex& c) noexcept
 
 void Complex::swap(Complex&& c) noexcept
 {
+#ifdef DEBUG_COMPLEX
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
   /* release handle */
-  if (_refcount)
+  if ((*_refcount -= 1) == 0)
   {
-    if ((*_refcount -= 1) == 0)
-    {
-      delete _refcount;
-      if (_instance)
-        PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
-    }
+    delete _refcount;
+    _refcount = nullptr;
+    PluginManager::instance().plugged(typeId()).instance->destroyObject(_instance);
   }
   /*  move handle */
   _refcount = c._refcount;
@@ -122,6 +156,11 @@ void Complex::swap(Complex&& c) noexcept
   _type = c._type;
   c._refcount = nullptr;
   c._instance = nullptr;
+}
+
+const char * Complex::typeIdName() const
+{
+  return PluginManager::instance().plugged(typeId()).interface.name;
 }
 
 }

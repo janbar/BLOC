@@ -32,17 +32,30 @@ class Context;
 
 class Complex
 {
-  int * _refcount = nullptr;
-  void * _instance = nullptr;
   Type _type;
+  void * _instance = nullptr;
+  int * _refcount = nullptr;
+
+  Complex(Type::TypeMinor type_id, void * handle);
 
 public:
 
-  bool operator==(const Complex& c) const { return (this->_instance == c._instance); }
-  bool operator!=(const Complex& c) const { return !(*this == c); }
+  /**
+   * The complex factory
+   * @param type_id
+   * @param ctor_id
+   * @param ctx
+   * @param args
+   * @return the complex or nullptr
+   */
+  static Complex * newInstance(
+          Type::TypeMinor type_id,
+          int ctor_id,
+          Context& ctx,
+          const std::vector<Expression*>& args);
 
-  explicit Complex(Type::TypeMinor type_id) : _type(Type::COMPLEX, type_id) { _refcount = new int(1); }
-  Complex() : Complex(0) { }
+  bool operator==(const Complex& c) const { return (_refcount && this->_instance == c._instance); }
+  bool operator!=(const Complex& c) const { return !(*this == c); }
 
   ~Complex();
 
@@ -52,13 +65,13 @@ public:
 
   Complex& operator=(const Complex& c);
 
-  bool CTOR(int ctor_id, Context& ctx, const std::vector<Expression*>& args);
-
   void swap(Complex& c) noexcept;
 
   void swap(Complex&& c) noexcept;
 
   Type::TypeMinor typeId() const { return _type.minor(); }
+
+  const char * typeIdName() const;
 
   void * instance() const { return _instance; }
 
