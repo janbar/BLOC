@@ -53,7 +53,7 @@ class Value
   enum flag { NOTNULL = 0x1, LVALUE = 0x2, SAFETY = 0x4 };
   int _flags = 0;
 
-  void _clear();
+  void _clear() noexcept;
 
 public:
   LIBBLOC_API static const char * STR_TRUE;
@@ -106,7 +106,7 @@ public:
   void swap(Value&& v) noexcept;
 
   /* clone */
-  Value clone() const;
+  Value clone() const noexcept;
 
   payload get() { return _value; }
 

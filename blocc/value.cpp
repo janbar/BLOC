@@ -48,7 +48,7 @@ const Type& Value::type_tabchar = Type(Type::TABCHAR);
 const Type& Value::type_rowtype = Type(Type::ROWTYPE);
 const Type& Value::type_pointer = Type(Type::POINTER);
 
-void Value::_clear()
+void Value::_clear() noexcept
 {
 #ifdef DEBUG_VALUE
   DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
@@ -221,7 +221,7 @@ void Value::swap(Value&& v) noexcept
   v._flags = 0;
 }
 
-Value Value::clone() const
+Value Value::clone() const noexcept
 {
 #ifdef DEBUG_VALUE
   DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);

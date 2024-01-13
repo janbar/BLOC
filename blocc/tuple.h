@@ -40,7 +40,7 @@ public:
   virtual ~Tuple() { }
   explicit Tuple(container_t&& items);
 
-  Tuple(const Tuple& t);
+  Tuple(const Tuple& t) noexcept;
   Tuple(Tuple&& t) noexcept : v(std::move(t.v)), _decl(std::move(t._decl)), _type(t._type) { }
 
   const Type& tuple_type() const { return _type; }

@@ -33,7 +33,7 @@ Tuple::Tuple(container_t&& items)
   v.swap(items);
 }
 
-Tuple::Tuple(const Tuple& t) : v(), _decl(t._decl), _type(t._type)
+Tuple::Tuple(const Tuple& t) noexcept : v(), _decl(t._decl), _type(t._type)
 {
   /* clone elements */
   v.reserve(t.size());

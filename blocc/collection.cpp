@@ -23,7 +23,7 @@
 namespace bloc
 {
 
-Collection::Collection(const Collection& t)
+Collection::Collection(const Collection& t) noexcept
 : v(), _decl(t._decl), _type(t._type)
 {
   /* clone elements */
@@ -54,7 +54,7 @@ void Collection::copy(Collection& t) noexcept
     v.push_back(e.clone());
 }
 
-void Collection::clear()
+void Collection::clear() noexcept
 {
   v.clear();
 }

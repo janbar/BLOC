@@ -48,7 +48,7 @@ public:
   Collection(const TupleDecl::Decl& decl, Type::TypeLevel level, container_t&& c) noexcept
   : v(std::move(c)), _decl(decl) { _type = _decl.make_type(level); }
 
-  Collection(const Collection& t);
+  Collection(const Collection& t) noexcept;
   Collection(Collection&& t) noexcept
   : v(std::move(t.v)), _decl(std::move(t._decl)), _type(t._type) { }
 
@@ -57,7 +57,7 @@ public:
 
   void swap(Collection& t) noexcept;
   void copy(Collection& t) noexcept;
-  void clear();
+  void clear() noexcept;
   void reserve(unsigned n) { v.reserve(n) ; }
 
   reference operator[](unsigned pos) { return v[pos]; }
