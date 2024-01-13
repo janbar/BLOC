@@ -21,7 +21,7 @@ endif()
 
 add_subdirectory (blocc)
 add_subdirectory (apps)
-#add_subdirectory (modules)
+add_subdirectory (modules)
 
 configure_file(
   "${CMAKE_SOURCE_DIR}/cmake/cmake_uninstall.cmake.in"

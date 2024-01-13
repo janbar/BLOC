@@ -191,9 +191,10 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
     {
     case 0: /* date ( date ), i.e copy constructor */
     {
-      /* complex handle MUST be stored until the end of processing */
-      bloc::Complex c0 = args[0]->complex(ctx);
-      *dd = *(static_cast<date::Handle*>(c0.instance()));
+      /* the complex handle to copy */
+      bloc::Value& a0 = args[0]->value(ctx);
+      if (!a0.isNull())
+        *dd = *(static_cast<date::Handle*>(a0.complex()->instance()));
       break;
     }
 
@@ -202,7 +203,11 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       struct tm _tm;
       memset(&_tm, '\0', sizeof(tm));
       _tm.tm_isdst = -1;
-      if (strptime(args[0]->literal(ctx).c_str(), args[1]->literal(ctx).c_str(), &_tm) == nullptr)
+      bloc::Value& a0 = args[0]->value(ctx);
+      bloc::Value& a1 = args[1]->value(ctx);
+      if (a0.isNull() || a1.isNull())
+        throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+      if (strptime(args[0]->value(ctx).literal()->c_str(), args[1]->value(ctx).literal()->c_str(), &_tm) == nullptr)
         throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
       /* string is local time (no tz info) */
       time_t tt = mktime(&_tm);
@@ -217,17 +222,20 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       struct tm _tm;
       memset(&_tm, '\0', sizeof(tm));
       _tm.tm_isdst = -1;
-      std::string& str = args[0]->literal(ctx);
+      bloc::Value& a0 = args[0]->value(ctx);
+      if (a0.isNull())
+        throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+      bloc::Literal * str = a0.literal();
       const char * format;
-      if (str.size() == date::ISO8601UTC_LEN)
+      if (str->size() == date::ISO8601UTC_LEN)
         format = date::ISO8601UTC;
-      else if (str.size() == date::ISO8601LOC_LEN)
+      else if (str->size() == date::ISO8601LOC_LEN)
         format = date::ISO8601LOC;
-      else if (str.size() == date::ISODATE_LEN)
+      else if (str->size() == date::ISODATE_LEN)
         format = date::ISODATE;
       else
         throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
-      if (strptime(str.c_str(), format, &_tm) == nullptr)
+      if (strptime(str->c_str(), format, &_tm) == nullptr)
         throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
       time_t tt;
       if (format == date::ISO8601UTC)
@@ -258,7 +266,7 @@ void DatePlugin::destroyObject(void * object)
   delete dd;
 }
 
-bloc::Expression * DatePlugin::executeMethod(
+bloc::Value * DatePlugin::executeMethod(
           bloc::Complex& object_this,
           int method_id,
           bloc::Context& ctx,
@@ -271,20 +279,23 @@ bloc::Expression * DatePlugin::executeMethod(
   case date::Format:
   {
      char buf[64];
-     size_t n = strftime(buf, 64, args[0]->literal(ctx).c_str(), &dd->_tm);
-     return new bloc::LiteralExpression(std::string(buf, n));
+     bloc::Value& a0 = args[0]->value(ctx);
+     if (a0.isNull())
+       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+     size_t n = strftime(buf, 64, a0.literal()->c_str(), &dd->_tm);
+     return new bloc::Value(new bloc::Literal(buf, n));
   }
 
   case date::Unixtime:
   {
-    return new IntegerExpression((int64_t) dd->unixtime());
+    return new Value(Integer(dd->unixtime()));
   }
 
   case date::Iso8601:
   {
      char buf[64];
      size_t n = strftime(buf, 64, "%Y-%m-%dT%H:%M:%S", &dd->_tm);
-     return new bloc::LiteralExpression(std::string(buf, n));
+     return new bloc::Value(new bloc::Literal(buf, n));
   }
 
   case date::Iso8601utc:
@@ -294,29 +305,33 @@ bloc::Expression * DatePlugin::executeMethod(
      time_t tt = mktime(&dd->_tm);
      gmtime_r(&tt, &_tm);
      size_t n = strftime(buf, 64, "%Y-%m-%dT%H:%M:%SZ", &_tm);
-     return new bloc::LiteralExpression(std::string(buf, n));
+     return new bloc::Value(new bloc::Literal(buf, n));
   }
 
   case date::Isodate:
   {
      char buf[64];
      size_t n = strftime(buf, 64, "%Y-%m-%d", &dd->_tm);
-     return new bloc::LiteralExpression(std::string(buf, n));
+     return new bloc::Value(new bloc::Literal(buf, n));
   }
 
   case date::Difftime:
   {
-    /* complex handle MUST be stored until the end of processing */
-    bloc::Complex c0 = args[0]->complex(ctx);
-    date::Handle * dd0 = static_cast<date::Handle*>(c0.instance());
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    date::Handle * dd0 = static_cast<date::Handle*>(a0.complex()->instance());
     if (dd0 == nullptr)
       throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, date::methods[date::Difftime].name);
-    return new bloc::NumericExpression(difftime(dd->unixtime(), dd0->unixtime()));
+    return new bloc::Value(bloc::Numeric(difftime(dd->unixtime(), dd0->unixtime())));
   }
 
   case date::Add:
   {
-    double add = args[0]->numeric(ctx);
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    double add = *a0.numeric();
     if (add > 86400.0 || add < -86400.0)
       throw RuntimeError(EXC_RT_OUT_OF_RANGE);
     int day = (int) add;
@@ -329,17 +344,21 @@ bloc::Expression * DatePlugin::executeMethod(
     if (tt == INVALID_TIME)
       throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
     dd->_tm = _tm;
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
   }
 
   case date::Add_unit:
   {
-    int64_t add = args[0]->integer(ctx);
-    std::string& in = args[1]->literal(ctx);
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull() || a1.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    int64_t add = *a0.integer();
+    std::string * in = a1.literal();
     int unit = -1;
     for (int i = 0; i < (sizeof(date::time_units) / sizeof(const char*)); ++i)
     {
-      if (in != date::time_units[i])
+      if (*in != date::time_units[i])
         continue;
       unit = i;
     }
@@ -367,7 +386,7 @@ bloc::Expression * DatePlugin::executeMethod(
     if (tt == INVALID_TIME)
       throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
     dd->_tm = _tm;
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
   }
 
   case date::Trunc:
@@ -378,16 +397,19 @@ bloc::Expression * DatePlugin::executeMethod(
     dd->_tm.tm_min = 0;
     dd->_tm.tm_hour = 0;
     mktime(&dd->_tm);
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
   }
 
   case date::Trunc_unit:
   {
-    std::string& in = args[0]->literal(ctx);
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    std::string * in = a0.literal();
     int unit = -1;
     for (int i = 0; i < (sizeof(date::time_units) / sizeof(const char*)); ++i)
     {
-      if (in != date::time_units[i])
+      if (*in != date::time_units[i])
         continue;
       unit = i;
     }
@@ -409,27 +431,27 @@ bloc::Expression * DatePlugin::executeMethod(
       dd->_tm.tm_mon = 0; /* first month of the yeay */
 
     mktime(&dd->_tm);
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
   }
 
   case date::Second:
-    return new IntegerExpression(dd->_tm.tm_sec);
+    return new bloc::Value(Integer(dd->_tm.tm_sec));
   case date::Minute:
-    return new IntegerExpression(dd->_tm.tm_min);
+    return new bloc::Value(Integer(dd->_tm.tm_min));
   case date::Hour:
-    return new IntegerExpression(dd->_tm.tm_hour);
+    return new bloc::Value(Integer(dd->_tm.tm_hour));
   case date::Day:
-    return new IntegerExpression(dd->_tm.tm_mday);
+    return new bloc::Value(Integer(dd->_tm.tm_mday));
   case date::Month:
-    return new IntegerExpression(dd->_tm.tm_mon + 1);
+    return new bloc::Value(Integer(dd->_tm.tm_mon + 1));
   case date::Year:
-    return new IntegerExpression(dd->_tm.tm_year + 1900);
+    return new bloc::Value(Integer(dd->_tm.tm_year + 1900));
   case date::Weekday:
     /* the int value follows the ISO-8601 standard, from 1 (monday) to 7 (sunday) */
-    return new IntegerExpression((dd->_tm.tm_wday == 0 ? 7 : dd->_tm.tm_wday));
+    return new bloc::Value(Integer((dd->_tm.tm_wday == 0 ? 7 : dd->_tm.tm_wday)));
   case date::Yearday:
     /* [ 1 - 366 ] */
-    return new IntegerExpression(dd->_tm.tm_yday + 1);
+    return new bloc::Value(Integer(dd->_tm.tm_yday + 1));
 
   }
   return nullptr;
