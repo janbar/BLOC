@@ -62,6 +62,11 @@ Value& MemberSETExpression::value(Context& ctx) const
           rv->at(_index).swap(Value(Integer(*a0.numeric())));
           return val;
         }
+        else if (a0.type() == Type::NO_TYPE)
+        {
+          rv->at(_index).swap(Value(Value::type_integer));
+          return val;
+        }
         break;
       case Type::NUMERIC:
         if (a0.type() == Type::INTEGER)
@@ -69,8 +74,18 @@ Value& MemberSETExpression::value(Context& ctx) const
           rv->at(_index).swap(Value(Numeric(*a0.integer())));
           return val;
         }
+        else if (a0.type() == Type::NO_TYPE)
+        {
+          rv->at(_index).swap(Value(Value::type_numeric));
+          return val;
+        }
         break;
       default:
+        if (a0.type() == Type::NO_TYPE)
+        {
+          rv->at(_index).swap(Value(rv->at(_index).type()));
+          return val;
+        }
         break;
       }
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, rv->tuple_decl()[_index].typeName().c_str());

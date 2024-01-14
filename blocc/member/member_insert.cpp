@@ -128,6 +128,11 @@ Value& MemberINSERTExpression::value(Context& ctx) const
           rv->insert(rv->begin() + p, Value(Integer(*a1.numeric())));
           return val;
         }
+        else if (a1.type() == Type::NO_TYPE)
+        {
+          rv->insert(rv->begin() + p, Value(Value::type_integer));
+          return val;
+        }
         break;
       case Type::NUMERIC:
         if (a1_type == Type::INTEGER)
@@ -135,8 +140,20 @@ Value& MemberINSERTExpression::value(Context& ctx) const
           rv->insert(rv->begin() + p, Value(Numeric(*a1.integer())));
           return val;
         }
+        else if (a1.type() == Type::NO_TYPE)
+        {
+          rv->insert(rv->begin() + p, Value(Value::type_numeric));
+          return val;
+        }
+        break;
+      case Type::ROWTYPE:
         break;
       default:
+        if (a1.type() == Type::NO_TYPE)
+        {
+          rv->insert(rv->begin() + p, Value(rv_type.levelDown()));
+          return val;
+        }
         break;
       }
     }

@@ -135,6 +135,46 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         return val;
       }
     }
+    else
+    {
+      /* type mixing */
+      switch (rv_type.major())
+      {
+      case Type::INTEGER:
+        if (a0_type == Type::NUMERIC)
+        {
+          rv->push_back(Value(Integer(*a0.numeric())));
+          return val;
+        }
+        else if (a0.type() == Type::NO_TYPE)
+        {
+          rv->push_back(Value(Value::type_integer));
+          return val;
+        }
+        break;
+      case Type::NUMERIC:
+        if (a0_type == Type::INTEGER)
+        {
+          rv->push_back(Value(Numeric(*a0.integer())));
+          return val;
+        }
+        else if (a0.type() == Type::NO_TYPE)
+        {
+          rv->push_back(Value(Value::type_numeric));
+          return val;
+        }
+        break;
+      case Type::ROWTYPE:
+        break;
+      default:
+        if (a0.type() == Type::NO_TYPE)
+        {
+          rv->push_back(Value(rv_type.levelDown()));
+          return val;
+        }
+        break;
+      }
+    }
     if (val.type() == Type::ROWTYPE)
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName(rv->table_decl().tupleName()).c_str());
     throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());

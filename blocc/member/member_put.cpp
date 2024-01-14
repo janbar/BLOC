@@ -94,6 +94,11 @@ Value& MemberPUTExpression::value(Context& ctx) const
           rv->at(p).swap(Value(Integer(*a1.numeric())));
           return val;
         }
+        else if (a1.type() == Type::NO_TYPE)
+        {
+          rv->at(p).swap(Value(Value::type_integer));
+          return val;
+        }
         break;
       case Type::NUMERIC:
         if (a1_type == Type::INTEGER)
@@ -101,8 +106,20 @@ Value& MemberPUTExpression::value(Context& ctx) const
           rv->at(p).swap(Value(Numeric(*a1.integer())));
           return val;
         }
+        else if (a1.type() == Type::NO_TYPE)
+        {
+          rv->at(p).swap(Value(Value::type_numeric));
+          return val;
+        }
+        break;
+      case Type::ROWTYPE:
         break;
       default:
+        if (a1.type() == Type::NO_TYPE)
+        {
+          rv->at(p).swap(Value(rv->at(p).type()));
+          return val;
+        }
         break;
       }
     }
