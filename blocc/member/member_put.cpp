@@ -37,18 +37,16 @@ Value& MemberPUTExpression::value(Context& ctx) const
   Value& a0 = _args[0]->value(ctx);
   if (val.isNull() || a0.isNull())
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
+  Value& a1 = _args[1]->value(ctx);
 
   if (val.type().level() > 0)
   {
-    /* collection */
     Collection * rv = val.collection();
     const Type& rv_type = rv->table_type();
     Integer p = *a0.integer();
     if (p < 0 || p >= rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
-    Value& a1 = _args[1]->value(ctx);
     const Type& a1_type = a1.type();
-
     /* collection */
     if (a1_type.level() > 0)
     {
@@ -60,7 +58,6 @@ Value& MemberPUTExpression::value(Context& ctx) const
           rv->at(p).swap(std::move(a1));
         return val;
       }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
     }
     else if (a1_type == rv_type.major())
     {
@@ -75,7 +72,6 @@ Value& MemberPUTExpression::value(Context& ctx) const
             rv->at(p).swap(std::move(a1));
           return val;
         }
-        throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
       }
       /* others */
       else if (a1_type == rv_type.levelDown())
@@ -87,26 +83,31 @@ Value& MemberPUTExpression::value(Context& ctx) const
         return val;
       }
     }
-    /* type mixing */
-    switch (rv_type.major())
+    else
     {
-    case Type::INTEGER:
-      if (a1_type == Type::NUMERIC)
+      /* type mixing */
+      switch (rv_type.major())
       {
-        rv->at(p).swap(Value(Integer(*a1.numeric())));
-        return val;
+      case Type::INTEGER:
+        if (a1_type == Type::NUMERIC)
+        {
+          rv->at(p).swap(Value(Integer(*a1.numeric())));
+          return val;
+        }
+        break;
+      case Type::NUMERIC:
+        if (a1_type == Type::INTEGER)
+        {
+          rv->at(p).swap(Value(Numeric(*a1.integer())));
+          return val;
+        }
+        break;
+      default:
+        break;
       }
-      break;
-    case Type::NUMERIC:
-      if (a1_type == Type::INTEGER)
-      {
-        rv->at(p).swap(Value(Numeric(*a1.integer())));
-        return val;
-      }
-      break;
-    default:
-      break;
     }
+    if (val.type() == Type::ROWTYPE)
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName(rv->table_decl().tupleName()).c_str());
     throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
   }
 
@@ -119,7 +120,6 @@ Value& MemberPUTExpression::value(Context& ctx) const
     Integer p = *a0.integer();
     if (p < 0 || p >= rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
-    Value& a1 = _args[1]->value(ctx);
     if (a1.isNull())
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
     Integer c = *a1.integer();
@@ -141,7 +141,6 @@ Value& MemberPUTExpression::value(Context& ctx) const
     Integer p = *a0.integer();
     if (p < 0 || p >= rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
-    Value& a1 = _args[1]->value(ctx);
     if (a1.isNull())
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
     Integer c = *a1.integer();
