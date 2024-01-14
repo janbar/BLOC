@@ -91,12 +91,24 @@ Value& MemberINSERTExpression::value(Context& ctx) const
         return val;
       }
     }
-    /* tuple */
-    else if (a1_type == Type::ROWTYPE)
+    else if (a1_type == rv_type.major())
     {
-      if (a1.isNull()) /* + tuple null */
-        return val;
-      if (a1.tuple()->tuple_type() == rv_type.levelDown())
+      /* tuple */
+      if (a1_type == Type::ROWTYPE)
+      {
+        if (a1.isNull()) /* + tuple null */
+          return val;
+        if (a1.tuple()->tuple_type() == rv_type.levelDown())
+        {
+          if (a1.lvalue())
+            rv->insert(rv->begin() + p, a1.clone());
+          else
+            rv->insert(rv->begin() + p, std::move(a1));
+          return val;
+        }
+      }
+      /* others */
+      else if (a1_type == rv_type.levelDown())
       {
         if (a1.lvalue())
           rv->insert(rv->begin() + p, a1.clone());
@@ -105,14 +117,28 @@ Value& MemberINSERTExpression::value(Context& ctx) const
         return val;
       }
     }
-    /* others */
-    else if (a1_type == rv_type.levelDown())
+    else
     {
-      if (a1.lvalue())
-        rv->insert(rv->begin() + p, a1.clone());
-      else
-        rv->insert(rv->begin() + p, std::move(a1));
-      return val;
+      /* type mixing */
+      switch (rv_type.major())
+      {
+      case Type::INTEGER:
+        if (a1_type == Type::NUMERIC)
+        {
+          rv->insert(rv->begin() + p, Value(Integer(*a1.numeric())));
+          return val;
+        }
+        break;
+      case Type::NUMERIC:
+        if (a1_type == Type::INTEGER)
+        {
+          rv->insert(rv->begin() + p, Value(Numeric(*a1.integer())));
+          return val;
+        }
+        break;
+      default:
+        break;
+      }
     }
     if (val.type() == Type::ROWTYPE)
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName(rv->table_decl().tupleName()).c_str());
@@ -221,9 +247,9 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
     {
       switch (exp_type.major())
       {
+      case Type::NO_TYPE: /* opaque */
       case Type::LITERAL:
       case Type::TABCHAR:
-      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT]);
@@ -242,6 +268,8 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
     {
       switch (exp_type.major())
       {
+      case Type::NO_TYPE: /* opaque */
+        break;
         /* string INSERT string or one byte */
       case Type::LITERAL:
         if (args.back()->type(ctx) != Type::LITERAL &&
@@ -254,8 +282,6 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
                 args.back()->type(ctx) != Type::LITERAL &&
                 !ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
           throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT]);
-        break;
-      case Type::NO_TYPE: /* opaque */
         break;
       default:
         throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT]);
@@ -277,9 +303,12 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
           throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
 
         /* test known types are compatible */
-        if (!exp_opaque && !arg_opaque &&
-                arg_type != exp_type && arg_type != exp_type.levelDown())
-          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+        if (!exp_opaque && !arg_opaque)
+        {
+          if (!ParseExpression::typeChecking(args.back(), exp_type, p, ctx) &&
+                  !ParseExpression::typeChecking(args.back(), exp_type.levelDown(), p, ctx))
+            throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+        }
       }
     }
     assertClosedMember(p, ctx, KEYWORDS[BTM_INSERT]);
