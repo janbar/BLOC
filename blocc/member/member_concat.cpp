@@ -35,19 +35,21 @@ Value& MemberCONCATExpression::value(Context& ctx) const
 {
   Value& val = _exp->value(ctx);
   Value& a0 = _args[0]->value(ctx);
-  if (a0.isNull())
-    return val;
 
   /* collection */
   if (val.type().level() > 0)
   {
     if (val.isNull())
     {
-      if (a0.type().level() > 0)
+      if (a0.type().level() > 0) /* null + tab */
         return a0;
       Collection * rv;
       if (a0.type() == Type::ROWTYPE)
+      {
+        if (a0.isNull()) /* null + tuple null */
+          return val;
         rv = new Collection(a0.tuple()->tuple_decl(), 1);
+      }
       else
         rv = new Collection(a0.type().levelUp());
       if (a0.lvalue())
@@ -66,6 +68,8 @@ Value& MemberCONCATExpression::value(Context& ctx) const
     /* collection */
     if (a0_type.level() > 0)
     {
+      if (a0.isNull()) /* + table null */
+        return val;
       Collection * a = a0.collection();
       if (a->table_type() == rv_type)
       {
@@ -104,13 +108,14 @@ Value& MemberCONCATExpression::value(Context& ctx) const
           rv->push_back(std::move(a0));
         return val;
       }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
     }
     else if (a0_type == rv_type.major())
     {
       /* tuple */
       if (a0_type == Type::ROWTYPE)
       {
+        if (a0.isNull()) /* + tuple null */
+          return val;
         if (a0.tuple()->tuple_type() == rv_type.levelDown())
         {
           if (a0.lvalue())
@@ -119,7 +124,6 @@ Value& MemberCONCATExpression::value(Context& ctx) const
             rv->push_back(std::move(a0));
           return val;
         }
-        throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
       }
       /* others */
       else if (a0_type == rv_type.levelDown())
@@ -130,11 +134,14 @@ Value& MemberCONCATExpression::value(Context& ctx) const
           rv->push_back(std::move(a0));
         return val;
       }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
     }
-    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
+    if (val.type() == Type::ROWTYPE)
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName(rv->table_decl().tupleName()).c_str());
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
   }
 
+  if (a0.isNull()) /* + null */
+    return val;
   switch (val.type().major())
   {
     /* literal */
