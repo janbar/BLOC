@@ -102,18 +102,23 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     t = p.pop();
     if (t->code == '(')
     {
-      do
+      if (p.front()->code == ')')
+        t = p.pop();
+      else
       {
-        t = p.pop();
-        if (t->code != TOKEN_KEYWORD)
-          throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
-        std::transform(t->text.begin(), t->text.end(), t->text.begin(), ::toupper);
-        /* register the symbol for later use */
-        fct->params.push_back(fct->ctx->registerSymbol(t->text, Type::NO_TYPE));
-        t = p.pop();
-      } while (t->code == Parser::CHAIN);
-      if (t->code != ')')
-        throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+        do
+        {
+          t = p.pop();
+          if (t->code != TOKEN_KEYWORD)
+            throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+          std::transform(t->text.begin(), t->text.end(), t->text.begin(), ::toupper);
+          /* register the symbol for later use */
+          fct->params.push_back(fct->ctx->registerSymbol(t->text, Type::NO_TYPE));
+          t = p.pop();
+        } while (t->code == Parser::CHAIN);
+        if (t->code != ')')
+          throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+      }
       t = p.pop();
     }
 
