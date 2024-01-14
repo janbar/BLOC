@@ -34,29 +34,28 @@ Value& STRExpression::value(Context & ctx) const
   Value& val = _args[0]->value(ctx);
   Value v(Value::type_literal);
 
-  switch (val.type().major())
-  {
-  case Type::NO_TYPE:
-    break;
-  case Type::BOOLEAN:
-    v = Value(new Literal(Value::readableBoolean(*val.boolean())));
-    break;
-  case Type::INTEGER:
-    v = Value(new Literal(Value::readableInteger(*val.integer())));
-    break;
-  case Type::NUMERIC:
-    v = Value(new Literal(Value::readableNumeric(*val.numeric())));
-    break;
-  case Type::LITERAL:
-    if (val.lvalue())
-      return ctx.allocate(val.clone());
-    return val;
-  case Type::TABCHAR:
-    v = Value(new Literal(val.tabchar()->data(), val.tabchar()->size()));
-    break;
-  default:
-    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STR]);
-  }
+  if (!val.isNull())
+    switch (val.type().major())
+    {
+    case Type::BOOLEAN:
+      v = Value(new Literal(Value::readableBoolean(*val.boolean())));
+      break;
+    case Type::INTEGER:
+      v = Value(new Literal(Value::readableInteger(*val.integer())));
+      break;
+    case Type::NUMERIC:
+      v = Value(new Literal(Value::readableNumeric(*val.numeric())));
+      break;
+    case Type::LITERAL:
+      if (val.lvalue())
+        return ctx.allocate(val.clone());
+      return val;
+    case Type::TABCHAR:
+      v = Value(new Literal(val.tabchar()->data(), val.tabchar()->size()));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STR]);
+    }
   if (val.lvalue())
     return ctx.allocate(std::move(v));
   val.swap(Value(std::move(v)));

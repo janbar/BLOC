@@ -48,9 +48,6 @@ const Statement * PUTStatement::doit(Context& ctx) const
       {
         switch (val_type.major())
         {
-        case Type::NO_TYPE:
-          throw RuntimeError(EXC_RT_OPAQUE_INLINE);
-
         case Type::LITERAL:
           fputs(val.literal()->c_str(), ctx.ctxout());
           break;

@@ -32,10 +32,9 @@ namespace bloc
 Value& ISNUMExpression::value(Context & ctx) const
 {
   Value& val = _args[0]->value(ctx);
-  Value v;
-  if (val.isNull() || val.type().level() > 0)
-    v = Value(Bool(false));
-  else
+  Value v(Bool(false));
+
+  if (!val.isNull() && val.type().level() == 0)
     switch (val.type().major())
     {
     case Type::LITERAL:

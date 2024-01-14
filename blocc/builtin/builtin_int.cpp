@@ -36,36 +36,49 @@ Value& INTExpression::value(Context & ctx) const
   Value& val = _args[0]->value(ctx);
   Value v(Value::type_integer);
 
-  switch (val.type().major())
-  {
-  case Type::NO_TYPE:
-    break;
-  case Type::LITERAL:
-    try
+  if (!val.isNull())
+    switch (val.type().major())
     {
-      v = Value(Integer(std::stoll(*val.literal())));
+    case Type::LITERAL:
+      try
+      {
+        v = Value(Integer(std::stoll(*val.literal())));
+      }
+      catch (std::invalid_argument& e)
+      {
+        throw RuntimeError(EXC_RT_STRING_TO_NUM);
+      }
+      catch (std::out_of_range& e)
+      {
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      }
+      break;
+    case Type::TABCHAR:
+      try
+      {
+        v = Value(Numeric(std::stoll(std::string(val.tabchar()->data(), val.tabchar()->size()))));
+      }
+      catch (std::invalid_argument& e)
+      {
+        throw RuntimeError(EXC_RT_STRING_TO_NUM);
+      }
+      catch (std::out_of_range& e)
+      {
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      }
+      break;
+    case Type::NUMERIC:
+      v = Value(Integer(*val.numeric()));
+      break;
+    case Type::INTEGER:
+      v = Value(*val.integer());
+      break;
+    case Type::BOOLEAN:
+      v = Value(Integer(*val.boolean() ? 1 : 0));
+      break;
+    default:
+      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
     }
-    catch (std::invalid_argument& e)
-    {
-      throw RuntimeError(EXC_RT_STRING_TO_NUM);
-    }
-    catch (std::out_of_range& e)
-    {
-      throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-    }
-    break;
-  case Type::NUMERIC:
-    v = Value(Integer(*val.numeric()));
-    break;
-  case Type::INTEGER:
-    v = Value(*val.integer());
-    break;
-  case Type::BOOLEAN:
-    v = Value(Integer(*val.boolean() ? 1 : 0));
-    break;
-  default:
-    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
-  }
   if (val.lvalue())
     return ctx.allocate(std::move(v));
   val.swap(Value(std::move(v)));
