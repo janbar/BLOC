@@ -33,26 +33,34 @@ namespace bloc
 Value& MemberCOUNTExpression::value(Context& ctx) const
 {
   Value& val = _exp->value(ctx);
-  if (val.isNull())
-    return val;
+  Value v = Value(Value::type_integer);
 
-  const Type& exp_type = val.type();
-  if (exp_type.level() == 0)
+  if (!val.isNull())
   {
-    switch (exp_type.major())
+    const Type& exp_type = val.type();
+    if (exp_type.level() == 0)
     {
-    case Type::LITERAL:
-      return ctx.allocate(Value(Integer(val.literal()->size())));
-    case Type::TABCHAR:
-      return ctx.allocate(Value(Integer(val.tabchar()->size())));
-    default:
-      throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
+      switch (exp_type.major())
+      {
+      case Type::LITERAL:
+        v = Value(Integer(val.literal()->size()));
+        break;
+      case Type::TABCHAR:
+        v = Value(Integer(val.tabchar()->size()));
+        break;
+      default:
+        throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
+      }
+    }
+    else
+    {
+      v = Value(Integer(val.collection()->size()));
     }
   }
-  else
-  {
-    return ctx.allocate(Value(Integer(val.collection()->size())));
-  }
+  if (val.lvalue())
+    return ctx.allocate(std::move(v));
+  val.swap(std::move(v));
+  return val;
 }
 
 MemberCOUNTExpression * MemberCOUNTExpression::parse(Parser& p, Context& ctx, Expression * exp)
