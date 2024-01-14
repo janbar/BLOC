@@ -58,22 +58,24 @@ const Type& MemberATExpression::type(Context& ctx) const
 Value& MemberATExpression::value(Context& ctx) const
 {
   Value& val = _exp->value(ctx);
-  if (val.isNull())
-    return val;
   Value& a0 = _args[0]->value(ctx);
-  if (a0.isNull())
-    return a0;
+  if (val.isNull())
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
 
   /* collection */
   if (val.type().level() > 0)
   {
+    if (a0.isNull())
+      return ctx.allocate(Value(val.type().levelDown()));
     Collection * rv = val.collection();
     Integer p = *a0.integer();
     if (p >= 0 && p < rv->size())
       return rv->at((unsigned)p).to_lvalue(val.lvalue());
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   }
 
+  if (a0.isNull())
+    return ctx.allocate(Value(val.type()));
   switch (val.type().major())
   {
   case Type::LITERAL:
@@ -82,7 +84,7 @@ Value& MemberATExpression::value(Context& ctx) const
     Integer p = *a0.integer();
     if (p >= 0 && p < rv->size())
       return ctx.allocate(Value(Integer(rv->at((unsigned) p))));
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   }
   case Type::TABCHAR:
   {
@@ -90,7 +92,7 @@ Value& MemberATExpression::value(Context& ctx) const
     Integer p = *a0.integer();
     if (p >= 0 && p < rv->size())
       return ctx.allocate(Value(Integer(rv->at((unsigned) p))));
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(p).c_str());
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   }
   default:
     break;
