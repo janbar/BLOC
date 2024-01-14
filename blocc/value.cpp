@@ -540,7 +540,7 @@ Value Value::parseLiteral(const std::string& text)
 
 Value Value::parseInteger(const std::string& text, int base)
 {
-  return Value(Integer(std::stoll(text, 0, base)));
+  return Value(Integer(std::stoll(text, nullptr, base)));
 }
 
 Value Value::parseNumeric(const std::string& text)

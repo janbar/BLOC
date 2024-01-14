@@ -64,7 +64,7 @@ ItemExpression * ItemExpression::parse(Parser& p, Context& ctx, Expression * exp
   TokenPtr t = p.pop();
   if (t->code != TOKEN_INTEGER)
     throw ParseError(EXC_PARSE_INV_EXPRESSION);
-  unsigned item_no = (unsigned)std::stoul(t->text, 0, 10);
+  unsigned item_no = (unsigned)std::stoul(t->text, nullptr, 10);
   switch (exp_type.major())
   {
   case Type::NO_TYPE:

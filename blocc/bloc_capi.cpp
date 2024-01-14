@@ -96,7 +96,7 @@ bloc_ctx_register_symbol(BLOC_CONTEXT *ctx, const char *name, bloc_type type)
   catch (bloc::ParseError& pe)
   {
     bloc_error_set(pe.what(), pe.no);
-    return 0;
+    return nullptr;
   }
 }
 

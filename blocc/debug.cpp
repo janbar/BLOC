@@ -41,7 +41,7 @@ typedef struct
   void (*msg_callback)(int level, char* msg);
 } debug_ctx_t;
 
-static debug_ctx_t debug_ctx = {LIBTAG, DBG_NONE, NULL};
+static debug_ctx_t debug_ctx = {LIBTAG, DBG_NONE, nullptr};
 
 /**
  * Set the debug level to be used for the subsystem
@@ -51,7 +51,7 @@ static debug_ctx_t debug_ctx = {LIBTAG, DBG_NONE, NULL};
  */
 static inline void __dbg_setlevel(debug_ctx_t* ctx, int level)
 {
-  if (ctx != NULL)
+  if (ctx != nullptr)
   {
     ctx->cur_level = level;
   }
@@ -65,7 +65,7 @@ static inline void __dbg_setlevel(debug_ctx_t* ctx, int level)
  */
 static inline void __dbg(const debug_ctx_t* ctx, int level, const char* fmt, va_list ap)
 {
-  if (ctx != NULL && level <= ctx->cur_level)
+  if (ctx != nullptr && level <= ctx->cur_level)
   {
     char msg[4096];
     int len = snprintf(msg, sizeof (msg), "(%s)", ctx->name);

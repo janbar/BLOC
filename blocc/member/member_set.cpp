@@ -122,7 +122,7 @@ MemberSETExpression * MemberSETExpression::parse(Parser& p, Context& ctx, Expres
   /* item no MUST be constant */
   if (t->code != TOKEN_INTEGER)
     throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
-  unsigned item_no = (unsigned)std::stoul(t->text, 0, 10);
+  unsigned item_no = (unsigned)std::stoul(t->text, nullptr, 10);
 
   try
   {

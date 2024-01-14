@@ -95,7 +95,7 @@ bool Parser::init_scanner(void * reader_hdl, TOKEN_READER reader)
 {
   close_scanner();
   _scanner = tokenizer_init(reader_hdl, reader);
-  if (_scanner == 0)
+  if (_scanner == nullptr)
     return false;
   tokenizer_enable_space(_scanner);
   return true;
