@@ -325,8 +325,8 @@ std::string Value::typeName() const
     return _type.typeName(PluginManager::instance().plugged(_type.minor()).interface.name);
   case Type::ROWTYPE:
     if (_type.level() > 0)
-      return _type.typeName(cast(Collection)->table_decl().tupleName().c_str());
-    return _type.typeName(cast(Tuple)->tuple_decl().tupleName().c_str());
+      return _type.typeName(cast(Collection)->table_decl().tupleName());
+    return _type.typeName(cast(Tuple)->tuple_decl().tupleName());
   default:
     return _type.typeName();
   }

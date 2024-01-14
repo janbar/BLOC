@@ -80,7 +80,7 @@ Value& MemberMETHODExpression::value(Context& ctx) const
 std::string MemberMETHODExpression::typeName(Context& ctx) const
 {
   if (_type_method.major() == Type::ROWTYPE)
-    return _type_method.typeName(tuple_decl(ctx).tupleName().c_str());
+    return _type_method.typeName(tuple_decl(ctx).tupleName());
   return _type_method.typeName();
 }
 

@@ -73,7 +73,7 @@ std::string VariableExpression::typeName(Context& ctx) const
   case Type::COMPLEX:
     return t.typeName(PluginManager::instance().plugged(t.minor()).interface.name);
   case Type::ROWTYPE:
-    return t.typeName(tuple_decl(ctx).tupleName().c_str());
+    return t.typeName(tuple_decl(ctx).tupleName());
   default:
     return t.typeName();
   }

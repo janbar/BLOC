@@ -452,7 +452,7 @@ static void describe_module(unsigned type_id)
       if (t.major() == bloc::Type::ROWTYPE)
       {
         bloc::TupleDecl::Decl decl = bloc::plugin::make_decl(plug.interface.ctors[i].args[j].decl, type_id);
-        PRINT(t.typeName(decl.tupleName().c_str()).c_str());
+        PRINT(t.typeName(decl.tupleName()).c_str());
       }
       else
       {
@@ -478,7 +478,7 @@ static void describe_module(unsigned type_id)
       if (t.major() == bloc::Type::ROWTYPE)
       {
         bloc::TupleDecl::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].args[j].type.decl, type_id);
-        PRINT1("%s", t.typeName(decl.tupleName().c_str()).c_str());
+        PRINT1("%s", t.typeName(decl.tupleName()).c_str());
       }
       else
       {
@@ -501,7 +501,7 @@ static void describe_module(unsigned type_id)
     if (t.major() == bloc::Type::ROWTYPE)
     {
       bloc::TupleDecl::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].ret.decl, type_id);
-      PRINT(t.typeName(decl.tupleName().c_str()).c_str());
+      PRINT(t.typeName(decl.tupleName()).c_str());
     }
     else
     {

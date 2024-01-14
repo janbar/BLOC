@@ -80,7 +80,7 @@ public:
 
   std::string typeName() const { return typeName(typeName(_major)); }
 
-  std::string typeName(const char * nickname) const
+  std::string typeName(const std::string& nickname) const
   {
     std::string fn;
     if (_level > 0)

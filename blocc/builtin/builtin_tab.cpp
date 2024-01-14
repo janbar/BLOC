@@ -76,7 +76,7 @@ std::string TABExpression::typeName(Context& ctx) const
   case Type::COMPLEX:
     return type(ctx).typeName(PluginManager::instance().plugged(type(ctx).minor()).interface.name);
   case Type::ROWTYPE:
-    return type(ctx).typeName(tuple_decl(ctx).tupleName().c_str());
+    return type(ctx).typeName(tuple_decl(ctx).tupleName());
   default:
     return type(ctx).typeName();
   }
