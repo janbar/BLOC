@@ -420,34 +420,37 @@ std::string Value::readableTuple(Tuple &c)
   {
     if (i > 0)
       sb.append(", ");
-    switch (c[i].type().major())
-    {
-    case Type::NO_TYPE:
-      sb.append(STR_NIL);
-      break;
-    case Type::BOOLEAN:
-      sb.append(Value::readableBoolean(*(c[i].boolean())));
-      break;
-    case Type::INTEGER:
-      sb.append(Value::readableInteger(*(c[i].integer())));
-      break;
-    case Type::NUMERIC:
-      sb.append(Value::readableNumeric(*(c[i].numeric())));
-      break;
-    case Type::LITERAL:
-      sb.append(Value::readableLiteral(*(c[i].literal())));
-      break;
-    case Type::COMPLEX:
-      sb.append(Value::readableComplex(*(c[i].complex())));
-      break;
-    case Type::TABCHAR:
-      sb.append(Value::readableTabchar(*(c[i].tabchar())));
-      break;
-    case Type::POINTER:
-      assert(0==1);
-    default:
-      break;
-    }
+    if (c[i].isNull())
+      sb.append(Value::STR_NIL);
+    else
+      switch (c[i].type().major())
+      {
+      case Type::NO_TYPE:
+        sb.append(STR_NIL);
+        break;
+      case Type::BOOLEAN:
+        sb.append(Value::readableBoolean(*(c[i].boolean())));
+        break;
+      case Type::INTEGER:
+        sb.append(Value::readableInteger(*(c[i].integer())));
+        break;
+      case Type::NUMERIC:
+        sb.append(Value::readableNumeric(*(c[i].numeric())));
+        break;
+      case Type::LITERAL:
+        sb.append(Value::readableLiteral(*(c[i].literal())));
+        break;
+      case Type::COMPLEX:
+        sb.append(Value::readableComplex(*(c[i].complex())));
+        break;
+      case Type::TABCHAR:
+        sb.append(Value::readableTabchar(*(c[i].tabchar())));
+        break;
+      case Type::POINTER:
+        assert(0==1);
+      default:
+        break;
+      }
   }
   return sb;
 }
