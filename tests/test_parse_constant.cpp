@@ -45,9 +45,8 @@ TEST_CASE("integer")
   delete e;
 
   ctx.reset("0x8000000000000000");
-  try { e = ctx.parseExpression(); delete e; }
-  catch (ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch (ParseError& pe) { SUCCEED(pe.what()); }
 }
 
 TEST_CASE("decimal")
@@ -78,9 +77,8 @@ TEST_CASE("decimal")
   delete e;
 
   ctx.reset("1.23456789e+309");
-  try { e = ctx.parseExpression(); delete e; }
-  catch (ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch (ParseError& pe) { SUCCEED(pe.what()); }
 }
 
 TEST_CASE("string")

@@ -5,6 +5,7 @@
 
 #include <test.h>
 #include <hashvalue.c>
+#include <blocc/exception_parse.h>
 
 TestingContext ctx;
 
@@ -44,8 +45,8 @@ TEST_CASE("for loop")
   REQUIRE( *(ctx.loadVariable("I")->integer()) == 10 );
 
   ctx.reset("for i in 0 to 1 loop i=true; break; end loop;\n");
-  try { e = ctx.parse(); FAIL("No throw"); }
-  catch (...) { SUCCEED("Throw"); }
+  try { e = ctx.parse(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 }
 
 TEST_CASE("forall loop")
@@ -87,6 +88,6 @@ TEST_CASE("forall loop")
   REQUIRE( fequal(*(ctx.loadVariable("T")->numeric()), 149.505501) );
 
   ctx.reset("forall i in a loop i=true; break; end loop;\n");
-  try { e = ctx.parse(); FAIL("No throw"); }
-  catch (...) { SUCCEED("Throw"); }
+  try { e = ctx.parse(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 }

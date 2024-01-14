@@ -25,18 +25,16 @@ TEST_CASE("tuple item 0")
 {
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@0");
-  try { e = ctx.parseExpression(); delete e; }
-  catch(ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 }
 
 TEST_CASE("tuple item out")
 {
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@6");
-  try { e = ctx.parseExpression(); delete e; }
-  catch(ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 }
 
 TEST_CASE("tuple item@")
@@ -93,29 +91,24 @@ TEST_CASE("tuple item.set@ bad type")
 {
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@1(0)");
-  try { e = ctx.parseExpression(); delete e; }
-  catch(ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@2(true)");
-  try { e = ctx.parseExpression(); delete e; }
-  catch(ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@3(raw(4,0x40))");
-  try { e = ctx.parseExpression(); delete e; }
-  catch(ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@4(0.456)");
-  try { e = ctx.parseExpression(); delete e; }
-  catch(ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@5(1234)");
-  try { e = ctx.parseExpression(); delete e; }
-  catch(ParseError& pe) { SUCCEED(pe.what()); return; }
-  FAIL("no exception");
+  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  catch(ParseError& pe) { SUCCEED(pe.what()); }
 }
 
 TEST_CASE("tuple item.set@ type mixing")
@@ -128,5 +121,18 @@ TEST_CASE("tuple item.set@ type mixing")
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@3(5678)");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).tuple()->at(2).numeric()) == 5678.0 );
+  delete e;
+
+  ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@2(null)@2");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).integer() == nullptr );
+  delete e;
+  ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@3(null)@3");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).numeric() == nullptr );
+  delete e;
+  ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true).set@1(null)@1");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).literal() == nullptr );
   delete e;
 }
