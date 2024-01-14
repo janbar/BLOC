@@ -59,27 +59,15 @@ public:
 
   std::string unparse(Context& ctx) const override
   {
-    return _symbol.name;
+    return _symbol.name();
   }
 
   std::string toString(Context& ctx) const override
   {
-    return std::string("variable ").append(_symbol.name);
+    return std::string("variable ").append(_symbol.name());
   }
 
   std::string typeName(Context& ctx) const override;
-
-  /**
-   * Returns the symbol name of this variable.
-   * @return name
-   */
-  const std::string& symbolName() const { return _symbol.name; }
-
-  /**
-   * Returns the symbol id of this variable.
-   * @return id
-   */
-  unsigned symbolId() const { return _symbol.id; }
 
   /**
    * Store a temporary value into memory pointed by this variable.

@@ -60,7 +60,7 @@ void FUNCTIONStatement::unparse(Context& ctx, FILE * out) const
     {
       if (chained)
         fputc(Parser::CHAIN, out);
-      fputs(s.name.c_str(), out);
+      fputs(s.name().c_str(), out);
       chained = true;
     }
     fputc(')', out);

@@ -92,24 +92,22 @@ Context::Context(const Context& ctx, uint8_t recursion, bool trace)
     _serr = _sout;
   else
     _serr = ::fdopen(::dup(::fileno(ctx._serr)), "w");
-  /* copy table of symbols */
-  _symbols.reserve(ctx._symbols.size());
-  for (auto e : ctx._symbols)
-    _symbols.push_back(new Symbol(*e));
-  for (auto& e : ctx._storage)
-    _storage.push_back(Value());
+  /* copy table of symbols with new empty values */
+  _storage_pool.reserve(ctx._storage_pool.size());
+  for (const MemorySlot& e : ctx._storage_pool)
+    _storage_pool.push_back(MemorySlot(*(e.symbol)));
 }
 
 void Context::purge()
 {
   returnCondition(false);
+  if (_returned)
+    delete _returned;
   _returned = nullptr;
-  /* clear variables allocation */
-  _storage.clear();
-  /* clear symbol map */
-  for (auto e : _symbols)
-    delete e;
-  _symbols.clear();
+  /* clear temporary pool */
+  _temporary_storage.purge();
+  /* clear storage pool */
+  _storage_pool.clear();
   /* reset trace mode */
   _trace = false;
 }
@@ -130,9 +128,9 @@ void Context::parsingEnd()
   while (_backed_symbols.begin() != it--)
   {
     if (it->major() == Type::ROWTYPE)
-      _symbols[it->id]->upgrade(it->tuple_decl(), it->level());
+      _storage_pool[it->id()].symbol->upgrade(it->tuple_decl(), it->level());
     else
-      _symbols[it->id]->upgrade(*it);
+      _storage_pool[it->id()].symbol->upgrade(*it);
   }
   _backed_symbols.clear();
   _parsing = false;
@@ -144,16 +142,15 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
   if (s == nullptr)
   {
     /* allocate new */
-    unsigned nxt_id = _symbols.size();
-    _storage.push_back(Value());
-    _symbols.push_back(new Symbol(nxt_id, name, type));
-    Symbol& sym = *_symbols.back();
+    unsigned nxt_id = _storage_pool.size();
+    _storage_pool.push_back(MemorySlot(Symbol(nxt_id, name, type)));
+    Symbol * sym = _storage_pool.back().symbol;
 
     /* implement safety qualifier */
     if (name.front() == Symbol::SAFETY_QUALIFIER)
-      sym.safety(true);
+      sym->safety(true);
 
-    return sym;
+    return *sym;
   }
   if (*s == type)
     return *s;
@@ -175,16 +172,15 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
   if (s == nullptr)
   {
     /* allocate new */
-    unsigned nxt_id = _symbols.size();
-    _storage.push_back(Value());
-    _symbols.push_back(new Symbol(nxt_id, name, decl, level));
-    Symbol& sym = *_symbols.back();
+    unsigned nxt_id = _storage_pool.size();
+    _storage_pool.push_back(MemorySlot(Symbol(nxt_id, name, decl, level)));
+    Symbol * sym = _storage_pool.back().symbol;
 
     /* implement safety qualifier */
     if (name.front() == Symbol::SAFETY_QUALIFIER)
-      sym.safety(true);
+      sym->safety(true);
 
-    return sym;
+    return *sym;
   }
   if (*s == decl.make_type(level))
     return *s;
@@ -198,52 +194,52 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
 
 Value& Context::storeVariable(const Symbol& symbol, Value&& e)
 {
-  std::vector<Value>::iterator it = _storage.begin() + symbol.id;
-  if (it->type() == Type::NO_TYPE)
+  std::vector<MemorySlot>::iterator it = _storage_pool.begin() + symbol.id();
+  if (it->value.type() == Type::NO_TYPE)
   {
     /* move new and forward the safety flag */
-    it->swap(std::move(e));
-    it->safety(symbol.safety());
-    it->to_lvalue(true);
+    it->value.swap(std::move(e));
+    it->value.safety(symbol.safety());
+    it->value.to_lvalue(true);
     /* upgrade the symbol registered in this context for this name */
-    const Type& new_type = it->type();
-    if (!it->isNull() && new_type == Type::ROWTYPE)
+    const Type& new_type = it->value.type();
+    if (!it->value.isNull() && new_type == Type::ROWTYPE)
     {
       if (new_type.level() > 0)
-        getSymbol(symbol.id)->upgrade(it->collection()->table_decl(), new_type.level());
+        it->symbol->upgrade(it->value.collection()->table_decl(), new_type.level());
       else
-        getSymbol(symbol.id)->upgrade(it->tuple()->tuple_decl(), new_type.level());
+        it->symbol->upgrade(it->value.tuple()->tuple_decl(), new_type.level());
     }
     else
-      getSymbol(symbol.id)->upgrade(new_type);
+      it->symbol->upgrade(new_type);
   }
-  else if (it->type() != e.type())
+  else if (it->value.type() != e.type())
   {
     /* safety flag forbids any change of type */
-    if (it->safety())
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, it->typeName().c_str());
+    if (it->value.safety())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, it->value.typeName().c_str());
     /* move new */
-    it->swap(std::move(e));
-    it->to_lvalue(true);
+    it->value.swap(std::move(e));
+    it->value.to_lvalue(true);
     /* upgrade the symbol registered in this context for this name */
-    const Type& new_type = it->type();
-    if (!it->isNull() && new_type == Type::ROWTYPE)
+    const Type& new_type = it->value.type();
+    if (!it->value.isNull() && new_type == Type::ROWTYPE)
     {
       if (new_type.level() > 0)
-        getSymbol(symbol.id)->upgrade(it->collection()->table_decl(), new_type.level());
+        it->symbol->upgrade(it->value.collection()->table_decl(), new_type.level());
       else
-        getSymbol(symbol.id)->upgrade(it->tuple()->tuple_decl(), new_type.level());
+        it->symbol->upgrade(it->value.tuple()->tuple_decl(), new_type.level());
     }
     else
-      getSymbol(symbol.id)->upgrade(new_type);
+      it->symbol->upgrade(new_type);
   }
   else
   {
     /* move new */
-    it->swap(std::move(e));
-    it->to_lvalue(true);
+    it->value.swap(std::move(e));
+    it->value.to_lvalue(true);
   }
-  return *it;
+  return it->value;
 }
 
 void Context::describeSymbol(const std::string& name)
@@ -264,7 +260,7 @@ void Context::describeSymbol(const Symbol& symbol)
 {
   Value& var = loadVariable(symbol);
 
-  fprintf(_sout, "[%04x] %s is ", symbol.id, symbol.name.c_str());
+  fprintf(_sout, "[%04x] %s is ", symbol.id(), symbol.name().c_str());
   if (var.type() == Type::NO_TYPE)
     fprintf(_sout, "%s\n", symbol.typeName().c_str());
   else
@@ -289,7 +285,7 @@ void Context::describeSymbol(const Symbol& symbol)
         break;
       }
       case Type::TABCHAR:
-//TODO        TabcharExpression::outputTabchar(var->refTabchar(), _sout, 1);
+        Value::outputTabchar(*var.tabchar(), _sout, 1);
         break;
       default:
         break;
@@ -301,8 +297,8 @@ void Context::describeSymbol(const Symbol& symbol)
 
 void Context::dumpVariables()
 {
-  for (const auto e : _symbols)
-    describeSymbol(*e);
+  for (MemorySlot& e : _storage_pool)
+    describeSymbol(*e.symbol);
 }
 
 /**************************************************************************/

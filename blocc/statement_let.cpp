@@ -65,7 +65,7 @@ const Statement * LETStatement::doit(Context& ctx) const
 
 void LETStatement::unparse(Context&ctx, FILE * out) const
 {
-  fputs(_var.symbolName().c_str(), out);
+  fputs(_var.symbol()->name().c_str(), out);
   fputs(" = ", out);
   fputs(_exp->unparse(ctx).c_str(), out);
   unparse_next(ctx, out);

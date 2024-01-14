@@ -31,7 +31,7 @@ const Type& VariableExpression::type(Context& ctx) const
 {
   if (ctx.parsing())
     /* return the type registered in the context with this id */
-    return *(ctx.getSymbol(_symbol.id));
+    return *(ctx.getSymbol(_symbol.id()));
 
   /* return the type of the stored expression */
   Value& val = ctx.loadVariable(_symbol);
@@ -44,7 +44,7 @@ const TupleDecl::Decl& VariableExpression::tuple_decl(Context& ctx) const
 {
   if (ctx.parsing())
     /* return the decl registered in the context with this id */
-    return ctx.getSymbol(_symbol.id)->tuple_decl();
+    return ctx.getSymbol(_symbol.id())->tuple_decl();
   else
   {
     /* return the decl of the stored expression */

@@ -424,7 +424,7 @@ static void describe_all_functor()
     {
       if (n)
         PRINT(",");
-      PRINT(p.name.c_str());
+      PRINT(p.name().c_str());
       n = true;
     }
     PRINT1(") returns %s\n", func->returns.typeName().c_str());

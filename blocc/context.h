@@ -41,6 +41,8 @@ class Context
 public:
   virtual ~Context();
   Context();
+  Context(const Context&) = delete;
+  Context& operator=(const Context&) = delete;
   explicit Context(int fd_out, int fd_err);
 
   /**
@@ -63,17 +65,17 @@ public:
 
   Symbol * findSymbol(const std::string& name)
   {
-    for (auto e : _symbols)
+    for (MemorySlot& e : _storage_pool)
     {
-      if (e->name == name)
-        return e;
+      if (e.symbol->name() == name)
+        return e.symbol;
     }
     return nullptr;
   }
 
   Symbol * getSymbol(unsigned id)
   {
-    return _symbols[id];
+    return _storage_pool[id].symbol;
   }
 
   void parsingBegin();
@@ -105,12 +107,12 @@ public:
 
   Value& loadVariable(const Symbol& symbol)
   {
-    return _storage[symbol.id];
+    return _storage_pool[symbol.id()].value;
   }
 
   void clearVariable(const Symbol& symbol)
   {
-    _storage[symbol.id] = Value();
+    _storage_pool[symbol.id()].value = Value();
   }
 
   Value& storeVariable(const Symbol& symbol, Value&& e);
@@ -324,9 +326,30 @@ public:
 private:
   std::chrono::system_clock::time_point _ts_init = std::chrono::system_clock::now();
 
-  /* memory pool */
-  std::vector<Symbol*> _symbols;
-  std::vector<Value> _storage;
+  /* memory slots */
+  struct MemorySlot
+  {
+    Symbol * symbol;
+    Value value;
+    ~MemorySlot() { delete symbol; }
+    explicit MemorySlot(const Symbol& s) : symbol(new Symbol(s)), value() { }
+    explicit MemorySlot(Symbol&& s) : symbol(new Symbol(std::move(s))), value() { }
+    MemorySlot(const MemorySlot& m) = delete;
+    MemorySlot& operator=(MemorySlot& m) = delete;
+    MemorySlot(MemorySlot&& m) noexcept
+    : symbol(m.symbol), value(std::move(m.value)) { m.symbol = nullptr; }
+    MemorySlot& operator=(MemorySlot&& m) noexcept
+    {
+      if (this == &m)
+        return *this;
+      symbol = m.symbol;
+      m.symbol = nullptr;
+      value = std::move(m.value);
+      return *this;
+    }
+  };
+
+  std::vector<MemorySlot> _storage_pool;
 
   /* stack of looping statement */
   Stack<const Statement*> _controlstack;
@@ -341,6 +364,8 @@ private:
     std::vector<Value*> pool;
   public:
     Pool() { }
+    Pool(const Pool&) = delete;
+    Pool& operator=(const Pool&) = delete;
     ~Pool()
     {
       for (Value * v : pool)

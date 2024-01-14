@@ -27,19 +27,47 @@ namespace bloc
 
 class Symbol : public Type, public TupleDecl
 {
+  unsigned _id;
+  std::string _name;
+
 public:
-  const unsigned id;
-  const std::string name;
 
   constexpr static char SAFETY_QUALIFIER = '$';
 
   Symbol(unsigned id, const std::string& name, const Type& type)
-  : Type(type), id(id), name(name) { }
+  : Type(type), _id(id), _name(name) { }
 
   Symbol(unsigned id, const std::string& name, const Decl& decl, Type::TypeLevel level)
-  : Type(decl.make_type(level)), id(id), name(name), _decl(decl) { }
+  : Type(decl.make_type(level)), _id(id), _name(name), _decl(decl) { }
 
   Symbol(const Symbol&) = default;
+  Symbol& operator=(const Symbol&) = default;
+
+  Symbol(Symbol&& s) noexcept
+  : Type(s._major, s._minor, s._level)
+  , _decl(std::move(s._decl))
+  , _id(s._id)
+  , _name(std::move(s._name))
+  , _safety(s._safety)
+  { }
+
+  Symbol& operator=(Symbol&& s) noexcept
+  {
+    if (this == &s)
+      return *this;
+    Type::_major = s._major;
+    Type::_minor = s._minor;
+    Type::_level = s._level;
+    _decl = std::move(s._decl);
+    _id = s._id;
+    _name = std::move(s._name);
+    _safety = s._safety;
+    return *this;
+  }
+
+  unsigned id() const { return _id; }
+
+  const std::string& name() const { return _name; }
 
   void safety(bool b) const { _safety = b; }
   bool safety() const { return _safety; }

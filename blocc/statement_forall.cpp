@@ -86,7 +86,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     if (_data.index < 0 || _data.index >= _data.table->size())
     {
       _var->clear(ctx);
-      ctx.getSymbol(_var->symbolId())->upgrade(Type::NO_TYPE);
+      ctx.getSymbol(_var->symbol()->id())->upgrade(Type::NO_TYPE);
       if (_expSymbol)
         _expSymbol->safety(false);
       else
@@ -108,7 +108,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   catch (...)
   {
     _var->clear(ctx);
-    ctx.getSymbol(_var->symbolId())->upgrade(Type::NO_TYPE);
+    ctx.getSymbol(_var->symbol()->id())->upgrade(Type::NO_TYPE);
     if (_expSymbol)
       _expSymbol->safety(false);
     else
@@ -131,7 +131,7 @@ void FORALLStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
   fputc(' ', out);
-  fputs(_var->symbolName().c_str(), out);
+  fputs(_var->symbol()->name().c_str(), out);
   fputc(' ', out);
   fputs(KEYWORDS[STMT_IN], out);
   fputc(' ', out);
@@ -162,7 +162,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
   // iterator must be protected against type change
-  Symbol& vt = *ctx.getSymbol(rof->_var->symbolId());
+  Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
   vt.safety(true);
   // parsing expressions will check types first from existing variables, then
   // from registered symbols, so reset the variable if any
