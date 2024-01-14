@@ -96,7 +96,7 @@ Context::Context(const Context& ctx, uint8_t recursion, bool trace)
   _symbols.reserve(ctx._symbols.size());
   for (auto e : ctx._symbols)
     _symbols.push_back(new Symbol(*e));
-  for (int i = 0; i < ctx._storage.size(); ++i)
+  for (auto& e : ctx._storage)
     _storage.push_back(Value());
 }
 
