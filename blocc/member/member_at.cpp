@@ -59,14 +59,12 @@ Value& MemberATExpression::value(Context& ctx) const
 {
   Value& val = _exp->value(ctx);
   Value& a0 = _args[0]->value(ctx);
-  if (val.isNull())
+  if (val.isNull() || a0.isNull())
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
 
   /* collection */
   if (val.type().level() > 0)
   {
-    if (a0.isNull())
-      return ctx.allocate(Value(val.type().levelDown()));
     Collection * rv = val.collection();
     Integer p = *a0.integer();
     if (p >= 0 && p < rv->size())
@@ -74,8 +72,6 @@ Value& MemberATExpression::value(Context& ctx) const
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   }
 
-  if (a0.isNull())
-    return ctx.allocate(Value(val.type()));
   switch (val.type().major())
   {
   case Type::LITERAL:
