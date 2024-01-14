@@ -41,11 +41,15 @@ Value& TABExpression::value(Context & ctx) const
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
 
   Collection * tab = nullptr;
+  Type item_type;
   do
   {
     Value& a1 = _args[1]->value(ctx); /* execute expression */
     if (tab == nullptr)
     {
+      /* cannot be opaque */
+      if (a1.type() == Type::NO_TYPE)
+        throw RuntimeError(EXC_RT_COMPOUND_OPAQUE);
       /* initialize the collection */
       if (a1.type().level() == TYPE_LEVEL_MAX - 1)
         throw RuntimeError(EXC_RT_OUT_OF_DIMENSION);
@@ -57,6 +61,13 @@ Value& TABExpression::value(Context & ctx) const
       else
         tab = new Collection(a1.tuple()->tuple_decl(), a1.type().level()+1);
       tab->reserve(n);
+      item_type = tab->table_type().levelDown();
+    }
+    /* all items must be uniform */
+    else if (a1.type() != item_type)
+    {
+      delete tab;
+      throw RuntimeError(EXC_RT_VARYING_COLLECTION);
     }
     /* break now for an empty collection */
     if (n == 0)

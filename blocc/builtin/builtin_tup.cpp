@@ -44,6 +44,8 @@ Value& TUPExpression::value(Context & ctx) const
   for (const Expression * a : _args)
   {
     Value& val = a->value(ctx); /* execute expression */
+    if (val.type() == Type::NO_TYPE)
+      throw RuntimeError(EXC_RT_COMPOUND_OPAQUE);
     if (val.lvalue())
       items.push_back(val.clone());
     else
