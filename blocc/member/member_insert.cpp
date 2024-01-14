@@ -35,7 +35,7 @@ Value& MemberINSERTExpression::value(Context& ctx) const
 {
   Value& val = _exp->value(ctx);
   Value& a0 = _args[0]->value(ctx);
-  if (a0.isNull())
+  if (val.isNull() || a0.isNull())
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   Value& a1 = _args[1]->value(ctx);
 
@@ -46,13 +46,11 @@ Value& MemberINSERTExpression::value(Context& ctx) const
     Integer p = *a0.integer();
     if (p < 0 || p > rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
-    if (a1.isNull())
-      return val;
     const Type& a1_type = a1.type();
     /* collection */
     if (a1_type.level() > 0)
     {
-      if (val.isNull())
+      if (a1.isNull()) /* + table null */
         return val;
       Collection * a = a1.collection();
       if (a->table_type() == rv_type)
@@ -92,11 +90,12 @@ Value& MemberINSERTExpression::value(Context& ctx) const
           rv->insert(rv->begin() + p, std::move(a1));
         return val;
       }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
     }
     /* tuple */
-    if (a1_type == Type::ROWTYPE)
+    else if (a1_type == Type::ROWTYPE)
     {
+      if (a1.isNull()) /* + tuple null */
+        return val;
       if (a1.tuple()->tuple_type() == rv_type.levelDown())
       {
         if (a1.lvalue())
@@ -105,10 +104,9 @@ Value& MemberINSERTExpression::value(Context& ctx) const
           rv->insert(rv->begin() + p, std::move(a1));
         return val;
       }
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
     }
     /* others */
-    if (a1_type == rv_type.levelDown())
+    else if (a1_type == rv_type.levelDown())
     {
       if (a1.lvalue())
         rv->insert(rv->begin() + p, a1.clone());
@@ -116,7 +114,9 @@ Value& MemberINSERTExpression::value(Context& ctx) const
         rv->insert(rv->begin() + p, std::move(a1));
       return val;
     }
-    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
+    if (val.type() == Type::ROWTYPE)
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName(rv->table_decl().tupleName()).c_str());
+    throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.type().levelDown().typeName().c_str());
   }
 
   switch (val.type().major())
