@@ -126,7 +126,7 @@ Value::Value(Tuple * v) : _type(Type::ROWTYPE)
   }
 }
 
-Value::Value(Collection * v) : _type(Type::NO_TYPE)
+Value::Value(Collection * v) : _type(type_no_type.levelUp())
 {
 #ifdef DEBUG_VALUE
   DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
