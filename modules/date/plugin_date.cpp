@@ -192,10 +192,11 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
     case 0: /* date ( date ), i.e copy constructor */
     {
       /* the complex handle to copy */
+      date::Handle * h = nullptr;
       bloc::Value& a0 = args[0]->value(ctx);
-      if (a0.isNull())
+      if (a0.isNull() || (h = static_cast<date::Handle*>(a0.complex()->instance())) == nullptr)
         throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-      *dd = *(static_cast<date::Handle*>(a0.complex()->instance()));
+      *dd = *h;
       break;
     }
 

@@ -12,7 +12,7 @@ if(SQLite3_FOUND)
   target_link_libraries(bloc_sqlite3 blocc ${SQLite3_LIBRARIES})
 
   set_target_properties(bloc_sqlite3 PROPERTIES
-    SOVERSION "1"
+    SOVERSION "2"
   )
 else()
   message(STATUS "Package sqlite3 not found")
