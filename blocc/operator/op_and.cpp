@@ -38,44 +38,55 @@ OpANDExpression::~OpANDExpression()
     delete arg1;
 }
 
-const Type& OpANDExpression::type(Context& ctx) const
-{
-  return Value::type_integer;
-}
-
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpANDExpression::value(Context& ctx) const
 {
-  Value& a2 = arg2->value(ctx);
-  if (a2.isNull())
-    return a2;
   Value& a1 = arg1->value(ctx);
-  if (a1.isNull())
-    return a1;
+  Value& a2 = arg2->value(ctx);
 
-  switch (a1.type().major())
+  if (a1.type().level() == 0 && a2.type().level() == 0)
   {
-  case Type::BOOLEAN:
-  {
-    Value val(Bool(*a1.boolean() && *a2.boolean()));
-    return LVAL2(val, a1, a2);
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+      case Type::INTEGER:
+        return LVAL2(Value(Value::type_integer), a1, a2);
+      default:
+        break;
+      }
+      break;
+    case Type::INTEGER:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return LVAL2(Value(Value::type_integer), a1, a2);
+      case Type::INTEGER:
+      {
+        if (a1.isNull() || a2.isNull())
+          return LVAL2(Value(Value::type_integer), a1, a2);
+        Value val(Integer(*a1.integer() & *a2.integer()));
+        return LVAL2(val, a1, a2);
+      }
+      default:
+        break;
+      }
+      break;
+    default:
+      break;
+    }
   }
-  case Type::INTEGER:
-  {
-    Value val(Integer(*a1.integer() & *a2.integer()));
-    return LVAL2(val, a1, a2);
-  }
-  default:
-    throw RuntimeError(EXC_RT_INV_EXPRESSION);
-  }
+  throw RuntimeError(EXC_RT_INV_EXPRESSION);
 }
 
 std::string OpANDExpression::unparse(Context&ctx) const

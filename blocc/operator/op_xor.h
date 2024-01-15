@@ -40,7 +40,7 @@ public:
   OpXORExpression(Expression * a, Expression * b)
   : arg1(a), arg2(b) { }
 
-  const Type& type(Context& ctx) const override;
+  const Type& type(Context& ctx) const override { return Value::type_integer; }
 
   Value& value(Context& ctx) const override;
 
