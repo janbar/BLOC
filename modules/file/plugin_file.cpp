@@ -549,7 +549,7 @@ int file::Handle::flush()
 
 int file::Handle::readln(char * buf, unsigned n)
 {
-  int c, r = 0;
+  int c = 0, r = 0;
   while (r < n)
   {
     if ((c = ::fgetc(_file)) <= 0 || c == '\n')
