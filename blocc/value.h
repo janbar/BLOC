@@ -40,7 +40,7 @@ typedef double Numeric;
 typedef std::string Literal;
 typedef std::vector<char> TabChar;
 
-class Value
+class Value final
 {
   /* value payload */
   typedef union { bool b; int64_t i; double d; void * p; } payload;
@@ -88,7 +88,7 @@ public:
   explicit Value(Collection * v);
   explicit Value(Value * v);
 
-  virtual ~Value();
+  ~Value() { if (!isNull()) _clear(); }
 
   Value(const Value& v) = delete;
   Value& operator=(const Value& v) = delete;

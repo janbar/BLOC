@@ -151,15 +151,6 @@ Value::Value(Value * v) : _type(Type::POINTER)
   }
 }
 
-Value::~Value()
-{
-#ifdef DEBUG_VALUE
-  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
-#endif
-  if (!isNull())
-    _clear();
-}
-
 Value::Value(Value&& v) noexcept
 : _value(v._value), _type(v._type), _flags(v._flags)
 {
