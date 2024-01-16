@@ -33,23 +33,27 @@ namespace bloc
 
 Value& READLNExpression::value(Context & ctx) const
 {
-  return ctx.allocate(Value(Bool(false)));
-//  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
-//  int n = 1024;
-//  char * buf = new char[n];
-//  if (_args.size() > 1)
-//  {
-//    fputs(_args[1]->literal(ctx).c_str(), stdout);
-//    fflush(stdout);
-//  }
-//  n = bloc_readstdin(buf, n);
-//  if (n < 1)
-//    return false;
-//  /* discard nl */
-//  if (buf[n - 1] == '\n')
-//    --n;
-//  var->store(ctx, LiteralExpression(std::string(buf, n)));
-//  return true;
+  if (_args[0]->symbol() == nullptr)
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  Value& a0 = _args[0]->value(ctx);
+
+  if (_args.size() > 1)
+  {
+    Value& a1 = _args[1]->value(ctx);
+    if (!a1.isNull())
+      fputs(a1.literal()->c_str(), stdout);
+    fflush(stdout);
+  }
+  char buf[1024];
+  int n = bloc_readstdin(buf, sizeof(buf));
+  if (n > 0)
+  {
+    /* discard nl */
+    if (buf[n - 1] == '\n')
+      --n;
+    a0.swap(Value(new Literal(buf, n)));
+  }
+  return ctx.allocate(Value(Bool(n > 0 ? true : false)));
 }
 
 READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)

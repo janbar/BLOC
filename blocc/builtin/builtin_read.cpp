@@ -17,6 +17,7 @@
  */
 
 #include "builtin_read.h"
+#include "blocc/exception_runtime.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
@@ -32,29 +33,34 @@ namespace bloc
 
 Value& READExpression::value(Context & ctx) const
 {
-  return ctx.allocate(Value(Integer(0)));
-//  const VariableExpression * var = dynamic_cast<VariableExpression*>(_args[0]);
-//  int64_t n = 1024;
-//  if (_args.size() > 1)
-//    n = _args[1]->integer(ctx);
-//  std::string str;
-//  if (n < 0)
-//    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
-//  if (n > 32)
-//  {
-//    char * buf = new char[n];
-//    n = bloc_readstdin(buf, n);
-//    str.assign(buf, n);
-//    delete [] buf;
-//  }
-//  else
-//  {
-//    char buf[32];
-//    n = bloc_readstdin(buf, n);
-//    str.assign(buf, n);
-//  }
-//  var->store(ctx, LiteralExpression(std::move(str)));
-//  return n;
+  if (_args[0]->symbol() == nullptr)
+    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  Value& a0 = _args[0]->value(ctx);
+
+  int64_t n = 1024;
+  if (_args.size() > 1)
+  {
+    Value& a1 = _args[1]->value(ctx);
+    if (a1.isNull() || *a1.integer() < 0)
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
+    n = *a1.integer();
+  }
+
+  a0.swap(Value(new Literal()));
+  if (n > 32)
+  {
+    char * buf = new char[n];
+    n = bloc_readstdin(buf, n);
+    a0.literal()->assign(buf, n);
+    delete [] buf;
+  }
+  else
+  {
+    char buf[32];
+    n = bloc_readstdin(buf, n);
+    a0.literal()->assign(buf, n);
+  }
+  return ctx.allocate(Value(Integer(n)));
 }
 
 READExpression * READExpression::parse(Parser& p, Context& ctx)
