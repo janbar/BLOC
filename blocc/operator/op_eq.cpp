@@ -50,11 +50,9 @@ OpEQExpression::~OpEQExpression()
 Value& OpEQExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
-  if (a1.isNull())
-    return LVAL1(Value(Bool(false)), a1);
   Value& a2 = arg2->value(ctx);
-  if (a2.isNull())
-    return LVAL2(Value(Bool(false)), a1, a2);
+  if (a1.isNull() || a2.isNull())
+    return LVAL2(Value(Value::type_boolean), a1, a2);
 
   const Type& t1 = a1.type();
   const Type& t2 = a2.type();
