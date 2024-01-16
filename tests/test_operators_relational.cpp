@@ -25,6 +25,27 @@ TEST_CASE("operator EQ boolean")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == true );
   delete e;
+
+  ctx.reset("null == false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false == null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null == true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true == null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null == null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator NEQ boolean")
@@ -41,6 +62,27 @@ TEST_CASE("operator NEQ boolean")
   ctx.reset("false != false ");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("null != false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false != null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null != true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true != null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null != null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
 
@@ -59,6 +101,27 @@ TEST_CASE("operator LESS boolean")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
   delete e;
+
+  ctx.reset("null < false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false < null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null < true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true < null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null < null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator GREATER boolean")
@@ -75,6 +138,27 @@ TEST_CASE("operator GREATER boolean")
   ctx.reset("false > false ");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("null > false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false > null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null > true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true > null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null > null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
 
@@ -93,6 +177,27 @@ TEST_CASE("operator LEQ boolean")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
   delete e;
+
+  ctx.reset("null <= false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false <= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null <= true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true <= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null <= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator GEQ boolean")
@@ -109,6 +214,27 @@ TEST_CASE("operator GEQ boolean")
   ctx.reset("false >= false ");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("null >= false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false >= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null >= true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true >= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null >= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
 
@@ -135,6 +261,23 @@ TEST_CASE("operator EQ numeric")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
   delete e;
+
+  ctx.reset("null == 1");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1 == null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null == 1.0");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1.0 == null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator NEQ numeric")
@@ -160,6 +303,23 @@ TEST_CASE("operator NEQ numeric")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == true );
   delete e;
+
+  ctx.reset("null != 1");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1 != null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null != 1.0");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1.0 != null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator LESS numeric")
@@ -180,6 +340,23 @@ TEST_CASE("operator LESS numeric")
   ctx.reset("0.9 < 1");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == true );
+  delete e;
+
+  ctx.reset("null < 1");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1 < null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null < 1.0");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1.0 < null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
 
@@ -202,6 +379,23 @@ TEST_CASE("operator GREATER numeric")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == true );
   delete e;
+
+  ctx.reset("null > 1");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1 > null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null > 1.0");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1.0 > null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator LEQ numeric")
@@ -223,6 +417,23 @@ TEST_CASE("operator LEQ numeric")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
   delete e;
+
+  ctx.reset("null <= 1");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1 <= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null <= 1.0");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1.0 <= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator GEQ numeric")
@@ -243,6 +454,23 @@ TEST_CASE("operator GEQ numeric")
   ctx.reset("0.9 >= 1");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("null >= 1");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1 >= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null >= 1.0");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("1.0 >= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
 
@@ -296,5 +524,54 @@ TEST_CASE("operator COMPARE string")
   ctx.reset("\"bcde\" <= \"abcd\"");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("null == \"abcd\"");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("\"abcd\" == null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null > \"abcd\"");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("\"abcd\" > null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null < \"abcd\"");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("\"abcd\" < null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null >= \"abcd\"");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("\"abcd\" >= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null <= \"abcd\"");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("\"abcd\" <= null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null != \"abcd\"");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("\"abcd\" != null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }

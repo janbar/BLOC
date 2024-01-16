@@ -37,9 +37,31 @@ TEST_CASE("operator B && B")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
   delete e;
-  ctx.reset("false && false ");
+  ctx.reset("false && false");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("false && null");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+  ctx.reset("null && false");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("null && null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null && true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true && null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
 
@@ -58,6 +80,28 @@ TEST_CASE("operator B || B")
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
   delete e;
+
+  ctx.reset("true || null");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == true );
+  delete e;
+  ctx.reset("null || true");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == true );
+  delete e;
+
+  ctx.reset("null || null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null || false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false || null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
 }
 
 TEST_CASE("operator B XOR B")
@@ -74,6 +118,27 @@ TEST_CASE("operator B XOR B")
   ctx.reset("false xor false");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("null xor null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null xor false");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("false xor null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("null xor true");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("true xor null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
 
@@ -95,5 +160,18 @@ TEST_CASE("operator !B (NOT)")
   ctx.reset("not false");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).boolean()) == true);
+  delete e;
+
+  ctx.reset("not null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("!null");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
+  delete e;
+  ctx.reset("not(!null)");
+  e = ctx.parseExpression();
+  REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
