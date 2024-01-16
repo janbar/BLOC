@@ -36,28 +36,34 @@ OpNOTExpression::~OpNOTExpression()
     delete arg1;
 }
 
-const Type& OpNOTExpression::type(Context& ctx) const
-{
-  return arg1->type(ctx);
-}
-
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpNOTExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
-  if (a1.isNull())
-    return a1;
 
-  Value val(Integer(INT64_MAX ^ *a1.integer()));
-  return LVAL1(val, a1);
+  if (a1.type().level() == 0)
+  {
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      return LVAL1(Value(Value::type_integer), a1);
+    case Type::INTEGER:
+      if (a1.isNull())
+        return a1;
+      return LVAL1(Value(Integer(~ *a1.integer())), a1);
+    default:
+      break;
+    }
+  }
+  throw RuntimeError(EXC_RT_INV_EXPRESSION);
 }
 
 std::string OpNOTExpression::unparse(Context&ctx) const

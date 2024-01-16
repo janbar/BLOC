@@ -39,7 +39,7 @@ public:
   OpNOTExpression(Expression * a)
   : arg1(a) { }
 
-  const Type& type(Context& ctx) const override;
+  const Type& type(Context& ctx) const override { return Value::type_integer; }
 
   Value& value(Context& ctx) const override;
 
