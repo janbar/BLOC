@@ -38,34 +38,23 @@ OpNEExpression::~OpNEExpression()
     delete arg1;
 }
 
-const Type& OpNEExpression::type(Context& ctx) const
-{
-  return Value::type_boolean;
-}
-
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpNEExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
   if (a1.isNull())
-  {
-    Value val(Bool(true));
-    return LVAL1(val, a1);
-  }
+    return LVAL1(Value(Bool(false)), a1);
   Value& a2 = arg2->value(ctx);
   if (a2.isNull())
-  {
-    Value val(Bool(true));
-    return LVAL2(val, a1, a2);
-  }
+    return LVAL2(Value(Bool(false)), a1, a2);
 
   const Type& t1 = a1.type();
   const Type& t2 = a2.type();
