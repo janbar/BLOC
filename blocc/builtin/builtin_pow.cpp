@@ -35,62 +35,81 @@ const Type& POWExpression::type (Context &ctx) const
   return Value::type_numeric;
 }
 
+#define LVAL2(V,A,B) (\
+ !A.lvalue() ? (A = std::move(V)) : \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
+)
+
 Value& POWExpression::value(Context & ctx) const
 {
-  Value& a0 = _args[0]->value(ctx);
-  Value& a1 = _args[1]->value(ctx);
-  Value v(Value::type_numeric);
+  /* see operator OP_EXP */
+  Value& a1 = _args[0]->value(ctx);
+  Value& a2 = _args[1]->value(ctx);
 
-  switch (a0.type().major())
+  switch (a1.type().major())
   {
   case Type::NO_TYPE:
-    break;
-  case Type::INTEGER:
-    switch (a1.type().major())
+    switch (a2.type().major())
     {
     case Type::NO_TYPE:
-      v = Value(Value::type_integer);
-      break;
+      return LVAL2(Value(Value::type_numeric), a1, a2);
     case Type::INTEGER:
-      v = Value(Integer(std::pow(*a0.integer(), *a1.integer())));
-      break;
     case Type::NUMERIC:
-      v = Value(Numeric(std::pow((double)*a0.integer(), *a1.numeric())));
-      break;
+      return LVAL2(Value(a2.type()), a1, a2);
     default:
-      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+      break;
+    }
+    break;
+  case Type::INTEGER:
+    switch (a2.type().major())
+    {
+    case Type::NO_TYPE:
+      return LVAL2(Value(Value::type_integer), a1, a2);
+    case Type::NUMERIC:
+    {
+      if (a2.isNull() || a1.isNull())
+        return LVAL2(Value(Value::type_numeric), a1, a2);
+      Value val(Numeric(std::pow(*a1.integer(), *a2.numeric())));
+      return LVAL2(val, a1, a2);
+    }
+    case Type::INTEGER:
+    {
+      if (a2.isNull() || a1.isNull())
+        return LVAL2(Value(Value::type_integer), a1, a2);
+      Value val(Integer(std::pow(*a1.integer(), *a2.integer())));
+      return LVAL2(val, a1, a2);
+    }
+    default:
+      break;
     }
     break;
   case Type::NUMERIC:
-    switch (a1.type().major())
+    switch (a2.type().major())
     {
     case Type::NO_TYPE:
-      v = Value(Value::type_numeric);
-      break;
+      return LVAL2(Value(Value::type_numeric), a1, a2);
     case Type::INTEGER:
-      v = Value(Numeric(std::pow(*a0.numeric(), (double)*a1.integer())));
-      break;
+    {
+      if (a2.isNull() || a1.isNull())
+        return LVAL2(Value(Value::type_numeric), a1, a2);
+      Value val(Numeric(std::pow(*a1.numeric(), *a2.integer())));
+      return LVAL2(val, a1, a2);
+    }
     case Type::NUMERIC:
-      v = Value(Numeric(std::pow(*a0.numeric(), *a1.numeric())));
-      break;
+    {
+      if (a2.isNull() || a1.isNull())
+        return LVAL2(Value(Value::type_numeric), a1, a2);
+      Value val(Numeric(std::pow(*a1.numeric(), *a2.numeric())));
+      return LVAL2(val, a1, a2);
+    }
     default:
-      throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+      break;
     }
     break;
   default:
-    throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+    break;
   }
-  if (!a0.lvalue())
-  {
-    a0.swap(Value(std::move(v)));
-    return a0;
-  }
-  if (!a1.lvalue())
-  {
-    a1.swap(Value(std::move(v)));
-    return a1;
-  }
-  return ctx.allocate(std::move(v));
+  throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
 }
 
 POWExpression * POWExpression::parse(Parser& p, Context& ctx)
