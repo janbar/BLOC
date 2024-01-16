@@ -42,7 +42,14 @@ Value& INTExpression::value(Context & ctx) const
     case Type::LITERAL:
       try
       {
-        v = Value(Integer(std::stoll(*val.literal())));
+        /* test hexadecimal notation */
+        Literal * str = val.literal();
+        Literal::const_iterator it = str->begin();
+        while (isspace(*it) || *it == '+' || *it == '-') ++it;
+        if (*it == '0' && ++it != str->end() && (*it == 'x' || *it == 'X'))
+          v = Value(Integer(std::stoull(*str, nullptr, 16)));
+        else
+          v = Value(Integer(std::stoll(*str)));
       }
       catch (std::invalid_argument& e)
       {
