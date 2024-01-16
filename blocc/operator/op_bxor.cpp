@@ -38,36 +38,56 @@ OpBXORExpression::~OpBXORExpression()
     delete arg1;
 }
 
-const Type& OpBXORExpression::type(Context& ctx) const
-{
-  return Value::type_boolean;
-}
-
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpBXORExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
   Value& a2 = arg2->value(ctx);
-  if (a1.isNull())
+
+  if (a1.type().level() == 0 && a2.type().level() == 0)
   {
-    Value val(Bool(!a2.isNull() && *a2.boolean()));
-    return LVAL2(val, a1, a2);
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+      case Type::BOOLEAN:
+        return LVAL2(Value(Value::type_boolean), a1, a2);     /* null */
+      default:
+        break;
+      }
+      break;
+    case Type::BOOLEAN:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return LVAL2(Value(Value::type_boolean), a1, a2);     /* null */
+      case Type::BOOLEAN:
+      {
+        if (a2.isNull())
+          return a2;
+        if (a1.isNull())
+          return a1;
+        return LVAL2(Value(Bool(*a1.boolean() ^ *a2.boolean())), a1, a2);
+      }
+      default:
+        break;
+      }
+      break;
+    default:
+      break;
+    }
   }
-  if (a2.isNull())
-  {
-    Value val(Bool(*a1.boolean()));
-    return LVAL2(val, a1, a2);
-  }
-  Value val(Bool(*a1.boolean() ^ *a2.boolean()));
-  return LVAL2(val, a1, a2);
+  throw RuntimeError(EXC_RT_INV_EXPRESSION);
 }
 
 std::string OpBXORExpression::unparse(Context&ctx) const

@@ -39,7 +39,7 @@ public:
   OpBNOTExpression(Expression * a)
   : arg1(a) { }
 
-  const Type& type(Context& ctx) const override;
+  const Type& type(Context& ctx) const override { return Value::type_boolean; }
 
   Value& value(Context& ctx) const override;
 

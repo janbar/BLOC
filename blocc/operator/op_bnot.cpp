@@ -36,25 +36,35 @@ OpBNOTExpression::~OpBNOTExpression()
     delete arg1;
 }
 
-const Type& OpBNOTExpression::type(Context& ctx) const
-{
-  return Value::type_boolean;
-}
-
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpBNOTExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
-  Value val(Bool(a1.isNull() || *a1.boolean() == false));
-  return LVAL1(val, a1);
+
+  if (a1.type().level() == 0)
+  {
+    /* not null is always null */
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      return LVAL1(Value(Value::type_boolean), a1);
+    case Type::BOOLEAN:
+      if (a1.isNull())
+        return a1;
+      return LVAL1(Value(Bool(*a1.boolean() == false)), a1);
+    default:
+      break;
+    }
+  }
+  throw RuntimeError(EXC_RT_INV_EXPRESSION);
 }
 
 std::string OpBNOTExpression::unparse(Context&ctx) const

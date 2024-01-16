@@ -38,31 +38,66 @@ OpBANDExpression::~OpBANDExpression()
     delete arg1;
 }
 
-const Type& OpBANDExpression::type(Context& ctx) const
-{
-  return Value::type_boolean;
-}
-
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpBANDExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
-  if (!a1.isNull() && *a1.boolean())
+  Value& a2 = arg2->value(ctx);
+
+  if (a1.type().level() == 0 && a2.type().level() == 0)
   {
-    Value& a2 = arg2->value(ctx);
-    Value val(Bool(!a2.isNull() && *a2.boolean()));
-    return LVAL2(val, a1, a2);
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+      case Type::BOOLEAN:
+        if (!a2.isNull() && *a2.boolean() == false)
+          return LVAL2(Value(Bool(false)), a1, a2);       /* false */
+        return LVAL2(Value(Value::type_boolean), a1, a2); /* null */
+      default:
+        break;
+      }
+      break;
+    case Type::BOOLEAN:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        if (!a1.isNull() && *a1.boolean() == false)
+          return LVAL2(Value(Bool(false)), a1, a2);       /* false */
+        return LVAL2(Value(Value::type_boolean), a1, a2); /* null */
+      case Type::BOOLEAN:
+      {
+        if (!a2.isNull())
+        {
+          if (!a1.isNull())
+            return LVAL2(Value(Bool(*a1.boolean() && *a2.boolean())), a1, a2);
+          if (*a2.boolean() == false)
+            return LVAL2(Value(Bool(false)), a1, a2);   /* false */
+          return a1;                                    /* null */
+        }
+        if (!a1.isNull() && *a1.boolean() == false)
+          return LVAL2(Value(Bool(false)), a1, a2);     /* false */
+        return a2;                                      /* null */
+      }
+      default:
+        break;
+      }
+      break;
+    default:
+      break;
+    }
   }
-  Value val(Bool(false));
-  return LVAL1(val, a1);
+  throw RuntimeError(EXC_RT_INV_EXPRESSION);
 }
 
 std::string OpBANDExpression::unparse(Context&ctx) const
