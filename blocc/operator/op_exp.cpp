@@ -46,48 +46,86 @@ const Type& OpEXPExpression::type(Context& ctx) const
 }
 
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpEXPExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
-  if (a1.isNull())
-    return a1;
   Value& a2 = arg2->value(ctx);
-  if (a2.isNull())
-    return a2;
 
-  switch (a1.type().major())
+  if (a1.type().level() == 0 && a2.type().level() == 0)
   {
-  case Type::INTEGER:
-  {
-    if (a2.type() == Type::NUMERIC)
+    switch (a1.type().major())
     {
-      Value val(Numeric(std::pow(*a1.integer(), *a2.numeric())));
-      return LVAL2(val, a1, a2);
+    case Type::NO_TYPE:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return LVAL2(Value(Value::type_numeric), a1, a2);
+      case Type::INTEGER:
+      case Type::NUMERIC:
+        return LVAL2(Value(a2.type()), a1, a2);
+      default:
+        break;
+      }
+      break;
+    case Type::INTEGER:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return LVAL2(Value(Value::type_integer), a1, a2);
+      case Type::NUMERIC:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_numeric), a1, a2);
+        Value val(Numeric(std::pow(*a1.integer(), *a2.numeric())));
+        return LVAL2(val, a1, a2);
+      }
+      case Type::INTEGER:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_integer), a1, a2);
+        Value val(Integer(std::pow(*a1.integer(), *a2.integer())));
+        return LVAL2(val, a1, a2);
+      }
+      default:
+        break;
+      }
+      break;
+    case Type::NUMERIC:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return LVAL2(Value(Value::type_numeric), a1, a2);
+      case Type::INTEGER:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_numeric), a1, a2);
+        Value val(Numeric(std::pow(*a1.numeric(), *a2.integer())));
+        return LVAL2(val, a1, a2);
+      }
+      case Type::NUMERIC:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_numeric), a1, a2);
+        Value val(Numeric(std::pow(*a1.numeric(), *a2.numeric())));
+        return LVAL2(val, a1, a2);
+      }
+      default:
+        break;
+      }
+      break;
+    default:
+      break;
     }
-    Value val(Integer(std::pow(*a1.integer(), *a2.integer())));
-    return LVAL2(val, a1, a2);
   }
-  case Type::NUMERIC:
-  {
-    if (a2.type() == Type::INTEGER)
-    {
-      Value val(Numeric(std::pow(*a1.numeric(), *a2.integer())));
-      return LVAL2(val, a1, a2);
-    }
-    Value val(Numeric(std::pow(*a1.numeric(), *a2.numeric())));
-    return LVAL2(val, a1, a2);
-  }
-  default:
-    throw RuntimeError(EXC_RT_INV_EXPRESSION);
-  }
+  throw RuntimeError(EXC_RT_INV_EXPRESSION);
 }
 
 std::string OpEXPExpression::unparse(Context&ctx) const

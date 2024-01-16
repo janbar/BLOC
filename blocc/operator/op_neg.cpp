@@ -42,27 +42,37 @@ const Type& OpNEGExpression::type(Context& ctx) const
 }
 
 #define LVAL1(V,A) (\
- !A.lvalue() ? (A = std::move(V)) : ctx.allocate(V.clone()) \
+ !A.lvalue() ? (A = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 #define LVAL2(V,A,B) (\
  !A.lvalue() ? (A = std::move(V)) : \
- !B.lvalue() ? (B = std::move(V)) : ctx.allocate(V.clone()) \
+ !B.lvalue() ? (B = std::move(V)) : ctx.allocate(std::move(V)) \
 )
 
 Value& OpNEGExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
-  if (a1.isNull())
-    return a1;
 
-  if (a1.type() == Type::INTEGER)
+  if (a1.type().level() == 0)
   {
-    Value val(Integer(0 - *a1.integer()));
-    return LVAL1(val, a1);
+    switch (a1.type().major())
+    {
+    case Type::NO_TYPE:
+      return a1;
+    case Type::INTEGER:
+      if (a1.isNull())
+        return a1;
+      return LVAL1(Value(Integer(0 - *a1.integer())), a1);
+    case Type::NUMERIC:
+      if (a1.isNull())
+        return a1;
+      return LVAL1(Value(Numeric(0.0 - *a1.numeric())), a1);
+    default:
+      break;
+    }
   }
-  Value val(Numeric(0 - *a1.numeric()));
-  return LVAL1(val, a1);
+  throw RuntimeError(EXC_RT_INV_EXPRESSION);
 }
 
 std::string OpNEGExpression::unparse(Context&ctx) const
