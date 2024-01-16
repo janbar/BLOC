@@ -92,7 +92,7 @@ TEST_CASE("operator ~ I (bitwise NOT)")
   Expression * e;
   ctx.reset("~0");
   e = ctx.parseExpression();
-  REQUIRE( *(e->value(ctx).integer()) == INT64_MAX );
+  REQUIRE( *(e->value(ctx).integer()) == -1L );
   delete e;
   ctx.reset("~(~0)");
   e = ctx.parseExpression();
@@ -100,7 +100,7 @@ TEST_CASE("operator ~ I (bitwise NOT)")
   delete e;
   ctx.reset("~(-1)");
   e = ctx.parseExpression();
-  REQUIRE( *(e->value(ctx).integer()) == INT64_MIN );
+  REQUIRE( *(e->value(ctx).integer()) == 0 );
   delete e;
   ctx.reset("~(~(-1))");
   e = ctx.parseExpression();

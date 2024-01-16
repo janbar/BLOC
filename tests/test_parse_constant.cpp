@@ -44,7 +44,7 @@ TEST_CASE("integer")
   REQUIRE( e->unparse(ctx) == "9223372036854775807" );
   delete e;
 
-  ctx.reset("0x8000000000000000");
+  ctx.reset("0xffffffffffffffffff");
   try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
   catch (ParseError& pe) { SUCCEED(pe.what()); }
 }
