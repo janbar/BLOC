@@ -37,7 +37,7 @@ public:
 
   void destroyObject(void * object) override;
 
-  Expression * executeMethod(
+  Value * executeMethod(
           bloc::Complex& object_this,
           int method_id,
           bloc::Context& ctx,

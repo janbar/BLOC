@@ -8,7 +8,7 @@ add_dependencies(bloc_file blocc)
 target_link_libraries(bloc_file blocc)
 
 set_target_properties(bloc_file PROPERTIES
-  SOVERSION "1"
+  SOVERSION "2"
 )
 
 ###############################################################################
