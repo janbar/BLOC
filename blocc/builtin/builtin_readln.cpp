@@ -48,10 +48,11 @@ Value& READLNExpression::value(Context & ctx) const
   int n = bloc_readstdin(buf, sizeof(buf));
   if (n > 0)
   {
+    int l = n;
     /* discard nl */
-    if (buf[n - 1] == '\n')
-      --n;
-    a0.swap(Value(new Literal(buf, n)));
+    if (buf[l - 1] == '\n')
+      --l;
+    a0.swap(Value(new Literal(buf, l)));
   }
   return ctx.allocate(Value(Bool(n > 0 ? true : false)));
 }
