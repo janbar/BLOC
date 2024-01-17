@@ -121,8 +121,10 @@ const char * Statement::HELPS[] = {
           "\n[ exception [ when {exception name} then [statement ...] ...] ]"
           "\nend;"
           "\n\nThe returned type can be boolean, integer, decimal, string, bytes,"
-          "\ntuple, table, or an imported object. Tuple and table types are opaque,"
-          "\nso the result must be stored in a variable before accessing an item."
+          "\ntuple, table, undefined or an imported object. Undefined, tuple, and"
+          "\ntable types are opaque, so the result must be handled by the caller."
+          "\nIn any case, that is only a declaration intended to aid the programmer,"
+          "\nand no checks are performed at runtime."
           "\nSee statement BEGIN.",
   /*IF    */  "The IF statement provides conditional control flow in execution."
           "\nIt has a boolean expression associated with it that is evaluated at runtime."

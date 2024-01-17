@@ -37,8 +37,8 @@ FunctorExpression::~FunctorExpression()
 
 Value& FunctorExpression::value(Context& ctx) const
 {
-  auto env = (*_functor)->createEnv(ctx, _args);
-  (*_functor)->body->doit(env.context());
+  auto env = _functor->createEnv(ctx, _args);
+  _functor->body->doit(env.context());
   Value * ret = env.context().dropReturned();
   if (ret == nullptr)
     throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
@@ -49,7 +49,7 @@ Value& FunctorExpression::value(Context& ctx) const
 
 std::string FunctorExpression::unparse(Context& ctx) const
 {
-  std::string sb((*_functor)->name);
+  std::string sb(_functor->name);
   sb.append("(");
   for (const Expression * e : _args)
     sb.append(e->unparse(ctx)).append(1, Parser::CHAIN);
@@ -90,7 +90,7 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, const std:
 
     const FunctorManager::entry& fe = FunctorManager::instance().findDeclaration(name, args.size());
     if (fe != FunctorManager::instance().npos())
-      return new FunctorExpression(fe, std::move(args));
+      return new FunctorExpression(*fe, std::move(args));
     if (FunctorManager::instance().exists(name))
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, name.c_str());
     throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, name.c_str());

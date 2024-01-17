@@ -140,8 +140,11 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
         fct->returns = Type(Type::COMPLEX, typeId);
       else
       {
-        fct->returns = Type::nameType(t->text);
-        if (fct->returns == Type::NO_TYPE)
+        /* typeName returns undefined for unknown type, so check the name back */
+        const Type tmp = Type::nameType(t->text);
+        if (t->text == Type::typeName(tmp.major()))
+          fct->returns = tmp;
+        else
           throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str());
       }
     }
