@@ -8,7 +8,7 @@ add_dependencies(bloc_utf8 blocc)
 target_link_libraries(bloc_utf8 blocc)
 
 set_target_properties(bloc_utf8 PROPERTIES
-  SOVERSION "1"
+  SOVERSION "2"
 )
 
 ###############################################################################

@@ -39,19 +39,19 @@ namespace utf8
 /*  Constructors                                                      */
 /**********************************************************************/
 static PLUGIN_TYPE ctor_0_args[]  = {
-  { "C", 0 }, // utf8
+  { "L", 0 }, // string
 };
 
 static PLUGIN_TYPE ctor_1_args[]  = {
-  { "L", 0 }, // string
+  { "C", 0 }, // utf8
 };
 
 static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,  ctor_0_args,
-          "Build a new unicode string as a copy of the given one." },
-  { 1,      1,  ctor_1_args,
           "Build a new unicode string from the standard string." },
+  { 1,      1,  ctor_1_args,
+          "Build a new unicode string as a copy of the given one." },
 };
 
 enum Method
@@ -163,15 +163,22 @@ void * UTF8Plugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
 {
   switch (ctor_id)
   {
-  case 0: /* copy ctor */
+  case 0: /* utf8( string ) */
   {
-    Complex c0 = args[0]->complex(ctx);
-    utf8helper::UTF8String * u = static_cast<utf8helper::UTF8String*>(c0.instance());
-    return new utf8helper::UTF8String(*u);
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      return new utf8helper::UTF8String();
+    return new utf8helper::UTF8String(*a0.literal());
   }
 
-  case 1: /* utf8( string ) */
-    return new utf8helper::UTF8String(args[0]->literal(ctx));
+  case 1: /* copy ctor */
+  {
+    utf8helper::UTF8String * u = nullptr;
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull() || (u = static_cast<utf8helper::UTF8String*>(a0.complex()->instance())) == nullptr)
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new utf8helper::UTF8String(*u);
+  }
 
   default: /* default ctor */
     return new utf8helper::UTF8String();
@@ -185,7 +192,7 @@ void UTF8Plugin::destroyObject(void * object)
   delete u;
 }
 
-bloc::Expression * UTF8Plugin::executeMethod(
+bloc::Value * UTF8Plugin::executeMethod(
           bloc::Complex& object_this,
           int method_id,
           bloc::Context& ctx,
@@ -196,86 +203,138 @@ bloc::Expression * UTF8Plugin::executeMethod(
   switch (method_id)
   {
   case utf8::Empty:
-    return new BooleanExpression(u->Empty());
+    return new bloc::Value(bloc::Bool(u->Empty()));
 
   case utf8::Size:
-    return new IntegerExpression((int64_t) u->Size());
+    return new bloc::Value(bloc::Integer(u->Size()));
 
   case utf8::Rawsize:
-    return new IntegerExpression((int64_t) u->RawSize());
+    return new bloc::Value(bloc::Integer(u->RawSize()));
 
   case utf8::Reserve:
-    u->Reserve(args[0]->integer(ctx));
-    return new BooleanExpression(true);
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    u->Reserve(*a0.integer());
+    return new bloc::Value(bloc::Bool(true));
+  }
 
   case utf8::Clear:
     u->Clear();
-    return new BooleanExpression(true);
+    return new bloc::Value(bloc::Bool(true));
 
   case utf8::Append:
-    u->Append(args[0]->integer(ctx));
-    return new ComplexExpression(object_this);
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (!a0.isNull())
+      u->Append(*a0.integer());
+    return new bloc::Value(new bloc::Complex(object_this));
+  }
 
   case utf8::AppendL:
   {
-    std::string& str = args[0]->literal(ctx);
-    for (auto& c : str)
-      u->WriteByte(c);
-    return new ComplexExpression(object_this);
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (!a0.isNull())
+    {
+      for (auto& c : *a0.literal())
+        u->WriteByte(c);
+    }
+    return new bloc::Value(new bloc::Complex(object_this));
   }
 
   case utf8::ConcatC:
   {
-    Complex c0 = args[0]->complex(ctx);
-    utf8helper::UTF8String * u0 = static_cast<utf8helper::UTF8String*>(c0.instance());
-    u->Append(u0->Data());
-    return new ComplexExpression(object_this);
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (!a0.isNull())
+    {
+      utf8helper::UTF8String * u0 = static_cast<utf8helper::UTF8String*>(a0.complex()->instance());
+      u->Append(u0->Data());
+    }
+    return new bloc::Value(new bloc::Complex(object_this));
   }
 
   case utf8::Tostring:
-    return new LiteralExpression(u->ToStdString());
+    return new bloc::Value(new bloc::Literal(u->ToStdString()));
 
   case utf8::At:
-    return new IntegerExpression(u->operator[](args[0]->integer(ctx)));
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Integer(u->operator[](*a0.integer())));
+  }
 
   case utf8::Remove:
-    return new BooleanExpression(u->Remove((size_t)args[0]->integer(ctx), (size_t)args[1]->integer(ctx)));
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull() || a1.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Bool(u->Remove((size_t)*a0.integer(), (size_t)*a1.integer())));
+  }
 
   case utf8::Insert:
-    return new BooleanExpression(u->Insert((size_t)args[0]->integer(ctx), (utf8helper::codepoint)args[1]->integer(ctx)));
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    if (!a1.isNull())
+      return new bloc::Value(bloc::Bool(u->Insert((size_t)*a0.integer(), (utf8helper::codepoint)*a1.integer())));
+    return new bloc::Value(bloc::Bool(false));
+  }
 
   case utf8::InsertC:
   {
-    Complex c0 = args[1]->complex(ctx);
-    utf8helper::UTF8String * u0 = static_cast<utf8helper::UTF8String*>(c0.instance());
-    return new IntegerExpression((int64_t)u->Insert((size_t)args[0]->integer(ctx), u0->Data()));
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    if (!a1.isNull())
+    {
+      utf8helper::UTF8String * u1 = static_cast<utf8helper::UTF8String*>(a1.complex()->instance());
+      return new bloc::Value(bloc::Integer(u->Insert((size_t)*a0.integer(), u1->Data())));
+    }
+    return new bloc::Value(bloc::Integer(0));
   }
 
   case utf8::Substr1:
-    return new LiteralExpression(u->Substr((size_t)args[0]->integer(ctx)));
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(new bloc::Literal(u->Substr((size_t)*a0.integer())));
+  }
 
   case utf8::Substr2:
-    return new LiteralExpression(u->Substr((size_t)args[0]->integer(ctx), (size_t)args[1]->integer(ctx)));
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull() || a1.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(new bloc::Literal(u->Substr((size_t)*a0.integer(), (size_t)*a1.integer())));
+  }
 
   case utf8::Tolower:
     u->Transform(utf8helper::TransformLower);
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
 
   case utf8::Toupper:
     u->Transform(utf8helper::TransformUpper);
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
 
   case utf8::Normaliz:
     u->Transform(utf8helper::TransformNormalize);
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
 
   case utf8::Capital:
     u->Transform(utf8helper::TransformCapitalize);
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
 
   case utf8::Translit:
     u->Transform(utf8helper::TransformTransliterate);
-    return new ComplexExpression(object_this);
+    return new bloc::Value(new bloc::Complex(object_this));
 
   }
   return nullptr;
