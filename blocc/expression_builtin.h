@@ -101,6 +101,7 @@ public:
     FUNC_PI     = 44, // pi
     FUNC_EE     = 45, // e (euler)
     FUNC_RANDOM = 46, // random | random(x)
+    FUNC_BOOL   = 47, // bool(x)
 
     FUNC_LSUB   = 50, // lsubstr(x,count)
     FUNC_RSUB   = 51, // rsubstr(x,count)

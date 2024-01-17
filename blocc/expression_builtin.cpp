@@ -21,6 +21,7 @@
 #include "builtin/builtin_acos.h"
 #include "builtin/builtin_asin.h"
 #include "builtin/builtin_atan.h"
+#include "builtin/builtin_bool.h"
 #include "builtin/builtin_ceil.h"
 #include "builtin/builtin_chr.h"
 #include "builtin/builtin_cos.h"
@@ -94,7 +95,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tup",        "getsys",     "getenv",     "true",       "on",
     "false",      "off",        "error",      "phi",        "pi",
-    "ee",         "random",     "",           "",           "",
+    "ee",         "random",     "bool",       "",           "",
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
     "strpos",     "replace",    "subraw",     "hash",
@@ -163,27 +164,26 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
 
   switch (fc)
   {
-    /* constant */
   case FUNC_NIL:
     return new NULLExpression();
-  case FUNC_TRUE:
-  case FUNC_ON:
-    return new TRUEExpression();
-  case FUNC_FALSE:
-  case FUNC_OFF:
-    return new FALSEExpression();
-  case FUNC_PHI:
-    return new PHIExpression();
-  case FUNC_PI:
-    return new PIExpression();
-  case FUNC_EE:
-    return new EEExpression();
-  case FUNC_ERROR:
-    return new ERRORExpression();
-
-    /* 1 numeric */
+  case FUNC_MAX:
+    return MAXExpression::parse(p, ctx);
+  case FUNC_MIN:
+    return MINExpression::parse(p, ctx);
+  case FUNC_FLOOR:
+    return FLOORExpression::parse(p, ctx);
   case FUNC_ABS:
     return ABSExpression::parse(p, ctx);
+  case FUNC_SIGN:
+    return SIGNExpression::parse(p, ctx);
+  case FUNC_STR:
+    return STRExpression::parse(p, ctx);
+  case FUNC_NUM:
+    return NUMExpression::parse(p, ctx);
+  case FUNC_CEIL:
+    return CEILExpression::parse(p, ctx);
+  case FUNC_ROUND:
+    return ROUNDExpression::parse(p, ctx);
   case FUNC_SIN:
     return SINExpression::parse(p, ctx);
   case FUNC_COS:
@@ -192,6 +192,20 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return TANExpression::parse(p, ctx);
   case FUNC_ATAN:
     return ATANExpression::parse(p, ctx);
+  case FUNC_INT:
+    return INTExpression::parse(p, ctx);
+  case FUNC_POW:
+    return POWExpression::parse(p, ctx);
+  case FUNC_SQRT:
+    return SQRTExpression::parse(p, ctx);
+  case FUNC_LOG:
+    return LOGExpression::parse(p, ctx);
+  case FUNC_EXP:
+    return EXPExpression::parse(p, ctx);
+  case FUNC_LOG10:
+    return LOG10Expression::parse(p, ctx);
+  case FUNC_MOD:
+    return MODExpression::parse(p, ctx);
   case FUNC_ASIN:
     return ASINExpression::parse(p, ctx);
   case FUNC_ACOS:
@@ -202,98 +216,72 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return COSHExpression::parse(p, ctx);
   case FUNC_TANH:
     return TANHExpression::parse(p, ctx);
-  case FUNC_SQRT:
-    return SQRTExpression::parse(p, ctx);
-  case FUNC_EXP:
-    return EXPExpression::parse(p, ctx);
-  case FUNC_FLOOR:
-    return FLOORExpression::parse(p, ctx);
-  case FUNC_CEIL:
-    return CEILExpression::parse(p, ctx);
-  case FUNC_LOG:
-    return LOGExpression::parse(p, ctx);
-  case FUNC_LOG10:
-    return LOG10Expression::parse(p, ctx);
-  case FUNC_RANDOM:
-    return RANDOMExpression::parse(p, ctx);
-  case FUNC_SIGN:
-    return SIGNExpression::parse(p, ctx);
-  case FUNC_CHR:
-    return CHRExpression::parse(p, ctx);
-
-    /* 2 numeric */
-  case FUNC_ROUND:
-    return ROUNDExpression::parse(p, ctx);
-  case FUNC_RAW:
-    return RAWExpression::parse(p, ctx);
-  case FUNC_MAX:
-    return MAXExpression::parse(p, ctx);
-  case FUNC_MIN:
-    return MINExpression::parse(p, ctx);
-  case FUNC_MOD:
-    return MODExpression::parse(p, ctx);
-  case FUNC_POW:
-    return POWExpression::parse(p, ctx);
-
-    /* 1 any type */
-  case FUNC_STR:
-    return STRExpression::parse(p, ctx);
-  case FUNC_ISNUM:
-    return ISNUMExpression::parse(p, ctx);
-  case FUNC_NUM:
-    return NUMExpression::parse(p, ctx);
-  case FUNC_INT:
-    return INTExpression::parse(p, ctx);
-  case FUNC_HASH:
-    return HASHExpression::parse(p, ctx);
+  case FUNC_CLAMP:
+    return CLAMPExpression::parse(p, ctx);
   case FUNC_ISNIL:
     return ISNULLExpression::parse(p, ctx);
-
-    /* READ input */
-  case FUNC_READLN:
-    return READLNExpression::parse(p, ctx);
   case FUNC_READ:
     return READExpression::parse(p, ctx);
-
-    /* 1 literal */
-  case FUNC_STRLEN:
-    return STRLENExpression::parse(p, ctx);
-  case FUNC_LTRIM:
-    return LTRIMExpression::parse(p, ctx);
-  case FUNC_TRIM:
-    return TRIMExpression::parse(p, ctx);
-  case FUNC_RTRIM:
-    return RTRIMExpression::parse(p, ctx);
-  case FUNC_LOWER:
-    return LOWERExpression::parse(p, ctx);
-  case FUNC_UPPER:
-    return UPPERExpression::parse(p, ctx);
-  case FUNC_GETENV:
-    return GETENVExpression::parse(p, ctx);
+  case FUNC_READLN:
+    return READLNExpression::parse(p, ctx);
+  case FUNC_ISNUM:
+    return ISNUMExpression::parse(p, ctx);
+  case FUNC_RAW:
+    return RAWExpression::parse(p, ctx);
+  case FUNC_TAB:
+    return TABExpression::parse(p, ctx);
+  case FUNC_TUP:
+    return TUPExpression::parse(p, ctx);
   case FUNC_GETSYS:
     return GETSYSExpression::parse(p, ctx);
-
-    /* 1 literal, 1 numeric */
+  case FUNC_GETENV:
+    return GETENVExpression::parse(p, ctx);
+  case FUNC_TRUE:
+  case FUNC_ON:
+    return new TRUEExpression();
+  case FUNC_FALSE:
+  case FUNC_OFF:
+    return new FALSEExpression();
+  case FUNC_ERROR:
+    return new ERRORExpression();
+  case FUNC_PHI:
+    return new PHIExpression();
+  case FUNC_PI:
+    return new PIExpression();
+  case FUNC_EE:
+    return new EEExpression();
+  case FUNC_RANDOM:
+    return RANDOMExpression::parse(p, ctx);
+  case FUNC_BOOL:
+    return BOOLExpression::parse(p, ctx);
   case FUNC_LSUB:
     return LSUBSTRExpression::parse(p, ctx);
   case FUNC_RSUB:
     return RSUBSTRExpression::parse(p, ctx);
-
-    /* others cases */
   case FUNC_SUBSTR:
     return SUBSTRExpression::parse(p, ctx);
+  case FUNC_CHR:
+    return CHRExpression::parse(p, ctx);
+  case FUNC_STRLEN:
+    return STRLENExpression::parse(p, ctx);
+  case FUNC_LTRIM:
+    return LTRIMExpression::parse(p, ctx);
+  case FUNC_RTRIM:
+    return RTRIMExpression::parse(p, ctx);
+  case FUNC_TRIM:
+    return TRIMExpression::parse(p, ctx);
+  case FUNC_UPPER:
+    return UPPERExpression::parse(p, ctx);
+  case FUNC_LOWER:
+    return LOWERExpression::parse(p, ctx);
   case FUNC_STRPOS:
     return STRPOSExpression::parse(p, ctx);
   case FUNC_REPSTR:
     return REPLACEExpression::parse(p, ctx);
   case FUNC_SUBRAW:
     return SUBRAWExpression::parse(p, ctx);
-  case FUNC_TAB:
-    return TABExpression::parse(p, ctx);
-  case FUNC_TUP:
-    return TUPExpression::parse(p, ctx);
-  case FUNC_CLAMP:
-    return CLAMPExpression::parse(p, ctx);
+  case FUNC_HASH:
+    return HASHExpression::parse(p, ctx);
 
   default:
     throw ParseError(EXC_PARSE_NOT_A_FUNCTION);
@@ -310,7 +298,9 @@ void BuiltinExpression::assertClosedFunction(Parser& p, Context& ctx, FUNCTION f
 }
 
 const char * BuiltinExpression::HELPS[] = {
-  /*NIL   */  "is the null value.",
+  /*NIL   */  "is the typeless null value."
+          "\n\nSee bool(), int(), num(), str(), raw(), tup() or tab() to provide a"
+          "\ntype qualified null value.",
   /*MAX   */  "returns the largest value among numbers x and y."
           "\n\nmax( x , y )",
   /*MIN   */  "returns the smallest value among numbers x and y."
@@ -321,11 +311,11 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nabs( x )",
   /*SIGN  */  "returns the signed unity of x, i.e the number +1 or -1."
           "\n\nsign( x )",
-  /*STR   */  "returns the string representation of x."
+  /*STR   */  "returns the string representation of x, or the null string."
           "\n\nstr( [ x ] )"
           "\n\nString has the method at(), put(), insert(), delete(), count(),"
           "\nand concat({STRING | INTEGER}).",
-  /*NUM   */  "returns the decimal value of x, else throw error."
+  /*NUM   */  "returns the decimal value of x else throw error, or the null decimal."
           "\n\nnum( [ x ] )",
   /*CEIL  */  "returns the smallest integer value greater than or equal to x."
           "\n\nceil( x )",
@@ -339,7 +329,7 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\ntan( x )",
   /*ATAN  */  "returns the arc tangent of x in radians."
           "\n\natan( x )",
-  /*INT   */  "returns the integer value of x, else throw error."
+  /*INT   */  "returns the integer value of x else throw error, or the null integer."
           "\n\nint( [ x ] )",
   /*POW*/     "returns x raised to the power of y."
           "\n\npow( x , y )",
@@ -381,17 +371,17 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nreadln( var [, y] )",
   /*ISNUM */  "returns true if x can be converted to number."
           "\n\nisnum( x )",
-  /*RAW   */  "returns a new empty bytes array, or filled with string x, or filled with"
-          "\nx byte y."
+  /*RAW   */  "returns a new bytes array filled with string x, or filled with"
+          "\nx byte y, or the null bytes array."
           "\n\nraw( [ x [, y] ] )"
           "\n\nBytes array has the method at(), put(), insert(), delete(), count(),"
           "\nand concat({BYTES | INTEGER}).",
-  /*TAB   */  "returns a new uniform table filled with x element(s) y."
+  /*TAB   */  "returns a new uniform table filled with x element(s) y, or the null table."
           "\n\ntab( [ x , y ] )"
           "\n\nNested element can be any type, or tuple. Nesting level is supported up"
           "\nto 254 dimmensions. Table has the methods at(), put(), insert(), delete(),"
           "\ncount(), and concat({TABLE | ELEMENT}).",
-  /*TUP   */  "returns a new tuple of 2 or more items."
+  /*TUP   */  "returns a new tuple of items, or the null tuple."
           "\n\ntup( [ x [, ...] ] )"
           "\n\nItem can be boolean, integer, decimal, string, object, or bytes array."
           "\nNesting and table are not allowed. Tuple is unchangeable, meaning that we"
@@ -399,9 +389,10 @@ const char * BuiltinExpression::HELPS[] = {
           "\nThe operator '@#' accesses the item at position # [1..n], as shown below."
           "\nExpression {TUPLE}@1 returns the value of item at position 1."
           "\nTuple has the method set@#(x) to assign the value x to the item of rank #.",
-  /*GETSYS*/  "returns the corresponding value string of context environment variable x."
+  /*GETSYS*/  "returns the corresponding value of context environment variable x."
           "\n\ngetsys( x ) , where x could be 'compatible', 'language', 'country',"
-          "\n'integer_max', or 'last_error'.",
+          "\n'integer_max', or 'last_error'."
+          "\n\nThe type of value depends of the selected variable.",
   /*GETENV*/  "returns the corresponding value string of the environment variable x."
           "\n\ngetenv( x )",
   /*TRUE  */  "is the boolean expression 'true'",
@@ -415,7 +406,10 @@ const char * BuiltinExpression::HELPS[] = {
   /*RANDOM*/  "returns pseudo-random number that's greater than or equal to 0 and less"
           "\nthan 1 or optionally x."
           "\n\nrandom( [x] )",
-  "", "", "",
+  /*BOOL  */  "returns the boolean representation of numeric x, or the null boolean."
+          "\n\nbool( [ x ] )"
+          "\n\nWhen x is 0 the boolean false is returned, else true."
+  "", "",
   /*LSUB  */  "returns left part of string x."
           "\n\nlsubstr( x , count )",
   /*RSUB  */  "returns right part of string x."
