@@ -53,26 +53,27 @@ enum Method
 /*  Constructors                                                      */
 /**********************************************************************/
 static PLUGIN_TYPE ctor_0_args[]  = {
-  { "C", 0 }, // date
+  { "L", 0 }, // string formatted as ISO8601
 };
 
 static PLUGIN_TYPE ctor_1_args[]  = {
-  { "L", 0 }, // string
-  { "L", 0 }, // format
+  { "C", 0 }, // date
 };
 
 static PLUGIN_TYPE ctor_2_args[]  = {
-  { "L", 0 }, // string formatted as ISO8601
+  { "L", 0 }, // string
+  { "L", 0 }, // format
 };
 
 static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,  ctor_0_args,
+          "Build a new calendar from the given ISO date or time string."
+          "\nPassing an empty string or null, it provides POSIX epoch."},
+  { 1,      1,  ctor_1_args,
           "Build a new calendar as a copy of the given one." },
-  { 1,      2,  ctor_1_args,
+  { 2,      2,  ctor_2_args,
           "Build a new calendar from the given string and format." },
-  { 2,      1,  ctor_2_args,
-          "Build a new calendar from the given ISO date or time string." },
 };
 
 /**********************************************************************/
@@ -189,7 +190,44 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
   {
     switch(ctor_id)
     {
-    case 0: /* date ( date ), i.e copy constructor */
+    case 0: /* date ( string iso ) */
+    {
+      struct tm _tm;
+      memset(&_tm, '\0', sizeof(tm));
+      _tm.tm_isdst = -1;
+      bloc::Value& a0 = args[0]->value(ctx);
+      if (!a0.isNull() && !a0.literal()->empty())
+      {
+        bloc::Literal * str = a0.literal();
+        const char * format;
+        if (str->size() == date::ISO8601UTC_LEN)
+          format = date::ISO8601UTC;
+        else if (str->size() == date::ISO8601LOC_LEN)
+          format = date::ISO8601LOC;
+        else if (str->size() == date::ISODATE_LEN)
+          format = date::ISODATE;
+        else
+          throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
+        if (strptime(str->c_str(), format, &_tm) == nullptr)
+          throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
+        time_t tt;
+        if (format == date::ISO8601UTC)
+          tt = timegm(&_tm); /* utc time */
+        else
+          tt = mktime(&_tm); /* local time */
+        if (tt == INVALID_TIME)
+          throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
+        localtime_r(&tt, &dd->_tm);
+      }
+      else
+      {
+        time_t tt = (time_t)0;
+        localtime_r(&tt, &dd->_tm);
+      }
+      break;
+    }
+
+    case 1: /* date ( date ), i.e copy constructor */
     {
       /* the complex handle to copy */
       date::Handle * h = nullptr;
@@ -200,7 +238,7 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       break;
     }
 
-    case 1: /* date ( string, format ) */
+    case 2: /* date ( string, format ) */
     {
       struct tm _tm;
       memset(&_tm, '\0', sizeof(tm));
@@ -213,37 +251,6 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
         throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
       /* string is local time (no tz info) */
       time_t tt = mktime(&_tm);
-      if (tt == INVALID_TIME)
-        throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
-      localtime_r(&tt, &dd->_tm);
-      break;
-    }
-
-    case 2: /* date ( string iso ) */
-    {
-      struct tm _tm;
-      memset(&_tm, '\0', sizeof(tm));
-      _tm.tm_isdst = -1;
-      bloc::Value& a0 = args[0]->value(ctx);
-      if (a0.isNull())
-        throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-      bloc::Literal * str = a0.literal();
-      const char * format;
-      if (str->size() == date::ISO8601UTC_LEN)
-        format = date::ISO8601UTC;
-      else if (str->size() == date::ISO8601LOC_LEN)
-        format = date::ISO8601LOC;
-      else if (str->size() == date::ISODATE_LEN)
-        format = date::ISODATE;
-      else
-        throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
-      if (strptime(str->c_str(), format, &_tm) == nullptr)
-        throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
-      time_t tt;
-      if (format == date::ISO8601UTC)
-        tt = timegm(&_tm); /* utc time */
-      else
-        tt = mktime(&_tm); /* local time */
       if (tt == INVALID_TIME)
         throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
       localtime_r(&tt, &dd->_tm);
