@@ -22,6 +22,7 @@
 #include <algorithm> // std::find
 #include <string>
 #include <vector>
+#include <forward_list>
 
 #include <blocc/parser.h>
 #include <blocc/exception_parse.h>
@@ -54,6 +55,20 @@
 #endif
 
 static bool output(bloc::Context& ctx);
+
+struct AutoFILEClose final
+{
+  FILE * file = nullptr;
+  ~AutoFILEClose() { if (file) ::fclose(file); }
+  AutoFILEClose(FILE * f) : file(f) { }
+  AutoFILEClose(const AutoFILEClose&) = delete;
+  AutoFILEClose& operator=(const AutoFILEClose&) = delete;
+  AutoFILEClose(AutoFILEClose&& o) noexcept
+  {
+    file = o.file;
+    o.file = nullptr;
+  }
+};
 
 #ifdef __WINDOWS__
 /* MSC handler for C runtime */
@@ -133,6 +148,7 @@ int main(int argc, char **argv) {
   /* running program */
   else
   {
+    std::forward_list<AutoFILEClose> open_files;
     FILE * progfile;
     /* setup output stream */
     if (!options.file_sout.empty())
@@ -143,17 +159,20 @@ int main(int argc, char **argv) {
         PRINT1("Failed to open file '%s' for write.", options.file_sout.c_str());
         return EXIT_FAILURE;
       }
+      open_files.push_front(AutoFILEClose(outfile));
     }
     /* setup prog stream */
     if (prog[0] == "-")
       progfile = stdin;
     else
-      progfile = ::fopen(prog[0].c_str(), "r");
-    if (!progfile)
     {
-      PRINT1("Failed to open file '%s' for read.", prog[0].c_str());
-      /* fclose all */
-      return EXIT_FAILURE;
+      progfile = ::fopen(prog[0].c_str(), "r");
+      if (!progfile)
+      {
+        PRINT1("Failed to open file '%s' for read.", prog[0].c_str());
+        return EXIT_FAILURE;
+      }
+      open_files.push_front(AutoFILEClose(progfile));
     }
 
     bloc::Context ctx(::fileno(outfile), ::fileno(STDERR));
@@ -169,12 +188,9 @@ int main(int argc, char **argv) {
     {
       fprintf(STDERR, "Error: %s\n", pe.what());
     }
-    /* keep streams open until exit, as they could be one of stdin, stdout */
     if (!exec)
-    {
-      /* fclose all */
       return EXIT_FAILURE;
-    }
+
     try
     {
       exec->run();
@@ -191,7 +207,6 @@ int main(int argc, char **argv) {
 
   bloc::FunctorManager::destroy();
   bloc::PluginManager::destroy();
-  /* fclose all */
   return (ret ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
