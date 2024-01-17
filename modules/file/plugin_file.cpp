@@ -346,7 +346,7 @@ bloc::Value * FilePlugin::executeMethod(
       }
     }
     /* INOUT */
-    a0.swap(bloc::Value(str));
+    a0.swap(bloc::Value(str).to_lvalue(true));
     return new bloc::Value(bloc::Integer(r));
   }
 
@@ -363,7 +363,7 @@ bloc::Value * FilePlugin::executeMethod(
     if (n >= 0)
     {
       /* INOUT */
-      a0.swap(bloc::Value(new bloc::Literal(buf, n)));
+      a0.swap(bloc::Value(new bloc::Literal(buf, n)).to_lvalue(true));
     }
     return new bloc::Value(bloc::Bool(n < 0 ? false : true));
   }
@@ -452,7 +452,7 @@ bloc::Value * FilePlugin::executeMethod(
       }
     }
     /* INOUT */
-    a0.swap(bloc::Value(raw));
+    a0.swap(bloc::Value(raw).to_lvalue(true));
     return new bloc::Value(bloc::Integer(r));
   }
 
