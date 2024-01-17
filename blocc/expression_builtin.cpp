@@ -388,7 +388,10 @@ const char * BuiltinExpression::HELPS[] = {
           "\ncannot change type, add or remove items after the tuple has been created."
           "\nThe operator '@#' accesses the item at position # [1..n], as shown below."
           "\nExpression {TUPLE}@1 returns the value of item at position 1."
-          "\nTuple has the method set@#(x) to assign the value x to the item of rank #.",
+          "\nTuple has the method set@#(x) to assign the value x to the item of rank #."
+          "\nItem type must be qualified. Therefore to assign null you have to use one"
+          "\nof builtin function providing the null type qualified, i.e bool(), int(),"
+          "\nnum(), str() or raw().",
   /*GETSYS*/  "returns the corresponding value of context environment variable x."
           "\n\ngetsys( x ) , where x could be 'compatible', 'language', 'country',"
           "\n'integer_max', or 'last_error'."
