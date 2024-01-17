@@ -48,18 +48,20 @@ Value& TABExpression::value(Context & ctx) const
     if (tab == nullptr)
     {
       /* cannot be opaque */
-      if (a1.type() == Type::NO_TYPE)
+      if (a1.type() == Type::NO_TYPE || a1.type() == Value::type_rowtype)
         throw RuntimeError(EXC_RT_COMPOUND_OPAQUE);
       /* initialize the collection */
       if (a1.type().level() == TYPE_LEVEL_MAX - 1)
         throw RuntimeError(EXC_RT_OUT_OF_DIMENSION);
       /* initialize with the type of value */
-      if (a1.type() != Type::ROWTYPE || a1.isNull())
+      if (a1.isNull())
         tab = new Collection(a1.type().levelUp());
       else if (a1.type().level() > 0)
         tab = new Collection(a1.collection()->table_decl(), a1.type().level()+1);
-      else
+      else if (a1.type() == Type::ROWTYPE)
         tab = new Collection(a1.tuple()->tuple_decl(), a1.type().level()+1);
+      else
+        tab = new Collection(a1.type().levelUp());
       tab->reserve(n);
       item_type = tab->table_type().levelDown();
     }
