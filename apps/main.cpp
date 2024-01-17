@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
     if (!progfile)
     {
       PRINT1("Failed to open file '%s' for read.", prog[0].c_str());
-      ::fclose(outfile);
+      /* fclose all */
       return EXIT_FAILURE;
     }
 
