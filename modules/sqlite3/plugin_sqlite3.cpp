@@ -192,7 +192,7 @@ void * SQLITE3Plugin::createObject(int ctor_id, bloc::Context& ctx, const std::v
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    std::string fn = *a0.literal();
+    std::string& fn = *a0.literal();
     SQLITE3::Handle * h = new SQLITE3::Handle();
     if (h->open(fn) == 1)
       return h;
