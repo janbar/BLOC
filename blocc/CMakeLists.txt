@@ -1,7 +1,7 @@
 
 ###############################################################################
 # set lib version here
-set (BLOCC_LIB_VERSION "2.0.0")
+set (BLOCC_LIB_VERSION "2.0.1")
 set (BLOCC_LIB_SOVERSION 2)
 
 add_definitions(
