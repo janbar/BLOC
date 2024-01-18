@@ -38,7 +38,7 @@ LETStatement::~LETStatement()
 const Statement * LETStatement::doit(Context& ctx) const
 {
   /* assign variable */
-  if (_var.symbol()->major() != Type::POINTER)
+  if (ctx.loadVariable(*_var.symbol()).type() != Type::POINTER)
   {
     /* ASSIGNMENT */
     _var.store(ctx, ctx, _exp);
@@ -55,10 +55,10 @@ const Statement * LETStatement::doit(Context& ctx) const
     /* values MUST be of the same type */
     if (val.type() != ptr->type())
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, ptr->typeName().c_str());
-    if (ptr->lvalue())
-      ptr->swap(val.clone());
-    else
-      ptr->swap(val);
+    if (!val.lvalue())
+      ptr->swap(val.to_lvalue(true));
+    else if (ptr != &val)
+      ptr->swap(val.clone().to_lvalue(true));
     return _next;
   }
 }
