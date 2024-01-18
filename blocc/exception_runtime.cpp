@@ -39,6 +39,7 @@ const char * RuntimeError::RUNTIME_ERROR[] =
   "Invalid or non bytes expression.",
   "Invalid or non table expression.",
   "Invalid or non tuple expression.",
+  "Invalid or non pointer expression.",
   "Failed to initialize object '%s'.",
   "Failed to execute method '%s'.",
   "Method called from wrong type, expected type is '%s'.",

@@ -128,12 +128,13 @@ public:
     return *this;
   }
 
-  void safety(bool b)
+  Value& to_safety(bool b)
   {
     if (b)
       _flags |= SAFETY;
     else
       _flags &= ~SAFETY;
+    return *this;
   }
 
   const Type& type() const
@@ -200,7 +201,7 @@ public:
   Value * value()
   {
     if (_type != Type::POINTER || _type.level())
-      throw RuntimeError(EXC_RT_NOT_COMPLEX);
+      throw RuntimeError(EXC_RT_NOT_POINTER);
     return cast_null(Value);
   }
 
