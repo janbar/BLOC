@@ -194,52 +194,40 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
 
 Value& Context::storeVariable(const Symbol& symbol, Value&& e)
 {
-  std::vector<MemorySlot>::iterator it = _storage_pool.begin() + symbol.id();
-  if (it->value.type() == Type::NO_TYPE)
+  MemorySlot& slot = _storage_pool[symbol.id()];
+  if (slot.value.type() == e.type())
   {
-    /* move new and forward the safety flag */
-    it->value.swap(std::move(e));
-    it->value.safety(symbol.safety());
-    it->value.to_lvalue(true);
-    /* upgrade the symbol registered in this context for this name */
-    const Type& new_type = it->value.type();
-    if (!it->value.isNull() && new_type == Type::ROWTYPE)
-    {
-      if (new_type.level() > 0)
-        it->symbol->upgrade(it->value.collection()->table_decl(), new_type.level());
-      else
-        it->symbol->upgrade(it->value.tuple()->tuple_decl(), new_type.level());
-    }
-    else
-      it->symbol->upgrade(new_type);
-  }
-  else if (it->value.type() != e.type())
-  {
-    /* safety flag forbids any change of type */
-    if (it->value.safety())
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, it->value.typeName().c_str());
-    /* move new */
-    it->value.swap(std::move(e));
-    it->value.to_lvalue(true);
-    /* upgrade the symbol registered in this context for this name */
-    const Type& new_type = it->value.type();
-    if (!it->value.isNull() && new_type == Type::ROWTYPE)
-    {
-      if (new_type.level() > 0)
-        it->symbol->upgrade(it->value.collection()->table_decl(), new_type.level());
-      else
-        it->symbol->upgrade(it->value.tuple()->tuple_decl(), new_type.level());
-    }
-    else
-      it->symbol->upgrade(new_type);
+    /* move new as lvalue */
+    if (!e.lvalue())
+      slot.value.swap(std::move(e.to_lvalue(true)));
+    /* if not the same instance then copy */
+    else if (&e != &slot.value)
+      slot.value.swap(e.clone().to_lvalue(true));
   }
   else
   {
-    /* move new */
-    it->value.swap(std::move(e));
-    it->value.to_lvalue(true);
+    /* safety flag forbids any change of type */
+    if (slot.value.safety())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, slot.value.typeName().c_str());
+    /* upgrade the symbol registered in the context for next parsing */
+    if (e.type() != Type::ROWTYPE || e.isNull())
+      slot.symbol->upgrade(e.type());
+    else
+    {
+      /* ROWTYPE not null */
+      if (e.type().level() > 0)
+        slot.symbol->upgrade(e.collection()->table_decl(), e.type().level());
+      else
+        slot.symbol->upgrade(e.tuple()->tuple_decl(), e.type().level());
+    }
+    /* move new as lvalue */
+    if (e.lvalue())
+      slot.value.swap(e.clone().to_lvalue(true));
+    else
+      slot.value.swap(std::move(e.to_lvalue(true)));
   }
-  return it->value;
+  /* forward safety of symbol */
+  return slot.value.to_safety(slot.symbol->safety());
 }
 
 void Context::describeSymbol(const std::string& name)

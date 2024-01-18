@@ -59,6 +59,7 @@ private:
     Integer max = 0;
     Integer step = 1;
     Value * iterator = nullptr;
+    bool safety_bak = false;
   } _data;
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORStatement * rof);

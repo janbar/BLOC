@@ -72,12 +72,11 @@ const Statement * FORStatement::doit(Context& ctx) const
       _data.max = b;
       _data.step = -1;
     }
-    /*  var is type safe in the loop body */
-    if (vb.lvalue())
-      _data.iterator = &(_var->store(ctx, Value(vb.clone())));
-    else
-      _data.iterator = &(_var->store(ctx, Value(std::move(vb))));
-    _data.iterator->safety(true);
+    _data.iterator = &(_var->store(ctx, std::move(vb)));
+    /* value is type safe in the loop body */
+    _data.safety_bak = _var->symbol()->safety();
+    _var->symbol()->safety(true);
+    _data.iterator->to_safety(true);
     ctx.stackControl(this);
   }
   else
@@ -87,8 +86,9 @@ const Statement * FORStatement::doit(Context& ctx) const
     if ((_data.step > 0 && *nref >= _data.max) ||
         (_data.step < 0 && *nref <= _data.min))
     {
-      /* now var can be unsafe */
-      _data.iterator->safety(false);
+      /* restore the safety state of the variable */
+      _data.iterator->to_safety(_data.safety_bak);
+      _var->symbol()->safety(_data.safety_bak);
       ctx.unstackControl();
       return _next;
     }
@@ -101,7 +101,9 @@ const Statement * FORStatement::doit(Context& ctx) const
   }
   catch (...)
   {
-    _data.iterator->safety(false);
+    /* restore the safety state of the variable */
+    _data.iterator->to_safety(_data.safety_bak);
+    _var->symbol()->safety(_data.safety_bak);
     throw;
   }
   if (!ctx.stopCondition())
@@ -156,10 +158,8 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
   std::list<const Statement*> statements;
   // iterator must be protected against type change
   Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
+  bool safety_bak = vt.safety();
   vt.safety(true);
-  // parsing expressions will check types first from existing variables, then
-  // from registered symbols, so reset the variable if any
-  ctx.clearVariable(vt);
   try
   {
     bool end = false;
@@ -184,13 +184,13 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
   catch (ParseError& pe)
   {
     // cleanup
-    vt.safety(false);
+    vt.safety(safety_bak);
     ctx.execEnd();
     for (auto ss : statements)
       delete ss;
     throw;
   }
-  vt.safety(false);
+  vt.safety(safety_bak);
   ctx.execEnd();
   return new Executable(ctx, statements);
 }

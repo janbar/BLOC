@@ -55,7 +55,8 @@ private:
   mutable struct RT
   {
     Value * tmp = nullptr;
-    Collection * table = nullptr;
+    bool safety_ex_bak = false;
+    Value value_it_bak = Value();
     Integer step = 1;
     Integer index = 0;
   } _data;

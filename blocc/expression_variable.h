@@ -90,11 +90,7 @@ public:
    */
   void store(Context& d_ctx, Context& s_ctx, Expression * s_exp) const
   {
-    Value& val(s_exp->value(s_ctx));
-    if (val.lvalue())
-      d_ctx.storeVariable(_symbol, val.clone());
-    else
-      d_ctx.storeVariable(_symbol, std::move(val));
+    d_ctx.storeVariable(_symbol, std::move(s_exp->value(s_ctx)));
   }
 
   /**

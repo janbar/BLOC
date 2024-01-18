@@ -52,52 +52,65 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       return _next;
     if (_expSymbol)
     {
-      /* make the symbol safe */
+      _data.tmp = &val;
+      /* value is type safe in the loop body */
+      _data.safety_ex_bak = _expSymbol->safety();
       _expSymbol->safety(true);
-      /* lvalue */
-      _data.tmp = nullptr;
-      _data.table = val.collection();
+      _data.tmp->to_safety(true);
     }
     else
     {
       /* store rvalue */
       _data.tmp = new Value(std::move(val));
-      _data.tmp->to_lvalue(true);
-      _data.table = _data.tmp->collection();
     }
     /* set fetch order */
     if (_order == DESC)
     {
       _data.step = -1;
-      _data.index = _data.table->size()-1;
+      _data.index = _data.tmp->collection()->size()-1;
     }
     else
     {
       _data.step = 1;
       _data.index = 0;
     }
-    /* store a pointer to the value as lvalue */
-    _var->store(ctx, Value(&(_data.table->at(_data.index).to_lvalue(true)))).safety(true);
+    Value& it = ctx.loadVariable(*_var->symbol());
+    /* backup the state of the variable used as iterator */
+    _data.value_it_bak.swap(Value(it.type()).to_lvalue(true).to_safety(it.safety()));
+    /* store a safe pointer to the value as lvalue */
+    it.swap(Value(&(_data.tmp->collection()->at(_data.index).to_lvalue(true)))
+      .to_lvalue(true).to_safety(true));
+    _var->symbol()->safety(true);
     ctx.stackControl(this);
   }
   else
   {
     _data.index += _data.step;
-    if (_data.index < 0 || _data.index >= _data.table->size())
+    if (_data.index < 0 || _data.index >= _data.tmp->collection()->size())
     {
-      _var->clear(ctx);
-      ctx.getSymbol(_var->symbol()->id())->upgrade(Type::NO_TYPE);
+      /* restore the state of the variable used as iterator */
+      _var->symbol()->safety(_data.value_it_bak.safety());
+      ctx.loadVariable(*_var->symbol()).swap(std::move(_data.value_it_bak));
       if (_expSymbol)
-        _expSymbol->safety(false);
+      {
+        /* restore the safety state of the variable value */
+        _data.tmp->to_safety(_data.safety_ex_bak);
+        _expSymbol->safety(_data.safety_ex_bak);
+      }
       else
+      {
+        /* delete allocated value */
         delete _data.tmp;
+      }
       ctx.unstackControl();
       return _next;
     }
     else
     {
-      /* store a pointer to the value as lvalue */
-      _var->store(ctx, Value(&(_data.table->at(_data.index).to_lvalue(true)))).safety(true);
+      /* store a safe pointer to the value as lvalue */
+      Value& it = ctx.loadVariable(*_var->symbol());
+      it.swap(Value(&(_data.tmp->collection()->at(_data.index).to_lvalue(true)))
+        .to_lvalue(true).to_safety(true));
     }
   }
   try
@@ -107,12 +120,20 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   }
   catch (...)
   {
-    _var->clear(ctx);
-    ctx.getSymbol(_var->symbol()->id())->upgrade(Type::NO_TYPE);
+    /* restore the state of the variable used as iterator */
+    _var->symbol()->safety(_data.value_it_bak.safety());
+    ctx.loadVariable(*_var->symbol()).swap(std::move(_data.value_it_bak));
     if (_expSymbol)
-      _expSymbol->safety(false);
+    {
+      /* restore the safety state of the variable value */
+      _data.tmp->to_safety(_data.safety_ex_bak);
+      _expSymbol->safety(_data.safety_ex_bak);
+    }
     else
+    {
+      /* delete allocated value */
       delete _data.tmp;
+    }
     throw;
   }
   if (!ctx.stopCondition())
@@ -163,13 +184,15 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   std::list<const Statement*> statements;
   // iterator must be protected against type change
   Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
+  bool safety_vt_bak = vt.safety();
   vt.safety(true);
-  // parsing expressions will check types first from existing variables, then
-  // from registered symbols, so reset the variable if any
-  ctx.clearVariable(vt);
   // fetched expression must be protected against type change
+  bool safety_ex_bak = false;
   if (rof->_expSymbol)
+  {
+    safety_ex_bak = rof->_expSymbol->safety();
     rof->_expSymbol->safety(true);
+  }
   try
   {
     bool end = false;
@@ -195,16 +218,16 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   {
     // cleanup
     if (rof->_expSymbol)
-      rof->_expSymbol->safety(false);
-    vt.safety(false);
+      rof->_expSymbol->safety(safety_ex_bak);
+    vt.safety(safety_vt_bak);
     ctx.execEnd();
     for (auto ss : statements)
       delete ss;
     throw;
   }
   if (rof->_expSymbol)
-    rof->_expSymbol->safety(false);
-  vt.safety(false);
+    rof->_expSymbol->safety(safety_ex_bak);
+  vt.safety(safety_vt_bak);
   ctx.execEnd();
   return new Executable(ctx, statements);
 }
