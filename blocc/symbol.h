@@ -78,6 +78,21 @@ public:
 
   const Decl& tuple_decl() const override { return _decl; }
 
+  /**
+   * The safety check result returned by check_safety().
+   */
+  enum SafetyCheck {
+    SAFE_KO = 0, /* not safe */
+    SAFE_FEA,    /* feasible */
+    SAFE_EQU,    /* as well  */
+    SAFE_UPG,    /* safer    */
+  };
+  /**
+   * Try to valid an opaque or qualified type against this symbol in safe mode,
+   * and during parsing stage.
+   */
+  SafetyCheck check_safety(const Type& type) const noexcept;
+
 private:
   Decl _decl;
   mutable bool _safety = false;

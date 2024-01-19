@@ -152,13 +152,22 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
 
     return *sym;
   }
-  if (*s == type)
+  if (type == *s)
     return *s;
   if (s->safety())
   {
-    if (s->major() == Type::ROWTYPE)
-      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
-    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
+    switch (s->check_safety(type))
+    {
+    case Symbol::SAFE_KO:
+      if (s->major() == Type::ROWTYPE)
+        throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
+      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
+    case Symbol::SAFE_EQU:
+    case Symbol::SAFE_FEA:
+      return *s;
+    case Symbol::SAFE_UPG:
+      break;
+    }
   }
   /* stacking old symbol */
   _backed_symbols.push_back(*s);
@@ -182,10 +191,24 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
 
     return *sym;
   }
-  if (*s == decl.make_type(level))
+  Type type = decl.make_type(level);
+  if (type == *s)
     return *s;
   if (s->safety())
-    throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
+  {
+    switch (s->check_safety(type))
+    {
+    case Symbol::SAFE_KO:
+      if (s->major() == Type::ROWTYPE)
+        throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
+      throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
+    case Symbol::SAFE_EQU:
+    case Symbol::SAFE_FEA:
+      return *s;
+    case Symbol::SAFE_UPG:
+      break;
+    }
+  }
   /* stacking old symbol */
   _backed_symbols.push_back(*s);
   s->upgrade(decl, level);
