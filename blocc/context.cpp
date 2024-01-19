@@ -230,8 +230,13 @@ Value& Context::storeVariable(const Symbol& symbol, Value&& e)
   else
   {
     /* safety flag forbids any change of qualified type */
-    if (slot.symbol->safety() && slot.value.type() != Type::NO_TYPE)
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, slot.value.typeName().c_str());
+    if (slot.symbol->safety())
+    {
+      /* allow upgrade an undefined to any, or [undefined] to [any] */
+      if (slot.value.type() != Type::NO_TYPE ||
+              (slot.value.type().level() > 0 && e.type().level() == 0))
+        throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, slot.value.typeName().c_str());
+    }
     /* upgrade the symbol registered in the context for next parsing */
     if (e.type() != Type::ROWTYPE || e.isNull())
       slot.symbol->upgrade(e.type());
