@@ -56,10 +56,15 @@ Value& TABExpression::value(Context & ctx) const
       /* initialize with the type of value */
       if (a1.isNull())
         tab = new Collection(a1.type().levelUp());
-      else if (a1.type().level() > 0)
-        tab = new Collection(a1.collection()->table_decl(), a1.type().level()+1);
       else if (a1.type() == Type::ROWTYPE)
-        tab = new Collection(a1.tuple()->tuple_decl(), a1.type().level()+1);
+      {
+        if (a1.type().level() > 0)
+          tab = new Collection(a1.collection()->table_decl(), a1.type().level()+1);
+        else
+          tab = new Collection(a1.tuple()->tuple_decl(), a1.type().level()+1);
+      }
+      else if (a1.type().level() > 0)
+        tab = new Collection(a1.collection()->table_type().levelUp());
       else
         tab = new Collection(a1.type().levelUp());
       tab->reserve(n);
