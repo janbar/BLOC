@@ -37,7 +37,7 @@ const Type& VariableExpression::type(Context& ctx) const
   Value& val = ctx.loadVariable(_symbol);
   if (val.type() != Type::POINTER)
     return val.type();
-  return (val.isNull() ? val.type() : val.value()->type());
+  return val.deref_value().type();
 }
 
 const TupleDecl::Decl& VariableExpression::tuple_decl(Context& ctx) const

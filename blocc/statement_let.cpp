@@ -47,18 +47,15 @@ const Statement * LETStatement::doit(Context& ctx) const
   else
   /* update reference */
   {
-    Value * ptr = ctx.loadVariable(*_var.symbol()).value();
-    /* the pointer CANNOT be null */
-    if (ptr == nullptr)
-      throw RuntimeError(EXC_RT_INTERNAL_ERROR_S, "Invalid pointer");
+    Value& ptd = ctx.loadVariable(*_var.symbol()).deref_value();
     Value& val = _exp->value(ctx); /* execute expression */
     /* values MUST be of the same type */
-    if (val.type() != ptr->type())
-      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, ptr->typeName().c_str());
+    if (val.type() != ptd.type())
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, ptd.typeName().c_str());
     if (!val.lvalue())
-      ptr->swap(val.to_lvalue(true));
-    else if (ptr != &val)
-      ptr->swap(val.clone().to_lvalue(true));
+      ptd.swap(std::move(val.to_lvalue(true)));
+    else if (&ptd != &val)
+      ptd.swap(std::move(val.clone().to_lvalue(true)));
     return _next;
   }
 }

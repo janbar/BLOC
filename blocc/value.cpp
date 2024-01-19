@@ -55,21 +55,21 @@ void Value::_clear() noexcept
 #endif
   _flags &= ~NOTNULL;
   if (_type.level() > 0)
-    delete cast(Collection);
+    delete _bloc_vcast_1(Collection);
   else
     switch (_type.major())
     {
     case Type::LITERAL:
-      delete cast(Literal);
+      delete _bloc_vcast_1(Literal);
       break;
     case Type::COMPLEX:
-      delete cast(Complex);
+      delete _bloc_vcast_1(Complex);
       break;
     case Type::TABCHAR:
-      delete cast(TabChar);
+      delete _bloc_vcast_1(TabChar);
       break;
     case Type::ROWTYPE:
-      delete cast(Tuple);
+      delete _bloc_vcast_1(Tuple);
       break;
     default:
       break;
@@ -222,7 +222,7 @@ Value Value::clone() const noexcept
   {
     c._flags = NOTNULL;
     if (_type.level() > 0)
-      c._value.p = new Collection(*cast(Collection));
+      c._value.p = new Collection(*_bloc_vcast_1(Collection));
     else
       switch (_type.major())
       {
@@ -238,20 +238,30 @@ Value Value::clone() const noexcept
         c._value.d = _value.d;
         break;
       case Type::LITERAL:
-        c._value.p = new Literal(*cast(Literal));
+        c._value.p = new Literal(*_bloc_vcast_1(Literal));
         break;
       case Type::COMPLEX:
-        c._value.p = new Complex(*cast(Complex));
+        c._value.p = new Complex(*_bloc_vcast_1(Complex));
         break;
       case Type::TABCHAR:
-        c._value.p = new TabChar(*cast(TabChar));
+        c._value.p = new TabChar(*_bloc_vcast_1(TabChar));
         break;
       case Type::ROWTYPE:
-        c._value.p = new Tuple(*cast(Tuple));
+        c._value.p = new Tuple(*_bloc_vcast_1(Tuple));
         break;
       case Type::POINTER:
-        c._value.p = _value.p;
+      {
+        /* clone the pointed to value */
+        const Value& d = deref_value();
+        if (d._type != Type::POINTER)
+          c = d.clone();
+        else
+        {
+          c._flags = d._flags;
+          c._value.p = d._value.p;
+        }
         break;
+      }
       }
   }
   return c;
@@ -271,7 +281,7 @@ std::string Value::toString() const
 
   if (_type.level() > 0)
     return typeName().append(1, '[')
-            .append(std::to_string(cast(Collection)->size()))
+            .append(std::to_string(_bloc_vcast_1(Collection)->size()))
             .append(1, ']');
 
   switch (_type.major())
@@ -287,13 +297,13 @@ std::string Value::toString() const
             .append(readableNumeric(_value.d));
   case Type::LITERAL:
     return typeName().append(1, '[')
-            .append(std::to_string(cast(Literal)->size()))
+            .append(std::to_string(_bloc_vcast_1(Literal)->size()))
             .append(1, ']');
   case Type::COMPLEX:
-    return readableComplex(*cast(Complex));
+    return readableComplex(*_bloc_vcast_1(Complex));
   case Type::TABCHAR:
     return typeName().append(1, '[')
-            .append(std::to_string(cast(TabChar)->size()))
+            .append(std::to_string(_bloc_vcast_1(TabChar)->size()))
             .append(1, ']');
 
   default:
@@ -316,8 +326,8 @@ std::string Value::typeName() const
     return _type.typeName(PluginManager::instance().plugged(_type.minor()).interface.name);
   case Type::ROWTYPE:
     if (_type.level() > 0)
-      return _type.typeName(cast(Collection)->table_decl().tupleName());
-    return _type.typeName(cast(Tuple)->tuple_decl().tupleName());
+      return _type.typeName(_bloc_vcast_1(Collection)->table_decl().tupleName());
+    return _type.typeName(_bloc_vcast_1(Tuple)->tuple_decl().tupleName());
   default:
     return _type.typeName();
   }

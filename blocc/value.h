@@ -113,9 +113,9 @@ public:
   bool isNull() const { return (_flags & NOTNULL) == 0; }
   bool lvalue() const { return (_flags & LVALUE) != 0; }
 
-#define cast(T)           (static_cast<T*>(_value.p))
-#define cast_other(T, I)  (static_cast<T*>(I._value.p))
-#define cast_null(T)      (isNull() ? nullptr : static_cast<T*>(_value.p))
+#define _bloc_vcast_1(T)    (static_cast<T*>(_value.p))
+#define _bloc_vcast_2(T, I) (static_cast<T*>(I._value.p))
+#define _bloc_vcast_null(T) (isNull() ? nullptr : static_cast<T*>(_value.p))
 
   Value& to_lvalue(bool b)
   {
@@ -156,42 +156,58 @@ public:
   {
     if (_type != Type::LITERAL || _type.level())
       throw RuntimeError(EXC_RT_NOT_LITERAL);
-    return cast_null(Literal);
+    return _bloc_vcast_null(Literal);
   }
 
   TabChar * tabchar()
   {
     if (_type != Type::TABCHAR || _type.level())
       throw RuntimeError(EXC_RT_NOT_TABCHAR);
-    return cast_null(TabChar);
+    return _bloc_vcast_null(TabChar);
   }
 
   Collection * collection()
   {
     if (_type.level() == 0)
       throw RuntimeError(EXC_RT_NOT_COLLECT);
-    return cast_null(Collection);
+    return _bloc_vcast_null(Collection);
   }
 
   Tuple * tuple()
   {
     if (_type != Type::ROWTYPE || _type.level())
       throw RuntimeError(EXC_RT_NOT_ROWTYPE);
-    return cast_null(Tuple);
+    return _bloc_vcast_null(Tuple);
   }
 
   Complex * complex()
   {
     if (_type != Type::COMPLEX || _type.level())
       throw RuntimeError(EXC_RT_NOT_COMPLEX);
-    return cast_null(Complex);
+    return _bloc_vcast_null(Complex);
   }
 
   Value * value()
   {
     if (_type != Type::POINTER || _type.level())
       throw RuntimeError(EXC_RT_NOT_POINTER);
-    return cast_null(Value);
+    return _bloc_vcast_null(Value);
+  }
+
+  Value& deref_value() noexcept
+  {
+    Value * v = this;
+    while (!v->isNull() && v->_type == Type::POINTER)
+      v = static_cast<Value*>(v->_value.p);
+    return *v;
+  }
+
+  const Value& deref_value() const noexcept
+  {
+    const Value * v = this;
+    while (!v->isNull() && v->_type == Type::POINTER)
+      v = static_cast<Value*>(v->_value.p);
+    return *v;
   }
 
   std::string toString() const;
