@@ -206,8 +206,8 @@ Value& Context::storeVariable(const Symbol& symbol, Value&& e)
   }
   else
   {
-    /* safety flag forbids any change of type */
-    if (slot.value.safety())
+    /* safety flag forbids any change of qualified type */
+    if (slot.symbol->safety() && slot.value.type() != Type::NO_TYPE)
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, slot.value.typeName().c_str());
     /* upgrade the symbol registered in the context for next parsing */
     if (e.type() != Type::ROWTYPE || e.isNull())
@@ -227,7 +227,7 @@ Value& Context::storeVariable(const Symbol& symbol, Value&& e)
       slot.value.swap(std::move(e.to_lvalue(true)));
   }
   /* forward safety of symbol */
-  return slot.value.to_safety(slot.symbol->safety());
+  return slot.value;
 }
 
 void Context::describeSymbol(const std::string& name)

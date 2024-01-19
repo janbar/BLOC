@@ -56,6 +56,7 @@ private:
   {
     Value * tmp = nullptr;
     bool safety_ex_bak = false;
+    bool safety_it_bak = false;
     Value value_it_bak = Value();
     Integer step = 1;
     Integer index = 0;

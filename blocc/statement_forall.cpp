@@ -56,7 +56,6 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       /* value is type safe in the loop body */
       _data.safety_ex_bak = _expSymbol->safety();
       _expSymbol->safety(true);
-      _data.tmp->to_safety(true);
     }
     else
     {
@@ -76,10 +75,11 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     }
     Value& it = ctx.loadVariable(*_var->symbol());
     /* backup the state of the variable used as iterator */
-    _data.value_it_bak.swap(Value(it.type()).to_lvalue(true).to_safety(it.safety()));
+    _data.safety_it_bak = _var->symbol()->safety();
+    _data.value_it_bak.swap(Value(it.type()).to_lvalue(true));
     /* store a safe pointer to the value as lvalue */
     it.swap(Value(&(_data.tmp->collection()->at(_data.index).to_lvalue(true)))
-      .to_lvalue(true).to_safety(true));
+      .to_lvalue(true));
     _var->symbol()->safety(true);
     ctx.stackControl(this);
   }
@@ -88,13 +88,12 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     _data.index += _data.step;
     if (_data.index < 0 || _data.index >= _data.tmp->collection()->size())
     {
-      /* restore the state of the variable used as iterator */
-      _var->symbol()->safety(_data.value_it_bak.safety());
+      /* restore the state of the iterator variable */
       ctx.loadVariable(*_var->symbol()).swap(std::move(_data.value_it_bak));
+      _var->symbol()->safety(_data.safety_it_bak);
       if (_expSymbol)
       {
-        /* restore the safety state of the variable value */
-        _data.tmp->to_safety(_data.safety_ex_bak);
+        /* restore the safety state of the symbol */
         _expSymbol->safety(_data.safety_ex_bak);
       }
       else
@@ -110,7 +109,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       /* store a safe pointer to the value as lvalue */
       Value& it = ctx.loadVariable(*_var->symbol());
       it.swap(Value(&(_data.tmp->collection()->at(_data.index).to_lvalue(true)))
-        .to_lvalue(true).to_safety(true));
+        .to_lvalue(true));
     }
   }
   try
@@ -120,13 +119,12 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   }
   catch (...)
   {
-    /* restore the state of the variable used as iterator */
-    _var->symbol()->safety(_data.value_it_bak.safety());
+    /* restore the state of the iterator variable */
     ctx.loadVariable(*_var->symbol()).swap(std::move(_data.value_it_bak));
+    _var->symbol()->safety(_data.safety_it_bak);
     if (_expSymbol)
     {
-      /* restore the safety state of the variable value */
-      _data.tmp->to_safety(_data.safety_ex_bak);
+      /* restore the safety state of the symbol */
       _expSymbol->safety(_data.safety_ex_bak);
     }
     else

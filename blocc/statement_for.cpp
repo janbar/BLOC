@@ -76,7 +76,6 @@ const Statement * FORStatement::doit(Context& ctx) const
     /* value is type safe in the loop body */
     _data.safety_bak = _var->symbol()->safety();
     _var->symbol()->safety(true);
-    _data.iterator->to_safety(true);
     ctx.stackControl(this);
   }
   else
@@ -87,7 +86,6 @@ const Statement * FORStatement::doit(Context& ctx) const
         (_data.step < 0 && *nref <= _data.min))
     {
       /* restore the safety state of the variable */
-      _data.iterator->to_safety(_data.safety_bak);
       _var->symbol()->safety(_data.safety_bak);
       ctx.unstackControl();
       return _next;
@@ -102,7 +100,6 @@ const Statement * FORStatement::doit(Context& ctx) const
   catch (...)
   {
     /* restore the safety state of the variable */
-    _data.iterator->to_safety(_data.safety_bak);
     _var->symbol()->safety(_data.safety_bak);
     throw;
   }

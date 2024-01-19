@@ -50,7 +50,7 @@ class Value final
   Type _type;
 
   /* value flags */
-  enum flag { NOTNULL = 0x1, LVALUE = 0x2, SAFETY = 0x4 };
+  enum flag { NOTNULL = 0x1, LVALUE = 0x2 };
   int _flags = 0;
 
   void _clear() noexcept;
@@ -112,8 +112,6 @@ public:
 
   bool isNull() const { return (_flags & NOTNULL) == 0; }
   bool lvalue() const { return (_flags & LVALUE) != 0; }
-  bool safety() const { return (_flags & SAFETY) != 0;
-  }
 
 #define cast(T)           (static_cast<T*>(_value.p))
 #define cast_other(T, I)  (static_cast<T*>(I._value.p))
@@ -125,15 +123,6 @@ public:
       _flags |= LVALUE;
     else
       _flags &= ~LVALUE;
-    return *this;
-  }
-
-  Value& to_safety(bool b)
-  {
-    if (b)
-      _flags |= SAFETY;
-    else
-      _flags &= ~SAFETY;
     return *this;
   }
 
