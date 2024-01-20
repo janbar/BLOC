@@ -1,4 +1,7 @@
-bloc (1.0) UNRELEASED; urgency=low
+bloc (2.0) UNRELEASED; urgency=low
+
+  [ janbar ]
+  * Release 2.0.0
 
   [ janbar ]
   * Release 1.0.0
