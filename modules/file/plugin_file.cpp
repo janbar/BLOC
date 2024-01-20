@@ -323,7 +323,6 @@ bloc::Value * FilePlugin::executeMethod(
   {
     if (!file->_r)
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
-    bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
     if (args[0]->symbol() == nullptr || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
@@ -346,7 +345,7 @@ bloc::Value * FilePlugin::executeMethod(
       }
     }
     /* INOUT */
-    a0.swap(bloc::Value(str).to_lvalue(true));
+    ctx.storeVariable(*args[0]->symbol(), bloc::Value(str));
     return new bloc::Value(bloc::Integer(r));
   }
 
@@ -354,7 +353,6 @@ bloc::Value * FilePlugin::executeMethod(
   {
     if (!file->_r)
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
-    bloc::Value& a0 = args[0]->value(ctx);
     if (args[0]->symbol() == nullptr)
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
 
@@ -363,7 +361,7 @@ bloc::Value * FilePlugin::executeMethod(
     if (n >= 0)
     {
       /* INOUT */
-      a0.swap(bloc::Value(new bloc::Literal(buf, n)).to_lvalue(true));
+      ctx.storeVariable(*args[0]->symbol(), bloc::Value(new bloc::Literal(buf, n)));
     }
     return new bloc::Value(bloc::Bool(n < 0 ? false : true));
   }
@@ -429,7 +427,6 @@ bloc::Value * FilePlugin::executeMethod(
   {
     if (!file->_r)
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
-    bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
     if (args[0]->symbol() == nullptr || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
@@ -452,7 +449,7 @@ bloc::Value * FilePlugin::executeMethod(
       }
     }
     /* INOUT */
-    a0.swap(bloc::Value(raw).to_lvalue(true));
+    ctx.storeVariable(*args[0]->symbol(), bloc::Value(raw));
     return new bloc::Value(bloc::Integer(r));
   }
 

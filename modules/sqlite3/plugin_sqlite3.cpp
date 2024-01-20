@@ -320,8 +320,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
       /* INOUT */
       if (!args[0]->symbol())
         throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-      bloc::Value& vout = args[0]->value(ctx);
-      vout.swap(bloc::Value(t).to_lvalue(true));
+      ctx.storeVariable(*args[0]->symbol(), bloc::Value(t));
     }
     return new bloc::Value(bloc::Bool(r));
   }
