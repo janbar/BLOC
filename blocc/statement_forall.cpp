@@ -50,66 +50,83 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     Value& val = _exp->value(ctx);
     if (val.isNull() || val.collection()->size() == 0)
       return _next;
-    if (_expSymbol)
-    {
-      _data.tmp = &val;
-      /* value is type safe in the loop body */
-      _data.safety_ex_bak = _expSymbol->safety();
-      _expSymbol->safety(true);
-    }
-    else
-    {
-      /* store rvalue */
-      _data.tmp = new Value(std::move(val));
-    }
-    /* set fetch order */
+    /* the variable, which will point to the fetched value, cannot already be
+     * used by a running iteration i.e in parent loop; typically a protected
+     * symbol can mean such a case */
+    if (_var->symbol()->safety())
+      throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+    /* setup fetching order */
     if (_order == DESC)
     {
       _data.step = -1;
-      _data.index = _data.tmp->collection()->size()-1;
+      _data.index = val.collection()->size()-1;
     }
     else
     {
       _data.step = 1;
       _data.index = 0;
     }
-    Value& it = ctx.loadVariable(*_var->symbol());
-    /* backup the state of the variable used as iterator */
-    _data.safety_it_bak = _var->symbol()->safety();
-    _data.value_it_bak.swap(Value(it.type()).to_lvalue(true));
-    /* store a safe pointer to the value as lvalue */
-    it.swap(Value(&(_data.tmp->collection()->at(_data.index).to_lvalue(true)))
-      .to_lvalue(true));
+    /* setup fetched target */
+    if (_expSymbol)
+    {
+      /* target is sustainable and accessible by a symbol, so point to it */
+      _data.target = &val;
+      /* the symbol must be type safe in the body loop */
+      _data.ex_safety_bak = _expSymbol->safety();
+      _expSymbol->safety(true);
+    }
+    else
+    {
+      /* target must be preserved during the duration of the loop;
+       * the temporary storage will be free at end */
+      if (val.lvalue())
+        /* unfortunately I have to copy it */
+        _data.target = new Value(std::move(val.clone().to_lvalue(true)));
+      else
+        _data.target = new Value(std::move(val.to_lvalue(true)));
+    }
+    /* backup the state of the variable used as iterator; it will be restored
+     * at end */
+    _data.it_safety_bak = _var->symbol()->safety();
+    _data.it_type_bak = ctx.loadVariable(*_var->symbol()).type();
+
+    /* fetch first item: exchange the value payload with a pointer to the
+     * storage */
+    swapValue(_data.target->collection(), _data.index,
+              &ctx.loadVariable(*_var->symbol()))->to_lvalue(true);
     _var->symbol()->safety(true);
     ctx.stackControl(this);
   }
   else
   {
+    /* restore the value payload into the target if it still exists */
+    restoreValue(_data.target->collection(), _data.index,
+                 &ctx.loadVariable(*_var->symbol()));
     _data.index += _data.step;
-    if (_data.index < 0 || _data.index >= _data.tmp->collection()->size())
+    if (_data.index < 0 || _data.index >= _data.target->collection()->size())
     {
-      /* restore the state of the iterator variable */
-      ctx.loadVariable(*_var->symbol()).swap(std::move(_data.value_it_bak));
-      _var->symbol()->safety(_data.safety_it_bak);
+      /* restore the state of the iterator variable; the value is cleared */
+      ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
+      _var->symbol()->safety(_data.it_safety_bak);
       if (_expSymbol)
       {
-        /* restore the safety state of the symbol */
-        _expSymbol->safety(_data.safety_ex_bak);
+        /* restore the safety state of the target symbol */
+        _expSymbol->safety(_data.ex_safety_bak);
       }
       else
       {
-        /* delete allocated value */
-        delete _data.tmp;
+        /* delete temporary storage */
+        delete _data.target;
       }
       ctx.unstackControl();
       return _next;
     }
     else
     {
-      /* store a safe pointer to the value as lvalue */
-      Value& it = ctx.loadVariable(*_var->symbol());
-      it.swap(Value(&(_data.tmp->collection()->at(_data.index).to_lvalue(true)))
-        .to_lvalue(true));
+      /* fetch current item: exchange the value payload with a pointer to the
+       * storage */
+      swapValue(_data.target->collection(), _data.index,
+                &ctx.loadVariable(*_var->symbol()))->to_lvalue(true);
     }
   }
   try
@@ -119,18 +136,21 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   }
   catch (...)
   {
+    /* restore the value payload into the target if it still exists */
+    restoreValue(_data.target->collection(), _data.index,
+                 &ctx.loadVariable(*_var->symbol()));
     /* restore the state of the iterator variable */
-    ctx.loadVariable(*_var->symbol()).swap(std::move(_data.value_it_bak));
-    _var->symbol()->safety(_data.safety_it_bak);
+    ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
+    _var->symbol()->safety(_data.it_safety_bak);
     if (_expSymbol)
     {
       /* restore the safety state of the symbol */
-      _expSymbol->safety(_data.safety_ex_bak);
+      _expSymbol->safety(_data.ex_safety_bak);
     }
     else
     {
-      /* delete allocated value */
-      delete _data.tmp;
+      /* delete temporary storage */
+      delete _data.target;
     }
     throw;
   }
@@ -174,6 +194,39 @@ void FORALLStatement::unparse(Context& ctx, FILE * out) const
   ctx.execBegin(this);
   _exec->unparse(out);
   ctx.execEnd();
+}
+
+Value * FORALLStatement::swapValue(Collection * tgt, unsigned i, Value * itr) noexcept
+{
+  /* make a pointer to iterator value i.e self: dangerous */
+  *itr = Value(itr);
+  /* exchange target value and iterator value (pointer) */
+  tgt->at(i).swap(*itr);
+  return itr;
+}
+
+void FORALLStatement::restoreValue(Collection * tgt, unsigned i, Value * itr) noexcept
+{
+  /* search the pointer to itr at the advised index */
+  if (i < tgt->size())
+  {
+    Value& v = tgt->at(i);
+    if (v.type() == Type::POINTER && v.get().p == itr)
+    {
+      v.swap(*itr);
+      return;
+    }
+  }
+  /* finally scan the whole table to find it, in case the item is moved */
+  for (Value& v : *tgt)
+  {
+    if (v.type() == Type::POINTER && v.get().p == itr)
+    {
+      v.swap(*itr);
+      return;
+    }
+  }
+  /* item has been deleted from target */
 }
 
 Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatement * rof)
@@ -237,7 +290,7 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
-      throw ParseError(EXC_PARSE_OTHER_S, "Symbol of variable required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Symbol of iterator required for FORALL.");
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
     t = p.pop();
@@ -248,7 +301,7 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS);
     /* retrieve the symbol name for a variable expression, that is required to
-     * make it safety when processing the clause of the statement */
+     * point to the target table when processing the clause of the statement */
     s->_expSymbol = s->_exp->symbol();
     /* check the type if defined */
     const Type& exp_type = s->_exp->type(ctx);
@@ -268,6 +321,10 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
         /* register symbol of intrinsic type */
         s->_var = new VariableExpression(ctx.registerSymbol(vname, exp_type.levelDown()));
     }
+    /* a progressing iterator cannot be reused in the body loop; also its type
+     * must be safe; therefore enable the safety flag for the symbol */
+    if (s->_var->symbol()->safety())
+      throw ParseError(EXC_PARSE_OTHER_S, "Cannot use a protected symbol as iterator variable.");
     if (t->code == TOKEN_KEYWORD)
     {
       if (t->text == KEYWORDS[STMT_ASC])

@@ -54,13 +54,16 @@ private:
 
   mutable struct RT
   {
-    Value * tmp = nullptr;
-    bool safety_ex_bak = false;
-    bool safety_it_bak = false;
-    Value value_it_bak = Value();
-    Integer step = 1;
+    Value * target = nullptr;
     Integer index = 0;
+    Integer step = 1;
+    Type it_type_bak = Type();
+    bool it_safety_bak = false;
+    bool ex_safety_bak = false;
   } _data;
+
+  static Value * swapValue(Collection * tgt, unsigned i, Value * itr) noexcept;
+  static void restoreValue(Collection * tgt, unsigned i, Value * itr) noexcept;
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORALLStatement * rof);
 

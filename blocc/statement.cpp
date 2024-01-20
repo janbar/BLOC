@@ -200,13 +200,14 @@ const char * Statement::HELPS[] = {
   /*DESC  */  "See statement FOR.",
   /*IS    */  "See statement FUNCTION.",
   /*RETURNS*/ "See statement FUNCTION.",
-  /*FORALL*/  "The FORALL statement provides row fetch construct. It defines a control"
-          "\nvariable that is store current index. Then block of statements after the"
+  /*FORALL*/  "The FORALL statement provides row fetch construct. It defines an iterator"
+          "\nvariable that points to current value. Then block of statements after the"
           "\nLOOP keyword will be executed until last row is reached."
           "\nThe fetch order could be specified with keywords ASC or DESC."
           "\n\nforall {var} in {table expression} [asc|desc] loop"
           "\n    [statement ...]"
-          "\nend loop;",
+          "\nend loop;"
+          "\n\nInside the loop, the target table can be modified without care.",
 };
 
 }

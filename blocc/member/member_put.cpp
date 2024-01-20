@@ -53,9 +53,9 @@ Value& MemberPUTExpression::value(Context& ctx) const
       if (!a1.isNull() && a1.collection()->table_type() == rv_type.levelDown())
       {
         if (a1.lvalue())
-          rv->at(p).swap(a1.clone());
+          rv->at(p).deref_value().swap(a1.clone());
         else
-          rv->at(p).swap(std::move(a1));
+          rv->at(p).deref_value().swap(std::move(a1));
         return val;
       }
     }
@@ -67,9 +67,9 @@ Value& MemberPUTExpression::value(Context& ctx) const
         if (!a1.isNull() && a1.tuple()->tuple_type() == rv_type.levelDown())
         {
           if (a1.lvalue())
-            rv->at(p).swap(a1.clone());
+            rv->at(p).deref_value().swap(a1.clone());
           else
-            rv->at(p).swap(std::move(a1));
+            rv->at(p).deref_value().swap(std::move(a1));
           return val;
         }
       }
@@ -77,9 +77,9 @@ Value& MemberPUTExpression::value(Context& ctx) const
       else if (a1_type == rv_type.levelDown())
       {
         if (a1.lvalue())
-          rv->at(p).swap(a1.clone());
+          rv->at(p).deref_value().swap(a1.clone());
         else
-          rv->at(p).swap(std::move(a1));
+          rv->at(p).deref_value().swap(std::move(a1));
         return val;
       }
     }
@@ -91,24 +91,24 @@ Value& MemberPUTExpression::value(Context& ctx) const
       case Type::INTEGER:
         if (a1_type == Type::NUMERIC)
         {
-          rv->at(p).swap(Value(Integer(*a1.numeric())));
+          rv->at(p).deref_value().swap(Value(Integer(*a1.numeric())));
           return val;
         }
         else if (a1.type() == Type::NO_TYPE)
         {
-          rv->at(p).swap(Value(Value::type_integer));
+          rv->at(p).deref_value().swap(Value(Value::type_integer));
           return val;
         }
         break;
       case Type::NUMERIC:
         if (a1_type == Type::INTEGER)
         {
-          rv->at(p).swap(Value(Numeric(*a1.integer())));
+          rv->at(p).deref_value().swap(Value(Numeric(*a1.integer())));
           return val;
         }
         else if (a1.type() == Type::NO_TYPE)
         {
-          rv->at(p).swap(Value(Value::type_numeric));
+          rv->at(p).deref_value().swap(Value(Value::type_numeric));
           return val;
         }
         break;
@@ -117,7 +117,7 @@ Value& MemberPUTExpression::value(Context& ctx) const
       default:
         if (a1.type() == Type::NO_TYPE)
         {
-          rv->at(p).swap(Value(rv->at(p).type()));
+          rv->at(p).deref_value().swap(Value(rv->at(p).deref_value().type()));
           return val;
         }
         break;

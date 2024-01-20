@@ -80,17 +80,17 @@ const Statement * FORStatement::doit(Context& ctx) const
   }
   else
   {
+    Integer * itr = _data.iterator->integer();
     /* var is type safe, so it can be read without care */
-    Integer * nref = _data.iterator->integer();
-    if ((_data.step > 0 && *nref >= _data.max) ||
-        (_data.step < 0 && *nref <= _data.min))
+    if ((_data.step > 0 && *itr >= _data.max) ||
+        (_data.step < 0 && *itr <= _data.min))
     {
       /* restore the safety state of the variable */
       _var->symbol()->safety(_data.safety_bak);
       ctx.unstackControl();
       return _next;
     }
-    *nref += _data.step;
+    *itr += _data.step;
   }
   try
   {

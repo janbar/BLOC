@@ -52,7 +52,7 @@ public:
     Value& val = ctx.loadVariable(_symbol);
     if (val.type() != Type::POINTER)
       return val;
-    return (val.isNull() ? val : *val.value());
+    return val.deref_value();
   }
 
   const Symbol * symbol() const override { return &_symbol; }
