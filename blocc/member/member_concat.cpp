@@ -42,7 +42,14 @@ Value& MemberCONCATExpression::value(Context& ctx) const
     if (val.isNull())
     {
       if (a0.type().level() > 0) /* null + tab */
-        return a0;
+      {
+        if (a0.lvalue())
+          val.swap(a0.clone());
+        else
+          val.swap(std::move(a0));
+        return val;
+      }
+      /* initialize new collection */
       Collection * rv;
       if (a0.type() == Type::ROWTYPE)
       {
@@ -51,13 +58,17 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         rv = new Collection(a0.tuple()->tuple_decl(), 1);
       }
       else
+      {
+        if (a0.type() == Type::NO_TYPE)
+          return val;
         rv = new Collection(a0.type().levelUp());
+      }
+      /* push item */
       if (a0.lvalue())
         rv->push_back(a0.clone());
       else
         rv->push_back(std::move(a0));
-      if (val.lvalue())
-        return ctx.allocate(Value(rv));
+      /* swap, return */
       val.swap(Value(rv));
       return val;
     }
