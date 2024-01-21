@@ -411,7 +411,7 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nrandom( [x] )",
   /*BOOL  */  "returns the boolean representation of numeric x, or the null boolean."
           "\n\nbool( [ x ] )"
-          "\n\nWhen x is 0 the boolean false is returned, else true."
+          "\n\nWhen x is 0 the boolean false is returned, else true.",
   "", "",
   /*LSUB  */  "returns left part of string x."
           "\n\nlsubstr( x , count )",
