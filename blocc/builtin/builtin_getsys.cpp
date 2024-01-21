@@ -49,6 +49,8 @@ Value& GETSYSExpression::value(Context & ctx) const
       v = Value(new Literal(Context::country()));
     else if (*(val.literal()) == "integer_max")
       v = Value(Integer(INT64_MAX));
+    else if (*(val.literal()) == "integer_min")
+      v = Value(Integer(INT64_MIN));
     else
       throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
     break;
