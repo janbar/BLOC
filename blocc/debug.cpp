@@ -65,7 +65,7 @@ static inline void __dbg_setlevel(debug_ctx_t* ctx, int level)
  */
 static inline void __dbg(const debug_ctx_t* ctx, int level, const char* fmt, va_list ap)
 {
-  if (ctx != nullptr && level <= ctx->cur_level)
+  if (ctx != nullptr)
   {
     char msg[4096];
     int len = snprintf(msg, sizeof (msg), "(%s)", ctx->name);
@@ -98,8 +98,9 @@ void DBGNone()
 
 void DBG(int level, const char* fmt, ...)
 {
+  if (level > debug_ctx.cur_level)
+    return;
   va_list ap;
-
   va_start(ap, fmt);
   __dbg(&debug_ctx, level, fmt, ap);
   va_end(ap);
