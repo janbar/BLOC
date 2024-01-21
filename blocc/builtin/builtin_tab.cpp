@@ -38,7 +38,7 @@ Value& TABExpression::value(Context & ctx) const
     return ctx.allocate(Value(_args[1]->value(ctx).type().levelUp()));
   Integer n = *a0.integer();
   if (n < 0)
-    throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
+    throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
 
   Collection * tab = nullptr;
   Type item_type;

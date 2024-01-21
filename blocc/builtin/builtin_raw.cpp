@@ -17,6 +17,7 @@
  */
 
 #include "builtin_raw.h"
+#include "blocc/value.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
@@ -61,7 +62,7 @@ Value& RAWExpression::value(Context & ctx) const
     }
 
     if (n < 0)
-      throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, val.toString().c_str());
     if (_args.size() > 1)
     {
       Value& a1 = _args[1]->value(ctx);

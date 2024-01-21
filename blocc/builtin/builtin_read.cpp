@@ -42,7 +42,7 @@ Value& READExpression::value(Context & ctx) const
   {
     Value& a1 = _args[1]->value(ctx);
     if (a1.isNull() || *a1.integer() < 0)
-      throw RuntimeError(EXC_RT_INDEX_RANGE_S, std::to_string(n).c_str());
+      throw RuntimeError(EXC_RT_INDEX_RANGE_S, a1.toString().c_str());
     n = *a1.integer();
   }
 
