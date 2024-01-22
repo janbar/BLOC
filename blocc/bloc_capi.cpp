@@ -66,32 +66,32 @@ int
 bloc_compatible() { return bloc::Context::compatible(); }
 
 void
-bloc_free_context(BLOC_CONTEXT *ctx)
+bloc_free_context(bloc_context *ctx)
 {
   if (ctx)
     delete reinterpret_cast<bloc::Context*>(ctx);
 }
 
-BLOC_CONTEXT*
+bloc_context*
 bloc_create_context(int fd_out, int fd_err)
 {
-  return reinterpret_cast<BLOC_CONTEXT*>(new bloc::Context(fd_out, fd_err));
+  return reinterpret_cast<bloc_context*>(new bloc::Context(fd_out, fd_err));
 }
 
 void
-bloc_ctx_purge(BLOC_CONTEXT *ctx)
+bloc_ctx_purge(bloc_context *ctx)
 {
   reinterpret_cast<bloc::Context*>(ctx)->purge();
 }
 
-BLOC_SYMBOL*
-bloc_ctx_register_symbol(BLOC_CONTEXT *ctx, const char *name, bloc_type type)
+bloc_symbol*
+bloc_ctx_register_symbol(bloc_context *ctx, const char *name, bloc_type type)
 {
   bloc::Type t((bloc::Type::TypeMajor)type.major, 0, type.ndim);
   try
   {
     bloc::Symbol& s = reinterpret_cast<bloc::Context*>(ctx)->registerSymbol(name, t);
-    return reinterpret_cast<BLOC_SYMBOL*>(&s);
+    return reinterpret_cast<bloc_symbol*>(&s);
   }
   catch (bloc::ParseError& pe)
   {
@@ -101,7 +101,7 @@ bloc_ctx_register_symbol(BLOC_CONTEXT *ctx, const char *name, bloc_type type)
 }
 
 bloc_bool
-bloc_ctx_store_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol, BLOC_VALUE *v)
+bloc_ctx_store_variable(bloc_context *ctx, const bloc_symbol *symbol, bloc_value *v)
 {
   try
   {
@@ -117,115 +117,92 @@ bloc_ctx_store_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol, BLOC_VALUE
   }
 }
 
-BLOC_SYMBOL*
-bloc_ctx_find_symbol(BLOC_CONTEXT *ctx, const char *name)
+bloc_symbol*
+bloc_ctx_find_symbol(bloc_context *ctx, const char *name)
 {
-  return reinterpret_cast<BLOC_SYMBOL*>(reinterpret_cast<bloc::Context*>(ctx)->findSymbol(name));
+  return reinterpret_cast<bloc_symbol*>(reinterpret_cast<bloc::Context*>(ctx)->findSymbol(name));
 }
 
-BLOC_VALUE*
-bloc_ctx_load_variable(BLOC_CONTEXT *ctx, const BLOC_SYMBOL *symbol)
+bloc_value*
+bloc_ctx_load_variable(bloc_context *ctx, const bloc_symbol *symbol)
 {
   bloc::Value& v = reinterpret_cast<bloc::Context*>(ctx)->loadVariable(
           *reinterpret_cast<const bloc::Symbol*>(symbol));
-  return reinterpret_cast<BLOC_VALUE*>(&v);
+  return reinterpret_cast<bloc_value*>(&v);
 }
 
 void
-bloc_ctx_enable_trace(BLOC_CONTEXT *ctx, bloc_bool yesno)
+bloc_ctx_enable_trace(bloc_context *ctx, bloc_bool yesno)
 {
   reinterpret_cast<bloc::Context*>(ctx)->trace(to_bool(yesno));
 }
 
 bloc_bool
-bloc_ctx_trace(BLOC_CONTEXT *ctx)
+bloc_ctx_trace(bloc_context *ctx)
 {
   return (reinterpret_cast<bloc::Context*>(ctx)->trace() ? bloc_true : bloc_false);
 }
 
 void
-bloc_ctx_purge_working_mem(BLOC_CONTEXT *ctx)
+bloc_ctx_purge_working_mem(bloc_context *ctx)
 {
   reinterpret_cast<bloc::Context*>(ctx)->purgeWorkingMemory();
 }
 
 FILE*
-bloc_ctx_out(BLOC_CONTEXT *ctx)
+bloc_ctx_out(bloc_context *ctx)
 {
   return reinterpret_cast<bloc::Context*>(ctx)->ctxout();
 }
 
 FILE*
-bloc_ctx_err(BLOC_CONTEXT *ctx)
+bloc_ctx_err(bloc_context *ctx)
 {
   return reinterpret_cast<bloc::Context*>(ctx)->ctxerr();
 }
 
 void
-bloc_free_value(BLOC_VALUE *v)
+bloc_free_value(bloc_value *v)
 {
   if (v)
     delete reinterpret_cast<bloc::Value*>(v);
 }
 
-BLOC_VALUE*
+bloc_value*
 bloc_create_boolean(bloc_bool v)
 {
-  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(bloc::Bool(to_bool(v))));
+  return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Bool(to_bool(v))));
 }
 
-BLOC_VALUE*
+bloc_value*
 bloc_create_integer(int64_t v)
 {
-  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(bloc::Integer(v)));
+  return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Integer(v)));
 }
 
-BLOC_VALUE*
+bloc_value*
 bloc_create_numeric(double v)
 {
-  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(bloc::Numeric(v)));
+  return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Numeric(v)));
 }
 
-BLOC_VALUE*
+bloc_value*
 bloc_create_literal(const char *v)
 {
-  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(new bloc::Literal(v)));
+  return reinterpret_cast<bloc_value*>(new bloc::Value(new bloc::Literal(v)));
 }
 
 
-BLOC_VALUE*
+bloc_value*
 bloc_create_tabchar(const char *v, unsigned len)
 {
   bloc::TabChar * tv = new bloc::TabChar(len);
   tv->assign(v, v + len);
-  return reinterpret_cast<BLOC_VALUE*>(new bloc::Value(tv));
+  return reinterpret_cast<bloc_value*>(new bloc::Value(tv));
 }
 
 bloc_type
-bloc_expression_type(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e)
-{
-  const bloc::Type& type = reinterpret_cast<bloc::Expression*>(e)->type(*reinterpret_cast<bloc::Context*>(ctx));
-  bloc_type t = { (bloc_type_major)type.major(), type.level() };
-  return t;
-}
-
-BLOC_VALUE*
-bloc_evaluate_expression(BLOC_CONTEXT *ctx, BLOC_EXPRESSION *e)
-{
-  try
-  {
-    bloc::Value& v = reinterpret_cast<bloc::Expression*>(e)->value(*reinterpret_cast<bloc::Context*>(ctx));
-    return reinterpret_cast<BLOC_VALUE*>(&v);
-  }
-  catch (bloc::RuntimeError& re)
-  {
-    bloc_error_set(re.what(), re.no);
-    return nullptr;
-  }
-}
-
-bloc_type
-bloc_value_type(BLOC_VALUE *v)
+bloc_value_type(bloc_value *v)
 {
   const bloc::Type& type = reinterpret_cast<bloc::Value*>(v)->type();
   bloc_type t = { (bloc_type_major)type.major(), type.level() };
@@ -233,7 +210,13 @@ bloc_value_type(BLOC_VALUE *v)
 }
 
 bloc_bool
-bloc_boolean(BLOC_VALUE* v, bloc_bool **buf)
+bloc_value_isnull(bloc_value *v)
+{
+  return (reinterpret_cast<bloc::Value*>(v)->isNull() ? bloc_true : bloc_false);
+}
+
+bloc_bool
+bloc_boolean(bloc_value* v, bloc_bool **buf)
 {
   try
   {
@@ -248,7 +231,7 @@ bloc_boolean(BLOC_VALUE* v, bloc_bool **buf)
 }
 
 bloc_bool
-bloc_integer(BLOC_VALUE* v, int64_t **buf)
+bloc_integer(bloc_value* v, int64_t **buf)
 {
   try
   {
@@ -263,7 +246,7 @@ bloc_integer(BLOC_VALUE* v, int64_t **buf)
 }
 
 bloc_bool
-bloc_numeric(BLOC_VALUE* v, double **buf)
+bloc_numeric(bloc_value* v, double **buf)
 {
   try
   {
@@ -278,7 +261,7 @@ bloc_numeric(BLOC_VALUE* v, double **buf)
 }
 
 bloc_bool
-bloc_literal(BLOC_VALUE* v, const char **buf)
+bloc_literal(bloc_value* v, const char **buf)
 {
   try
   {
@@ -294,7 +277,7 @@ bloc_literal(BLOC_VALUE* v, const char **buf)
 }
 
 bloc_bool
-bloc_tabchar(BLOC_VALUE* v, const char **buf, unsigned *len)
+bloc_tabchar(bloc_value* v, const char **buf, unsigned *len)
 {
   try
   {
@@ -310,8 +293,78 @@ bloc_tabchar(BLOC_VALUE* v, const char **buf, unsigned *len)
   }
 }
 
-BLOC_EXPRESSION*
-bloc_parse_expression(BLOC_CONTEXT *ctx, const char *text)
+bloc_bool
+bloc_table(bloc_value *v, bloc_array **array)
+{
+  try
+  {
+    bloc::Collection * tab = reinterpret_cast<bloc::Value*>(v)->collection();
+    *array = reinterpret_cast<bloc_array*>(tab);
+    return bloc_true;
+  }
+  catch (bloc::RuntimeError& re)
+  {
+    bloc_error_set(re.what(), re.no);
+    return bloc_false;
+  }
+}
+
+bloc_bool
+bloc_tuple(bloc_value *v, bloc_row **row)
+{
+  try
+  {
+    bloc::Tuple * tup = reinterpret_cast<bloc::Value*>(v)->tuple();
+    *row = reinterpret_cast<bloc_row*>(tup);
+    return bloc_true;
+  }
+  catch (bloc::RuntimeError& re)
+  {
+    bloc_error_set(re.what(), re.no);
+    return bloc_false;
+  }
+}
+
+unsigned
+bloc_array_size(bloc_array *array)
+{
+  bloc::Collection * tab = reinterpret_cast<bloc::Collection*>(array);
+  return (unsigned) tab->size();
+}
+
+bloc_bool
+bloc_array_item(bloc_array *array, unsigned index, bloc_value **v)
+{
+  bloc::Collection * tab = reinterpret_cast<bloc::Collection*>(array);
+  if (index < tab->size())
+  {
+    *v = reinterpret_cast<bloc_value*>(&tab->at(index));
+    return bloc_true;
+  }
+  return bloc_false;
+}
+
+unsigned
+bloc_tuple_size(bloc_row *row)
+{
+  bloc::Tuple * tup = reinterpret_cast<bloc::Tuple*>(row);
+  return (unsigned) tup->size();
+}
+
+bloc_bool
+bloc_tuple_item(bloc_row *row, unsigned index, bloc_value **v)
+{
+  bloc::Tuple * tup = reinterpret_cast<bloc::Tuple*>(row);
+  if (index < tup->size())
+  {
+    *v = reinterpret_cast<bloc_value*>(&tup->at(index));
+    return bloc_true;
+  }
+  return bloc_false;
+}
+
+bloc_expression*
+bloc_parse_expression(bloc_context *ctx, const char *text)
 {
   bloc::Context& _ctx = *reinterpret_cast<bloc::Context*>(ctx);
   bloc::StringReader reader(text);
@@ -321,7 +374,7 @@ bloc_parse_expression(BLOC_CONTEXT *ctx, const char *text)
     bloc_error_raz();
     bloc::Expression * e = bloc::ParseExpression::expression(*p, _ctx);
     delete p;
-    return reinterpret_cast<BLOC_EXPRESSION*>(e);
+    return reinterpret_cast<bloc_expression*>(e);
   }
   catch (bloc::ParseError& pe)
   {
@@ -332,21 +385,44 @@ bloc_parse_expression(BLOC_CONTEXT *ctx, const char *text)
 }
 
 void
-bloc_free_expression(BLOC_EXPRESSION *e)
+bloc_free_expression(bloc_expression *e)
 {
   if (e)
     delete reinterpret_cast<bloc::Expression*>(e);
 }
 
+bloc_type
+bloc_expression_type(bloc_context *ctx, bloc_expression *e)
+{
+  const bloc::Type& type = reinterpret_cast<bloc::Expression*>(e)->type(*reinterpret_cast<bloc::Context*>(ctx));
+  bloc_type t = { (bloc_type_major)type.major(), type.level() };
+  return t;
+}
+
+bloc_value*
+bloc_evaluate_expression(bloc_context *ctx, bloc_expression *e)
+{
+  try
+  {
+    bloc::Value& v = reinterpret_cast<bloc::Expression*>(e)->value(*reinterpret_cast<bloc::Context*>(ctx));
+    return reinterpret_cast<bloc_value*>(&v);
+  }
+  catch (bloc::RuntimeError& re)
+  {
+    bloc_error_set(re.what(), re.no);
+    return nullptr;
+  }
+}
+
 void
-bloc_free_executable(BLOC_EXECUTABLE *exec)
+bloc_free_executable(bloc_executable *exec)
 {
   if (exec)
     delete reinterpret_cast<bloc::Executable*>(exec);
 }
 
-BLOC_EXECUTABLE*
-bloc_parse_executable(BLOC_CONTEXT *ctx, const char *text)
+bloc_executable*
+bloc_parse_executable(bloc_context *ctx, const char *text)
 {
   try
   {
@@ -354,7 +430,7 @@ bloc_parse_executable(BLOC_CONTEXT *ctx, const char *text)
     bloc::Context& _ctx = *reinterpret_cast<bloc::Context*>(ctx);
     bloc::StringReader reader(text);
     bloc::Executable * x = bloc::Parser::parse(_ctx, &reader, bloc::StringReader::read_input);
-    return reinterpret_cast<BLOC_EXECUTABLE*>(x);
+    return reinterpret_cast<bloc_executable*>(x);
   }
   catch (bloc::ParseError& pe)
   {
@@ -364,7 +440,7 @@ bloc_parse_executable(BLOC_CONTEXT *ctx, const char *text)
 }
 
 bloc_bool
-bloc_execute(BLOC_EXECUTABLE *exec)
+bloc_execute(bloc_executable *exec)
 {
   try
   {
@@ -377,8 +453,8 @@ bloc_execute(BLOC_EXECUTABLE *exec)
   }
 }
 
-BLOC_VALUE*
-bloc_drop_returned(BLOC_CONTEXT *ctx)
+bloc_value*
+bloc_drop_returned(bloc_context *ctx)
 {
-  return reinterpret_cast<BLOC_VALUE*>(reinterpret_cast<bloc::Context*>(ctx)->dropReturned());
+  return reinterpret_cast<bloc_value*>(reinterpret_cast<bloc::Context*>(ctx)->dropReturned());
 }
