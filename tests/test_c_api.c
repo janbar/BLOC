@@ -4,19 +4,19 @@
 
 int main(int argc, char** argv)
 {
-  BLOC_CONTEXT* ctx = bloc_create_context(fileno(stdout), fileno(stderr));
+  bloc_context* ctx = bloc_create_context(fileno(stdout), fileno(stderr));
 
   printf("BLOC version    = %s\n", bloc_version());
   printf("BLOC header     = %s\n", bloc_version_header());
   printf("BLOC compatible = %d\n", bloc_compatible());
 
   {
-    BLOC_VALUE * tmp_a = bloc_create_boolean(bloc_true);
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "B", bloc_value_type(tmp_a));
+    bloc_value * tmp_a = bloc_create_boolean(bloc_true);
+    bloc_symbol * sym_a = bloc_ctx_register_symbol(ctx, "B", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
     bloc_free_value(tmp_a);
 
-    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    bloc_value * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
     bloc_bool  * val;
     if (bloc_boolean(sto_a, &val))
@@ -24,12 +24,12 @@ int main(int argc, char** argv)
   }
 
   {
-    BLOC_VALUE * tmp_a = bloc_create_integer(123456789);
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "I", bloc_value_type(tmp_a));
+    bloc_value * tmp_a = bloc_create_integer(123456789);
+    bloc_symbol * sym_a = bloc_ctx_register_symbol(ctx, "I", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
     bloc_free_value(tmp_a);
 
-    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    bloc_value * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
     int64_t * val;
     if (bloc_integer(sto_a, &val))
@@ -37,12 +37,12 @@ int main(int argc, char** argv)
   }
 
   {
-    BLOC_VALUE * tmp_a = bloc_create_numeric(1.23456);
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "N", bloc_value_type(tmp_a));
+    bloc_value * tmp_a = bloc_create_numeric(1.23456);
+    bloc_symbol * sym_a = bloc_ctx_register_symbol(ctx, "N", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
     bloc_free_value(tmp_a);
 
-    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    bloc_value * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
     double * val;
     if (bloc_numeric(sto_a, &val))
@@ -50,12 +50,12 @@ int main(int argc, char** argv)
   }
 
   {
-    BLOC_VALUE * tmp_a = bloc_create_literal("abcdefgh");
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_value_type(tmp_a));
+    bloc_value * tmp_a = bloc_create_literal("abcdefgh");
+    bloc_symbol * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
     bloc_free_value(tmp_a);
 
-    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    bloc_value * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
     const char* val;
     if (bloc_literal(sto_a, &val))
@@ -64,12 +64,12 @@ int main(int argc, char** argv)
 
   {
     char raw[8] = { 65, 0, 67, 0, 69, 0, 71, 127 };
-    BLOC_VALUE * tmp_a = bloc_create_tabchar(raw, sizeof(raw));
-    BLOC_SYMBOL * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_value_type(tmp_a));
+    bloc_value * tmp_a = bloc_create_tabchar(raw, sizeof(raw));
+    bloc_symbol * sym_a = bloc_ctx_register_symbol(ctx, "L", bloc_value_type(tmp_a));
     bloc_ctx_store_variable(ctx, sym_a, tmp_a);
     bloc_free_value(tmp_a);
 
-    BLOC_VALUE * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+    bloc_value * sto_a = bloc_ctx_load_variable(ctx, sym_a);
 
     const char* val;
     unsigned len;
@@ -84,8 +84,8 @@ int main(int argc, char** argv)
 
   {
     double * val;
-    BLOC_EXPRESSION * e = bloc_parse_expression(ctx, "sqrt( sin(3*pi/4)**2 + cos(3*pi/4)**2 )\n");
-    BLOC_VALUE * v;
+    bloc_expression * e = bloc_parse_expression(ctx, "sqrt( sin(3*pi/4)**2 + cos(3*pi/4)**2 )\n");
+    bloc_value * v;
     if (e && (v = bloc_evaluate_expression(ctx, e)) && bloc_numeric(v, &val))
     {
       printf("expr     = %3f\n", *val);
@@ -110,12 +110,12 @@ int main(int argc, char** argv)
 
   {
     bloc_ctx_purge(ctx);
-    BLOC_VALUE * tmp_1 = bloc_create_integer(100);
-    BLOC_SYMBOL * sym_1 = bloc_ctx_register_symbol(ctx, "$1", bloc_value_type(tmp_1));
+    bloc_value * tmp_1 = bloc_create_integer(100);
+    bloc_symbol * sym_1 = bloc_ctx_register_symbol(ctx, "$1", bloc_value_type(tmp_1));
     bloc_ctx_store_variable(ctx, sym_1, tmp_1);
     bloc_free_value(tmp_1);
 
-    BLOC_EXECUTABLE * x = bloc_parse_executable(ctx,
+    bloc_executable * x = bloc_parse_executable(ctx,
           "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
           "for j in 2 to i/2 loop\nif i%j == 0 then b=false; break; end if;\n"
           "end loop;\nif b then put i \" \"; cnt=cnt+1; end if;\nend loop;\nreturn cnt;");
@@ -129,7 +129,7 @@ int main(int argc, char** argv)
       }
       else
       {
-        BLOC_VALUE * r = bloc_drop_returned(ctx);
+        bloc_value * r = bloc_drop_returned(ctx);
         if (r)
         {
           int64_t * val;
@@ -181,6 +181,82 @@ int main(int argc, char** argv)
     {
       printf("ERROR: %s\n", bloc_strerror());
     }
+
+    bloc_ctx_purge(ctx);
+    x = bloc_parse_executable(ctx,
+          "a=tab(10, tab(5, tup(1234, 1.234, true, \"abcdefgh\")));");
+    if (x)
+    {
+      if (bloc_execute(x))
+      {
+        bloc_symbol * a = bloc_ctx_find_symbol(ctx, "A");
+        if (!a)
+          printf("ERROR: Symbol A not found\n");
+        else
+        {
+          /* get value of variable A */
+          bloc_value * v = bloc_ctx_load_variable(ctx, a);
+          if (!v || bloc_value_isnull(v))
+            printf("ERROR: A is NULL\n");
+          else if (bloc_value_type(v).ndim != 2)
+            printf("ERROR: A is not array level 2\n");
+          else
+          {
+            bloc_array * tab1 = NULL;
+            bloc_value * i1 = NULL;
+            if (!bloc_table(v, &tab1) || !bloc_array_item(tab1, 5, &i1) ||
+                    bloc_value_type(i1).ndim != 1)
+              printf("ERROR: A[5] is not table level 1\n");
+            else
+            {
+              bloc_array * tab2 = NULL;
+              bloc_value * i2 = NULL;
+              if (!bloc_table(i1, &tab2) || !bloc_array_item(tab2, 2, &i2) ||
+                      bloc_value_type(i2).major != ROWTYPE ||
+                      bloc_value_type(i2).ndim > 0)
+                printf("ERROR: A[5][2] is not tuple\n");
+              else
+              {
+                struct {
+                  int64_t     *i;
+                  double      *d;
+                  bloc_bool   *b;
+                  const char  *s;
+                } data;
+                bloc_row * row = NULL;
+                bloc_value * vr = NULL;;
+                /* assign tuple items to data members */
+                if (bloc_tuple(i2, &row) &&             /* check get tuple  */
+                        bloc_tuple_item(row, 0, &vr) && /* check get #0     */
+                        !bloc_value_isnull(vr) &&       /* check not null   */
+                        bloc_integer(vr, &data.i) &&    /* check get value  */
+                        bloc_tuple_item(row, 1, &vr) &&
+                        !bloc_value_isnull(vr) &&
+                        bloc_numeric(vr, &data.d) &&
+                        bloc_tuple_item(row, 2, &vr) &&
+                        !bloc_value_isnull(vr) &&
+                        bloc_boolean(vr, &data.b) &&
+                        bloc_tuple_item(row, 3, &vr) &&
+                        !bloc_value_isnull(vr) &&
+                        bloc_literal(vr, &data.s))
+                {
+                  printf("[5][2]   = %d, %g, %d, %s\n",
+                         (int)*data.i, *data.d, (int)*data.b, data.s);
+                }
+                else
+                  printf("ERROR: Invalid data\n");
+              }
+            }
+          }
+        }
+      }
+      else
+        printf("ERROR: %s\n", bloc_strerror());
+
+      bloc_free_executable(x);
+    }
+    else
+      printf("ERROR: %s\n", bloc_strerror());
   }
 
   bloc_free_context(ctx);
