@@ -28,8 +28,6 @@
 namespace bloc
 {
 
-class StaticExpression;
-
 class Collection
 {
 public:
