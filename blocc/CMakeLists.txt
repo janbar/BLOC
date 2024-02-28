@@ -78,7 +78,6 @@ file(GLOB blocc_PUBLIC_HEADERS
   expression.h
   expression_builtin.h
   expression_member.h
-  functor_manager.h
   operator.h
   plugin.h
   plugin_interface.h
@@ -109,6 +108,7 @@ file(GLOB blocc_PRIVATE_HEADERS
   expression_literal.h
   expression_numeric.h
   expression_variable.h
+  functor_manager.h
   statement_begin.h
   statement_break.h
   statement_continue.h

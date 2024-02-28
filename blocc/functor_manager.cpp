@@ -17,6 +17,8 @@
  */
 
 #include "functor_manager.h"
+#include "context.h"
+#include "statement.h"
 #include "expression_variable.h"
 #include "debug.h"
 
@@ -62,26 +64,6 @@ Functor::Env Functor::createEnv(Context& parent, const std::vector<Expression*>&
     VariableExpression(params[i]).store(*_ctx, parent, pvals[i]);
 
   return Env(*this, _ctx);
-}
-
-FunctorManager * FunctorManager::_instance = nullptr;
-
-FunctorManager::~FunctorManager()
-{
-}
-
-FunctorManager& FunctorManager::instance()
-{
-  if (_instance)
-    return *_instance;
-  return *(_instance = new FunctorManager());
-}
-
-void FunctorManager::destroy()
-{
-  if (_instance)
-    delete _instance;
-  _instance = nullptr;
 }
 
 const FunctorManager::entry FunctorManager::findDeclaration(const std::string& name, unsigned param_count)

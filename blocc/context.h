@@ -29,11 +29,12 @@
 #include <map>
 #include <algorithm>
 #include <chrono>
-#include "debug.h"
+
 namespace bloc
 {
 
 class Statement;
+class FunctorManager;
 
 class Context
 {
@@ -41,17 +42,17 @@ class Context
 public:
   virtual ~Context();
   Context();
-  Context(const Context&) = delete;
+  explicit Context(const Context&) = delete;
   Context& operator=(const Context&) = delete;
-  explicit Context(int fd_out, int fd_err);
+  Context(int fd_out, int fd_err);
 
   /**
    * Make a shallow clone
-   * @param ctx root context
+   * @param ctx context
    * @param recursion level of recursion
    * @param trace enable trace
    */
-  explicit Context(const Context& ctx, uint8_t recursion, bool trace);
+  Context(const Context& ctx, uint8_t recursion, bool trace);
 
   /**
    * Purge the context including all symbols and storage pool.
@@ -121,6 +122,23 @@ public:
   void describeSymbol(const Symbol& symbol);
 
   void dumpVariables();
+
+
+  /**************************************************************************/
+  /* Functors                                                               */
+  /**************************************************************************/
+
+  /**
+   * Returns the root manager of this
+   */
+  FunctorManager& functorManager();
+
+  /**
+   * Create a child context from this
+   */
+  Context * createChild();
+
+  void dumpFunctors();
 
   /**************************************************************************/
   /* Control and stack                                                      */
@@ -324,6 +342,8 @@ public:
   static double random(double max);
 
 private:
+  Context * _root;
+  FunctorManager * _fctm = nullptr;
   std::chrono::system_clock::time_point _ts_init = std::chrono::system_clock::now();
 
   /* memory slots */

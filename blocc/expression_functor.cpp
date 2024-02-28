@@ -88,10 +88,10 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, const std:
       }
     }
 
-    const FunctorManager::entry& fe = FunctorManager::instance().findDeclaration(name, args.size());
-    if (fe != FunctorManager::instance().npos())
+    const FunctorManager::entry& fe = ctx.functorManager().findDeclaration(name, args.size());
+    if (fe != ctx.functorManager().npos())
       return new FunctorExpression(*fe, std::move(args));
-    if (FunctorManager::instance().exists(name))
+    if (ctx.functorManager().exists(name))
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, name.c_str());
     throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, name.c_str());
   }

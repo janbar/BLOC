@@ -39,7 +39,6 @@
 #include <blocc/expression_builtin.h>
 #include <blocc/expression_member.h>
 #include <blocc/plugin_manager.h>
-#include <blocc/functor_manager.h>
 #include <blocc/operator.h>
 #include <blocc/collection.h>
 #include <blocc/tuple.h>
@@ -414,23 +413,6 @@ static void print_btml(const void * buf, unsigned len)
     PRINTBUF(NORM, sizeof(NORM), STDOUT);
 }
 
-static void describe_all_functor()
-{
-  for (const bloc::FunctorPtr& func : bloc::FunctorManager::instance().reportDeclarations())
-  {
-    PRINT1("%s (", func->name.c_str());
-    bool n = false;
-    for (const bloc::Symbol& p : func->params)
-    {
-      if (n)
-        PRINT(",");
-      PRINT(p.name().c_str());
-      n = true;
-    }
-    PRINT1(") returns %s\n", func->returns.typeName().c_str());
-  }
-}
-
 static void describe_module(unsigned type_id)
 {
   char buf[80];
@@ -649,7 +631,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     if (g_has_color)
       PRINTBUF(NORM, sizeof(NORM), STDOUT);
     FLUSHOUT;
-    describe_all_functor();
+    ctx.dumpFunctors();
     if (g_has_color)
       PRINTBUF(BOLD, sizeof(BOLD), STDOUT);
     PRINT("\nvariables:\n");

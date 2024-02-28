@@ -40,8 +40,8 @@ FUNCTIONStatement::~FUNCTIONStatement()
 
 const Statement * FUNCTIONStatement::doit(Context& ctx) const
 {
-  FunctorManager::entry fe = FunctorManager::instance().findDeclaration(_functor->name, _functor->params.size());
-  if (fe == FunctorManager::instance().npos())
+  FunctorManager::entry fe = ctx.functorManager().findDeclaration(_functor->name, _functor->params.size());
+  if (fe == ctx.functorManager().npos())
     throw RuntimeError(EXC_RT_INTERNAL_ERROR_S, _functor->name.c_str());
   *fe = _functor;
   return _next;
@@ -94,8 +94,8 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     fct->name = t->text;
     std::transform(fct->name.begin(), fct->name.end(), fct->name.begin(), ::toupper);
 
-    /* create the private context of the functor */
-    fct->ctx = new Context(::fileno(ctx.ctxout()), ::fileno(ctx.ctxerr()));
+    /* create the private context of the functor as child context */
+    fct->ctx = ctx.createChild();
     /* parsing mode is always enabled for the private context */
     fct->ctx->parsingBegin();
 
@@ -160,7 +160,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     /* before parsing the body, declare itself to allow recursion.
      * the previous declaration is backed up, and should be restored when
      * throwing any exception */
-    FunctorManager::entry fe = FunctorManager::instance().createOrReplace(fct->name, fct->params);
+    FunctorManager::entry fe = ctx.functorManager().createOrReplace(fct->name, fct->params);
     rollback = true;
     fe->swap(fct);
     /* parse body or throws */
@@ -171,7 +171,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
   {
     DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
     if (rollback)
-      FunctorManager::instance().rollback();
+      ctx.functorManager().rollback();
     throw;
   }
   return nullptr;

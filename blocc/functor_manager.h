@@ -19,8 +19,6 @@
 #ifndef FUNCTOR_MANAGER_H_
 #define FUNCTOR_MANAGER_H_
 
-#include "context.h"
-#include "statement.h"
 #include "expression.h"
 
 #include <string>
@@ -31,6 +29,9 @@
 
 namespace bloc
 {
+
+class Statement;
+class Context;
 
 struct Functor
 {
@@ -73,11 +74,8 @@ class FunctorManager
 {
 
 public:
-  ~FunctorManager();
-
-  static FunctorManager& instance();
-
-  static void destroy();
+  FunctorManager() = default;
+  ~FunctorManager() = default;
 
   typedef std::forward_list<FunctorPtr> container;
   typedef container::iterator entry;
@@ -107,9 +105,6 @@ public:
   void rollback();
 
 private:
-  FunctorManager() = default;
-
-  static FunctorManager * _instance;
   container _declarations;
   FunctorPtr _backed;
 };

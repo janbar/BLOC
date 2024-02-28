@@ -25,9 +25,11 @@
 
 #include "context.h"
 #include "statement.h"
+#include "functor_manager.h"
 #include "exception_parse.h"
 #include "collection.h"
 #include "tuple.h"
+#include "debug.h"
 
 #include <cstdio>
 #include <cstring>
@@ -61,12 +63,14 @@ int Context::compatible()
 }
 
 Context::Context()
+: _root(this)
 {
   _sout = ::fdopen(::dup(STDOUT_FILENO), "w");
   _serr = _sout;
 }
 
 Context::Context(int fd_out, int fd_err)
+: _root(this)
 {
   _sout = ::fdopen(::dup(fd_out), "w");
   if (fd_err == fd_out)
@@ -84,7 +88,7 @@ Context::~Context()
 }
 
 Context::Context(const Context& ctx, uint8_t recursion, bool trace)
-: _trace(trace), _recursion(recursion)
+: _root(ctx._root), _trace(trace), _recursion(recursion)
 {
   /* duplicate file descriptors */
   _sout = ::fdopen(::dup(::fileno(ctx._sout)), "w");
@@ -104,6 +108,9 @@ void Context::purge()
   if (_returned)
     delete _returned;
   _returned = nullptr;
+  if (_fctm)
+    delete _fctm;
+  _fctm = nullptr;
   /* clear temporary pool */
   _temporary_storage.purge();
   /* clear storage pool */
@@ -315,6 +322,42 @@ void Context::dumpVariables()
 {
   for (MemorySlot& e : _storage_pool)
     describeSymbol(*e.symbol);
+}
+
+FunctorManager& Context::functorManager()
+{
+  /* nota: _root is never null */
+  if (_root->_fctm == nullptr)
+    _root->_fctm = new FunctorManager();
+  return *(_root->_fctm);
+}
+
+Context * Context::createChild()
+{
+  Context * child = new Context(::fileno(_sout), ::fileno(_serr));
+  child->_root = this->_root;
+  return child;
+}
+
+void Context::dumpFunctors()
+{
+  if (_fctm)
+  {
+    for (const FunctorPtr& func : _fctm->reportDeclarations())
+    {
+      fprintf(_sout, "%s (", func->name.c_str());
+      bool n = false;
+      for (const bloc::Symbol& p : func->params)
+      {
+        if (n)
+          fputc(',', _sout);
+        fputs(p.name().c_str(), _sout);
+        n = true;
+      }
+      fprintf(_sout, ") returns %s\n", func->returns.typeName().c_str());
+      fflush(_sout);
+    }
+  }
 }
 
 /**************************************************************************/

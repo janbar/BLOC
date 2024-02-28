@@ -71,6 +71,12 @@ void Executable::unparse(FILE * out)
       for (size_t i = 1; i < _context.execLevel(); ++i) fputs(Parser::INDENT, out);
       s->unparse(_context, out);
       break;
+    /* declaration of functor is on top level */
+    case Statement::STMT_FUNCTION:
+      s->unparse(_context, out);
+      fputc(Parser::SEPARATOR, out);
+      fputc(Parser::NEWLINE, out);
+      break;
     default:
       for (size_t i = 0; i < _context.execLevel(); ++i) fputs(Parser::INDENT, out);
       s->unparse(_context, out);

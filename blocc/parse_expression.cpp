@@ -196,7 +196,7 @@ Expression * ParseExpression::element()
         /* finally it should be a symbol */
         /* all names are declared in upper case, so now transform the keyword */
         std::transform(t->text.begin(), t->text.end(), t->text.begin(), ::toupper);
-        if (FunctorManager::instance().exists(t->text))
+        if (ctx.functorManager().exists(t->text))
           result = FunctorExpression::parse(p, ctx, t->text);
         else
           result = VariableExpression::parse(p, ctx, t->text);
