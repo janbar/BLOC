@@ -40,11 +40,14 @@ Value& FunctorExpression::value(Context& ctx) const
   auto env = _functor->createEnv(ctx, _args);
   _functor->body->doit(env.context());
   Value * ret = env.context().dropReturned();
-  if (ret == nullptr)
-    throw RuntimeError(EXC_RT_NO_RETURN_VALUE);
-  Value& val = ctx.allocate(std::move(*ret));
-  delete ret;
-  return val;
+  if (ret != nullptr)
+  {
+    Value& val = ctx.allocate(std::move(*ret));
+    delete ret;
+    return val;
+  }
+  /* do not throw EXC_RT_NO_RETURN_VALUE */
+  return ctx.allocate(Value());
 }
 
 std::string FunctorExpression::unparse(Context& ctx) const
