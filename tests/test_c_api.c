@@ -261,5 +261,6 @@ int main(int argc, char** argv)
 
   bloc_free_context(ctx);
 
+  bloc_deinit_plugins();
   return EXIT_SUCCESS;
 }

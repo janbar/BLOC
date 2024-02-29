@@ -75,6 +75,12 @@ bloc_version_header();
 LIBBLOC_API int
 bloc_compatible();
 
+/**
+ * Unload all imported modules; It should be called on program exit.
+ */
+LIBBLOC_API void
+bloc_deinit_plugins();
+
 /* */
 
 LIBBLOC_API void

@@ -24,6 +24,7 @@
 #include "exception_parse.h"
 #include "parse_expression.h"
 #include "parse_statement.h"
+#include "plugin_manager.h"
 #include "string_reader.h"
 #include "collection.h"
 #include "tuple.h"
@@ -64,6 +65,9 @@ bloc_version_header() { return bloc::Context::versionHeader(); }
 
 int
 bloc_compatible() { return bloc::Context::compatible(); }
+
+void
+bloc_deinit_plugins() { bloc::PluginManager::destroy(); }
 
 void
 bloc_free_context(bloc_context *ctx)
