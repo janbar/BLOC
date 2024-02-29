@@ -1,12 +1,13 @@
 
 ###############################################################################
-# set lib version here
-set (BLOCC_LIB_VERSION "2.0.9")
-set (BLOCC_LIB_SOVERSION 2)
+# core library version must be set
+if(NOT BLOC_LIB_VERSION OR NOT BLOC_LIB_SOVERSION)
+  message(FATAL_ERROR "Core library version not set")
+endif()
 
 add_definitions(
-  "-DLIBVERSION=\"${BLOCC_LIB_VERSION}\""
-  "-DLIBSOVERSION=\"${BLOCC_LIB_SOVERSION}\""
+  "-DLIBVERSION=\"${BLOC_LIB_VERSION}\""
+  "-DLIBSOVERSION=\"${BLOC_LIB_SOVERSION}\""
   "-DLIB_DLL_EXPORTS"
 )
 
@@ -142,15 +143,15 @@ endif()
 
 add_library(blocc SHARED ${blocc_SOURCES})
 
-if (MSVC)
+if(MSVC)
   target_link_libraries (blocc ws2_32)
-else ()
+else()
   target_link_libraries (blocc m dl)
-endif ()
+endif()
 
 set_target_properties(blocc PROPERTIES
-  VERSION "${BLOCC_LIB_VERSION}"
-  SOVERSION "${BLOCC_LIB_SOVERSION}"
+  VERSION "${BLOC_LIB_VERSION}"
+  SOVERSION "${BLOC_LIB_SOVERSION}"
 )
 
 # Support building as a subproject of a larger cmake project

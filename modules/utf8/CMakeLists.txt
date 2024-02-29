@@ -1,3 +1,8 @@
+###############################################################################
+# core library version must be set
+if(NOT BLOC_LIB_SOVERSION)
+  message(FATAL_ERROR "Core library version not set")
+endif()
 
 # build module "utf8"
 file(GLOB bloc_utf8_SOURCES plugin_utf8.cpp utf8helper.cpp utf8helper_charmap.cpp)
@@ -8,7 +13,7 @@ add_dependencies(bloc_utf8 blocc)
 target_link_libraries(bloc_utf8 blocc)
 
 set_target_properties(bloc_utf8 PROPERTIES
-  SOVERSION "2"
+  SOVERSION ${BLOC_LIB_SOVERSION}
 )
 
 ###############################################################################

@@ -1,3 +1,8 @@
+###############################################################################
+# core library version must be set
+if(NOT BLOC_LIB_SOVERSION)
+  message(FATAL_ERROR "Core library version not set")
+endif()
 
 # build module "file"
 file(GLOB bloc_file_SOURCES plugin_file.cpp)
@@ -8,7 +13,7 @@ add_dependencies(bloc_file blocc)
 target_link_libraries(bloc_file blocc)
 
 set_target_properties(bloc_file PROPERTIES
-  SOVERSION "2"
+  SOVERSION ${BLOC_LIB_SOVERSION}
 )
 
 ###############################################################################

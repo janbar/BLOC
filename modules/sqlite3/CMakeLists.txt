@@ -1,3 +1,8 @@
+###############################################################################
+# core library version must be set
+if(NOT BLOC_LIB_SOVERSION)
+  message(FATAL_ERROR "Core library version not set")
+endif()
 
 # build module "sqlite3"
 file(GLOB bloc_sqlite3_SOURCES plugin_sqlite3.cpp)
@@ -12,7 +17,7 @@ if(SQLite3_FOUND)
   target_link_libraries(bloc_sqlite3 blocc ${SQLite3_LIBRARIES})
 
   set_target_properties(bloc_sqlite3 PROPERTIES
-    SOVERSION "2"
+    SOVERSION ${BLOC_LIB_SOVERSION}
   )
 else()
   message(STATUS "Package sqlite3 not found")

@@ -19,6 +19,10 @@ if(MSVC)
   configure_msvc_runtime()
 endif()
 
+# set lib version here
+set (BLOC_LIB_VERSION "2.1.0")
+set (BLOC_LIB_SOVERSION 2)
+
 add_subdirectory (blocc)
 add_subdirectory (apps)
 add_subdirectory (modules)

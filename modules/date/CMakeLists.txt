@@ -1,3 +1,8 @@
+###############################################################################
+# core library version must be set
+if(NOT BLOC_LIB_SOVERSION)
+  message(FATAL_ERROR "Core library version not set")
+endif()
 
 set (CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -50,7 +55,7 @@ add_dependencies(bloc_date blocc)
 target_link_libraries(bloc_date blocc)
 
 set_target_properties(bloc_date PROPERTIES
-  SOVERSION "2"
+  SOVERSION ${BLOC_LIB_SOVERSION}
 )
 
 ###############################################################################
