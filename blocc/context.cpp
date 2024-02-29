@@ -283,7 +283,7 @@ void Context::describeSymbol(const Symbol& symbol)
 {
   Value& var = loadVariable(symbol);
 
-  fprintf(_sout, "[%04x] %s is ", symbol.id(), symbol.name().c_str());
+  fprintf(_sout, "%04x: %s is ", symbol.id(), symbol.name().c_str());
   if (var.type() == Type::NO_TYPE)
     fprintf(_sout, "%s\n", symbol.typeName().c_str());
   else
