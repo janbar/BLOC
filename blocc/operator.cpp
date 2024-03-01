@@ -28,7 +28,7 @@ const char * Operator::OPVALS[] = {
   "<<",       ">>",       ".",        "",         "",
   "==",       "!=",       "<",        "<=",       ">",
   ">=",       "",         "",         "",         "",
-  "and",      "or",       "xor",      "!",        "",
+  "and",      "or",       "xor",      "not",      "",
   "matches",
 };
 
@@ -71,7 +71,7 @@ const char * Operator::HELPS[] = {
   "logical AND ( x && y ), alias ( x and y )",
   "logical inclusive OR ( x || y ), alias ( x or y )",
   "logical exclusive OR ( x xor y )",
-  "logical negation ( !x )",
+  "logical negation ( !x ), alias ( not x )",
   "",
   "regular expression ( x matches y )",
 };
