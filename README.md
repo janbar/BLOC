@@ -37,3 +37,42 @@ for i in 1 to 1000 loop
     if b then print i; end if;
 end loop;
 ```
+And create your customized function.
+```
+function tokenize(buf, delim, trimnull) returns table is
+begin
+  t = tab(0, str()); /* The table will be returned */
+  p = 0; /* The current position in buf */
+  s = delim.count();
+  while true loop /* Or use limit: for i in 1 to 256 loop */
+    n = strpos(buf,delim,p);
+    if isnull(n) then
+      break;
+    end if;
+    t.concat(substr(buf,p,n-p));
+    p = n+s;
+    while (trimnull and strpos(buf,delim,p) == p) loop
+      p=p+s;
+    end loop;
+  end loop;
+  if not trimnull or p < buf.count() then
+    t.concat(substr(buf,p));
+  end if;
+  return t;
+end;
+
+function tokenize(buf, delim) returns table is begin
+  return tokenize(buf,delim,false);
+end;
+
+function tokenize(buf) returns table is begin
+  return tokenize(buf," ",true);
+end;
+
+
+forall e in tokenize("abcd  1234 efgh   6789 ") loop print e; end loop;
+```
+Learn more about typing:
+`help type`, `help function`, `help table`, `help string`, `help while`,
+`help strpos`, `help substr` ...
+
