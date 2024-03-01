@@ -20,7 +20,7 @@ $Bsave$N {path}
     Save statements buffer to file. See command 'load'.
 
 $Bdump$N
-    Describe all variables in memory.
+    List all functions, and variables in memory.
 
 $Bdesc$N {VARIABLE NAME}
     Describe variable.
@@ -34,5 +34,5 @@ $B=$N {EXPRESSION}
 
 $Bhelp$N {keyword}
     Show help about keyword to follow. Keyword could be the name of any
-    available statement or function, a category among statement, builtin,
+    available statement or command, a category among statement, builtin,
     expression, operator, type, or variable, else an imported module.
