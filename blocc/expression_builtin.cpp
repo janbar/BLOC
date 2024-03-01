@@ -434,8 +434,9 @@ const char * BuiltinExpression::HELPS[] = {
   /*LOWER */  "convert any uppercase letters in string x to lowercase letters."
           "\n\nlower( x )",
   /*STRPOS*/  "finds the position of the first occurrence of the string y starting"
-          "\nat position z, inside the string x."
-          "\n\nstrpos( x , y [, z] )",
+          "\nat position z, inside the string x. If none then null is returned."
+          "\n\nstrpos( x , y [, z] )"
+          "\n\nSee builtin isnull.",
   /*REPSTR*/  "returns a string from x with all occurences of y replaced by z."
           "\n\nreplace( x , y , z)",
   /*SUBRAW*/  "returns a part of bytes array x."
