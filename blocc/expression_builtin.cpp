@@ -298,9 +298,10 @@ void BuiltinExpression::assertClosedFunction(Parser& p, Context& ctx, FUNCTION f
 }
 
 const char * BuiltinExpression::HELPS[] = {
-  /*NIL   */  "is the typeless null value."
-          "\n\nSee bool(), int(), num(), str(), raw(), tup() or tab() to provide a"
-          "\ntype qualified null value.",
+  /*NIL   */  "is the typeless null value. You can use the builtin isnull( x ) to check"
+          "\nwhether a value is null or not."
+          "\n\nSee bool(), int(), num(), str(), raw(), tup() or tab() to provide a type"
+          "\nqualified null value.",
   /*MAX   */  "returns the largest value among numbers x and y."
           "\n\nmax( x , y )",
   /*MIN   */  "returns the smallest value among numbers x and y."
