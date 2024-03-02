@@ -285,6 +285,23 @@ bloc_execute(bloc_executable *exec);
 LIBBLOC_API bloc_value*
 bloc_drop_returned(bloc_context *ctx);
 
+/**
+ * Stop running executable or expression. The context won't be reusable until
+ * the purge or a reset of the stop condition.
+ * @param ctx the running context
+ * @see bloc_purge
+ * @see bloc_reset_stop
+ */
+LIBBLOC_API void
+bloc_break(bloc_context *ctx);
+
+/**
+ * Reset the stop condition of context
+ * @param ctx the stopped context
+ */
+LIBBLOC_API void
+bloc_reset_stop(bloc_context *ctx);
+
 #ifdef __cplusplus
 }
 #endif

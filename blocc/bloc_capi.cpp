@@ -462,3 +462,15 @@ bloc_drop_returned(bloc_context *ctx)
 {
   return reinterpret_cast<bloc_value*>(reinterpret_cast<bloc::Context*>(ctx)->dropReturned());
 }
+
+void
+bloc_break(bloc_context *ctx)
+{
+  reinterpret_cast<bloc::Context*>(ctx)->returnCondition(true);
+}
+
+void
+bloc_reset_stop(bloc_context *ctx)
+{
+  reinterpret_cast<bloc::Context*>(ctx)->returnCondition(false);
+}
