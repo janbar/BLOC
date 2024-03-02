@@ -29,6 +29,7 @@
 #include <blocc/exception_runtime.h>
 #include <blocc/string_reader.h>
 #include <blocc/plugin_manager.h>
+#include <blocc/collection.h>
 #include <blocc/debug.h>
 
 #include "main_options.h"
@@ -91,7 +92,7 @@ int main(int argc, char **argv) {
   FILE * outfile = STDOUT;
 
   MainOptions options;
-  std::vector<std::string> prog;
+  std::vector<bloc::Value> prog;
   const char * bad = getCmd(argv + 1, argv + argc, options, prog);
   if (bad != nullptr)
   {
@@ -114,14 +115,14 @@ int main(int argc, char **argv) {
   /* run command-line */
   if (options.docli || prog.empty())
   {
-    cli_parser(options, prog);
+    cli_parser(options, std::move(prog));
   }
   /* processing expression */
   else if (options.doexp)
   {
     bloc::StringReader reader;
-    for (const auto& arg : prog)
-      reader.append(arg).append(" ");
+    for (bloc::Value& arg : prog)
+      reader.append(*arg.literal()).append(" ");
     /* mark the end of expression: could be semi-colon or nl */
     reader.append(";");
     bloc::Context ctx(::fileno(STDOUT), ::fileno(STDERR));
@@ -161,26 +162,28 @@ int main(int argc, char **argv) {
       open_files.push_front(AutoFILEClose(outfile));
     }
     /* setup prog stream */
-    if (prog[0] == "-")
+    if (*prog[0].literal() == "-")
       progfile = stdin;
     else
     {
-      progfile = ::fopen(prog[0].c_str(), "r");
+      progfile = ::fopen(prog[0].literal()->c_str(), "r");
       if (!progfile)
       {
-        PRINT1("Failed to open file '%s' for read.", prog[0].c_str());
+        PRINT1("Failed to open file '%s' for read.", prog[0].literal()->c_str());
         return EXIT_FAILURE;
       }
       open_files.push_front(AutoFILEClose(progfile));
     }
 
     bloc::Context ctx(::fileno(outfile), ::fileno(STDERR));
-    /* load args values into context as variables $0..$n */
-    for (int i = 0; i < prog.size(); ++i)
-    {
-      const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
-      ctx.storeVariable(symbol, bloc::Value(new bloc::Literal(prog[i])));
-    }
+
+    /* load arguments 1..n into the context, as table named $ARG */
+    bloc::Collection * c_arg = new bloc::Collection(bloc::Value::type_literal.levelUp());
+    for (auto it = ++prog.begin(); it != prog.end(); ++it)
+      c_arg->push_back(std::move(*it));
+    const bloc::Symbol& c_sym = ctx.registerSymbol(std::string("$ARG"), c_arg->table_type());
+    ctx.storeVariable(c_sym, bloc::Value(c_arg));
+
     bloc::Executable * exec = nullptr;
     try { exec = bloc::Parser::parse(ctx, progfile, &read_file); }
     catch (bloc::ParseError& pe)

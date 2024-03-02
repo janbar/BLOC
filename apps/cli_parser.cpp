@@ -119,6 +119,7 @@ enum FG
 
 static bool g_has_color = false;
 
+static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args);
 static void read_input(void * handle, char * buf, int * len, int max_size);
 static CMD find_cmd(const std::string& c);
 static void set_color(enum FG c);
@@ -133,7 +134,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
 
 static breaker_t g_breaker;
 
-void cli_parser(const MainOptions& options, const std::vector<std::string>& args)
+void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
 {
   /* first check for virtual terminal and colored output */
   if (options.color)
@@ -162,16 +163,11 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   sh.catchSignal(SIGINT);
 #endif
 
-  /* load args values into context as variables $1..$n */
-  for (int i = 0; i < args.size(); ++i)
-  {
-    const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i+1)), bloc::Type::LITERAL);
-    ctx.storeVariable(symbol, bloc::Value(new bloc::Literal(args[i])));
-  }
   bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &read_input);
   if (!p)
     return;
 
+  load_args(ctx, std::move(args));
   std::list<const bloc::Statement*> statements;
 
   while (p->state() != bloc::Parser::ABORT)
@@ -268,6 +264,15 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   sh.omitSignal(SIGINT);
   sh.setCallback(nullptr, nullptr);
 #endif
+}
+
+static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args)
+{
+  /* load arguments into the context, as table named $ARG */
+  bloc::Collection * c = new bloc::Collection(
+          bloc::Value::type_literal.levelUp(), std::move(args));
+  const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$ARG"), c->table_type());
+  ctx.storeVariable(symbol, bloc::Value(c));
 }
 
 static void read_input(void * handle, char * buf, int * len, int max_size)
