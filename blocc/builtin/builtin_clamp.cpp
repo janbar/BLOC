@@ -48,7 +48,7 @@ Value& CLAMPExpression::value(Context & ctx) const
       Integer z = *a2.integer();
       if (x < y)
         v = Value(y);
-      if (x > z)
+      else if (x > z)
         v = Value(z);
       else
         v = Value(x);
@@ -63,7 +63,7 @@ Value& CLAMPExpression::value(Context & ctx) const
       Numeric z = *a2.numeric();
       if (x < y)
         v = Value(y);
-      if (x > z)
+      else if (x > z)
         v = Value(z);
       else
         v = Value(x);
