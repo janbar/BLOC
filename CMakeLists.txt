@@ -20,7 +20,7 @@ if(MSVC)
 endif()
 
 # set lib version here
-set (BLOC_LIB_VERSION "2.2.0")
+set (BLOC_LIB_VERSION "2.2.1")
 set (BLOC_LIB_SOVERSION 2)
 
 add_subdirectory (blocc)
