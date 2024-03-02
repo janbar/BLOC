@@ -162,10 +162,10 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   sh.catchSignal(SIGINT);
 #endif
 
-  /* load args values into context as variables $0..$n */
+  /* load args values into context as variables $1..$n */
   for (int i = 0; i < args.size(); ++i)
   {
-    const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i)), bloc::Type::LITERAL);
+    const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$").append(std::to_string(i+1)), bloc::Type::LITERAL);
     ctx.storeVariable(symbol, bloc::Value(new bloc::Literal(args[i])));
   }
   bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &read_input);
