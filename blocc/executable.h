@@ -44,7 +44,7 @@ public:
   int run() { return run(_context, _statements); }
 
   std::list<const Statement*>& statements() { return _statements; }
-  
+
   Context& context() { return _context; }
 
   void unparse(FILE * out);

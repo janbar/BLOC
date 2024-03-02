@@ -1,5 +1,16 @@
 
-file(GLOB bloc_SOURCES main.cpp main_options.cpp cli_parser.cpp read_file.cpp)
+file(GLOB bloc_SOURCES
+  main.cpp
+  main_options.cpp
+  cli_parser.cpp
+  read_file.cpp
+)
+
+if(UNIX)
+  list(APPEND bloc_SOURCES signalhandler.cpp)
+elseif(MSVC)
+  list(APPEND bloc_SOURCES winstub.cpp)
+endif()
 
 add_executable(bloc ${bloc_SOURCES})
 add_dependencies(bloc blocc)

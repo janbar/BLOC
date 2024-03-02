@@ -181,7 +181,8 @@ public:
 
   bool stopCondition() const
   {
-    return (_breakCondition || _continueCondition || _returnCondition);
+    return (_breakCondition || _continueCondition || _returnCondition
+            || _root->_returnCondition); /* handle program exit */
   }
 
   void breakCondition(bool b)

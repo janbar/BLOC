@@ -18,6 +18,7 @@
 
 #include "cli_parser.h"
 #include "read_file.h"
+#include "breaker.h"
 #include "license.h"
 #include "copyright.h"
 #include "help.h"
@@ -60,6 +61,7 @@
 #define PRINT(a) fputs(a, STDOUT)
 #define PRINT1(a,b) fprintf(STDOUT, a, b)
 #define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
+#include "winstub.h"
 #include <io.h>
 #else
 #define STDOUT stdout
@@ -67,6 +69,7 @@
 #define PRINT(a) fputs(a, STDOUT)
 #define PRINT1(a,b) fprintf(STDOUT, a, b)
 #define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
+#include "signalhandler.h"
 #include <unistd.h>
 #endif
 
@@ -128,6 +131,8 @@ static void describe_module(unsigned type_id);
 static void print_help(const std::string& what);
 static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::Statement*>& statements);
 
+static breaker_t g_breaker;
+
 void cli_parser(const MainOptions& options, const std::vector<std::string>& args)
 {
   /* first check for virtual terminal and colored output */
@@ -146,6 +151,17 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   PRINT("\nType \"help\" , \"copyright\" or \"license\" for more information.\n");
 
   bloc::Context ctx;
+  /* setup breaking state */
+  g_breaker = { true, &ctx };
+#ifdef __WINDOWS__
+  init_ctrl_handler(&g_breaker);
+#else
+  SignalHandler sh;
+  sh.setCallback(sig_handler, &g_breaker);
+  /* catch SIGINT to handle break */
+  sh.catchSignal(SIGINT);
+#endif
+
   /* load args values into context as variables $0..$n */
   for (int i = 0; i < args.size(); ++i)
   {
@@ -197,6 +213,8 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
 
     if (s)
     {
+      /* disable break */
+      g_breaker.state = false;
       double d = ctx.timestamp();
       const bloc::Statement * r = s;
       while (r)
@@ -210,9 +228,19 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
         }
       }
       d = ctx.elapsed(d);
-      set_color(fgBLUE);
-      PRINT1("\nElapsed: %f\n", d);
-      reset_color();
+      if (g_breaker.state)
+      {
+        set_color(fgRED);
+        PRINT("\nStopped\n");
+        reset_color();
+      }
+      else
+      {
+        g_breaker.state = true;
+        set_color(fgBLUE);
+        PRINT1("\nElapsed: %f\n", d);
+        reset_color();
+      }
 
       statements.push_back(s);
 
@@ -234,6 +262,12 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   }
   for (auto s : statements) delete s;
   delete p;
+#ifdef __WINDOWS__
+  stop_ctrl_handler();
+#else
+  sh.omitSignal(SIGINT);
+  sh.setCallback(nullptr, nullptr);
+#endif
 }
 
 static void read_input(void * handle, char * buf, int * len, int max_size)
@@ -590,21 +624,29 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     double d = ctx.timestamp();
     try
     {
+      g_breaker.state = false;
       bloc::Executable::run(ctx, statements);
-      if (ctx.returnCondition())
-      {
-        ctx.returnCondition(false);
+      if (ctx.returnCondition() && !g_breaker.state)
         output_cli(ctx);
-      }
     }
     catch(bloc::RuntimeError& re)
     {
       set_color(fgRED); PRINT1("Error: %s\n", re.what()); reset_color();
     }
     d = ctx.elapsed(d);
-    set_color(fgBLUE);
-    PRINT1("\nElapsed: %f\n", d);
-    reset_color();
+    if (g_breaker.state)
+    {
+      set_color(fgRED);
+      PRINT("\nStopped\n");
+      reset_color();
+    }
+    else
+    {
+      g_breaker.state = true;
+      set_color(fgBLUE);
+      PRINT1("\nElapsed: %f\n", d);
+      reset_color();
+    }
     p.clear();
     return 1;
   }
@@ -677,8 +719,20 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
       while ((t = p.pop())->code == bloc::Parser::SEPARATOR) { }
       if (t->code != bloc::Parser::NEWLINE)
         throw bloc::ParseError(bloc::EXC_PARSE_EXPRESSION_END_S, t->text.c_str());
+      g_breaker.state = false;
       ctx.saveReturned(exp->value(ctx));
-      output_cli(ctx);
+      if (g_breaker.state)
+      {
+        ctx.returnCondition(false);
+        set_color(fgRED);
+        PRINT("\nStopped\n");
+        reset_color();
+      }
+      else
+      {
+        g_breaker.state = true;
+        output_cli(ctx);
+      }
       delete exp;
     }
     catch (bloc::Error& ee)
