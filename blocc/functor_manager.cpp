@@ -78,7 +78,7 @@ const FunctorManager::entry FunctorManager::findDeclaration(const std::string& n
 
 bool FunctorManager::exists(const std::string& name) const
 {
-  for (auto& fp : _declarations)
+  for (const FunctorPtr& fp : _declarations)
   {
     if (fp->name == name)
       return true;
@@ -89,8 +89,7 @@ bool FunctorManager::exists(const std::string& name) const
 std::vector<FunctorPtr> FunctorManager::reportDeclarations() const
 {
   std::vector<FunctorPtr> v;
-  for (auto& fp : _declarations)
-    v.push_back(fp);
+  v.assign(_declarations.begin(), _declarations.end());
   return v;
 }
 
@@ -115,7 +114,7 @@ void FunctorManager::rollback()
   if (_backed)
   {
     /* revert last change, restoring the backed up */
-    for (auto& fp : _declarations)
+    for (FunctorPtr& fp : _declarations)
     {
       if (fp->name == _backed->name && fp->params.size() == _backed->params.size())
       {

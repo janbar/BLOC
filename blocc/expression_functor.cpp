@@ -37,8 +37,8 @@ FunctorExpression::~FunctorExpression()
 
 Value& FunctorExpression::value(Context& ctx) const
 {
-  auto env = _functor->createEnv(ctx, _args);
-  _functor->body->doit(env.context());
+  auto env = (*_fentry)->createEnv(ctx, _args);
+  (*_fentry)->body->doit(env.context());
   Value * ret = env.context().dropReturned();
   if (ret != nullptr)
   {
@@ -52,7 +52,7 @@ Value& FunctorExpression::value(Context& ctx) const
 
 std::string FunctorExpression::unparse(Context& ctx) const
 {
-  std::string sb(_functor->name);
+  std::string sb((*_fentry)->name);
   sb.append("(");
   for (const Expression * e : _args)
     sb.append(e->unparse(ctx)).append(1, Parser::CHAIN);
@@ -91,9 +91,9 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, const std:
       }
     }
 
-    const FunctorManager::entry& fe = ctx.functorManager().findDeclaration(name, args.size());
+    const FunctorManager::entry fe = ctx.functorManager().findDeclaration(name, args.size());
     if (fe != ctx.functorManager().npos())
-      return new FunctorExpression(*fe, std::move(args));
+      return new FunctorExpression(fe, std::move(args));
     if (ctx.functorManager().exists(name))
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, name.c_str());
     throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, name.c_str());

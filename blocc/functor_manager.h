@@ -23,6 +23,7 @@
 
 #include <string>
 #include <memory>
+#include <vector>
 #include <forward_list>
 
 #define RECURSION_LIMIT 0xff
@@ -106,7 +107,7 @@ public:
 
 private:
   container _declarations;
-  FunctorPtr _backed;
+  container::value_type _backed;
 };
 
 }
