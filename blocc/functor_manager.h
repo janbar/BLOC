@@ -99,7 +99,7 @@ public:
    */
   bool exists(const std::string& name) const;
 
-  std::vector<FunctorPtr> reportDeclarations() const;
+  container reportDeclarations() const;
 
   entry createOrReplace(const std::string& name, const std::vector<Symbol>& params);
 

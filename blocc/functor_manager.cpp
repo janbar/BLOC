@@ -86,10 +86,12 @@ bool FunctorManager::exists(const std::string& name) const
   return false;
 }
 
-std::vector<FunctorPtr> FunctorManager::reportDeclarations() const
+FunctorManager::container FunctorManager::reportDeclarations() const
 {
-  std::vector<FunctorPtr> v;
-  v.assign(_declarations.begin(), _declarations.end());
+  /* reverse order: last -> first */
+  container v;
+  for (const FunctorPtr& fe : _declarations)
+    v.push_front(fe);
   return v;
 }
 
