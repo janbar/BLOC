@@ -1,0 +1,25 @@
+
+$BCOMPLEX$N
+
+In BLOC, complex are imaginary numbers with a $Breal$N and $Bimaginary$N parts,
+e.g. ( 2 + 3.i ). The constructor uses the imaginary constant $Bii$N as base. The
+following are valid complex literals in BLOC.
+
+ii , 3 * ii , 2 + 3 * ii , 3/4 * ii - 2/3 , -ii + 1
+
+Real and imaginary parts are decimals with size of double-precision (64bits).
+The values beyond its maximum size referred as "inf". Scientific notation is
+used as a short representation to express floats having many digits.
+
+Use the $Bnum( x )$N function to retrieve the real part.
+Use the $Bimag( x )$N or $Babs( x )$N functions to retrieve the modulus.
+Use the $Biphase( x )$N functions to retrieve theta or phase.
+Use the $Biconj( x )$N functions to retrieve the conjugate (complex).
+
+The following operators can be used with the complex value.
+
++ , - , * , / , ** , == , !=
+
+The following functions accept the complex value as argument.
+
+exp, log, pow, sin, cos, tan, abs, imag, iphase, iconj, num, int, isnull

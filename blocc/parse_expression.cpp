@@ -81,8 +81,9 @@ bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p
           type == Type::NO_TYPE || exp_type == Type::NO_TYPE ||
           (exp_type.level() == type.level() && (
             /* type mixing */
-            (exp_type == Type::NUMERIC && type == Type::INTEGER) ||
-            (exp_type == Type::INTEGER && type == Type::NUMERIC) ||
+            (exp_type == Type::NUMERIC && (type == Type::INTEGER || type == Type::IMAGINARY)) ||
+            (exp_type == Type::INTEGER && (type == Type::NUMERIC || type == Type::IMAGINARY)) ||
+            (exp_type == Type::IMAGINARY && (type == Type::NUMERIC || type == Type::INTEGER)) ||
             /* tuple opaque */
             (exp_type == Type::ROWTYPE && type == Type::ROWTYPE && (exp_type.minor() == 0 || type.minor() == 0))
           ));

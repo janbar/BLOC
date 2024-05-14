@@ -28,6 +28,13 @@
 namespace bloc
 {
 
+const Type& SINExpression::type (Context &ctx) const
+{
+  if (_args[0]->type(ctx) == Type::IMAGINARY)
+    return Value::type_imaginary;
+  return Value::type_numeric;
+}
+
 Value& SINExpression::value(Context & ctx) const
 {
   Value& val = _args[0]->value(ctx);
@@ -46,6 +53,13 @@ Value& SINExpression::value(Context & ctx) const
     if (val.isNull())
       return val;
     v = Value(Numeric(std::sin(*val.numeric())));
+    break;
+  case Type::IMAGINARY:
+    if (val.isNull())
+      return val;
+    v = Value(new Imaginary{
+              std::sin(val.imaginary()->a) * std::cosh(val.imaginary()->b),
+              std::cos(val.imaginary()->a) * std::sinh(val.imaginary()->b)});
     break;
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);

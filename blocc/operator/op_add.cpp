@@ -42,6 +42,8 @@ const Type& OpADDExpression::type(Context& ctx) const
 {
   if (arg1->type(ctx) == Type::LITERAL)
     return Value::type_literal;
+  if (arg1->type(ctx) == Type::IMAGINARY || arg2->type(ctx) == Type::IMAGINARY)
+    return Value::type_imaginary;
   if (arg1->type(ctx) == Type::INTEGER && arg2->type(ctx) == Type::INTEGER)
     return Value::type_integer;
   if (arg1->type(ctx) == Type::NUMERIC || arg2->type(ctx) == Type::NUMERIC)
@@ -74,6 +76,7 @@ Value& OpADDExpression::value(Context& ctx) const
         return LVAL2(Value(Value::type_numeric), a1, a2);
       case Type::INTEGER:
       case Type::NUMERIC:
+      case Type::IMAGINARY:
         return LVAL2(Value(a2.type()), a1, a2);
       case Type::LITERAL:
         return a2; /* null + literal */
@@ -100,6 +103,13 @@ Value& OpADDExpression::value(Context& ctx) const
         Value val(Integer(*a1.integer() + *a2.integer()));
         return LVAL2(val, a1, a2);
       }
+      case Type::IMAGINARY:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        Value val(new Imaginary{Numeric(*a1.integer()) + a2.imaginary()->a, a2.imaginary()->b});
+        return LVAL2(val, a1, a2);
+      }
       default:
         break;
       }
@@ -121,6 +131,43 @@ Value& OpADDExpression::value(Context& ctx) const
         if (a2.isNull() || a1.isNull())
           return LVAL2(Value(Value::type_numeric), a1, a2);
         Value val(Numeric(*a1.numeric() + *a2.numeric()));
+        return LVAL2(val, a1, a2);
+      }
+      case Type::IMAGINARY:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        Value val(new Imaginary{*a1.numeric() + a2.imaginary()->a, a2.imaginary()->b});
+        return LVAL2(val, a1, a2);
+      }
+      default:
+        break;
+      }
+      break;
+    case Type::IMAGINARY:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return LVAL2(Value(Value::type_imaginary), a1, a2);
+      case Type::INTEGER:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        Value val(new Imaginary{a1.imaginary()->a + Numeric(*a2.integer()), a1.imaginary()->b});
+        return LVAL2(val, a1, a2);
+      }
+      case Type::NUMERIC:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        Value val(new Imaginary{a1.imaginary()->a + *a2.numeric(), a1.imaginary()->b});
+        return LVAL2(val, a1, a2);
+      }
+      case Type::IMAGINARY:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        Value val(new Imaginary{a1.imaginary()->a + a2.imaginary()->a, a1.imaginary()->b + a2.imaginary()->b});
         return LVAL2(val, a1, a2);
       }
       default:

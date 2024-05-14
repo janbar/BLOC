@@ -68,6 +68,10 @@ Value& OpNEGExpression::value(Context& ctx) const
       if (a1.isNull())
         return a1;
       return LVAL1(Value(Numeric(0.0 - *a1.numeric())), a1);
+    case Type::IMAGINARY:
+      if (a1.isNull())
+        return a1;
+      return LVAL1(Value(new Imaginary{0.0 - a1.imaginary()->a, 0.0 - a1.imaginary()->b }), a1);
     default:
       break;
     }

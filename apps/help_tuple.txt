@@ -7,7 +7,7 @@ function. The structure of tuple cannot be changed, thus adding, removing, or
 changing the type of element is not allowed. Each element has a rank number
 starting from 1.
 
-tup("Hello", 123, 3.14, true, raw(16), file())
+tup("Hello", 123, 3.14, true, raw(16), file(), 2+3*ii)
 tup("Hello", tup(1, 3.14))                          >>> ERROR
 
 Note embed object constructor will initialize a new object. However, embed

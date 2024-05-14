@@ -8,6 +8,7 @@ tab(0, str())          >>> empty table of string
 tab(5, str())          >>> table[5] initialized with empty string
 tab(5, 123)            >>> table[5] initialized with integer 123
 tab(5, tab(10, 1.23))  >>> [table[10]][5] initialized with decimal 1.23
+tab(5, tab(10, 1-ii))  >>> [table[10]][5] initialized with complex (1-i)
 
 A = 0; for i in 1 to 3 loop A = tab(0,A); end loop;   >>> A is [[[integer]]]
 A = 0; for i in 1 to 255 loop A = tab(0,A); end loop; >>> ERROR

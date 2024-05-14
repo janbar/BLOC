@@ -6,16 +6,17 @@ variables. However built-in operators handle only the scalar types.
 
 $BBOOLEAN$N     Logical Boolean
 $BINTEGER$N     Signed 8-bytes
-$BDECIMAL$N     Double precision floating-point number      
+$BDECIMAL$N     Double precision floating-point number
+$BCOMPLEX$N     Complex with double precision floating-point parts
 $BSTRING$N      Character string up to 4GB in size
 $BBYTES$N       Binary data up to 4GB in size
 
 In addition we can import many other types from dynamic modules. These types
 are objects with specialized features. e.g date, file, etc.
 
-$BOBJECT$N      Imported types from dynamic modules 
+$BOBJECT$N      Imported types from dynamic modules
 
-Scalar and object types can be grouped together within tuple. 
+Scalar and object types can be grouped together within tuple.
 
 $BTUPLE$N       Ordered group of values or objects (row)
 

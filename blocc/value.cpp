@@ -47,6 +47,7 @@ const Type& Value::type_complex = Type(Type::COMPLEX);
 const Type& Value::type_tabchar = Type(Type::TABCHAR);
 const Type& Value::type_rowtype = Type(Type::ROWTYPE);
 const Type& Value::type_pointer = Type(Type::POINTER);
+const Type& Value::type_imaginary = Type(Type::IMAGINARY);
 
 void Value::_clear() noexcept
 {
@@ -71,9 +72,24 @@ void Value::_clear() noexcept
     case Type::ROWTYPE:
       delete _bloc_vcast_1(Tuple);
       break;
+    case Type::IMAGINARY:
+      delete _bloc_vcast_1(Imaginary);
+      break;
     default:
       break;
     }
+}
+
+Value::Value(Imaginary * v) : _type(Type::IMAGINARY)
+{
+#ifdef DEBUG_VALUE
+  DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
+#endif
+  if (v)
+  {
+    _value.p = v;
+    _flags = NOTNULL;
+  }
 }
 
 Value::Value(Literal * v) : _type(Type::LITERAL)
@@ -237,6 +253,9 @@ Value Value::clone() const noexcept
       case Type::NUMERIC:
         c._value.d = _value.d;
         break;
+      case Type::IMAGINARY:
+        c._value.p = new Imaginary(*_bloc_vcast_1(Imaginary));
+        break;
       case Type::LITERAL:
         c._value.p = new Literal(*_bloc_vcast_1(Literal));
         break;
@@ -295,6 +314,9 @@ std::string Value::toString() const
   case Type::NUMERIC:
     return typeName().append(1, ' ')
             .append(readableNumeric(_value.d));
+  case Type::IMAGINARY:
+    return typeName().append(1, ' ')
+            .append(readableImaginary(*_bloc_vcast_1(Imaginary)));
   case Type::LITERAL:
     return typeName().append(1, '[')
             .append(std::to_string(_bloc_vcast_1(Literal)->size()))
@@ -349,6 +371,14 @@ std::string Value::readableNumeric(Numeric& d)
 {
   char buf[32];
   snprintf(buf, sizeof(buf), "%.16g", d);
+  return buf;
+}
+
+std::string Value::readableImaginary(Imaginary& i)
+{
+  char buf[64];
+  snprintf(buf, sizeof(buf), "(%.16g %s %.16g * ii)",
+          i.a, (i.b < 0  ? "-" : "+"), std::abs(i.b));
   return buf;
 }
 
@@ -437,6 +467,9 @@ std::string Value::readableTuple(Tuple &c)
         break;
       case Type::NUMERIC:
         sb.append(Value::readableNumeric(*(c[i].numeric())));
+        break;
+      case Type::IMAGINARY:
+        sb.append(Value::readableImaginary(*(c[i].imaginary())));
         break;
       case Type::LITERAL:
         sb.append(Value::readableLiteral(*(c[i].literal())));

@@ -75,6 +75,10 @@
 #include "builtin/builtin_upper.h"
 #include "builtin/builtin_tup.h"
 #include "builtin/builtin_clamp.h"
+#include "builtin/builtin_ii.h"
+#include "builtin/builtin_imag.h"
+#include "builtin/builtin_iphase.h"
+#include "builtin/builtin_iconj.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -95,10 +99,11 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tup",        "getsys",     "getenv",     "true",       "on",
     "false",      "off",        "error",      "phi",        "pi",
-    "ee",         "random",     "bool",       "",           "",
+    "ee",         "random",     "bool",       "ii",         "",
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
-    "strpos",     "replace",    "subraw",     "hash",
+    "strpos",     "replace",    "subraw",     "hash",       "imag",
+    "iphase",     "iconj",
 };
 
 BuiltinExpression::~BuiltinExpression()
@@ -117,6 +122,7 @@ std::string BuiltinExpression::unparse(Context& ctx) const
   case FUNC_PHI:
   case FUNC_PI:
   case FUNC_EE:
+  case FUNC_II:
   case FUNC_TRUE:
   case FUNC_ON:
   case FUNC_FALSE:
@@ -254,6 +260,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return RANDOMExpression::parse(p, ctx);
   case FUNC_BOOL:
     return BOOLExpression::parse(p, ctx);
+  case FUNC_II:
+    return new IIExpression();
   case FUNC_LSUB:
     return LSUBSTRExpression::parse(p, ctx);
   case FUNC_RSUB:
@@ -282,6 +290,12 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return SUBRAWExpression::parse(p, ctx);
   case FUNC_HASH:
     return HASHExpression::parse(p, ctx);
+  case FUNC_IMAG:
+    return IMAGExpression::parse(p, ctx);
+  case FUNC_IPHASE:
+    return IPHASEExpression::parse(p, ctx);
+  case FUNC_ICONJ:
+    return ICONJExpression::parse(p, ctx);
 
   default:
     throw ParseError(EXC_PARSE_NOT_A_FUNCTION);
@@ -413,7 +427,8 @@ const char * BuiltinExpression::HELPS[] = {
   /*BOOL  */  "returns the boolean representation of numeric x, or the null boolean."
           "\n\nbool( [ x ] )"
           "\n\nWhen x is 0 the boolean false is returned, else true.",
-  "", "",
+  /*II    */  "is the imaginary number.",
+  "",
   /*LSUB  */  "returns left part of string x."
           "\n\nlsubstr( x , count )",
   /*RSUB  */  "returns right part of string x."
@@ -445,6 +460,12 @@ const char * BuiltinExpression::HELPS[] = {
   /*HASH  */  "returns the DJB Hash value (32 bits) of string or bytes array."
           "\nOptionally the number of buckets is specified by y [1..n]."
           "\n\nhash( x [, y] )",
+  /*IMAG  */ "returns the modulus or magnitude of the given complex."
+          "\n\nimag( x )",
+  /*IPHASE*/  "returns theta or the phase of the given complex."
+          "\n\niphase( x )",
+  /*ICONJ */  "returns the complex as the conjugate of the given complex."
+          "\n\niconj( x )",
 };
 
 }

@@ -16,32 +16,12 @@
  *
  */
 
-#ifndef BUILTIN_LOG_H_
-#define BUILTIN_LOG_H_
-
-#include <blocc/expression_builtin.h>
+#include "builtin_ii.h"
+#include <blocc/exception_parse.h>
+#include <blocc/context.h>
+#include <blocc/parser.h>
 
 namespace bloc
 {
 
-class Context;
-class Parser;
-
-class LOGExpression : public BuiltinExpression {
-
-public:
-
-  virtual ~LOGExpression() { }
-
-  explicit LOGExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_LOG, std::move(args)) { }
-
-  const Type& type(Context& ctx) const override;
-
-  Value& value(Context& ctx) const override;
-
-  static LOGExpression * parse(Parser& p, Context& ctx);
-};
-
 }
-
-#endif /* BUILTIN_LOG_H_ */

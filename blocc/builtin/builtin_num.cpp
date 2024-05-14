@@ -73,6 +73,9 @@ Value& NUMExpression::value(Context & ctx) const
     case Type::INTEGER:
       v = Value(Numeric(*val.integer()));
       break;
+    case Type::IMAGINARY:
+      v = Value(Numeric(val.imaginary()->a));
+      break;
     case Type::BOOLEAN:
       v = Value(Numeric(*val.boolean() ? 1.0 : 0.0));
       break;
@@ -106,6 +109,7 @@ NUMExpression * NUMExpression::parse(Parser& p, Context& ctx)
       case Type::LITERAL:
       case Type::INTEGER:
       case Type::NUMERIC:
+      case Type::IMAGINARY:
         break;
       default:
         throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_NUM]);

@@ -35,7 +35,7 @@ public:
 
   explicit TANExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_TAN, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override { return Value::type_numeric; }
+  const Type& type(Context& ctx) const override;
 
   Value& value(Context& ctx) const override;
 

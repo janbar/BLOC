@@ -28,6 +28,15 @@
 namespace bloc
 {
 
+const Type& LOGExpression::type (Context &ctx) const
+{
+  if (_args[0]->type(ctx) == Type::IMAGINARY)
+    return Value::type_imaginary;
+  if (_args[0]->type(ctx) == Type::INTEGER && _args[1]->type(ctx) == Type::INTEGER)
+    return Value::type_integer;
+  return Value::type_numeric;
+}
+
 Value& LOGExpression::value(Context & ctx) const
 {
   Value& val = _args[0]->value(ctx);
@@ -47,6 +56,15 @@ Value& LOGExpression::value(Context & ctx) const
       return val;
     v = Value(Numeric(std::log(*val.numeric())));
     break;
+  case Type::IMAGINARY:
+  {
+    if (val.isNull())
+      return val;
+    double r = std::sqrt(std::pow(val.imaginary()->a, 2) + std::pow(val.imaginary()->b, 2));
+    double t = std::atan2(val.imaginary()->b, val.imaginary()->a);
+    v = Value(new Imaginary{std::log(r), t});
+    break;
+  }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }

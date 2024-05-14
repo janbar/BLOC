@@ -16,7 +16,7 @@
  *
  */
 
-#include "builtin_sqrt.h"
+#include "builtin_imag.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
@@ -28,14 +28,7 @@
 namespace bloc
 {
 
-const Type& SQRTExpression::type (Context &ctx) const
-{
-  if (_args[0]->type(ctx) == Type::IMAGINARY)
-    return Value::type_imaginary;
-  return Value::type_numeric;
-}
-
-Value& SQRTExpression::value(Context & ctx) const
+Value& IMAGExpression::value(Context & ctx) const
 {
   Value& val = _args[0]->value(ctx);
   Value v(Value::type_numeric);
@@ -44,25 +37,11 @@ Value& SQRTExpression::value(Context & ctx) const
   {
   case Type::NO_TYPE:
     break;
-  case Type::INTEGER:
-    if (val.isNull())
-      return val;
-    v = Value(Numeric(std::sqrt(*val.integer())));
-    break;
-  case Type::NUMERIC:
-    if (val.isNull())
-      return val;
-    v = Value(Numeric(std::sqrt(*val.numeric())));
-    break;
   case Type::IMAGINARY:
-  {
     if (val.isNull())
       return val;
-    double r = std::sqrt(std::sqrt(std::pow(val.imaginary()->a, 2) + std::pow(val.imaginary()->b, 2)));
-    double t = std::atan2(val.imaginary()->b, val.imaginary()->a) / 2.0;
-    v = Value(new Imaginary{r * std::cos(t), r * std::sin(t)});
+    v = Value(Numeric(std::sqrt(std::pow(val.imaginary()->a, 2) + std::pow(val.imaginary()->b, 2))));
     break;
-  }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }
@@ -72,7 +51,7 @@ Value& SQRTExpression::value(Context & ctx) const
   return val;
 }
 
-SQRTExpression * SQRTExpression::parse(Parser& p, Context& ctx)
+IMAGExpression * IMAGExpression::parse(Parser& p, Context& ctx)
 {
   std::vector<Expression*> args;
 
@@ -80,12 +59,12 @@ SQRTExpression * SQRTExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_SQRT]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_IMAG]);
     args.push_back(ParseExpression::expression(p, ctx));
-    if (!ParseExpression::typeChecking(args.back(), Type::NUMERIC, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_SQRT]);
-    assertClosedFunction(p, ctx, FUNC_SQRT);
-    return new SQRTExpression(std::move(args));
+    if (!ParseExpression::typeChecking(args.back(), Type::IMAGINARY, p, ctx))
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_IMAG]);
+    assertClosedFunction(p, ctx, FUNC_IMAG);
+    return new IMAGExpression(std::move(args));
   }
   catch (ParseError& pe)
   {

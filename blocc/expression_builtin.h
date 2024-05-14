@@ -102,6 +102,7 @@ public:
     FUNC_EE     = 45, // e (euler)
     FUNC_RANDOM = 46, // random | random(x)
     FUNC_BOOL   = 47, // bool(x)
+    FUNC_II     = 48, // ii
 
     FUNC_LSUB   = 50, // lsubstr(x,count)
     FUNC_RSUB   = 51, // rsubstr(x,count)
@@ -117,6 +118,9 @@ public:
     FUNC_REPSTR = 61, // replace(x,y,z)
     FUNC_SUBRAW = 62, // subraw(x,begin) | subraw(x,begin,count)
     FUNC_HASH   = 63, // hash(x) | hash(x,max)
+    FUNC_IMAG   = 64, // imag(x)
+    FUNC_IPHASE = 65, // iphase(x)
+    FUNC_ICONJ  = 66, // iconj(x)
   };
 
   std::string unparse(Context& ctx) const override;

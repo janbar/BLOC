@@ -48,6 +48,7 @@ public:
     TABCHAR,
     ROWTYPE,
     POINTER,
+    IMAGINARY,
   };
 
   virtual ~Type() { }
@@ -99,6 +100,7 @@ public:
   constexpr static const char * STR_TABCHAR = "bytes";
   constexpr static const char * STR_ROWTYPE = "tuple";
   constexpr static const char * STR_POINTER = "pointer";
+  constexpr static const char * STR_IMAGINARY = "complex";
 
   static const char * typeName(TypeMajor type)
   {
@@ -112,6 +114,8 @@ public:
       return STR_INTEGER;
     case NUMERIC:
       return STR_NUMERIC;
+    case IMAGINARY:
+      return STR_IMAGINARY;
     case LITERAL:
       return STR_LITERAL;
     case COMPLEX:
@@ -134,6 +138,8 @@ public:
       return Type::INTEGER;
     if (text == STR_NUMERIC)
       return Type::NUMERIC;
+    if (text == STR_IMAGINARY)
+      return Type::IMAGINARY;
     if (text == STR_LITERAL)
       return Type::LITERAL;
     if (text == STR_COMPLEX)

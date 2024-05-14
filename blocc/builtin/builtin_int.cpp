@@ -80,6 +80,9 @@ Value& INTExpression::value(Context & ctx) const
     case Type::INTEGER:
       v = Value(*val.integer());
       break;
+    case Type::IMAGINARY:
+      v = Value(Integer(val.imaginary()->a));
+      break;
     case Type::BOOLEAN:
       v = Value(Integer(*val.boolean() ? 1 : 0));
       break;
@@ -113,6 +116,7 @@ INTExpression * INTExpression::parse(Parser& p, Context& ctx)
       case Type::LITERAL:
       case Type::INTEGER:
       case Type::NUMERIC:
+      case Type::IMAGINARY:
         break;
       default:
         throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INT]);

@@ -52,6 +52,13 @@ Value& ABSExpression::value(Context & ctx) const
     v = Value(Numeric(std::abs(*val.numeric())));
     break;
   }
+  case Type::IMAGINARY:
+  {
+    if (val.isNull())
+      return val;
+    v = Value(Numeric(std::sqrt(std::pow(val.imaginary()->a, 2) + std::pow(val.imaginary()->b, 2))));
+    break;
+  }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }

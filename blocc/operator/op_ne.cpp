@@ -95,6 +95,11 @@ Value& OpNEExpression::value(Context& ctx) const
       Value val(Bool(*a1.integer() != *a2.integer()));
       return LVAL2(val, a1, a2);
     }
+    if (t2 == Type::IMAGINARY)
+    {
+      Value val(Bool(Numeric(*a1.integer()) != a2.imaginary()->a || a2.imaginary()->b != 0));
+      return LVAL2(val, a1, a2);
+    }
     Value val(Bool(true));
     return LVAL2(val, a1, a2);
   }
@@ -110,7 +115,32 @@ Value& OpNEExpression::value(Context& ctx) const
       Value val(Bool(*a1.numeric() != *a2.integer()));
       return LVAL2(val, a1, a2);
     }
+    if (t2 == Type::IMAGINARY)
+    {
+      Value val(Bool(*a1.numeric() != a2.imaginary()->a || a2.imaginary()->b != 0));
+      return LVAL2(val, a1, a2);
+    }
     Value val(Bool(true));
+    return LVAL2(val, a1, a2);
+  }
+  case Type::IMAGINARY:
+  {
+    if (t2 == Type::NUMERIC)
+    {
+      Value val(Bool(a1.imaginary()->a != *a2.numeric() || a1.imaginary()->b != 0));
+      return LVAL2(val, a1, a2);
+    }
+    if (t2 == Type::INTEGER)
+    {
+      Value val(Bool(a1.imaginary()->a != Numeric(*a2.integer()) || a1.imaginary()->b != 0));
+      return LVAL2(val, a1, a2);
+    }
+    if (t2 == Type::IMAGINARY)
+    {
+      Value val(Bool(a1.imaginary()->a != a2.imaginary()->a || a1.imaginary()->b != a2.imaginary()->b));
+      return LVAL2(val, a1, a2);
+    }
+    Value val(Bool(false));
     return LVAL2(val, a1, a2);
   }
   case Type::LITERAL:

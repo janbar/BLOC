@@ -16,37 +16,34 @@
  *
  */
 
-#ifndef PLUGIN_COMPLEX_H_
-#define PLUGIN_COMPLEX_H_
+#ifndef BUILTIN_II_H_
+#define BUILTIN_II_H_
 
-#include <blocc/plugin.h>
+#include <blocc/expression_builtin.h>
 
 namespace bloc
 {
-namespace plugin
-{
 
-class ComplexPlugin final : public PluginBase
-{
+class Context;
+class Parser;
+
+class IIExpression : public BuiltinExpression {
+
+  mutable Value v;
+
 public:
-  ComplexPlugin() = default;
 
-  void declareInterface(PLUGIN_INTERFACE * interface) override;
+  virtual ~IIExpression() { }
 
-  void * createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args) override;
+  IIExpression() : BuiltinExpression(FUNC_II), v(new Imaginary{0, 1}) { v.to_lvalue(true); }
 
-  void destroyObject(void * object) override;
+  const Type& type(Context& ctx) const override { return Value::type_imaginary; }
 
-  Value * executeMethod(
-          bloc::Complex& object_this,
-          int method_id,
-          bloc::Context& ctx,
-          const std::vector<bloc::Expression*>& args
-          ) override;
+  Value& value(Context& ctx) const override { return v; }
+
+  bool isConst() const override { return true; }
 };
 
 }
-}
 
-#endif /* PLUGIN_COMPLEX_H_ */
-
+#endif /* BUILTIN_II_H_ */

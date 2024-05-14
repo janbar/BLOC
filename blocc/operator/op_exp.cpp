@@ -40,6 +40,8 @@ OpEXPExpression::~OpEXPExpression()
 
 const Type& OpEXPExpression::type(Context& ctx) const
 {
+  if (arg1->type(ctx) == Type::IMAGINARY || arg2->type(ctx) == Type::IMAGINARY)
+    return Value::type_imaginary;
   if (arg1->type(ctx) == Type::INTEGER && arg2->type(ctx) == Type::INTEGER)
     return Value::type_integer;
   return Value::type_numeric;
@@ -94,6 +96,8 @@ Value& OpEXPExpression::value(Context& ctx) const
         Value val(Integer(std::pow(*a1.integer(), *a2.integer())));
         return LVAL2(val, a1, a2);
       }
+      case Type::IMAGINARY:
+        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED, Operator::OPVALS[Operator::OP_EXP]);
       default:
         break;
       }
@@ -117,6 +121,37 @@ Value& OpEXPExpression::value(Context& ctx) const
         Value val(Numeric(std::pow(*a1.numeric(), *a2.numeric())));
         return LVAL2(val, a1, a2);
       }
+      case Type::IMAGINARY:
+        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED, Operator::OPVALS[Operator::OP_EXP]);
+      default:
+        break;
+      }
+      break;
+    case Type::IMAGINARY:
+      switch (a2.type().major())
+      {
+      case Type::NO_TYPE:
+        return LVAL2(Value(Value::type_imaginary), a1, a2);
+      case Type::INTEGER:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        double rp = std::pow(std::sqrt(std::pow(a1.imaginary()->a, 2) + std::pow(a1.imaginary()->b, 2)), Numeric(*a2.integer()));
+        double tp = Numeric(*a2.integer()) * std::atan2(a1.imaginary()->b, a1.imaginary()->a);
+        Value val(new Imaginary{rp * std::cos(tp), rp * std::sin(tp)});
+        return LVAL2(val, a1, a2);
+      }
+      case Type::NUMERIC:
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        double rp = std::pow(std::sqrt(std::pow(a1.imaginary()->a, 2) + std::pow(a1.imaginary()->b, 2)), *a2.numeric());
+        double tp = *a2.numeric() * std::atan2(a1.imaginary()->b, a1.imaginary()->a);
+        Value val(new Imaginary{rp * std::cos(tp), rp * std::sin(tp)});
+        return LVAL2(val, a1, a2);
+      }
+      case Type::IMAGINARY:
+        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED, Operator::OPVALS[Operator::OP_EXP]);
       default:
         break;
       }

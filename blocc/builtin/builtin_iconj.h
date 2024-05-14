@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef BUILTIN_LOG_H_
-#define BUILTIN_LOG_H_
+#ifndef BUILTIN_ICONJ_H_
+#define BUILTIN_ICONJ_H_
 
 #include <blocc/expression_builtin.h>
 
@@ -27,21 +27,21 @@ namespace bloc
 class Context;
 class Parser;
 
-class LOGExpression : public BuiltinExpression {
+class ICONJExpression : public BuiltinExpression {
 
 public:
 
-  virtual ~LOGExpression() { }
+  virtual ~ICONJExpression() { }
 
-  explicit LOGExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_LOG, std::move(args)) { }
+  explicit ICONJExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_ICONJ, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override;
+  const Type& type(Context& ctx) const override { return Value::type_imaginary; }
 
   Value& value(Context& ctx) const override;
 
-  static LOGExpression * parse(Parser& p, Context& ctx);
+  static ICONJExpression * parse(Parser& p, Context& ctx);
 };
 
 }
 
-#endif /* BUILTIN_LOG_H_ */
+#endif /* BUILTIN_ICONJ_H_ */

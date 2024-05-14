@@ -28,6 +28,7 @@
 #include "help_boolean.h"
 #include "help_integer.h"
 #include "help_decimal.h"
+#include "help_complex.h"
 #include "help_string.h"
 #include "help_object.h"
 #include "help_bytes.h"
@@ -102,6 +103,7 @@ static const HELP_CATEGORY HELP_CATEGORIES[] =
   { "boolean",    &help_boolean_txt_len,      help_boolean_txt },
   { "integer",    &help_integer_txt_len,      help_integer_txt },
   { "decimal",    &help_decimal_txt_len,      help_decimal_txt },
+  { "complex",    &help_complex_txt_len,      help_complex_txt },
   { "string",     &help_string_txt_len,       help_string_txt },
   { "object",     &help_object_txt_len,       help_object_txt },
   { "bytes",      &help_bytes_txt_len,        help_bytes_txt },
@@ -338,6 +340,10 @@ static void output_cli(bloc::Context& ctx)
           break;
         case bloc::Type::NUMERIC:
           PRINT(bloc::Value::readableNumeric(*(val->numeric())).c_str());
+          PRINT("\n");
+          break;
+        case bloc::Type::IMAGINARY:
+          PRINT(bloc::Value::readableImaginary(*(val->imaginary())).c_str());
           PRINT("\n");
           break;
         case bloc::Type::LITERAL:

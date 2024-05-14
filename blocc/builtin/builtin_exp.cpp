@@ -28,6 +28,13 @@
 namespace bloc
 {
 
+const Type& EXPExpression::type (Context &ctx) const
+{
+  if (_args[0]->type(ctx) == Type::IMAGINARY)
+    return Value::type_imaginary;
+  return Value::type_numeric;
+}
+
 Value& EXPExpression::value(Context & ctx) const
 {
   Value& val = _args[0]->value(ctx);
@@ -46,6 +53,13 @@ Value& EXPExpression::value(Context & ctx) const
     if (val.isNull())
       return val;
     v = Value(Numeric(std::exp(*val.numeric())));
+    break;
+  case Type::IMAGINARY:
+    if (val.isNull())
+      return val;
+    v = Value(new Imaginary{
+              std::exp(val.imaginary()->a) * std::cos(val.imaginary()->b),
+              std::exp(val.imaginary()->a) * std::sin(val.imaginary()->b)});
     break;
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);

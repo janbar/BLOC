@@ -16,8 +16,8 @@
  *
  */
 
-#ifndef BUILTIN_LOG_H_
-#define BUILTIN_LOG_H_
+#ifndef BUILTIN_IPHASE_H_
+#define BUILTIN_IPHASE_H_
 
 #include <blocc/expression_builtin.h>
 
@@ -27,21 +27,21 @@ namespace bloc
 class Context;
 class Parser;
 
-class LOGExpression : public BuiltinExpression {
+class IPHASEExpression : public BuiltinExpression {
 
 public:
 
-  virtual ~LOGExpression() { }
+  virtual ~IPHASEExpression() { }
 
-  explicit LOGExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_LOG, std::move(args)) { }
+  explicit IPHASEExpression(std::vector<Expression*>&& args) : BuiltinExpression(FUNC_IPHASE, std::move(args)) { }
 
-  const Type& type(Context& ctx) const override;
+  const Type& type(Context& ctx) const override { return Value::type_numeric; }
 
   Value& value(Context& ctx) const override;
 
-  static LOGExpression * parse(Parser& p, Context& ctx);
+  static IPHASEExpression * parse(Parser& p, Context& ctx);
 };
 
 }
 
-#endif /* BUILTIN_LOG_H_ */
+#endif /* BUILTIN_IPHASE_H_ */

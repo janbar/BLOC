@@ -61,6 +61,7 @@ Value& OpPOSExpression::value(Context& ctx) const
     case Type::NO_TYPE:
     case Type::INTEGER:
     case Type::NUMERIC:
+    case Type::IMAGINARY:
       return a1;
     default:
       break;

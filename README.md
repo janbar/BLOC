@@ -4,9 +4,9 @@
 # BLOC
 A modular interpreter based on PL syntax.
 
-BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). Samples of module are "file", "date", "utf8", "sqlite3" or "complex" that allows to operate others types.
+BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). Samples of module are "file", "date", "utf8", or "sqlite3" that allows to operate others types.
 
-Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like tuple and table. For now, it processes twice as fast as Python.
+Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table. For now, it processes twice as fast as Python.
 
 ## Build BLOC
 You can build and test BLOC on Unix (Linux, BSD, MacOS, Illumos, SunOS), and MS-Windows. This repository contains the CMake project to configure and build BLOC. To achieve the build you will need to install **cmake** and a C99/C++11 compiler (**GCC** or **CLang**).
@@ -76,25 +76,22 @@ Learn more about typing:
 `help type`, `help function`, `help table`, `help string`, `help while`,
 `help strpos`, `help substr` ...
 
-The following example shows how to use modules. Here the sample uses the imported type "complex", to compute Z of a Low Pass Filter order 2 (LC) loaded by a resistor R.
+The example to follow uses the complex type (ii) to calculate Z of a Low Pass Filter order 2 (LC) loaded by a resistor R.
 ```
-import complex; /* import the required module */
-
 L = 1.8e-3; /* 1mH */
 C = 14e-6;  /* 14uF */
 R = 8;      /* 8R */
 
 F = 31.5;   /* from band 0 i.e 31.5 hz */
 while F < 20000 loop /* to band 9 */
-  ZC = complex(0, 2 * pi * F * C).reciprocal();
-  ZL = complex(0, 2 * pi * F * L);
-  ZR = complex(R);
-  
-  Z = complex(ZL).add( complex(ZR).mul(ZC).div( complex(ZR).add(ZC) ) );
-  
-  print "Freq: " round(F,1) "\tZ: " Z.modulus() "\tPhase: " 180*Z.phase()/pi;
+  ZC = 1 / ( 2 * pi * F * C * ii );
+  ZL = 2 * pi * F * L * ii;
+
+  Z = ZL + ( R * ZC / ( R + ZC ) );
+
+  print "Freq: " round(F,1) "\tZ: " imag(Z) "\tPhase: " 180 * iphase(Z) / pi;
   f = f * 2; /* loop next band */
 end loop;
 ```
-Type `help {imported module}` to print usage of the imported module.
+Note that the constant `ii` allows us to naturally construct a complex number.
 

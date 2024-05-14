@@ -28,6 +28,13 @@
 namespace bloc
 {
 
+const Type& TANExpression::type (Context &ctx) const
+{
+  if (_args[0]->type(ctx) == Type::IMAGINARY)
+    return Value::type_imaginary;
+  return Value::type_numeric;
+}
+
 Value& TANExpression::value(Context & ctx) const
 {
   Value& val = _args[0]->value(ctx);
@@ -47,6 +54,19 @@ Value& TANExpression::value(Context & ctx) const
       return val;
     v = Value(Numeric(std::tan(*val.numeric())));
     break;
+  case Type::IMAGINARY:
+  {
+    if (val.isNull())
+      return val;
+    Imaginary cc = {std::cos(val.imaginary()->a) * std::cosh(val.imaginary()->b),
+              - std::sin(val.imaginary()->a) * std::sinh(val.imaginary()->b)};
+    double s = std::pow(cc.a, 2) + std::pow(cc.b, 2);
+    Imaginary rc = {cc.a / s , (-cc.b) / s};
+    Imaginary ss = {std::sin(val.imaginary()->a) * std::cosh(val.imaginary()->b),
+              std::cos(val.imaginary()->a) * std::sinh(val.imaginary()->b)};
+    v = Value(new Imaginary{ss.a * rc.a - ss.b * rc.b, ss.a * rc.b + ss.b * rc.a});
+    break;
+  }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }

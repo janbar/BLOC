@@ -77,6 +77,7 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
         case Type::BOOLEAN:
         case Type::INTEGER:
         case Type::NUMERIC:
+        case Type::IMAGINARY:
         case Type::LITERAL:
         case Type::COMPLEX:
         case Type::TABCHAR:

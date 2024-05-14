@@ -63,6 +63,9 @@ const Statement * PRINTStatement::doit(Context& ctx) const
         case Type::NUMERIC:
           fputs(Value::readableNumeric(*val.numeric()).c_str(), ctx.ctxout());
           break;
+        case Type::IMAGINARY:
+          fputs(Value::readableImaginary(*val.imaginary()).c_str(), ctx.ctxout());
+          break;
         case Type::COMPLEX:
           fputs(Value::readableComplex(*val.complex()).c_str(), ctx.ctxout());
           break;

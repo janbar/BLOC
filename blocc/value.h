@@ -37,6 +37,7 @@ class Collection;
 typedef bool Bool;
 typedef int64_t Integer;
 typedef double Numeric;
+typedef struct { double a; double b; } Imaginary;
 typedef std::string Literal;
 typedef std::vector<char> TabChar;
 
@@ -67,6 +68,7 @@ public:
   LIBBLOC_API static const Type& type_boolean;
   LIBBLOC_API static const Type& type_integer;
   LIBBLOC_API static const Type& type_numeric;
+  LIBBLOC_API static const Type& type_imaginary;
   LIBBLOC_API static const Type& type_literal;
   LIBBLOC_API static const Type& type_complex;
   LIBBLOC_API static const Type& type_tabchar;
@@ -81,6 +83,7 @@ public:
   explicit Value(Bool v)    : _type(Type::BOOLEAN), _flags(NOTNULL) { _value.b = v; }
   explicit Value(Integer v) : _type(Type::INTEGER), _flags(NOTNULL) { _value.i = v; }
   explicit Value(Numeric v) : _type(Type::NUMERIC), _flags(NOTNULL) { _value.d = v; }
+  explicit Value(Imaginary * v);
   explicit Value(Literal * v);
   explicit Value(TabChar * v);
   explicit Value(Complex * v);
@@ -152,6 +155,13 @@ public:
     return (isNull() ? nullptr : &_value.d);
   }
 
+  Imaginary * imaginary()
+  {
+    if (_type != Type::IMAGINARY || _type.level())
+      throw RuntimeError(EXC_RT_NOT_IMAGINARY);
+    return _bloc_vcast_null(Imaginary);
+  }
+
   Literal * literal()
   {
     if (_type != Type::LITERAL || _type.level())
@@ -219,6 +229,7 @@ public:
   static std::string readableBoolean(Bool& b);
   static std::string readableInteger(Integer& l);
   static std::string readableNumeric(Numeric& d);
+  static std::string readableImaginary(Imaginary& i);
   static std::string readableLiteral(Literal& s);
   static std::string readableTabchar(TabChar& t);
   static std::string readableComplex(Complex& c);
