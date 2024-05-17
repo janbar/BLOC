@@ -26,7 +26,7 @@ namespace bloc
 std::string NumericExpression::unparse(Context& ctx) const
 {
   std::string str = Value::readableNumeric(*v.numeric());
-  if (str.find('.') == std::string::npos)
+  if (str.find('e') == std::string::npos && str.find('.') == std::string::npos)
     str.append(".0");
   return str;
 }
