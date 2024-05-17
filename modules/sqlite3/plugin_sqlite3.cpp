@@ -42,7 +42,7 @@ namespace SQLITE3
 /*  Constructors                                                      */
 /**********************************************************************/
 static PLUGIN_TYPE ctor_0_args[]  = {
-  { "C", 0 }, // sqlite3
+  { "O", 0 }, // sqlite3
 };
 
 static PLUGIN_TYPE ctor_1_args[]  = {

@@ -24,7 +24,7 @@ extern "C"
 {
 #endif
 
-#define PLUGIN_VERSION  240112
+#define PLUGIN_VERSION  240517
 
   typedef void* PLUGIN_HANDLE;
 
@@ -36,8 +36,9 @@ extern "C"
    *    B   -->   Boolean
    *    I   -->   Integer
    *    N   -->   Numeric
+   *    C   -->   Complex
    *    L   -->   Literal (C-String)
-   *    C   -->   Complex (Object like this)
+   *    O   -->   Object (this)
    *    X   -->   Bytes array
    *    R   -->   Opaque tuple
    *

@@ -57,7 +57,7 @@ static PLUGIN_TYPE ctor_0_args[]  = {
 };
 
 static PLUGIN_TYPE ctor_1_args[]  = {
-  { "C", 0 }, // date
+  { "O", 0 }, // date
 };
 
 static PLUGIN_TYPE ctor_2_args[]  = {
@@ -85,7 +85,7 @@ static PLUGIN_ARG format_args[]  = {
 };
 
 static PLUGIN_ARG diff_args[]  = {
-  { PLUGIN_IN,    { "C", 0 } }, // date0
+  { PLUGIN_IN,    { "O", 0 } }, // date0
 };
 
 static PLUGIN_ARG num_args[]  = {
@@ -119,9 +119,9 @@ static PLUGIN_METHOD methods[] =
           "Formats calendar according to ISO date format string." },
   { Difftime,   "difftime",     { "N", 0 },     1, diff_args,
           "Computes the difference between times in seconds." },
-  { Add,        "add",          { "C", 0 },     1, num_args,
+  { Add,        "add",          { "O", 0 },     1, num_args,
           "Add or remove day(s) to the calendar." },
-  { Add_unit,   "add",          { "C", 0 },     2, add_args,
+  { Add_unit,   "add",          { "O", 0 },     2, add_args,
           "Add or remove unit(s) to the calendar."
           "\nUnit could by among second, minute, hour, day, month, or year." },
   { Second,     "second",       { "I", 0 },     0, nullptr,
@@ -140,9 +140,9 @@ static PLUGIN_METHOD methods[] =
           "Returns week day of calendar. Monday=1 ... Sunday=7." },
   { Yearday,    "yearday",      { "I", 0 },     0, nullptr,
           "Returns year day of calendar." },
-  { Trunc,      "trunc",        { "C", 0 },     0, nullptr,
+  { Trunc,      "trunc",        { "O", 0 },     0, nullptr,
           "Truncate time to the calendar." },
-  { Trunc_unit, "trunc",        { "C", 0 },     1, trunc_args,
+  { Trunc_unit, "trunc",        { "O", 0 },     1, trunc_args,
           "Truncate the calendar to a specific unit."
           "\nUnit could by among minute, hour, day, month, or year." },
 };

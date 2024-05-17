@@ -43,7 +43,7 @@ static PLUGIN_TYPE ctor_0_args[]  = {
 };
 
 static PLUGIN_TYPE ctor_1_args[]  = {
-  { "C", 0 }, // utf8
+  { "O", 0 }, // utf8
 };
 
 static PLUGIN_CTOR ctors[] =
@@ -76,7 +76,7 @@ static PLUGIN_ARG string_args[]  = {
 };
 
 static PLUGIN_ARG utf8_args[]  = {
-  { PLUGIN_IN,    { "C", 0 } }, // utf8
+  { PLUGIN_IN,    { "O", 0 } }, // utf8
 };
 
 static PLUGIN_ARG remove_args[]  = {
@@ -91,7 +91,7 @@ static PLUGIN_ARG insert_args[]  = {
 
 static PLUGIN_ARG insertC_args[]  = {
   { PLUGIN_IN,    { "I", 0 } }, // integer
-  { PLUGIN_IN,    { "C", 0 } }, // utf8
+  { PLUGIN_IN,    { "O", 0 } }, // utf8
 };
 
 static PLUGIN_ARG substr_args[]  = {
@@ -115,11 +115,11 @@ static PLUGIN_METHOD methods[] =
           "Reserves storage for code point capacity." },
   { Clear,    "clear",      { "B", 0 },     0, nullptr,
           "Clears the contents." },
-  { Append,   "append",     { "C", 0 },     1, int_args,
+  { Append,   "append",     { "O", 0 },     1, int_args,
           "Appends a code point to the end." },
-  { AppendL,  "append",     { "C", 0 },     1, string_args,
+  { AppendL,  "append",     { "O", 0 },     1, string_args,
           "Appends a standard string to the end." },
-  { ConcatC,  "concat",     { "C", 0 },     1, utf8_args,
+  { ConcatC,  "concat",     { "O", 0 },     1, utf8_args,
           "Appends an unicode string to the end." },
   { Tostring, "string",     { "L", 0 },     0, nullptr,
           "Returns a standard string from the content." },
@@ -136,15 +136,15 @@ static PLUGIN_METHOD methods[] =
   { Substr2,  "substr",     { "L", 0 },     2, substr_args,
           "Returns a standard string from sub content starting at the position, and up"
           "\nto count of code point." },
-  { Toupper,  "toupper",    { "C", 0 },     0, nullptr,
+  { Toupper,  "toupper",    { "O", 0 },     0, nullptr,
           "Transform the content to upper case." },
-  { Tolower,  "tolower",    { "C", 0 },     0, nullptr,
+  { Tolower,  "tolower",    { "O", 0 },     0, nullptr,
           "Transform the content to lower case." },
-  { Normaliz, "normalize",  { "C", 0 },     0, nullptr,
+  { Normaliz, "normalize",  { "O", 0 },     0, nullptr,
           "Normalize the content, i.e removing extra spaces or control characters." },
-  { Capital,  "capitalize", { "C", 0 },     0, nullptr,
+  { Capital,  "capitalize", { "O", 0 },     0, nullptr,
           "Capitalize all words of the content." },
-  { Translit, "translit",   { "C", 0 },     0, nullptr,
+  { Translit, "translit",   { "O", 0 },     0, nullptr,
           "Transliterates the content to an ASCII string." },
 };
 
