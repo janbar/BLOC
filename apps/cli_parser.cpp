@@ -51,6 +51,11 @@
 #include <algorithm> // std::find
 #include <set>
 
+#ifdef HAVE_READLINE
+#include <readline/readline.h>
+#include <readline/history.h>
+#endif
+
 #if (defined(_WIN32) || defined(_WIN64))
 #define __WINDOWS__
 #endif
@@ -163,6 +168,10 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   sh.setCallback(sig_handler, &g_breaker);
   /* catch SIGINT to handle break */
   sh.catchSignal(SIGINT);
+#endif
+
+#ifdef HAVE_READLINE
+  stifle_history(512);
 #endif
 
   bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &read_input);
@@ -280,12 +289,69 @@ static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args)
 static void read_input(void * handle, char * buf, int * len, int max_size)
 {
   bloc::Parser * p = static_cast<bloc::Parser*>(handle);
+#ifdef HAVE_READLINE
+  /* a static variable for holding the line */
+  static char * line = nullptr;
+  static char * lpos = nullptr;
+
+  if (lpos)
+  {
+    if (*lpos == 0)
+    {
+      /* free old buffer before read new line */
+      free(line);
+      line = lpos = nullptr;
+    }
+    else
+    {
+      /* fill a chunk from previous read */
+      unsigned n = 0;
+      while (*lpos && n < (max_size - 1))
+      {
+        buf[n] = *lpos;
+        ++lpos;
+        ++n;
+      }
+      if (*lpos == 0)
+        buf[n++] = bloc::Parser::NewLine;
+      *len = n;
+      return;
+    }
+  }
+  /* get a new line */
+  if (p->state() == bloc::Parser::PARSE)
+    line = readline("... ");
+  else {
+    line = readline(">>> ");
+  }
+  /* if the line has any text in it */
+  if (line && *line)
+  {
+    /* save it on the history */
+    add_history(line);
+    unsigned n = 0;
+    lpos = line;
+    while (*lpos && n < (max_size - 1))
+    {
+      buf[n] = *lpos;
+      ++lpos;
+      ++n;
+    }
+    if (*lpos == 0)
+      buf[n++] = bloc::Parser::NewLine;
+    *len = n;
+    return;
+  }
+  *buf = bloc::Parser::NewLine;
+  *len = 1;
+#else
   if (p->state() == bloc::Parser::PARSE)
     PRINT("... ");
   else
     PRINT(">>> ");
   FLUSHOUT;
   *len = bloc_readstdin(buf, max_size);
+#endif
 }
 
 static CMD find_cmd(const std::string& c)

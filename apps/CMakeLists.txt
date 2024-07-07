@@ -7,6 +7,11 @@ file(GLOB bloc_SOURCES
 )
 
 if(UNIX)
+  find_package(Readline REQUIRED)
+  if(READLINE_FOUND)
+   include_directories(${Readline_INCLUDE_DIR})
+   add_definitions("-DHAVE_READLINE")
+  endif()
   list(APPEND bloc_SOURCES signalhandler.cpp)
 elseif(MSVC)
   list(APPEND bloc_SOURCES winstub.cpp)
@@ -15,6 +20,9 @@ endif()
 add_executable(bloc ${bloc_SOURCES})
 add_dependencies(bloc blocc)
 target_link_libraries(bloc blocc ${blocc_LIBRARIRES})
+if(READLINE_FOUND)
+  target_link_libraries(bloc ${Readline_LIBRARY})
+endif()
 
 ###############################################################################
 # install targets
