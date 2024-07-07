@@ -119,12 +119,12 @@ SUBRAWExpression * SUBRAWExpression::parse(Parser& p, Context& ctx)
     if (!ParseExpression::typeChecking(args.back(), Type::TABCHAR, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_SUBRAW]);
     t = p.pop();
-    if (t->code != Parser::CHAIN)
+    if (t->code != Parser::Chain)
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_SUBRAW]);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_SUBRAW]);
-    if (p.front()->code == Parser::CHAIN)
+    if (p.front()->code == Parser::Chain)
     {
       t = p.pop();
       args.push_back(ParseExpression::expression(p, ctx));

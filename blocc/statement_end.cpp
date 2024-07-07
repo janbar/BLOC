@@ -42,7 +42,7 @@ ENDStatement * ENDStatement::parse(Parser& p, Context& ctx, STATEMENT endof)
          throw ParseError(EXC_PARSE_OTHER_S, "unexpected END keyword. Waiting for END LOOP.");
       return s;
     case STMT_END:
-      if (t->code != Parser::SEPARATOR)
+      if (t->code != Parser::Separator)
         throw ParseError(EXC_PARSE_OTHER_S, "Extra input beyond END keyword.");
       p.push(t);
       return s;

@@ -277,7 +277,7 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
       throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT]);
     t = p.pop();
-    if (t->code != Parser::CHAIN)
+    if (t->code != Parser::Chain)
       throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, KEYWORDS[BTM_INSERT]);
 
     args.push_back(ParseExpression::expression(p, ctx));

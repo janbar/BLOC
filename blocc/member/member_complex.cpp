@@ -95,7 +95,7 @@ std::string MemberMETHODExpression::unparse(Context& ctx) const
   for (int i = 0; i < _args.size(); ++i)
   {
     if (i > 0)
-      sb.append(1, Parser::CHAIN).append(1, ' ');
+      sb.append(1, Parser::Chain).append(1, ' ');
     sb.append(_args[i]->unparse(ctx));
   }
   sb.append(1, ')');
@@ -125,7 +125,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
       {
         args.push_back(ParseExpression::expression(p, ctx));
         t = p.pop();
-        if (t->code == Parser::CHAIN)
+        if (t->code == Parser::Chain)
           continue;
         if (t->code != ')')
           throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str());

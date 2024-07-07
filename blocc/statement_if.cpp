@@ -70,7 +70,7 @@ void IFStatement::unparse(Context& ctx, FILE * out) const
         fputs(KEYWORDS[STMT_IF], out);
       else
       {
-        for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+        for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::Indent, out);
         fputs(KEYWORDS[STMT_ELSIF], out);
       }
       fputc(' ', out);
@@ -80,10 +80,10 @@ void IFStatement::unparse(Context& ctx, FILE * out) const
     }
     else
     {
-      for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+      for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::Indent, out);
       fputs(KEYWORDS[STMT_ELSE], out);
     }
-    fputc(Parser::NEWLINE, out);
+    fputc(Parser::NewLine, out);
     ctx.execBegin(this);
     it->second->unparse(out);
     ctx.execEnd();
@@ -100,7 +100,7 @@ Executable * IFStatement::parse_clause(Parser& p, Context& ctx)
     TokenPtr t;
     while (!end && (t = p.pop()))
     {
-      if (t->code == Parser::SEPARATOR)
+      if (t->code == Parser::Separator)
         continue;
       /* check for ending */
       if (t->code == TOKEN_KEYWORD &&
@@ -166,7 +166,7 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
       /* parse statement END */
       exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDIF));
       t = p.pop();
-      if (t->code != Parser::SEPARATOR)
+      if (t->code != Parser::Separator)
         throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
       break;
     }

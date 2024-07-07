@@ -30,7 +30,7 @@
 namespace bloc
 {
 
-const char * Parser::INDENT = "    ";
+const char * Parser::Indent = "    ";
 
 Parser::~Parser()
 {
@@ -138,10 +138,10 @@ Statement * Parser::parseStatement()
     switch (t->code)
     {
     /* at begining feedback NEWLINE */
-    case NEWLINE:
+    case NewLine:
       pop();
       return nullptr;
-    case SEPARATOR:
+    case Separator:
       pop();
       continue;
     default:
@@ -212,7 +212,7 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
       try { t = p.front(); } catch (ParseError& ee) { break; }
       switch (t->code)
       {
-      case SEPARATOR:
+      case Separator:
         p.pop();
         continue;
       default:
@@ -258,13 +258,13 @@ bool Parser::next_token(TokenPtr& token) {
     /* discard incoming tokens until new line */
     if (state() == CLEAR)
     {
-      if (tc == NEWLINE)
+      if (tc == NewLine)
         state(BEGIN);
       continue;
     }
 
     switch (tc) {
-    case NEWLINE:
+    case NewLine:
       /* until new statement, let the caller handling NL  */
       if (state() != PARSE)
         t = new Token(tc, ts);

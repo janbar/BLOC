@@ -190,7 +190,7 @@ void FORALLStatement::unparse(Context& ctx, FILE * out) const
     break;
   }
   fputs(KEYWORDS[STMT_LOOP], out);
-  fputc(Parser::NEWLINE, out);
+  fputc(Parser::NewLine, out);
   ctx.execBegin(this);
   _exec->unparse(out);
   ctx.execEnd();
@@ -250,7 +250,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
     TokenPtr t;
     while (!end && (t = p.pop()))
     {
-      if (t->code == Parser::SEPARATOR)
+      if (t->code == Parser::Separator)
         continue;
       /* check for ending */
       if (t->code == TOKEN_KEYWORD && t->text == KEYWORDS[STMT_END])
@@ -347,7 +347,7 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     /* parse statement END */
     s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
     t = p.pop();
-    if (t->code != Parser::SEPARATOR)
+    if (t->code != Parser::Separator)
       throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
     return s;
   }

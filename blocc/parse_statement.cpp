@@ -163,7 +163,7 @@ Statement * ParseStatement::parse()
         return beyond_statement(s);
       }
       break;
-    case Parser::SEPARATOR:
+    case Parser::Separator:
       return nullptr;
     default:
       break;
@@ -187,7 +187,7 @@ Statement * ParseStatement::beyond_statement(Statement * s)
   TokenPtr t = p.pop();
   if (t->code == ')')
     throw ParseError(EXC_PARSE_MM_PARENTHESIS);
-  if (t->code != Parser::SEPARATOR)
+  if (t->code != Parser::Separator)
     throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
   return s;
 }
@@ -196,7 +196,7 @@ Statement * ParseStatement::chain_statement(Statement * s)
 {
   TokenPtr t = p.pop();
   /* parse next chained or finish */
-  if (t->code == Parser::CHAIN)
+  if (t->code == Parser::Chain)
   {
     s->setNext(statement(p, ctx));
     return s;

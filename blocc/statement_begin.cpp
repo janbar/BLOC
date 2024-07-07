@@ -101,24 +101,24 @@ const Statement * BEGINStatement::doit(Context& ctx) const
 void BEGINStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
-  fputc(Parser::NEWLINE, out);
+  fputc(Parser::NewLine, out);
   ctx.execBegin(this);
   _exec->unparse(out);
   ctx.execEnd();
   if (!_catches.empty())
   {
-    for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+    for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::Indent, out);
     fputs(Statement::KEYWORDS[STMT_EXCEPTION], out);
-    fputc(Parser::NEWLINE, out);
+    fputc(Parser::NewLine, out);
     for (auto& c : _catches)
     {
-      for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::INDENT, out);
+      for (size_t i = 0; i < ctx.execLevel(); ++i) fputs(Parser::Indent, out);
       fputs(Statement::KEYWORDS[STMT_WHEN], out);
       fputc(' ', out);
       fputs(c.first.c_str(), out);
       fputc(' ', out);
       fputs(Statement::KEYWORDS[STMT_THEN], out);
-      fputc(Parser::NEWLINE, out);
+      fputc(Parser::NewLine, out);
       ctx.execBegin(this);
       c.second->unparse(out);
       ctx.execEnd();
@@ -134,7 +134,7 @@ Executable * BEGINStatement::parse_catch(Parser& p, Context& ctx)
     TokenPtr t;
     while ((t = p.pop()))
     {
-      if (t->code == Parser::SEPARATOR)
+      if (t->code == Parser::Separator)
         continue;
       /* check for ending */
       if (t->code == TOKEN_KEYWORD &&
@@ -172,7 +172,7 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
     for (;;)
     {
       t = p.pop();
-      if (t->code == Parser::SEPARATOR)
+      if (t->code == Parser::Separator)
         continue;
       /* check for ending */
       if (t->text == KEYWORDS[STMT_END] || t->text == KEYWORDS[STMT_EXCEPTION])
@@ -220,7 +220,7 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
       statements.push_back(ENDStatement::parse(p, ctx, STMT_END));
     }
     t = p.pop();
-    if (t->code != Parser::SEPARATOR)
+    if (t->code != Parser::Separator)
       throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
   }
   catch (ParseError& pe)

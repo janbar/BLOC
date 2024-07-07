@@ -60,7 +60,7 @@ RETURNStatement * RETURNStatement::parse(Parser& p, Context& ctx)
 {
   RETURNStatement * s = new RETURNStatement();
   TokenPtr t = p.front();
-  if (t->code == Parser::SEPARATOR)
+  if (t->code == Parser::Separator)
     return s;
   try
   {

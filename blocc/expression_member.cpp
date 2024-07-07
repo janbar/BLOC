@@ -61,7 +61,7 @@ std::string MemberExpression::unparse(Context& ctx) const
   for (int i = 0; i < _args.size(); ++i)
   {
     if (i > 0)
-      sb.append(1, Parser::CHAIN).append(1, ' ');
+      sb.append(1, Parser::Chain).append(1, ' ');
     sb.append(_args[i]->unparse(ctx));
   }
   sb.append(1, ')');

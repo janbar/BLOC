@@ -55,8 +55,8 @@ std::string FunctorExpression::unparse(Context& ctx) const
   std::string sb((*_fentry)->name);
   sb.append("(");
   for (const Expression * e : _args)
-    sb.append(e->unparse(ctx)).append(1, Parser::CHAIN);
-  if (sb.back() == Parser::CHAIN)
+    sb.append(e->unparse(ctx)).append(1, Parser::Chain);
+  if (sb.back() == Parser::Chain)
     sb.back() = ')';
   else
     sb.push_back(')');
@@ -83,7 +83,7 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, const std:
       {
         args.push_back(ParseExpression::expression(p, ctx));
         t = p.pop();
-        if (t->code == Parser::CHAIN)
+        if (t->code == Parser::Chain)
           continue;
         if (t->code != ')')
           throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str());

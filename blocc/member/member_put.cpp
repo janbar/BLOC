@@ -200,7 +200,7 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
       throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_PUT]);
     t = p.pop();
-    if (t->code != Parser::CHAIN)
+    if (t->code != Parser::Chain)
       throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, KEYWORDS[BTM_PUT]);
 
     args.push_back(ParseExpression::expression(p, ctx));

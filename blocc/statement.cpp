@@ -58,7 +58,7 @@ void Statement::unparse_next(Context& ctx, FILE * out) const
   if (_next)
   {
     fputc(' ', out);
-    fputc(Parser::CHAIN, out);
+    fputc(Parser::Chain, out);
     fputc(' ', out);
     _next->unparse(ctx, out);
   }

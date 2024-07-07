@@ -254,7 +254,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
       }
 
       /* drop newline beyond the statement */
-      if (p->front() && p->front()->code == bloc::Parser::NEWLINE)
+      if (p->front() && p->front()->code == bloc::Parser::NewLine)
         p->pop();
     }
   }
@@ -671,7 +671,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     }
     t = p.pop();
     ctx.describeSymbol(t->text);
-    fputc(bloc::Parser::NEWLINE, STDOUT);
+    fputc(bloc::Parser::NewLine, STDOUT);
     p.clear();
     return 1;
   }
@@ -692,7 +692,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
       PRINTBUF(NORM, sizeof(NORM), STDOUT);
     FLUSHOUT;
     ctx.dumpVariables();
-    fputc(bloc::Parser::NEWLINE, STDOUT);
+    fputc(bloc::Parser::NewLine, STDOUT);
     p.clear();
     return 1;
   }
@@ -711,10 +711,10 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     for (auto s : statements)
     {
       s->unparse(ctx, STDOUT);
-      fputc(bloc::Parser::SEPARATOR, STDOUT);
-      fputc(bloc::Parser::NEWLINE, STDOUT);
+      fputc(bloc::Parser::Separator, STDOUT);
+      fputc(bloc::Parser::NewLine, STDOUT);
     }
-    fputc(bloc::Parser::NEWLINE, STDOUT);
+    fputc(bloc::Parser::NewLine, STDOUT);
     p.clear();
     return 1;
   }
@@ -727,8 +727,8 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       exp = p.parseExpression();
       /* eat extra terminators */
-      while ((t = p.pop())->code == bloc::Parser::SEPARATOR) { }
-      if (t->code != bloc::Parser::NEWLINE)
+      while ((t = p.pop())->code == bloc::Parser::Separator) { }
+      if (t->code != bloc::Parser::NewLine)
         throw bloc::ParseError(bloc::EXC_PARSE_EXPRESSION_END_S, t->text.c_str());
       g_breaker.state = false;
       ctx.saveReturned(exp->value(ctx));
@@ -750,7 +750,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       if (exp)
         delete exp;
-      if ((t = p.pop())->code != bloc::Parser::NEWLINE)
+      if ((t = p.pop())->code != bloc::Parser::NewLine)
         p.clear();
       set_color(fgRED); PRINT1("Error: %s\n", ee.what()); reset_color();
     }
@@ -761,7 +761,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     std::string path;
     p.pop();
     t = p.pop();
-    if (t->code == bloc::Parser::NEWLINE)
+    if (t->code == bloc::Parser::NewLine)
     {
       p.push(t);
       return 0;
@@ -770,12 +770,12 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       bloc::Value str = bloc::Value::parseLiteral(t->text);
       path.assign(*str.literal());
-      if (p.front()->code != bloc::Parser::NEWLINE)
+      if (p.front()->code != bloc::Parser::NewLine)
         p.clear();
     }
     else
     {
-      while (t->code != bloc::Parser::NEWLINE)
+      while (t->code != bloc::Parser::NewLine)
       {
         path.append(t->text);
         /* pop all to follow */
@@ -821,7 +821,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     std::string path;
     p.pop();
     t = p.pop();
-    if (t->code == bloc::Parser::NEWLINE)
+    if (t->code == bloc::Parser::NewLine)
     {
       p.push(t);
       return 0;
@@ -830,12 +830,12 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       bloc::Value str = bloc::Value::parseLiteral(t->text);
       path.assign(*str.literal());
-      if (p.front()->code != bloc::Parser::NEWLINE)
+      if (p.front()->code != bloc::Parser::NewLine)
         p.clear();
     }
     else
     {
-      while (t->code != bloc::Parser::NEWLINE)
+      while (t->code != bloc::Parser::NewLine)
       {
         path.append(t->text);
         /* pop all to follow */
@@ -862,8 +862,8 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     for (auto s : statements)
     {
       s->unparse(ctx, progfile);
-      fputc(bloc::Parser::SEPARATOR, progfile);
-      fputc(bloc::Parser::NEWLINE, progfile);
+      fputc(bloc::Parser::Separator, progfile);
+      fputc(bloc::Parser::NewLine, progfile);
     }
     ::fclose(progfile);
     return 1;
@@ -873,12 +873,12 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     std::string cmd;
     p.pop();
     t = p.pop();
-    if (t->code == bloc::Parser::NEWLINE)
+    if (t->code == bloc::Parser::NewLine)
     {
       p.push(t);
       return 0;
     }
-    while (t->code != bloc::Parser::NEWLINE)
+    while (t->code != bloc::Parser::NewLine)
     {
       cmd.append(t->text);
       /* pop all to follow */
@@ -908,7 +908,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
   {
     p.pop();
     t = p.pop();
-    if (t->code == bloc::Parser::NEWLINE)
+    if (t->code == bloc::Parser::NewLine)
     {
       print_btml(HELP_CATEGORIES[0].text, *HELP_CATEGORIES[0].text_len);
       PRINT("\n");
@@ -925,7 +925,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       set_color(fgRED); PRINT("Not a keyword. type \"help\" for usage.\n"); reset_color();
     }
-    if (t->code != bloc::Parser::NEWLINE)
+    if (t->code != bloc::Parser::NewLine)
       p.clear();
     return 1;
   }

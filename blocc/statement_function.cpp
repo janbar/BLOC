@@ -59,7 +59,7 @@ void FUNCTIONStatement::unparse(Context& ctx, FILE * out) const
     for (Symbol& s : _functor->params)
     {
       if (chained)
-        fputc(Parser::CHAIN, out);
+        fputc(Parser::Chain, out);
       fputs(s.name().c_str(), out);
       chained = true;
     }
@@ -76,7 +76,7 @@ void FUNCTIONStatement::unparse(Context& ctx, FILE * out) const
       fputs(_functor->returns.typeName().c_str(), out);
   }
   fputs(" is", out);
-  fputc(Parser::NEWLINE, out);
+  fputc(Parser::NewLine, out);
   _functor->body->unparse(*_functor->ctx, out);
 }
 
@@ -115,7 +115,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
           /* register the symbol for later use */
           fct->params.push_back(fct->ctx->registerSymbol(t->text, Type::NO_TYPE));
           t = p.pop();
-        } while (t->code == Parser::CHAIN);
+        } while (t->code == Parser::Chain);
         if (t->code != ')')
           throw ParseError(EXC_PARSE_MM_PARENTHESIS);
       }

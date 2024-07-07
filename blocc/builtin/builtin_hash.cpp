@@ -110,7 +110,7 @@ HASHExpression * HASHExpression::parse(Parser& p, Context& ctx)
     default:
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH]);
     }
-    if (p.front()->code == Parser::CHAIN)
+    if (p.front()->code == Parser::Chain)
     {
       t = p.pop();
       args.push_back(ParseExpression::expression(p, ctx));

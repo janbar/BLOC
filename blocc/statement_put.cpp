@@ -91,7 +91,7 @@ PUTStatement * PUTStatement::parse(Parser& p, Context& ctx)
   PUTStatement * s = new PUTStatement();
   try
   {
-    while (p.front()->code != Parser::SEPARATOR)
+    while (p.front()->code != Parser::Separator)
       s->_args.push_back(ParseExpression::expression(p, ctx));
     return s;
   }

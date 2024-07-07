@@ -76,7 +76,7 @@ READExpression * READExpression::parse(Parser& p, Context& ctx)
     VariableExpression * var = dynamic_cast<VariableExpression*>(args.back());
     if (var == nullptr || !ParseExpression::typeChecking(var, Type::LITERAL, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READ]);
-    if (p.front()->code == Parser::CHAIN)
+    if (p.front()->code == Parser::Chain)
     {
       t = p.pop();
       args.push_back(ParseExpression::expression(p, ctx));

@@ -33,10 +33,10 @@ namespace bloc
 class Parser {
 
 public:
-  static const char NEWLINE       = '\n';
-  static const char SEPARATOR     = ';';
-  static const char CHAIN         = ',';
-  static const char * INDENT;
+  static const char NewLine       = '\n';
+  static const char Separator     = ';';
+  static const char Chain         = ',';
+  static const char * Indent;
 
   enum STATE {
     BEGIN      = 0,

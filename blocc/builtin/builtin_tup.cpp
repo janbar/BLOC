@@ -86,7 +86,7 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
           throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
         }
         t = p.pop();
-        if (t->code == Parser::CHAIN)
+        if (t->code == Parser::Chain)
           continue;
         p.push(t);
         break;

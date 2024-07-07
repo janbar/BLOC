@@ -88,7 +88,7 @@ RSUBSTRExpression * RSUBSTRExpression::parse(Parser& p, Context& ctx)
     if (!ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_RSUB]);
     t = p.pop();
-    if (t->code != Parser::CHAIN)
+    if (t->code != Parser::Chain)
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_RSUB]);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))

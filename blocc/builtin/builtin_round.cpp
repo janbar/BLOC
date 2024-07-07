@@ -114,7 +114,7 @@ ROUNDExpression * ROUNDExpression::parse(Parser& p, Context& ctx)
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::NUMERIC, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_ROUND]);
-    if (p.front()->code == Parser::CHAIN)
+    if (p.front()->code == Parser::Chain)
     {
       t = p.pop();
       args.push_back(ParseExpression::expression(p, ctx));

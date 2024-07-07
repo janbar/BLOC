@@ -103,8 +103,8 @@ std::string MemberSETExpression::unparse(Context& ctx) const
   sb.append(std::to_string(_index + 1));
   sb.append("(");
   for (const Expression * e : _args)
-    sb.append(e->unparse(ctx)).append(1, Parser::CHAIN);
-  if (sb.back() == Parser::CHAIN)
+    sb.append(e->unparse(ctx)).append(1, Parser::Chain);
+  if (sb.back() == Parser::Chain)
     sb.back() = ')';
   else
     sb.push_back(')');
