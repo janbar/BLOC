@@ -54,6 +54,8 @@
 #ifdef HAVE_READLINE
 #include <readline/readline.h>
 #include <readline/history.h>
+/* a static variable for holding the line */
+static char * rl_line = nullptr;
 #endif
 
 #if (defined(_WIN32) || defined(_WIN64))
@@ -275,6 +277,10 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   sh.omitSignal(SIGINT);
   sh.setCallback(nullptr, nullptr);
 #endif
+#ifdef HAVE_READLINE
+  if (rl_line)
+    free(rl_line);
+#endif
 }
 
 static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args)
@@ -290,29 +296,27 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
 {
   bloc::Parser * p = static_cast<bloc::Parser*>(handle);
 #ifdef HAVE_READLINE
-  /* a static variable for holding the line */
-  static char * line = nullptr;
-  static char * lpos = nullptr;
-
-  if (lpos)
+  /* a static variable to store the read position */
+  static char * rl_pos = nullptr;
+  if (rl_pos)
   {
-    if (*lpos == 0)
+    if (*rl_pos == 0)
     {
       /* free old buffer before read new line */
-      free(line);
-      line = lpos = nullptr;
+      free(rl_line);
+      rl_line = rl_pos = nullptr;
     }
     else
     {
       /* fill a chunk from previous read */
       unsigned n = 0;
-      while (*lpos && n < (max_size - 1))
+      while (*rl_pos && n < (max_size - 1))
       {
-        buf[n] = *lpos;
-        ++lpos;
+        buf[n] = *rl_pos;
+        ++rl_pos;
         ++n;
       }
-      if (*lpos == 0)
+      if (*rl_pos == 0)
         buf[n++] = bloc::Parser::NewLine;
       *len = n;
       return;
@@ -320,30 +324,40 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
   }
   /* get a new line */
   if (p->state() == bloc::Parser::Parsing)
-    line = readline("... ");
+    rl_line = readline("... ");
   else {
-    line = readline(">>> ");
+    rl_line = readline(">>> ");
   }
   /* if the line has any text in it */
-  if (line && *line)
+  if (rl_line)
   {
-    /* save it on the history */
-    add_history(line);
-    unsigned n = 0;
-    lpos = line;
-    while (*lpos && n < (max_size - 1))
+    if (*rl_line)
     {
-      buf[n] = *lpos;
-      ++lpos;
-      ++n;
+      /* save it on the history */
+      add_history(rl_line);
+      unsigned n = 0;
+      rl_pos = rl_line;
+      while (*rl_pos && n < (max_size - 1))
+      {
+        buf[n] = *rl_pos;
+        ++rl_pos;
+        ++n;
+      }
+      if (*rl_pos == 0)
+        buf[n++] = bloc::Parser::NewLine;
+      *len = n;
     }
-    if (*lpos == 0)
-      buf[n++] = bloc::Parser::NewLine;
-    *len = n;
-    return;
+    else
+    {
+      *buf = bloc::Parser::NewLine;
+      *len = 1;
+    }
   }
-  *buf = bloc::Parser::NewLine;
-  *len = 1;
+  else
+  {
+    /* EOF */
+    *len = 0;
+  }
 #else
   if (p->state() == bloc::Parser::PARSE)
     PRINT("... ");
