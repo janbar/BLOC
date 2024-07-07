@@ -5,7 +5,8 @@ Maintainer: janbar <jlbarriere68@gmail.com>
 Build-Depends: cmake,
                git,
                debhelper (>= 9.0.0),
-               libsqlite3-dev
+               libsqlite3-dev,
+               libreadline-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/janbar/BLOC
 

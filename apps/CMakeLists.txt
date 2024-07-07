@@ -7,7 +7,7 @@ file(GLOB bloc_SOURCES
 )
 
 if(UNIX)
-  find_package(Readline REQUIRED)
+  find_package(Readline QUIET)
   if(READLINE_FOUND)
    include_directories(${Readline_INCLUDE_DIR})
    add_definitions("-DHAVE_READLINE")
