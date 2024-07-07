@@ -38,12 +38,12 @@ public:
   static const char Chain         = ',';
   static const char * Indent;
 
-  enum STATE {
-    BEGIN      = 0,
-    PARSE,
-    END,
-    CLEAR,
-    ABORT,
+  enum State {
+    Begin      = 0,
+    Parsing,
+    End,
+    Cleared,
+    Aborted,
   };
 
   ~Parser();
@@ -96,7 +96,7 @@ public:
    */
   Expression * parseExpression();
 
-  STATE state() { return _state; }
+  State state() { return _state; }
 
   Context& context() { return _ctx; }
 
@@ -120,12 +120,12 @@ private:
   explicit Parser(Context& ctx) : _ctx(ctx) { }
 
   Context& _ctx;
-  STATE _state = BEGIN;
+  State _state = Begin;
   TOKEN_SCANNER _scanner = nullptr;
   std::list<TokenPtr> _tokens;
   std::string _string_buffer;
 
-  void state(STATE state) { _state = state; }
+  void state(State state) { _state = state; }
   bool init_scanner(void * reader_hdl, TOKEN_READER reader);
   void close_scanner();
   bool next_token(TokenPtr& token);

@@ -76,7 +76,7 @@ void Parser::push_back(const TokenPtr& t) {
 void Parser::clear() {
   _tokens.clear();
   /* discard tokens until new line */
-  state(CLEAR);
+  state(Cleared);
 }
 
 bool Parser::popAny(TokenPtr& token) {
@@ -132,7 +132,7 @@ Parser * Parser::createInteractiveParser(Context& ctx, TOKEN_READER reader)
 Statement * Parser::parseStatement()
 {
   TokenPtr t;
-  state(BEGIN);
+  state(Begin);
   while ((t = front()))
   {
     switch (t->code)
@@ -150,21 +150,21 @@ Statement * Parser::parseStatement()
 
     try
     {
-      state(PARSE);
+      state(Parsing);
       _ctx.parsingBegin();
       Statement * s = ParseStatement::statement(*this, _ctx);
       _ctx.parsingEnd();
-      state(END);
+      state(End);
       return s;
     }
     catch (...)
     {
       _ctx.parsingEnd();
-      state(END);
+      state(End);
       throw;
     }
   }
-  state(ABORT);
+  state(Aborted);
   return nullptr;
 }
 
@@ -202,7 +202,7 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
   p.trace(trace);
   std::list<const Statement*> statements;
 
-  p.state(PARSE);
+  p.state(Parsing);
   try
   {
     ctx.parsingBegin();
@@ -256,17 +256,17 @@ bool Parser::next_token(TokenPtr& token) {
       return false;
 
     /* discard incoming tokens until new line */
-    if (state() == CLEAR)
+    if (state() == Cleared)
     {
       if (tc == NewLine)
-        state(BEGIN);
+        state(Begin);
       continue;
     }
 
     switch (tc) {
     case NewLine:
       /* until new statement, let the caller handling NL  */
-      if (state() != PARSE)
+      if (state() != Parsing)
         t = new Token(tc, ts);
       break;
     case TOKEN_SPACE:

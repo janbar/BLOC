@@ -181,7 +181,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   load_args(ctx, std::move(args));
   std::list<const bloc::Statement*> statements;
 
-  while (p->state() != bloc::Parser::ABORT)
+  while (p->state() != bloc::Parser::Aborted)
   {
     const bloc::Statement * s = nullptr;
     bloc::TokenPtr t;
@@ -319,7 +319,7 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
     }
   }
   /* get a new line */
-  if (p->state() == bloc::Parser::PARSE)
+  if (p->state() == bloc::Parser::Parsing)
     line = readline("... ");
   else {
     line = readline(">>> ");
