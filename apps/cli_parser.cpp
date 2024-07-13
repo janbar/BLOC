@@ -359,7 +359,7 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
     *len = 0;
   }
 #else
-  if (p->state() == bloc::Parser::PARSE)
+  if (p->state() == bloc::Parser::Parsing)
     PRINT("... ");
   else
     PRINT(">>> ");
