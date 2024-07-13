@@ -11,4 +11,4 @@ started.
   --debug            enable debug messages
 
 When running a program or interactive mode, all arguments passed in the
-command line will be stored in the context as variables $0..$n.
+command line will be stored in the context as the table variable $ARG.
