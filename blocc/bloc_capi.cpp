@@ -173,6 +173,34 @@ bloc_free_value(bloc_value *v)
 }
 
 bloc_value*
+bloc_create_null(bloc_type_major type)
+{
+  switch(type)
+  {
+  case BOOLEAN:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::BOOLEAN)));
+  case INTEGER:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::INTEGER)));
+  case NUMERIC:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::NUMERIC)));
+  case LITERAL:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::LITERAL)));
+  case COMPLEX:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::COMPLEX)));
+  case TABCHAR:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::TABCHAR)));
+  case ROWTYPE:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::ROWTYPE)));
+  case POINTER:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::POINTER)));
+  case IMAGINARY:
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::IMAGINARY)));
+  default:
+   return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::NO_TYPE)));
+  }
+}
+
+bloc_value*
 bloc_create_boolean(bloc_bool v)
 {
   return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Bool(to_bool(v))));
@@ -203,6 +231,15 @@ bloc_create_tabchar(const char *v, unsigned len)
   bloc::TabChar * tv = new bloc::TabChar(len);
   tv->assign(v, v + len);
   return reinterpret_cast<bloc_value*>(new bloc::Value(tv));
+}
+
+bloc_value*
+bloc_create_imaginary(bloc_pair i)
+{
+  bloc::Imaginary * ii = new bloc::Imaginary;
+  ii->a = i.a;
+  ii->b = i.b;
+  return reinterpret_cast<bloc_value*>(new bloc::Value(ii));
 }
 
 bloc_type
@@ -320,6 +357,21 @@ bloc_tuple(bloc_value *v, bloc_row **row)
   {
     bloc::Tuple * tup = reinterpret_cast<bloc::Value*>(v)->tuple();
     *row = reinterpret_cast<bloc_row*>(tup);
+    return bloc_true;
+  }
+  catch (bloc::RuntimeError& re)
+  {
+    bloc_error_set(re.what(), re.no);
+    return bloc_false;
+  }
+}
+
+bloc_bool
+bloc_imaginary(bloc_value* v, bloc_pair **buf)
+{
+  try
+  {
+    *buf = reinterpret_cast<bloc_pair*>(reinterpret_cast<bloc::Value*>(v)->imaginary());
     return bloc_true;
   }
   catch (bloc::RuntimeError& re)

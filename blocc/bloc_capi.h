@@ -48,6 +48,7 @@ typedef enum
   TABCHAR,
   ROWTYPE,
   POINTER,
+  IMAGINARY,
 } bloc_type_major;
 
 typedef struct
@@ -59,6 +60,11 @@ typedef struct
 typedef char bloc_bool;
 #define bloc_true  1
 #define bloc_false 0
+
+typedef struct {
+  double a;
+  double b;
+} bloc_pair;
 
 LIBBLOC_API const char*
 bloc_strerror();
@@ -129,6 +135,13 @@ LIBBLOC_API void
 bloc_free_value(bloc_value *v);
 
 /**
+ * Returns new null value from given type.
+ * Returned pointer must be freed using bloc_free_value().
+ */
+LIBBLOC_API bloc_value*
+bloc_create_null(bloc_type_major type);
+
+/**
  * Returns new boolean value.
  * Returned pointer must be freed using bloc_free_value().
  */
@@ -162,6 +175,13 @@ bloc_create_literal(const char *v);
  */
 LIBBLOC_API bloc_value*
 bloc_create_tabchar(const char *v, unsigned len);
+
+/**
+ * Returns new imaginary value.
+ * Returned pointer must be freed using bloc_free_value().
+ */
+LIBBLOC_API bloc_value*
+bloc_create_imaginary(bloc_pair i);
 
 /* */
 
@@ -199,6 +219,9 @@ bloc_table(bloc_value *v, bloc_array **array);
 
 LIBBLOC_API bloc_bool
 bloc_tuple(bloc_value *v, bloc_row **row);
+
+LIBBLOC_API bloc_bool
+bloc_imaginary(bloc_value *v, bloc_pair **buf);
 
 /* */
 

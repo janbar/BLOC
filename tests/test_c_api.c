@@ -83,6 +83,20 @@ int main(int argc, char** argv)
   }
 
   {
+    bloc_pair p = { 1.23456, -6.54321 };
+    bloc_value * tmp_a = bloc_create_imaginary(p);
+    bloc_symbol * sym_a = bloc_ctx_register_symbol(ctx, "C", bloc_value_type(tmp_a));
+    bloc_ctx_store_variable(ctx, sym_a, tmp_a);
+    bloc_free_value(tmp_a);
+
+    bloc_value * sto_a = bloc_ctx_load_variable(ctx, sym_a);
+
+    bloc_pair * val;
+    if (bloc_imaginary(sto_a, &val))
+      printf("C        = { %g , %g }\n", val->a, val->b);
+  }
+
+  {
     double * val;
     bloc_expression * e = bloc_parse_expression(ctx, "sqrt( sin(3*pi/4)**2 + cos(3*pi/4)**2 )\n");
     bloc_value * v;
