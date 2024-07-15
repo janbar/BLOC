@@ -25,7 +25,7 @@ endif()
 ###############################################################################
 # install targets
 
-if(NOT SKIP_INSTALL_ALL AND plplot_FOUND)
+if(NOT SKIP_INSTALL_ALL AND PLplot_FOUND)
 
   if(NOT MSVC)
     # Set install paths
