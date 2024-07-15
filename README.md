@@ -4,7 +4,7 @@
 # BLOC
 A modular interpreter based on PL syntax.
 
-BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). Samples of module are "file", "date", "utf8", or "sqlite3" that allows to operate others types.
+BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). Samples of module are "file", "date", "utf8", "sqlite3", or "plplot" that allows to operate others types. See [module sample](./modules/plplot/).
 
 Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table. For now, it processes twice as fast as Python.
 
@@ -78,7 +78,7 @@ Learn more about typing:
 
 The example to follow uses the complex type (ii) to calculate Z of a Low Pass Filter order 2 (LC) loaded by a resistor R.
 ```
-L = 1.8e-3; /* 1mH */
+L = 1.8e-3; /* 1.8mH */
 C = 14e-6;  /* 14uF */
 R = 8;      /* 8R */
 

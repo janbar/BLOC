@@ -7,6 +7,7 @@ Build-Depends: cmake,
                debhelper (>= 9.0.0),
                libsqlite3-dev,
                libreadline-dev
+               libplplot-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/janbar/BLOC
 
