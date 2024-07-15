@@ -2,10 +2,10 @@
 $BDATA TYPE$N
 
 In BLOC, an expandable list of data types are supported and can be used to load
-variables. However built-in operators handle only the scalar types.
+variables. However built-in operators handle only the internal types.
 
 $BBOOLEAN$N     Logical Boolean
-$BINTEGER$N     Signed 8-bytes
+$BINTEGER$N     Signed 64 bits
 $BDECIMAL$N     Double precision floating-point number
 $BCOMPLEX$N     Complex with double precision floating-point parts
 $BSTRING$N      Character string up to 4GB in size
