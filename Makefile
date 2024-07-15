@@ -3,7 +3,7 @@ BUILDDIR = $(PWD)/release
 
 all: CMakeLists.txt
 	mkdir -p $(BUILDDIR)
-	$(CMAKE) -B $(BUILDDIR) -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON .
+	$(CMAKE) -B $(BUILDDIR) -DCMAKE_BUILD_TYPE=Release -DBUILD_TESTING=ON -DCMAKE_INSTALL_PREFIX=/usr/local .
 	$(CMAKE) --build $(BUILDDIR)
 	$(CMAKE) --build $(BUILDDIR) --target test
 
