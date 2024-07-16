@@ -1,6 +1,6 @@
 # Module PLplot for BLOC
 
-The module "plplot" binds the PLplot API for BLOC. See the reference API from the PLplot main page.
+The module "plplot" binds the PLplot API for BLOC. See the API reference from the PLplot main page.
 
 ## Loading the module
 
@@ -15,7 +15,7 @@ Once loaded, you can print the object interface.
 help plplot
 ```
 
-Below, I expose a sample to create a plot.
+Below, I expose samples to create 2D and 3D plot.
 ```
 /* import the module plplot */
 import plplot;
@@ -55,10 +55,10 @@ P = plplot("xwin");
 /***************************************************/
 
 /* set background color white */
-P.colbga(255,255,255,1.0);
+P.scolbga(255,255,255,1.0);
 /* customize colors palette */
-P.col0a(15,0,0,0,1.0);
-P.col0a(7,140,140,140,1.0);
+P.scol0a(15,0,0,0,1.0);
+P.scol0a(7,140,140,140,1.0);
 
 /* initialize the plotting */
 P.init("-geometry 800x600"); /* initialize the plot with the given geometry */
@@ -82,10 +82,10 @@ p.mtex( "l", 5.0, 0.5, 0.5, "amplitude (dB)" );
 
 /* draw phase */
 P.col0( 9 );
-P.chr(0, 0.5);
+P.schr(0, 0.5);
 P.wind( log10(10), log10(20000), -180.0, 180.0 );
 P.box( "", 0.0, 0, "cmstv", 30.0, 3 );
-P.chr(0, 1.0);
+P.schr(0, 1.0);
 P.width( 2.0 );
 P.line( freq, phas );
 P.width( 0 );
@@ -98,13 +98,94 @@ P.width( 2.0 );
 P.mtex( "t", 2.0, 0.5, 0.5, "Low-Pass Filter" );
 P.width( 0 );
 
-/* enabling pause: the plotting frame must be manually closed to unlock */ 
+P.flush();
+/* enabling pause: the plotting frame must be manually closed to unlock */
 P.pause(true);
-/* or close to flush file output */
+/* or close the session */
 /* P.close(); */
 ```
-
 <p align="center">
-  <img src="./sample.png"/>
+  <img src="./sample2d.png"/>
 <p>
 
+```
+import plplot;
+
+import "modules/plplot/libbloc_plplot.so";
+
+/* load tables of data */
+XPTS = 35;
+YPTS = 46;
+X = tab(0, num());
+Y = tab(0, num());
+for I in 0 to (XPTS - 1) loop
+    X.concat(((3.0 * (I - (XPTS / 2))) / (XPTS / 2)));
+end loop;
+for I in 0 to (YPTS - 1) loop
+    Y.concat(((3.0 * (I - (YPTS / 2))) / (YPTS / 2)));
+end loop;
+Z = tab(0, tab(0, num()));
+Z = tab(XPTS, tab(YPTS, num()));
+for I in 0 to (XPTS - 1) loop
+    XX = X.at(I);
+    for J in 0 to (YPTS - 1) loop
+        YY = Y.at(J);
+        Z.at(I).put(J, (((((3.0 * (1.0 - XX)) * (1.0 - XX)) * exp((-(XX * XX) - ((YY + 1.0) * (YY + 1.0))))) - ((10.0 * (((XX / 5.0) - pow(XX, 3.0)) - pow(YY, 5.0))) * exp(((-XX * XX) - (YY * YY))))) - ((1.0 / 3.0) * exp(((-(XX + 1) * (XX + 1)) - (YY * YY))))));
+    end loop;
+end loop;
+
+function cmap1_init() returns table is
+begin
+  /* initialize 4 tables of 2 decimals: Intensity, H, L, S */
+  rt = tab(4, tab(2, num()));
+  /* left and right boundaries */
+  rt.at(0).put(0, 0.0);
+  rt.at(0).put(1, 1.0);
+  /* blue - green - yellow - red */
+  rt.at(1).put(0, 240.0);
+  rt.at(1).put(1, 0.0);
+  /* L and S */
+  rt.at(2).put(0, 0.6);
+  rt.at(2).put(1, 0.6);
+  rt.at(3).put(0, 0.8);
+  rt.at(3).put(1, 0.8);
+  return rt;
+end;
+
+P = plplot("xwin");
+P.init("-geometry 800x600");
+
+/* find the minimum and maximum of Z matrix */
+zmax = null;
+zmin = null;
+P.minmax2dgrid(Z, XPTS, YPTS, zmax, zmin);
+
+/* create color levels */
+NLEVEL = 10;
+step = ((zmax - zmin) / (NLEVEL + 1));
+CLEVEL = tab(0, num());
+for I in 0 to (NLEVEL - 1) loop
+    CLEVEL.concat(((zmin + step) + (step * I)));
+end loop;
+
+/* set cmap1 colors */
+cmap1 = cmap1_init();
+P.scmap1n( 256 );
+P.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+
+/* Draw ... */
+P.adv(0);
+P.col0(1);
+P.vpor(0.0, 1.0, 0.0, 0.9);
+P.wind(-1.0, 1.0, -1.0, 1.5);
+P.w3d(1.0, 1.0, 1.2, -3.0, 3.0, -3.0, 3.0, zmin, zmax, 33.0, 24.0);
+P.box3("bnstu", "x axis", 0.0, 0, "bnstu", "y axis", 0.0, 0, "bcdmnstuv", "z axis", 0.0, 4);
+P.col0(2);
+
+P.meshc(X, Y, Z, (1+2+4+8), CLEVEL);
+P.flush();
+P.pause(true);
+```
+<p align="center">
+  <img src="./sample3d.png"/>
+<p>

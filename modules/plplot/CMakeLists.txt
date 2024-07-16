@@ -10,7 +10,7 @@ file(GLOB bloc_plplot_HEADERS plugin_plplot.h)
 
 include(FindPLplot.cmake)
 if(PLplot_FOUND)
-  include_directories(${PLplot_INCLUDE_DIR})
+  include_directories(${PLplot_INCLUDE_DIR}/..)
   add_library (bloc_plplot SHARED ${bloc_plplot_SOURCES})
   add_dependencies(bloc_plplot blocc)
   target_link_libraries(bloc_plplot blocc ${PLplot_cxx_LIBRARY})

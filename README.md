@@ -8,6 +8,15 @@ BLOC can be used as is or embedded in a C/C++ program to perform dynamic process
 
 Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table. For now, it processes twice as fast as Python.
 
+## Install BLOC
+Ubuntu packages are available in the repository `ppa:jlbarriere68/bloc`. You can install BLOC on Ubuntu by the following:
+```
+sudo add-apt-repository ppa:jlbarriere68/bloc
+sudo apt-get update
+sudo apt-get install bloc
+```
+For other OS, you have to build it yourself.
+
 ## Build BLOC
 You can build and test BLOC on Unix (Linux, BSD, MacOS, Illumos, SunOS), and MS-Windows. This repository contains the CMake project to configure and build BLOC. To achieve the build you will need to install **cmake** and a C99/C++11 compiler (**GCC** or **CLang**).
 
@@ -19,6 +28,8 @@ cmake --build release
 cmake --build release --target test
 cmake --build release --target install
 ```
+
+To enable the build of the modules SQLite3 and PLplot, prior you have to install their dependencies.
 
 ## Run the CLI
 Launch **bloc** and type "help".

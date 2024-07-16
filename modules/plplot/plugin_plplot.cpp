@@ -64,9 +64,13 @@ static PLUGIN_CTOR ctors[] =
 
 enum Method
 {
-  Usage = 0, Init, Init1, Close, Replot, Pause, Pause1,
-  Env, Env1, Lab, Line, Adv, Vpor, Wind, Width, Col0, Col1, Colbga, Col0a,
-  Ptex, Mtex, Box, Chr,
+  Usage = 0, Version, Init, Init1, Flush, Replot, Pause, Pause1, Close,
+  /* now ordered by alphanum */
+  Adv, Axes, Bin, Box, Box3, Col0, Col1, Env, Env1, Errx, Erry, Fill, Fill3,
+  Font, Lab, Lightsource, Line, Line3, Lsty, MinMax2dGrid, Mesh, Meshc, Mtex,
+  Mtex3, Plot3d, Plot3dc, Poin, Poin3, Prec, Ptex, Ptex3, Schr, Scmap1n,
+  Scmap1l, Scmap1l_1, Scmap1la, Scmap1la_1, Scol0a, Scolbga, String, String3,
+  Vpor, W3d, Width, Wind,
 };
 
 /**********************************************************************/
@@ -138,14 +142,14 @@ static PLUGIN_ARG col1_args[]  = {
   { PLUGIN_IN,    { "N", 0 } }, // col1
 };
 
-static PLUGIN_ARG colbga_args[]  = {
+static PLUGIN_ARG scolbga_args[]  = {
   { PLUGIN_IN,    { "I", 0 } }, // r
   { PLUGIN_IN,    { "I", 0 } }, // g
   { PLUGIN_IN,    { "I", 0 } }, // b
   { PLUGIN_IN,    { "N", 0 } }, // alpha
 };
 
-static PLUGIN_ARG col0a_args[]  = {
+static PLUGIN_ARG scol0a_args[]  = {
   { PLUGIN_IN,    { "I", 0 } }, // ivol0
   { PLUGIN_IN,    { "I", 0 } }, // r
   { PLUGIN_IN,    { "I", 0 } }, // g
@@ -171,7 +175,7 @@ static PLUGIN_ARG mtex_args[]  = {
 };
 
 static PLUGIN_ARG box_args[]  = {
-  { PLUGIN_IN,    { "L", 0 } }, // xopy
+  { PLUGIN_IN,    { "L", 0 } }, // xopt
   { PLUGIN_IN,    { "N", 0 } }, // xtick
   { PLUGIN_IN,    { "I", 0 } }, // nxsub
   { PLUGIN_IN,    { "L", 0 } }, // yopt
@@ -179,9 +183,230 @@ static PLUGIN_ARG box_args[]  = {
   { PLUGIN_IN,    { "I", 0 } }, // nysub
 };
 
-static PLUGIN_ARG chr_args[]  = {
+static PLUGIN_ARG schr_args[]  = {
   { PLUGIN_IN,    { "N", 0 } }, // def
   { PLUGIN_IN,    { "N", 0 } }, // scale
+};
+
+static PLUGIN_ARG string_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "L", 0 } }, // string
+};
+
+static PLUGIN_ARG axes_args[]  = {
+  { PLUGIN_IN,    { "N", 0 } }, // x0
+  { PLUGIN_IN,    { "N", 0 } }, // y0
+  { PLUGIN_IN,    { "L", 0 } }, // xopt
+  { PLUGIN_IN,    { "N", 0 } }, // xtick
+  { PLUGIN_IN,    { "I", 0 } }, // nxsub
+  { PLUGIN_IN,    { "L", 0 } }, // yopt
+  { PLUGIN_IN,    { "N", 0 } }, // ytick
+  { PLUGIN_IN,    { "I", 0 } }, // nysub
+};
+
+static PLUGIN_ARG bin_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "I", 0 } }, // center
+};
+
+static PLUGIN_ARG errx_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // xmin
+  { PLUGIN_IN,    { "N", 1 } }, // xmax
+  { PLUGIN_IN,    { "N", 1 } }, // y
+};
+
+static PLUGIN_ARG erry_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // ymin
+  { PLUGIN_IN,    { "N", 1 } }, // ymax
+};
+
+static PLUGIN_ARG fill_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+};
+
+static PLUGIN_ARG font_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // font
+};
+
+static PLUGIN_ARG lsty_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // lin
+};
+
+static PLUGIN_ARG minmax2dgrid_args[]  = {
+  { PLUGIN_IN,    { "N", 2 } }, // z[x][y]
+  { PLUGIN_IN,    { "N", 0 } }, // xpts
+  { PLUGIN_IN,    { "N", 0 } }, // ypts
+  { PLUGIN_INOUT, { "N", 0 } }, // zmax
+  { PLUGIN_INOUT, { "N", 0 } }, // zmin
+};
+
+static PLUGIN_ARG w3d_args[]  = {
+  { PLUGIN_IN,    { "N", 0 } }, // basex
+  { PLUGIN_IN,    { "N", 0 } }, // basey
+  { PLUGIN_IN,    { "N", 0 } }, // height
+  { PLUGIN_IN,    { "N", 0 } }, // xmin
+  { PLUGIN_IN,    { "N", 0 } }, // xmax
+  { PLUGIN_IN,    { "N", 0 } }, // ymin
+  { PLUGIN_IN,    { "N", 0 } }, // ymax
+  { PLUGIN_IN,    { "N", 0 } }, // zmin
+  { PLUGIN_IN,    { "N", 0 } }, // zmax
+  { PLUGIN_IN,    { "N", 0 } }, // alt
+  { PLUGIN_IN,    { "N", 0 } }, // az
+};
+
+static PLUGIN_ARG box3_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // xopt
+  { PLUGIN_IN,    { "L", 0 } }, // xlabel
+  { PLUGIN_IN,    { "N", 0 } }, // xtick
+  { PLUGIN_IN,    { "I", 0 } }, // nxsub
+  { PLUGIN_IN,    { "L", 0 } }, // yopt
+  { PLUGIN_IN,    { "L", 0 } }, // ylabel
+  { PLUGIN_IN,    { "N", 0 } }, // ytick
+  { PLUGIN_IN,    { "I", 0 } }, // nysub
+  { PLUGIN_IN,    { "L", 0 } }, // zopt
+  { PLUGIN_IN,    { "L", 0 } }, // zlabel
+  { PLUGIN_IN,    { "N", 0 } }, // ztick
+  { PLUGIN_IN,    { "I", 0 } }, // nzsub
+};
+
+static PLUGIN_ARG mesh_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 2 } }, // z[x][y]
+  { PLUGIN_IN,    { "I", 0 } }, // opt
+};
+
+static PLUGIN_ARG meshc_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 2 } }, // z[x][y]
+  { PLUGIN_IN,    { "I", 0 } }, // opt
+  { PLUGIN_IN,    { "N", 1 } }, // clevel
+};
+
+static PLUGIN_ARG scmap1n_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // ncol1
+};
+
+static PLUGIN_ARG scmap1l_args[]  = {
+  { PLUGIN_IN,    { "B", 0 } }, // itype
+  { PLUGIN_IN,    { "N", 1 } }, // intensity
+  { PLUGIN_IN,    { "N", 1 } }, // coord1
+  { PLUGIN_IN,    { "N", 1 } }, // coord2
+  { PLUGIN_IN,    { "N", 1 } }, // coord3
+  { PLUGIN_IN,    { "B", 1 } }, // alt_hue_path
+};
+
+static PLUGIN_ARG scmap1l_1_args[]  = {
+  { PLUGIN_IN,    { "B", 0 } }, // itype
+  { PLUGIN_IN,    { "N", 1 } }, // intensity
+  { PLUGIN_IN,    { "N", 1 } }, // coord1
+  { PLUGIN_IN,    { "N", 1 } }, // coord2
+  { PLUGIN_IN,    { "N", 1 } }, // coord3
+};
+
+static PLUGIN_ARG scmap1la_args[]  = {
+  { PLUGIN_IN,    { "B", 0 } }, // itype
+  { PLUGIN_IN,    { "N", 1 } }, // intensity
+  { PLUGIN_IN,    { "N", 1 } }, // coord1
+  { PLUGIN_IN,    { "N", 1 } }, // coord2
+  { PLUGIN_IN,    { "N", 1 } }, // coord3
+  { PLUGIN_IN,    { "N", 1 } }, // alpha
+  { PLUGIN_IN,    { "B", 1 } }, // alt_hue_path
+};
+
+static PLUGIN_ARG scmap1la_1_args[]  = {
+  { PLUGIN_IN,    { "B", 0 } }, // itype
+  { PLUGIN_IN,    { "N", 1 } }, // intensity
+  { PLUGIN_IN,    { "N", 1 } }, // coord1
+  { PLUGIN_IN,    { "N", 1 } }, // coord2
+  { PLUGIN_IN,    { "N", 1 } }, // coord3
+  { PLUGIN_IN,    { "N", 1 } }, // alpha
+};
+
+static PLUGIN_ARG string3_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 1 } }, // z
+  { PLUGIN_IN,    { "L", 0 } }, // string
+};
+
+static PLUGIN_ARG fill3_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 1 } }, // z
+};
+
+static PLUGIN_ARG line3_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 1 } }, // z
+};
+
+static PLUGIN_ARG lightsource_args[]  = {
+  { PLUGIN_IN,    { "N", 0 } }, // x
+  { PLUGIN_IN,    { "N", 0 } }, // y
+  { PLUGIN_IN,    { "N", 0 } }, // z
+};
+
+static PLUGIN_ARG mtex3_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // side
+  { PLUGIN_IN,    { "N", 0 } }, // disp
+  { PLUGIN_IN,    { "N", 0 } }, // pos
+  { PLUGIN_IN,    { "N", 0 } }, // just
+  { PLUGIN_IN,    { "L", 0 } }, // text
+};
+
+static PLUGIN_ARG poin_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "I", 0 } }, // code
+};
+
+static PLUGIN_ARG poin3_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 1 } }, // z
+  { PLUGIN_IN,    { "I", 0 } }, // code
+};
+
+static PLUGIN_ARG ptex3_args[]  = {
+  { PLUGIN_IN,    { "N", 0 } }, // wx
+  { PLUGIN_IN,    { "N", 0 } }, // wy
+  { PLUGIN_IN,    { "N", 0 } }, // wz
+  { PLUGIN_IN,    { "N", 0 } }, // dx
+  { PLUGIN_IN,    { "N", 0 } }, // dy
+  { PLUGIN_IN,    { "N", 0 } }, // dz
+  { PLUGIN_IN,    { "N", 0 } }, // sx
+  { PLUGIN_IN,    { "N", 0 } }, // sy
+  { PLUGIN_IN,    { "N", 0 } }, // sz
+  { PLUGIN_IN,    { "N", 0 } }, // just
+  { PLUGIN_IN,    { "L", 0 } }, // text
+};
+
+static PLUGIN_ARG plot3d_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 2 } }, // z[x][y]
+  { PLUGIN_IN,    { "I", 0 } }, // opt
+  { PLUGIN_IN,    { "B", 0 } }, // side
+};
+
+static PLUGIN_ARG plot3dc_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 2 } }, // z[x][y]
+  { PLUGIN_IN,    { "I", 0 } }, // opt
+  { PLUGIN_IN,    { "N", 1 } }, // clevel
+};
+
+static PLUGIN_ARG prec_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // setp
+  { PLUGIN_IN,    { "I", 0 } }, // prec
 };
 
 /**********************************************************************/
@@ -193,51 +418,249 @@ static PLUGIN_METHOD methods[] =
 
   { Usage,    "usage",      { "B", 0 },     0, nullptr,
           "Print usage and syntax of options." },
+  { Version,  "version",    { "L", 0 },     0, nullptr,
+          "Get the current library version number." },
   { Init,     "init",       { "B", 0 },     0, nullptr,
           "Initialize the plotting session." },
   { Init1,    "init",       { "B", 0 },     1, init1_args,
           "Initialize the plotting session with the given options." },
-  { Close,    "close",      { "B", 0 },     0, nullptr,
-          "End plotting session." },
+  { Flush,    "flush",      { "B", 0 },     0, nullptr,
+          "Flushes the output stream." },
   { Replot,   "replot",     { "B", 0 },     0, nullptr,
           "Replays contents of plot buffer to current device/file." },
   { Pause,   "pause",       { "B", 0 },     1, pause_args,
           "Set the pause (on end-of-page) status. Default is off." },
   { Pause1,  "pause",       { "B", 0 },     0, nullptr,
           "Returns the pause status." },
+  { Close,    "close",      { "B", 0 },     0, nullptr,
+          "End plotting session." },
+  { Adv,      "adv",        { "B", 0 },     1, adv_args,
+          "Advance the (sub-)page." },
+  { Axes,     "axes",       { "B", 0 },     8, axes_args,
+          "Draw a box with axes, etc. with arbitrary origin." },
+  { Bin,      "bin",        { "B", 0 },     3, bin_args,
+          "Plot a histogram from binned data." },
+  { Box,      "box",        { "B", 0 },     6, box_args,
+          "Draw a box with axes, etc." },
+  { Box3,     "box3",       { "B", 0 },     12, box3_args,
+          "Draw a box with axes, etc, in 3D." },
+  { Col0,     "col0",       { "B", 0 },     1, col0_args,
+          "Sets the color index for cmap0." },
+  { Col1,     "col1",       { "B", 0 },     1, col1_args,
+          "Sets the color index for cmap1." },
   { Env,      "env",        { "B", 0 },     4, env_args,
           "Set up standard window and draw box." },
   { Env1,     "env",        { "B", 0 },     6, env1_args,
           "Set up standard window and draw box." },
+  { Errx,     "errx",       { "B", 0 },     3, errx_args,
+          "Draw error bars in the x direction." },
+  { Erry,     "erry",       { "B", 0 },     3, erry_args,
+          "Draw error bars in the y direction." },
+  { Fill,     "fill",       { "B", 0 },     2, fill_args,
+          "Draw filled polygon." },
+  { Fill3,    "fill3",      { "B", 0 },     3, fill3_args,
+          "Draw filled polygon in 3D." },
+  { Font,     "font",       { "B", 0 },     1, font_args,
+          "Set font." },
   { Lab,      "lab",        { "B", 0 },     3, lab_args,
           "Simple routine to write labels." },
+  { Lightsource,  "lightsource",  { "B", 0 }, 3, lightsource_args,
+          "Sets the 3D position of the light source." },
   { Line,     "line",       { "B", 0 },     2, line_args,
           "Draw a line." },
-  { Adv,      "adv",        { "B", 0 },     1, adv_args,
-          "Advance the (sub-)page." },
-  { Vpor,     "vpor",       { "B", 0 },     4, vpor_args,
-          "Specify viewport using normalized subpage coordinates." },
-  { Wind,     "wind",       { "B", 0 },     4, wind_args,
-          "Specify window." },
-  { Width,    "width",      { "B", 0 },     1, width_args,
-          "Set pen width." },
-  { Col0,      "col0",      { "B", 0 },     1, col0_args,
-          "Sets the color index for cmap0." },
-  { Col1,      "col1",      { "B", 0 },     1, col1_args,
-          "Sets the color index for cmap1." },
-  { Colbga,    "colbga",    { "B", 0 },     4, colbga_args,
-          "Set the background color by 8-bit RGB value and floating alpha transparency value." },
-  { Col0a,     "col0a",     { "B", 0 },     5, col0a_args,
-          "Set 8-bit RGB values and floating alpha transparency value for given cmap0 color index." },
-  { Ptex,      "ptex",      { "B", 0 },     6, ptex_args,
-          "Write text inside the viewport." },
+  { Line3,    "line3",      { "B", 0 },     3, line3_args,
+          "Draw a line in 3D." },
+  { Lsty,     "lsty",       { "B", 0 },     1, lsty_args,
+          "Select line style." },
+  { MinMax2dGrid, "minmax2dgrid", { "B", 0 }, 5, minmax2dgrid_args,
+          "Find the minimum and maximum of a Z matrix." },
+  { Mesh,     "mesh",       { "B", 0 },     4, mesh_args,
+          "Plot surface mesh.\n"
+          "(4) 1=DRAW_LINEX 2=DRAW_LINEY" },
+  { Meshc,    "meshc",      { "B", 0 },     5, meshc_args,
+          "Magnitude colored plot surface mesh with contour.\n"
+          "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
+          "    64=DRAW_SIDES" },
   { Mtex,      "mtex",      { "B", 0 },     5, mtex_args,
           "Write text relative to viewport boundaries." },
-  { Box,      "box",        { "B", 0 },     6, box_args,
-          "Draw a box with axes, etc." },
-  { Chr,      "chr",        { "B", 0 },     2, chr_args,
+  { Mtex3,    "mtex3",      { "B", 0 },     5, mtex3_args,
+          "Write text relative to viewport boundaries in 3D plots." },
+  { Poin,     "poin",       { "B", 0 },     3, poin_args,
+          "Plot a glyph at the specified points." },
+  { Poin3,    "poin3",      { "B", 0 },     4, poin3_args,
+          "Plot a glyph at the specified 3D points." },
+  { Plot3d,   "plot3d",     { "B", 0 },     5, plot3d_args,
+          "Plot 3D surface plot.\n"
+          "(4) 1=DRAW_LINEX 2=DRAW_LINEY" },
+  { Plot3dc,  "plot3dc",    { "B", 0 },     5, plot3d_args,
+          "Magnitude colored plot surface with contour.\n"
+          "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
+          "    64=DRAW_SIDES" },
+  { Prec,      "prec",      { "B", 0 },     2, prec_args,
+          "Set precision in numeric labels." },
+  { Ptex,      "ptex",      { "B", 0 },     6, ptex_args,
+          "Write text inside the viewport." },
+  { Ptex3,     "ptex3",     { "B", 0 },     11, ptex3_args,
+          "Write text inside the viewport of a 3D plot." },
+  { Schr,     "schr",       { "B", 0 },     2, schr_args,
           "Set character size." },
+  { Scmap1n,  "scmap1n",    { "B", 0 },     1, scmap1n_args,
+          "Set number of colors in cmap1." },
+  { Scmap1l,  "scmap1l",    { "B", 0 },     6, scmap1l_args,
+          "Set cmap1 colors using a piece-wise linear relationship." },
+  { Scmap1l_1,  "scmap1l",  { "B", 0 },     5, scmap1l_1_args,
+          "Set cmap1 colors using a piece-wise linear relationship." },
+  { Scmap1la,   "scmap1la", { "B", 0 },     7, scmap1la_args,
+          "Set cmap1 colors and alpha transparency using a piece-wise linear relationship." },
+  { Scmap1la_1, "scmap1la", { "B", 0 },     6, scmap1la_1_args,
+          "Set cmap1 colors and alpha transparency using a piece-wise linear relationship." },
+  { Scol0a,   "scol0a",     { "B", 0 },     5, scol0a_args,
+          "Set 8-bit RGB values and floating alpha transparency value for given cmap0 color index." },
+  { Scolbga,  "scolbga",    { "B", 0 },     4, scolbga_args,
+          "Set the background color by 8-bit RGB value and floating alpha transparency value." },
+  { String,   "string",     { "B", 0 },     3, string_args,
+          "Plot a glyph at the specified points." },
+  { String3,  "string3",    { "B", 0 },     4, string3_args,
+          "Plot a glyph at the specified 3D points." },
+  { Vpor,     "vpor",       { "B", 0 },     4, vpor_args,
+          "Specify viewport using normalized subpage coordinates." },
+  { W3d,      "w3d",        { "B", 0 },     11, w3d_args,
+          "Configure the transformations required for projecting a 3D surface on a 2D window." },
+  { Width,    "width",      { "B", 0 },     1, width_args,
+          "Set pen width." },
+  { Wind,     "wind",       { "B", 0 },     4, wind_args,
+          "Specify window." },
+/*
+           "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
+          "    16=TOP_CONT 32=SURF_CONT 64=DRAW_SIDES 128=FACETED\n"
+          "    256=MESH"},
+ */
 };
+
+template<class T>
+struct TabA
+{
+  T * data;
+  size_t sn;
+  explicit TabA(size_t n) : sn(0) { data = new T [n]; }
+  ~TabA() { if (data != nullptr) delete [] data; }
+
+  TabA(const TabA<T>&) = delete;
+  TabA<T>& operator=(const TabA<T>&) = delete;
+  TabA(TabA<T>&& t) : data(t.data), sn(t.sn)
+  {
+    t.data = nullptr;
+    t.sn = 0;
+  }
+  TabA<T>& operator=(TabA<T>&& t)
+  {
+    this->data = t.data;
+    this->sn = t.sn;
+    t.data = nullptr;
+    t.sn = 0;
+    return *this;
+  }
+
+  T& at(size_t n) { return data[n]; }
+};
+
+TabA<double> col2taba(bloc::Collection& col, size_t n)
+{
+  TabA<double> tab(n);
+  if (col.size() < n)
+    n = col.size();
+  for(size_t i = 0; i < n; ++i)
+  {
+    bloc::Value& v = col.at(i);
+    if (v.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
+    tab.at(i) = *v.numeric();
+  }
+  return std::move(tab);
+}
+
+TabA<bool> col2tabab(bloc::Collection& col, size_t n)
+{
+  TabA<bool> tab(n);
+  if (col.size() < n)
+    n = col.size();
+  for(size_t i = 0; i < n; ++i)
+  {
+    bloc::Value& v = col.at(i);
+    if (v.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
+    tab.at(i) = *v.boolean();
+  }
+  return std::move(tab);
+}
+
+template<class T>
+struct TabZ
+{
+  T ** data;
+  size_t sx;
+  size_t sy;
+  TabZ(size_t x, size_t y) : sx(x), sy(y)
+  {
+    data = new T*[sx];
+    for (size_t i = 0; i < x; ++i)
+      data[i] = new T[sy];
+  }
+  ~TabZ()
+  {
+    if (data != nullptr)
+    {
+      for (size_t i = 0; i < sx; ++i)
+        delete [] data[i];
+      delete [] data;
+    }
+  }
+
+  TabZ(const TabZ<T>&) = delete;
+  TabZ<T>& operator=(const TabZ<T>&) = delete;
+  TabZ(TabZ<T>&& t) : data(t.data), sx(t.sx), sy(t.sy)
+  {
+    t.data = nullptr;
+    t.sx = 0;
+    t.sy = 0;
+  }
+  TabZ<T>& operator=(TabZ<T>&& t)
+  {
+    this->data = t.data;
+    this->sx = t.sx;
+    this->sy = t.sy;
+    t.data = nullptr;
+    t.sx = 0;
+    t.sy = 0;
+    return *this;
+  }
+
+  T& at(size_t x, size_t y) { return data[x][y]; }
+};
+
+TabZ<double> col2tabz(bloc::Collection& col, size_t x, size_t y)
+{
+  TabZ<double> tab(x, y);
+  if (col.size() < x)
+    x = col.size();
+  for(size_t ix = 0; ix < x; ++ix)
+  {
+    if (col.at(ix).isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
+    bloc::Collection& c1 = *(col.at(ix).collection());
+    size_t ny = y;
+    if (c1.size() < ny)
+      ny = c1.size();
+    for(size_t iy = 0; iy < ny; ++iy)
+    {
+      bloc::Value& v = c1.at(iy);
+      if (v.isNull())
+        throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
+      tab.at(ix, iy) = (*v.numeric());
+    }
+  }
+  return std::move(tab);
+}
 
 /**
  * The state of handle
@@ -267,8 +690,10 @@ struct Handle {
   _device(device),
   _filename(filename) { reset(); }
   void reset();
+  std::string version();
   bool init(const std::string& args);
   bool close();
+  bool flush();
   bool replot();
   bool paused(bool enabled);
   bool env(double xmin, double xmax, double ymin, double ymax, int just, int axis);
@@ -280,12 +705,49 @@ struct Handle {
   bool width(double width);
   bool col0(int color);
   bool col1(double col1);
-  bool colbga(int r, int g, int b, double alpha);
-  bool col0a(int col0, int r, int g, int b, double alpha);
+  bool scolbga(int r, int g, int b, double alpha);
+  bool scol0a(int col0, int r, int g, int b, double alpha);
   bool ptex(double x, double y, double dx, double dy, double just, const std::string& text);
   bool mtex(const std::string& side, double disp, double pos, double just, const std::string& text);
   bool box(const std::string& xopt, double xtick, int nxsub, const std::string& yopt, double ytick, int nysub);
-  bool chr(double def, double scale);
+  bool schr(double def, double scale);
+  bool string(int n, const double * x, const double * y, const std::string& str);
+  bool axes(double x0, double y0, const std::string& xopt, double xtick, int nxsub, const std::string& yopt, double ytick, int nysub);
+  bool bin(int nbin, const double * x, const double * y, int center);
+  bool errx(int n, const double * xmin, const double * xmax, const double * y);
+  bool erry(int n, const double * x, const double * ymin, const double * ymax);
+  bool fill(int n, const double * x, const double * y);
+  bool font(int ifont);
+  bool lsty(int lin);
+  bool poin(int n, const double * x, const double * y, int code);
+  bool prec(int setp, int prec);
+
+  /* 3D */
+  bool minmax2dgrid(const double * const * z, int nx, int ny, double * zmax, double * zmin );
+  bool w3d(double basex, double basey, double height, double xmin, double xmax,
+    double ymin, double ymax, double zmin, double zmax, double alt, double az);
+  bool box3(const std::string& xopt, const std::string& xlabel, double xtick, int nxsub,
+    const std::string& yopt, const std::string& ylabel, double ytick, int nysub,
+    const std::string& zopt, const std::string& zlabel, double ztick, int nzsub);
+  bool mesh(const double * x, const double * y, const double * const * z,
+    int nx, int ny, int opt);
+  bool meshc(const double * x, const double * y, const double * const * z,
+    int nx, int ny, int opt, const double * clevel, int nlevel);
+  bool scmap1n(int ncol1);
+  bool scmap1l(bool itype, int npts, const double * intensity, const double * coord1, const double * coord2,
+    const double * coord3, const bool * alt_hue_path = nullptr);
+  bool scmap1la(bool itype, int npts, const double * intensity, const double * coord1, const double * coord2,
+    const double * coord3, const double * alpha, const bool * alt_hue_path = nullptr);
+  bool string3(int n, const double * x, const double * y, const double * z, const std::string& str);
+  bool fill3(int n, const double * x, const double * y, const double * z);
+  bool line3(int n, const double * x, const double * y, const double * z);
+  bool lightsource(double x, double y, double z);
+  bool mtex3(const std::string& side, double disp, double pos, double just, const std::string& text);
+  bool poin3(int n, const double * x, const double * y, const double * z, int code);
+  bool ptex3(double wx, double wy, double wz, double dx, double dy, double dz,
+    double sx, double sy, double sz, double just, const std::string& text);
+  bool plot3(const double * x, const double * y, const double * const * z, int nx, int ny, int opt, bool side);
+  bool plot3c(const double * x, const double * y, const double * const * z, int nx, int ny, int opt, const double * clevel, int nlevel);
 };
 
 } /* namespace PLPLOT */
@@ -349,8 +811,13 @@ bloc::Value * PLPLOTPlugin::executeMethod(
   case PLPLOT::Usage:
     h->_pls->OptUsage();
     return new bloc::Value(bloc::Bool(true));
+
+  case PLPLOT::Version:
+    return new bloc::Value(new bloc::Literal(h->version()));
+
   case PLPLOT::Init:
     return new bloc::Value(bloc::Bool(h->init(std::string())));
+
   case PLPLOT::Init1:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -358,10 +825,16 @@ bloc::Value * PLPLOTPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     return new bloc::Value(bloc::Bool(h->init(*a0.literal())));
   }
+
   case PLPLOT::Close:
     return new bloc::Value(bloc::Bool(h->close()));
+
+  case PLPLOT::Flush:
+    return new bloc::Value(bloc::Bool(h->flush()));
+
   case PLPLOT::Replot:
     return new bloc::Value(bloc::Bool(h->replot()));
+
   case PLPLOT::Pause:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -369,10 +842,12 @@ bloc::Value * PLPLOTPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     return new bloc::Value(bloc::Bool(h->paused(*a0.boolean())));
   }
+
   case PLPLOT::Pause1:
   {
     return new bloc::Value(bloc::Bool(h->_paused));
   }
+
   case PLPLOT::Env:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -387,14 +862,15 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     double ymax = (a3.type() == bloc::Type::NUMERIC ? *a3.numeric() : *a3.integer());
     return new bloc::Value(bloc::Bool(h->env(xmin, xmax, ymin, ymax, 0, 0)));
   }
+
   case PLPLOT::Env1:
   {
     bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
     bloc::Value& a2 = args[2]->value(ctx);
     bloc::Value& a3 = args[3]->value(ctx);
-    bloc::Value& a4 = args[2]->value(ctx);
-    bloc::Value& a5 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
     if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull() || a5.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     double xmin = (a0.type() == bloc::Type::NUMERIC ? *a0.numeric() : *a0.integer());
@@ -405,6 +881,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     int axis = (int) *a5.integer();
     return new bloc::Value(bloc::Bool(h->env(xmin, xmax, ymin, ymax, just, axis)));
   }
+
   case PLPLOT::Lab:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -414,6 +891,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     return new bloc::Value(bloc::Bool(h->lab(*a0.literal(), *a1.literal(), *a2.literal())));
   }
+
   case PLPLOT::Line:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -423,23 +901,11 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     bloc::Collection& x = *a0.collection();
     bloc::Collection& y = *a1.collection();
     size_t n = (x.size() > y.size() ? y.size() : x.size());
-    std::vector<double> vx;
-    vx.reserve(n);
-    std::vector<double> vy;
-    vy.reserve(n);
-    for(size_t i = 0; i < n; ++i)
-    {
-      bloc::Value& v0 = x.at(i);
-      if (v0.isNull())
-        throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
-      vx.push_back(*v0.numeric());
-      bloc::Value& v1 = y.at(i);
-      if (v1.isNull())
-        throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
-      vy.push_back(*v1.numeric());
-    }
-    return new bloc::Value(bloc::Bool(h->line((int) n, &vx[0], &vy[0])));
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    return new bloc::Value(bloc::Bool(h->line((int) n, vx.data, vy.data)));
   }
+
   case PLPLOT::Adv:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -447,6 +913,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     return new bloc::Value(bloc::Bool(h->adv((int) *a0.integer())));
   }
+
   case PLPLOT::Vpor:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -461,6 +928,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     double ymax = (a3.type() == bloc::Type::NUMERIC ? *a3.numeric() : *a3.integer());
     return new bloc::Value(bloc::Bool(h->vpor(xmin, xmax, ymin, ymax)));
   }
+
   case PLPLOT::Wind:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -475,6 +943,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     double ymax = (a3.type() == bloc::Type::NUMERIC ? *a3.numeric() : *a3.integer());
     return new bloc::Value(bloc::Bool(h->wind(xmin, xmax, ymin, ymax)));
   }
+
   case PLPLOT::Width:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -483,6 +952,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     double w = (a0.type() == bloc::Type::NUMERIC ? *a0.numeric() : *a0.integer());
     return new bloc::Value(bloc::Bool(h->width(w)));
   }
+
   case PLPLOT::Col0:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -490,6 +960,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     return new bloc::Value(bloc::Bool(h->col0(*a0.integer())));
   }
+
   case PLPLOT::Col1:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -497,7 +968,8 @@ bloc::Value * PLPLOTPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     return new bloc::Value(bloc::Bool(h->col1(*a0.numeric())));
   }
-  case PLPLOT::Colbga:
+
+  case PLPLOT::Scolbga:
   {
     bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
@@ -505,9 +977,10 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     bloc::Value& a3 = args[3]->value(ctx);
     if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    return new bloc::Value(bloc::Bool(h->colbga((int) *a0.integer(), (int) *a1.integer(), (int) *a2.integer(), *a3.numeric())));
+    return new bloc::Value(bloc::Bool(h->scolbga((int) *a0.integer(), (int) *a1.integer(), (int) *a2.integer(), *a3.numeric())));
   }
-  case PLPLOT::Col0a:
+
+  case PLPLOT::Scol0a:
   {
     bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
@@ -516,8 +989,9 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     bloc::Value& a4 = args[4]->value(ctx);
     if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    return new bloc::Value(bloc::Bool(h->col0a((int) *a0.integer(), (int) *a1.integer(), (int) *a2.integer(), (int) *a3.integer(), *a4.numeric())));
+    return new bloc::Value(bloc::Bool(h->scol0a((int) *a0.integer(), (int) *a1.integer(), (int) *a2.integer(), (int) *a3.integer(), *a4.numeric())));
   }
+
   case PLPLOT::Ptex:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -568,7 +1042,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     return new bloc::Value(bloc::Bool(h->box(*a0.literal(), xtick, (int) *a2.integer(), *a3.literal(), ytick, (int) *a5.integer())));
   }
 
-  case PLPLOT::Chr:
+  case PLPLOT::Schr:
   {
     bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
@@ -576,7 +1050,593 @@ bloc::Value * PLPLOTPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     double def = (a0.type() == bloc::Type::NUMERIC ? *a0.numeric() : *a0.integer());
     double scale = (a1.type() == bloc::Type::NUMERIC ? *a1.numeric() : *a1.integer());
-    return new bloc::Value(bloc::Bool(h->chr(def, scale)));
+    return new bloc::Value(bloc::Bool(h->schr(def, scale)));
+  }
+
+  case PLPLOT::String:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    return new bloc::Value(bloc::Bool(h->string((int) n, vx.data, vy.data, *a2.literal())));
+  }
+
+  case PLPLOT::Axes:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
+    bloc::Value& a6 = args[6]->value(ctx);
+    bloc::Value& a7 = args[7]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull()
+             || a5.isNull() || a6.isNull() || a7.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    double x0 = (a0.type() == bloc::Type::NUMERIC ? *a0.numeric() : *a0.integer());
+    double y0 = (a1.type() == bloc::Type::NUMERIC ? *a1.numeric() : *a1.integer());
+    double xt = (a3.type() == bloc::Type::NUMERIC ? *a3.numeric() : *a3.integer());
+    double yt = (a6.type() == bloc::Type::NUMERIC ? *a6.numeric() : *a6.integer());
+    return new bloc::Value(bloc::Bool(h->axes(x0, y0, *a2.literal(), xt, (int) *a4.integer(),
+            *a5.literal(), yt, (int) *a7.integer())));
+  }
+
+  case PLPLOT::Bin:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    return new bloc::Value(bloc::Bool(h->bin((int) n, vx.data, vy.data, (int) *a2.integer())));
+  }
+
+  case PLPLOT::Errx:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& xmin = *a0.collection();
+    bloc::Collection& xmax = *a1.collection();
+    bloc::Collection& y = *a2.collection();
+    size_t n = (xmin.size() > xmax.size() ? xmax.size() : xmin.size());
+    if (y.size() > n)
+      n = y.size();
+    PLPLOT::TabA<double> vmin = PLPLOT::col2taba(xmin, n);
+    PLPLOT::TabA<double> vmax = PLPLOT::col2taba(xmax, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    return new bloc::Value(bloc::Bool(h->errx((int) n, vmin.data, vmax.data, vy.data)));
+  }
+
+  case PLPLOT::Erry:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& ymin = *a1.collection();
+    bloc::Collection& ymax = *a2.collection();
+    size_t n = (x.size() > ymin.size() ? ymin.size() : x.size());
+    if (ymax.size() > n)
+      n = ymax.size();
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vmin = PLPLOT::col2taba(ymin, n);
+    PLPLOT::TabA<double> vmax = PLPLOT::col2taba(ymax, n);
+    return new bloc::Value(bloc::Bool(h->errx((int) n, vx.data, vmin.data, vmax.data)));
+  }
+
+  case PLPLOT::Fill:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull() || a1.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    return new bloc::Value(bloc::Bool(h->fill((int) n, vx.data, vy.data)));
+  }
+
+  case PLPLOT::Font:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Bool(h->font((int) *a0.integer())));
+  }
+
+  case PLPLOT::Lsty:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Bool(h->lsty((int) *a0.integer())));
+  }
+
+  case PLPLOT::MinMax2dGrid:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull()
+            || args[3]->symbol() == nullptr || args[4]->symbol() == nullptr)
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+
+    bloc::Collection& z = *a0.collection();
+    size_t nx = *a1.integer();
+    size_t ny = *a2.integer();
+    PLPLOT::TabZ<double> vz = PLPLOT::col2tabz(z, nx, ny);
+    double zmax;
+    double zmin;
+    if (h->minmax2dgrid(vz.data, nx, ny, &zmax, &zmin))
+    {
+      /* INOUT */
+      ctx.storeVariable(*args[3]->symbol(), bloc::Value(bloc::Numeric(zmax)));
+      ctx.storeVariable(*args[4]->symbol(), bloc::Value(bloc::Numeric(zmin)));
+      return new bloc::Value(bloc::Bool(true));
+    }
+    return new bloc::Value(bloc::Bool(false));
+  }
+
+  case PLPLOT::W3d:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
+    bloc::Value& a6 = args[6]->value(ctx);
+    bloc::Value& a7 = args[7]->value(ctx);
+    bloc::Value& a8 = args[8]->value(ctx);
+    bloc::Value& a9 = args[9]->value(ctx);
+    bloc::Value& a10 = args[10]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull()
+             || a5.isNull() || a6.isNull() || a7.isNull() || a8.isNull()
+             || a9.isNull() || a10.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    double basex = (a0.type() == bloc::Type::NUMERIC ? *a0.numeric() : *a0.integer());
+    double basey = (a1.type() == bloc::Type::NUMERIC ? *a1.numeric() : *a1.integer());
+    double height = (a2.type() == bloc::Type::NUMERIC ? *a2.numeric() : *a2.integer());
+    double xmin = (a3.type() == bloc::Type::NUMERIC ? *a3.numeric() : *a3.integer());
+    double xmax = (a4.type() == bloc::Type::NUMERIC ? *a4.numeric() : *a4.integer());
+    double ymin = (a5.type() == bloc::Type::NUMERIC ? *a5.numeric() : *a5.integer());
+    double ymax = (a6.type() == bloc::Type::NUMERIC ? *a6.numeric() : *a6.integer());
+    double zmin = (a7.type() == bloc::Type::NUMERIC ? *a7.numeric() : *a7.integer());
+    double zmax = (a8.type() == bloc::Type::NUMERIC ? *a8.numeric() : *a8.integer());
+    double alt = (a9.type() == bloc::Type::NUMERIC ? *a9.numeric() : *a9.integer());
+    double az = (a10.type() == bloc::Type::NUMERIC ? *a10.numeric() : *a10.integer());
+    return new bloc::Value(bloc::Bool(h->w3d(basex, basey, height, xmin, xmax,
+                                             ymin, ymax, zmin, zmax, alt, az)));
+  }
+
+  case PLPLOT::Box3:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
+    bloc::Value& a6 = args[6]->value(ctx);
+    bloc::Value& a7 = args[7]->value(ctx);
+    bloc::Value& a8 = args[8]->value(ctx);
+    bloc::Value& a9 = args[9]->value(ctx);
+    bloc::Value& a10 = args[10]->value(ctx);
+    bloc::Value& a11 = args[11]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull()
+            || a5.isNull() || a6.isNull() || a7.isNull() || a8.isNull()
+            || a9.isNull() || a10.isNull() || a11.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    double xtick = (a2.type() == bloc::Type::NUMERIC ? *a2.numeric() : *a2.integer());
+    double ytick = (a6.type() == bloc::Type::NUMERIC ? *a6.numeric() : *a6.integer());
+    double ztick = (a10.type() == bloc::Type::NUMERIC ? *a10.numeric() : *a10.integer());
+    return new bloc::Value(bloc::Bool(h->box3(
+            *a0.literal(), *a1.literal(), xtick, (int) *a3.integer(),
+            *a4.literal(), *a1.literal(), ytick, (int) *a7.integer(),
+            *a8.literal(), *a9.literal(), ytick, (int) *a11.integer())));
+  }
+
+  case PLPLOT::Mesh:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    size_t nx = x.size();
+    size_t ny = y.size();
+    PLPLOT::TabZ<double> vz = PLPLOT::col2tabz(z, nx, ny);
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, nx);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, ny);
+    return new bloc::Value(bloc::Bool(h->mesh(vx.data, vy.data, vz.data, (int) nx, (int) ny, (int) *a3.integer())));
+  }
+
+  case PLPLOT::Meshc:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    bloc::Collection& c = *a4.collection();
+    size_t nx = x.size();
+    size_t ny = y.size();
+    size_t nc = c.size();
+    PLPLOT::TabZ<double> vz = PLPLOT::col2tabz(z, nx, ny);
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, nx);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, ny);
+    PLPLOT::TabA<double> vc = PLPLOT::col2taba(c, nc);
+    return new bloc::Value(bloc::Bool(h->meshc(vx.data, vy.data, vz.data, (int) nx, (int) ny,
+                                              (int) *a3.integer(), vc.data, nc)));
+  }
+
+  case PLPLOT::Scmap1n:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Bool(h->scmap1n((int) *a0.integer())));
+  }
+
+  case PLPLOT::Scmap1l:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull()
+             || a5.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& in = *a1.collection();
+    bloc::Collection& c1 = *a2.collection();
+    bloc::Collection& c2 = *a3.collection();
+    bloc::Collection& c3 = *a4.collection();
+    bloc::Collection& ap = *a5.collection();
+    size_t n = in.size();
+    if (c1.size() < n)
+      n = c1.size();
+    if (c2.size() < n)
+      n = c2.size();
+    if (c3.size() < n)
+      n = c3.size();
+    if (ap.size() < (n - 1))
+      n = ap.size() + 1;
+    PLPLOT::TabA<double> vi = PLPLOT::col2taba(in, n);
+    PLPLOT::TabA<double> v1 = PLPLOT::col2taba(c1, n);
+    PLPLOT::TabA<double> v2 = PLPLOT::col2taba(c2, n);
+    PLPLOT::TabA<double> v3 = PLPLOT::col2taba(c3, n);
+    PLPLOT::TabA<bool> vp = PLPLOT::col2tabab(ap, n);
+    return new bloc::Value(bloc::Bool(h->scmap1l(*a0.boolean(), n, vi.data, v1.data, v2.data, v3.data, vp.data)));
+  }
+
+  case PLPLOT::Scmap1l_1:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& in = *a1.collection();
+    bloc::Collection& c1 = *a2.collection();
+    bloc::Collection& c2 = *a3.collection();
+    bloc::Collection& c3 = *a4.collection();
+    size_t n = in.size();
+    if (c1.size() < n)
+      n = c1.size();
+    if (c2.size() < n)
+      n = c2.size();
+    if (c3.size() < n)
+      n = c3.size();
+    PLPLOT::TabA<double> vi = PLPLOT::col2taba(in, n);
+    PLPLOT::TabA<double> v1 = PLPLOT::col2taba(c1, n);
+    PLPLOT::TabA<double> v2 = PLPLOT::col2taba(c2, n);
+    PLPLOT::TabA<double> v3 = PLPLOT::col2taba(c3, n);
+    return new bloc::Value(bloc::Bool(h->scmap1l(*a0.boolean(), n, vi.data, v1.data, v2.data, v3.data, nullptr)));
+  }
+
+  case PLPLOT::Scmap1la:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
+    bloc::Value& a6 = args[6]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull()
+             || a5.isNull() || a6.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& in = *a1.collection();
+    bloc::Collection& c1 = *a2.collection();
+    bloc::Collection& c2 = *a3.collection();
+    bloc::Collection& c3 = *a4.collection();
+    bloc::Collection& al = *a5.collection();
+    bloc::Collection& ap = *a6.collection();
+    size_t n = in.size();
+    if (c1.size() < n)
+      n = c1.size();
+    if (c2.size() < n)
+      n = c2.size();
+    if (c3.size() < n)
+      n = c3.size();
+    if (al.size() < n)
+      n = al.size();
+    if (ap.size() < (n - 1))
+      n = ap.size() + 1;
+    PLPLOT::TabA<double> vi = PLPLOT::col2taba(in, n);
+    PLPLOT::TabA<double> v1 = PLPLOT::col2taba(c1, n);
+    PLPLOT::TabA<double> v2 = PLPLOT::col2taba(c2, n);
+    PLPLOT::TabA<double> v3 = PLPLOT::col2taba(c3, n);
+    PLPLOT::TabA<double> va = PLPLOT::col2taba(al, n);
+    PLPLOT::TabA<bool> vp = PLPLOT::col2tabab(ap, n);
+    return new bloc::Value(bloc::Bool(h->scmap1la(*a0.boolean(), n, vi.data, v1.data, v2.data, v3.data, va.data, vp.data)));
+  }
+
+  case PLPLOT::Scmap1la_1:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull()
+             || a5.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& in = *a1.collection();
+    bloc::Collection& c1 = *a2.collection();
+    bloc::Collection& c2 = *a3.collection();
+    bloc::Collection& c3 = *a4.collection();
+    bloc::Collection& al = *a5.collection();
+    size_t n = in.size();
+    if (c1.size() < n)
+      n = c1.size();
+    if (c2.size() < n)
+      n = c2.size();
+    if (c3.size() < n)
+      n = c3.size();
+    if (al.size() < n)
+      n = al.size();
+    PLPLOT::TabA<double> vi = PLPLOT::col2taba(in, n);
+    PLPLOT::TabA<double> v1 = PLPLOT::col2taba(c1, n);
+    PLPLOT::TabA<double> v2 = PLPLOT::col2taba(c2, n);
+    PLPLOT::TabA<double> v3 = PLPLOT::col2taba(c3, n);
+    PLPLOT::TabA<double> va = PLPLOT::col2taba(al, n);
+    return new bloc::Value(bloc::Bool(h->scmap1la(*a0.boolean(), n, vi.data, v1.data, v2.data, v3.data, va.data, nullptr)));
+  }
+
+  case PLPLOT::String3:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    if (z.size() > n)
+      n = z.size();
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    PLPLOT::TabA<double> vz = PLPLOT::col2taba(z, n);
+    return new bloc::Value(bloc::Bool(h->string3((int) n, vx.data, vy.data, vz.data, *a2.literal())));
+  }
+
+  case PLPLOT::Fill3:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    if (z.size() > n)
+      n = z.size();
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    PLPLOT::TabA<double> vz = PLPLOT::col2taba(z, n);
+    return new bloc::Value(bloc::Bool(h->fill3((int) n, vx.data, vy.data, vz.data)));
+  }
+
+  case PLPLOT::Line3:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    if (z.size() > n)
+      n = z.size();
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    PLPLOT::TabA<double> vz = PLPLOT::col2taba(z, n);
+    return new bloc::Value(bloc::Bool(h->line3((int) n, vx.data, vy.data, vz.data)));
+  }
+
+  case PLPLOT::Lightsource:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Bool(h->lightsource(*a0.numeric(), *a1.numeric(), *a2.numeric())));
+  }
+
+  case PLPLOT::Mtex3:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Bool(h->mtex3(*a0.literal(), *a1.numeric(), *a2.numeric(),
+                                               *a3.numeric(), *a4.literal())));
+  }
+
+  case PLPLOT::Poin:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    return new bloc::Value(bloc::Bool(h->poin((int) n, vx.data, vy.data, (int) *a2.integer())));
+  }
+
+  case PLPLOT::Poin3:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    size_t n = (x.size() > y.size() ? y.size() : x.size());
+    if (z.size() > n)
+      n = z.size();
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, n);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, n);
+    PLPLOT::TabA<double> vz = PLPLOT::col2taba(z, n);
+    return new bloc::Value(bloc::Bool(h->poin3((int) n, vx.data, vy.data, vz.data, (int) *a3.integer())));
+  }
+
+  case PLPLOT::Ptex3:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    bloc::Value& a5 = args[5]->value(ctx);
+    bloc::Value& a6 = args[6]->value(ctx);
+    bloc::Value& a7 = args[7]->value(ctx);
+    bloc::Value& a8 = args[8]->value(ctx);
+    bloc::Value& a9 = args[9]->value(ctx);
+    bloc::Value& a10 = args[10]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull()
+             || a5.isNull() || a6.isNull() || a7.isNull() || a8.isNull()
+             || a9.isNull() || a10.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    double wx = (a0.type() == bloc::Type::NUMERIC ? *a0.numeric() : *a0.integer());
+    double wy = (a1.type() == bloc::Type::NUMERIC ? *a1.numeric() : *a1.integer());
+    double wz = (a2.type() == bloc::Type::NUMERIC ? *a2.numeric() : *a2.integer());
+    double dx = (a3.type() == bloc::Type::NUMERIC ? *a3.numeric() : *a3.integer());
+    double dy = (a4.type() == bloc::Type::NUMERIC ? *a4.numeric() : *a4.integer());
+    double dz = (a5.type() == bloc::Type::NUMERIC ? *a5.numeric() : *a5.integer());
+    double sx = (a6.type() == bloc::Type::NUMERIC ? *a6.numeric() : *a6.integer());
+    double sy = (a7.type() == bloc::Type::NUMERIC ? *a7.numeric() : *a7.integer());
+    double sz = (a8.type() == bloc::Type::NUMERIC ? *a8.numeric() : *a8.integer());
+    double just = (a9.type() == bloc::Type::NUMERIC ? *a9.numeric() : *a9.integer());
+    return new bloc::Value(bloc::Bool(h->ptex3(wx, wy, wz, dx, dy, dz, sx, sy, sz,
+                                             just, *a10.literal())));
+  }
+
+  case PLPLOT::Plot3d:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    size_t nx = x.size();
+    size_t ny = y.size();
+    PLPLOT::TabZ<double> vz = PLPLOT::col2tabz(z, nx, ny);
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, nx);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, ny);
+    return new bloc::Value(bloc::Bool(h->plot3(vx.data, vy.data, vz.data, (int) nx, (int) ny,
+                                               (int) *a3.integer(), *a4.boolean())));
+  }
+
+  case PLPLOT::Plot3dc:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    bloc::Collection& c = *a4.collection();
+    size_t nx = x.size();
+    size_t ny = y.size();
+    size_t nc = c.size();
+    PLPLOT::TabZ<double> vz = PLPLOT::col2tabz(z, nx, ny);
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, nx);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, ny);
+    PLPLOT::TabA<double> vc = PLPLOT::col2taba(c, nc);
+    return new bloc::Value(bloc::Bool(h->plot3c(vx.data, vy.data, vz.data, (int) nx, (int) ny,
+                                               (int) *a3.integer(), vc.data, (int) nc)));
+  }
+
+  case PLPLOT::Prec:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull() || a1.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new bloc::Value(bloc::Bool(h->prec((int) *a0.integer(), (int) *a1.integer())));
   }
 
   default:
@@ -593,6 +1653,13 @@ void PLPLOT::Handle::reset()
   /* load customized colors */
   for(auto const& e : _palette)
     _pls->scol0a(e.first, e.second.r, e.second.g, e.second.b, e.second.a);
+}
+
+std::string PLPLOT::Handle::version()
+{
+  char buf[80];
+  _pls->gver(buf);
+  return std::string(buf);
 }
 
 bool PLPLOT::Handle::init(const std::string& args)
@@ -623,6 +1690,12 @@ bool PLPLOT::Handle::close()
     delete _pls;
     _pls = nullptr;
   }
+  return true;
+}
+
+bool PLPLOT::Handle::flush()
+{
+  _pls->flush();
   return true;
 }
 
@@ -693,7 +1766,7 @@ bool PLPLOT::Handle::col1(double col1)
   return true;
 }
 
-bool PLPLOT::Handle::colbga(int r, int g, int b, double alpha)
+bool PLPLOT::Handle::scolbga(int r, int g, int b, double alpha)
 {
   _pls->scolbga((PLINT) r, (PLINT) g, (PLINT) b, (PLFLT) alpha);
   _palette.erase((PLINT)0);
@@ -701,7 +1774,7 @@ bool PLPLOT::Handle::colbga(int r, int g, int b, double alpha)
   return true;
 }
 
-bool PLPLOT::Handle::col0a(int col0, int r, int g, int b, double alpha)
+bool PLPLOT::Handle::scol0a(int col0, int r, int g, int b, double alpha)
 {
   _pls->scol0a((PLINT) col0, (PLINT) r, (PLINT) g, (PLINT) b, (PLFLT) alpha);
   _palette.erase((PLINT)col0);
@@ -727,9 +1800,194 @@ bool PLPLOT::Handle::box(const std::string& xopt, double xtick, int nxsub, const
   return true;
 }
 
-bool PLPLOT::Handle::chr(double def, double scale)
+bool PLPLOT::Handle::schr(double def, double scale)
 {
-  _pls->schr(def, scale);
+  _pls->schr((PLFLT) def, (PLFLT) scale);
+  return true;
+}
+
+bool PLPLOT::Handle::string(int n, const double * x, const double * y, const std::string& str)
+{
+  _pls->string((PLINT) n, (const PLFLT*) x, (const PLFLT*) y, str.c_str());
+  return true;
+}
+
+bool PLPLOT::Handle::axes(double x0, double y0, const std::string& xopt, double xtick, int nxsub, const std::string& yopt, double ytick, int nysub)
+{
+  _pls->axes((PLFLT) x0, (PLFLT) y0, xopt.c_str(), (PLFLT) xtick, (PLINT) nxsub,
+          yopt.c_str(), (PLFLT) ytick, (PLINT) nysub);
+  return true;
+}
+
+bool PLPLOT::Handle::bin(int nbin, const double * x, const double * y, int center)
+{
+  _pls->bin((PLINT) nbin, (const PLFLT*) x, (const PLFLT*) y, (PLINT) center);
+  return true;
+}
+
+bool PLPLOT::Handle::errx(int n, const double * xmin, const double * xmax, const double * y)
+{
+  _pls->errx((PLINT) n, (const PLFLT*) xmin, (const PLFLT*) xmax, (const PLFLT*) y);
+  return true;
+}
+
+bool PLPLOT::Handle::erry(int n, const double * x, const double * ymin, const double * ymax)
+{
+  _pls->erry((PLINT) n, (const PLFLT*) x, (const PLFLT*) ymin, (const PLFLT*) ymax);
+  return true;
+}
+
+bool PLPLOT::Handle::fill(int n, const double * x, const double * y)
+{
+  _pls->fill((PLINT) n, (const PLFLT*) x, (const PLFLT*) y);
+  return true;
+}
+
+bool PLPLOT::Handle::font(int ifont)
+{
+  _pls->font((PLINT) ifont);
+  return true;
+}
+
+bool PLPLOT::Handle::lsty(int lin)
+{
+  _pls->lsty((PLINT) lin);
+  return true;
+}
+
+
+bool PLPLOT::Handle::minmax2dgrid(const double * const * z, int nx, int ny,
+                                  double * zmax, double * zmin )
+{
+  _pls->MinMax2dGrid((const PLFLT* const*) z, (PLINT) nx, (PLINT) ny, (PLFLT*) zmax, (PLFLT*) zmin);
+  return true;
+}
+
+bool PLPLOT::Handle::w3d(double basex, double basey, double height,
+                         double xmin, double xmax, double ymin, double ymax,
+                         double zmin, double zmax, double alt, double az)
+{
+  _pls->w3d((PLFLT) basex, (PLFLT) basey, (PLFLT) height, (PLFLT) xmin, (PLFLT) xmax,
+            (PLFLT) ymin, (PLFLT) ymax, (PLFLT) zmin, (PLFLT) zmax, (PLFLT) alt, (PLFLT) az);
+  return true;
+}
+
+bool PLPLOT::Handle::box3(const std::string& xopt, const std::string& xlabel, double xtick, int nxsub,
+                          const std::string& yopt, const std::string& ylabel, double ytick, int nysub,
+                          const std::string& zopt, const std::string& zlabel, double ztick, int nzsub)
+{
+  _pls->box3(xopt.c_str(), xlabel.c_str(), (PLFLT) xtick, (PLINT) nxsub,
+             yopt.c_str(), ylabel.c_str(), (PLFLT) ytick, (PLINT) nysub,
+             zopt.c_str(), zlabel.c_str(), (PLFLT) ztick, (PLINT) nzsub);
+  return true;
+}
+
+bool PLPLOT::Handle::mesh(const double * x, const double * y, const double * const * z,
+                          int nx, int ny, int opt)
+{
+  _pls->mesh((const PLFLT*) x, (const PLFLT*) y, (const PLFLT* const*) z, (PLINT) nx, (PLINT) ny, (PLINT) opt);
+  return true;
+}
+
+bool PLPLOT::Handle::meshc(const double * x, const double * y, const double * const * z,
+                           int nx, int ny, int opt, const double * clevel, int nlevel)
+{
+  _pls->meshc((const PLFLT*) x, (const PLFLT*) y, (const PLFLT* const*) z, (PLINT) nx, (PLINT) ny, (PLINT) opt,
+             (const PLFLT*) clevel, (PLINT) nlevel);
+  return true;
+}
+
+bool PLPLOT::Handle::scmap1n(int ncol1)
+{
+  _pls->scmap1n((PLINT) ncol1);
+  return true;
+}
+
+bool PLPLOT::Handle::scmap1l(bool itype, int npts, const double * intensity, const double * coord1, const double * coord2,
+        const double * coord3, const bool * alt_hue_path)
+{
+  _pls->scmap1l(itype, (PLINT) npts, (const PLFLT*) intensity, (const PLFLT*) coord1, (const PLFLT*) coord2,
+        (const PLFLT*) coord3, alt_hue_path);
+  return true;
+}
+
+bool PLPLOT::Handle::scmap1la(bool itype, int npts, const double * intensity, const double * coord1, const double * coord2,
+        const double * coord3, const double * alpha, const bool * alt_hue_path)
+{
+  _pls->scmap1la(itype, (PLINT) npts, (const PLFLT*) intensity, (const PLFLT*) coord1, (const PLFLT*) coord2,
+        (const PLFLT*) alpha, (const PLFLT*) coord3, alt_hue_path);
+  return true;
+}
+
+bool PLPLOT::Handle::string3(int n, const double * x, const double * y, const double * z, const std::string& str)
+{
+  _pls->string3((PLINT) n, (const PLFLT*) x, (const PLFLT*) y, (const PLFLT*) z, str.c_str());
+  return true;
+}
+
+bool PLPLOT::Handle::fill3(int n, const double * x, const double * y, const double * z)
+{
+  _pls->fill3((PLINT) n, (const PLFLT*) x, (const PLFLT*) y, (const PLFLT*) z);
+  return true;
+}
+
+bool PLPLOT::Handle::line3(int n, const double * x, const double * y, const double * z)
+{
+  _pls->line3((PLINT) n, (const PLFLT*) x, (const PLFLT*) y, (const PLFLT*) z);
+  return true;
+}
+
+bool PLPLOT::Handle::lightsource(double x, double y, double z)
+{
+  _pls->lightsource((PLFLT) x, (PLFLT) y, (PLFLT) z);
+  return true;
+}
+
+bool PLPLOT::Handle::mtex3(const std::string& side, double disp, double pos, double just, const std::string& text)
+{
+  _pls->mtex3(side.c_str(), (PLFLT) disp, (PLFLT) pos, (PLFLT) just, text.c_str());
+  return true;
+}
+
+bool PLPLOT::Handle::poin(int n, const double * x, const double * y, int code)
+{
+  _pls->poin((PLINT) n, (const PLFLT*) x, (const PLFLT*) y, (PLINT) code);
+  return true;
+}
+
+bool PLPLOT::Handle::poin3(int n, const double * x, const double * y, const double * z, int code)
+{
+  _pls->poin3((PLINT) n, (const PLFLT*) x, (const PLFLT*) y, (const PLFLT*) z, (PLINT) code);
+  return true;
+}
+
+bool PLPLOT::Handle::ptex3(double wx, double wy, double wz, double dx, double dy, double dz,
+                           double sx, double sy, double sz, double just, const std::string& text)
+{
+  _pls->ptex3((PLFLT) wx, (PLFLT) wy, (PLFLT) wz, (PLFLT) dx, (PLFLT) dy, (PLFLT) dz,
+              (PLFLT) sx, (PLFLT) sy, (PLFLT) sz, (PLFLT) just, text.c_str());
+  return true;
+}
+
+bool PLPLOT::Handle::plot3(const double * x, const double * y, const double * const * z,
+                          int nx, int ny, int opt, bool side)
+{
+  _pls->plot3d((const PLFLT*) x, (const PLFLT*) y, (const PLFLT* const*) z, (PLINT) nx, (PLINT) ny,
+               (PLINT) opt, side);
+  return true;
+}
+
+bool PLPLOT::Handle::plot3c(const double * x, const double * y, const double * const * z, int nx,
+                            int ny, int opt, const double * clevel, int nlevel)
+{
+  _pls->plot3dc((const PLFLT*) x, (const PLFLT*) y, (const PLFLT* const*) z, (PLINT) nx, (PLINT) ny,
+               (PLINT) opt, (const PLFLT*) clevel, (PLINT) nlevel);
+  return true;
+}
+
+bool PLPLOT::Handle::prec(int setp, int prec)
+{
+  _pls->prec((PLINT) setp, (PLINT) prec);
   return true;
 }
 
