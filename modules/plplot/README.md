@@ -111,8 +111,6 @@ P.pause(true);
 ```
 import plplot;
 
-import "modules/plplot/libbloc_plplot.so";
-
 /* load tables of data */
 XPTS = 35;
 YPTS = 46;
@@ -134,6 +132,7 @@ for I in 0 to (XPTS - 1) loop
     end loop;
 end loop;
 
+/* a function to initialize the colors map */
 function cmap1_init() returns table is
 begin
   /* initialize 4 tables of 2 decimals: Intensity, H, L, S */
