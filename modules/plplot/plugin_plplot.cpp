@@ -1744,6 +1744,9 @@ bool PLPLOT::Handle::init(const std::string& args)
   reset();
   for(auto& opt : options)
   {
+    /* discard exit */
+    if (opt.first == "-h" || opt.first == "-v")
+      continue;
     failed = (int) _pls->setopt(opt.first.c_str(), opt.second.c_str());
     if (failed != 0)
     {

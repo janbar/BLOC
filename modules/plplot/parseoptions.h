@@ -28,19 +28,20 @@ inline void __parseoptions(const std::string& cmd, std::vector<std::pair<std::st
   std::string::const_iterator it = cmd.cbegin();
   bool opt = false;
   char enc = 0;
-  while (it != cmd.end())
+  while (it != cmd.cend())
   {
     if (!opt)
     {
       if (*it == '-')
       {
         options.push_back(std::make_pair("", ""));
-        while (it != cmd.end() && *it > 0x20)
+        do
         {
           options.back().first.push_back(*it);
           ++it;
-        }
+        } while (it != cmd.cend() && *it > 0x20);
         opt = true;
+        continue;
       }
     }
     else if (enc)
