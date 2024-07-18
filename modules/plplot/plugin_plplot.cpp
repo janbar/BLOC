@@ -68,9 +68,9 @@ enum Method
   /* now ordered by alphanum */
   Adv, Axes, Bin, Box, Box3, Col0, Col1, Env, Env1, Errx, Erry, Fill, Fill3,
   Font, Lab, Lightsource, Line, Line3, Lsty, MinMax2dGrid, Mesh, Meshc, Mtex,
-  Mtex3, Plot3d, Plot3dc, Poin, Poin3, Prec, Ptex, Ptex3, Schr, Scmap1n,
+  Mtex3, Pat, Plot3d, Plot3dc, Poin, Poin3, Prec, Ptex, Ptex3, Schr, Scmap1n,
   Scmap1l, Scmap1l_1, Scmap1la, Scmap1la_1, Scol0a, Scolbga, String, String3,
-  Vpor, W3d, Width, Wind,
+  Surf3d, Vpor, W3d, Width, Wind,
 };
 
 /**********************************************************************/
@@ -409,6 +409,19 @@ static PLUGIN_ARG prec_args[]  = {
   { PLUGIN_IN,    { "I", 0 } }, // prec
 };
 
+static PLUGIN_ARG surf3d_args[]  = {
+  { PLUGIN_IN,    { "N", 1 } }, // x
+  { PLUGIN_IN,    { "N", 1 } }, // y
+  { PLUGIN_IN,    { "N", 2 } }, // z[x][y]
+  { PLUGIN_IN,    { "I", 0 } }, // opt
+  { PLUGIN_IN,    { "N", 1 } }, // clevel
+};
+
+static PLUGIN_ARG pat_args[]  = {
+  { PLUGIN_IN,    { "I", 1 } }, // inc
+  { PLUGIN_IN,    { "I", 1 } }, // del
+};
+
 /**********************************************************************/
 /*  Methods list                                                      */
 /*  id:       name:         ret: decl,ndim  args_count,args:          */
@@ -485,6 +498,8 @@ static PLUGIN_METHOD methods[] =
           "Write text relative to viewport boundaries." },
   { Mtex3,    "mtex3",      { "B", 0 },     5, mtex3_args,
           "Write text relative to viewport boundaries in 3D plots." },
+  { Pat,      "pat",        { "B", 0 },     2, pat_args,
+          "Set area line fill pattern." },
   { Poin,     "poin",       { "B", 0 },     3, poin_args,
           "Plot a glyph at the specified points." },
   { Poin3,    "poin3",      { "B", 0 },     4, poin3_args,
@@ -522,6 +537,10 @@ static PLUGIN_METHOD methods[] =
           "Plot a glyph at the specified points." },
   { String3,  "string3",    { "B", 0 },     4, string3_args,
           "Plot a glyph at the specified 3D points." },
+  { Surf3d,   "surf3d",     { "B", 0 },     5, surf3d_args,
+          "Plot shaded 3D surface plot.\n"
+          "(4) 4=MAG_COLOR 8=BASE_CONT 32=SURF_CONT 64=DRAW_SIDES\n"
+          "    128=FACETED" },
   { Vpor,     "vpor",       { "B", 0 },     4, vpor_args,
           "Specify viewport using normalized subpage coordinates." },
   { W3d,      "w3d",        { "B", 0 },     11, w3d_args,
@@ -531,9 +550,9 @@ static PLUGIN_METHOD methods[] =
   { Wind,     "wind",       { "B", 0 },     4, wind_args,
           "Specify window." },
 /*
-           "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
+          "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
           "    16=TOP_CONT 32=SURF_CONT 64=DRAW_SIDES 128=FACETED\n"
-          "    256=MESH"},
+          "    256=MESH"
  */
 };
 
@@ -590,6 +609,21 @@ TabA<bool> col2tabab(bloc::Collection& col, size_t n)
     if (v.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
     tab.at(i) = *v.boolean();
+  }
+  return std::move(tab);
+}
+
+TabA<int> col2tabai(bloc::Collection& col, size_t n)
+{
+  TabA<int> tab(n);
+  if (col.size() < n)
+    n = col.size();
+  for(size_t i = 0; i < n; ++i)
+  {
+    bloc::Value& v = col.at(i);
+    if (v.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
+    tab.at(i) = (int) *v.integer();
   }
   return std::move(tab);
 }
@@ -721,6 +755,7 @@ struct Handle {
   bool lsty(int lin);
   bool poin(int n, const double * x, const double * y, int code);
   bool prec(int setp, int prec);
+  bool pat(int nlin, const int * inc, const int * del);
 
   /* 3D */
   bool minmax2dgrid(const double * const * z, int nx, int ny, double * zmax, double * zmin );
@@ -748,6 +783,7 @@ struct Handle {
     double sx, double sy, double sz, double just, const std::string& text);
   bool plot3(const double * x, const double * y, const double * const * z, int nx, int ny, int opt, bool side);
   bool plot3c(const double * x, const double * y, const double * const * z, int nx, int ny, int opt, const double * clevel, int nlevel);
+  bool surf3(const double * x, const double * y, const double * const * z, int nx, int ny, int opt, const double * clevel, int nlevel);
 };
 
 } /* namespace PLPLOT */
@@ -1639,6 +1675,44 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     return new bloc::Value(bloc::Bool(h->prec((int) *a0.integer(), (int) *a1.integer())));
   }
 
+  case PLPLOT::Surf3d:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    bloc::Value& a4 = args[4]->value(ctx);
+    if (a0.isNull() || a1.isNull() || a2.isNull() || a3.isNull() || a4.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& x = *a0.collection();
+    bloc::Collection& y = *a1.collection();
+    bloc::Collection& z = *a2.collection();
+    bloc::Collection& c = *a4.collection();
+    size_t nx = x.size();
+    size_t ny = y.size();
+    size_t nc = c.size();
+    PLPLOT::TabZ<double> vz = PLPLOT::col2tabz(z, nx, ny);
+    PLPLOT::TabA<double> vx = PLPLOT::col2taba(x, nx);
+    PLPLOT::TabA<double> vy = PLPLOT::col2taba(y, ny);
+    PLPLOT::TabA<double> vc = PLPLOT::col2taba(c, nc);
+    return new bloc::Value(bloc::Bool(h->surf3(vx.data, vy.data, vz.data, (int) nx, (int) ny,
+                                               (int) *a3.integer(), vc.data, (int) nc)));
+  }
+
+  case PLPLOT::Pat:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull() || a1.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    bloc::Collection& inc = *a0.collection();
+    bloc::Collection& del = *a1.collection();
+    size_t n = (inc.size() > del.size() ? del.size() : inc.size());
+    PLPLOT::TabA<int> vi = PLPLOT::col2tabai(inc, n);
+    PLPLOT::TabA<int> vd = PLPLOT::col2tabai(del, n);
+    return new bloc::Value(bloc::Bool(h->pat((int) n, vi.data, vd.data)));
+  }
+
   default:
     break;
   }
@@ -1988,6 +2062,20 @@ bool PLPLOT::Handle::plot3c(const double * x, const double * y, const double * c
 bool PLPLOT::Handle::prec(int setp, int prec)
 {
   _pls->prec((PLINT) setp, (PLINT) prec);
+  return true;
+}
+
+bool PLPLOT::Handle::surf3(const double * x, const double * y, const double * const * z, int nx,
+                            int ny, int opt, const double * clevel, int nlevel)
+{
+  _pls->surf3d((const PLFLT*) x, (const PLFLT*) y, (const PLFLT* const*) z, (PLINT) nx, (PLINT) ny,
+               (PLINT) opt, (const PLFLT*) clevel, (PLINT) nlevel);
+  return true;
+}
+
+bool PLPLOT::Handle::pat(int nlin, const int * inc, const int * del)
+{
+  _pls->pat((PLINT) nlin, (const PLINT*) inc, (const PLINT*) del);
   return true;
 }
 
