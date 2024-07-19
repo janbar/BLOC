@@ -64,7 +64,7 @@ for I in 0 to (XPTS - 1) loop
 end loop;
 
 /* a function to initialize the colors map */
-function cmap1_init() returns table is
+function cmap1_init() return table is
 begin
   /* initialize 4 tables of 2 decimals: Intensity, H, L, S */
   rt = tab(4, tab(2, num()));

@@ -23,7 +23,7 @@ const char * Statement::KEYWORDS[] = {
   "begin",    "break",    "continue", "end",      "end if",
   "end loop", "print",    "put",      "do",       "exception",
   "when",     "raise",    "asc",      "desc",     "is",
-  "returns",  "forall",
+  "forall",
 };
 
 Statement::~Statement()
@@ -116,7 +116,7 @@ const char * Statement::HELPS[] = {
   /*FUNCTION*/  "The FUNCTION statement declares a block of code which only runs"
           "\nwhen it is called, and should return data as a result. You can pass"
           "\ndata, known as parameters, into a function."
-          "\n\nfunction {name} [( x [, y ...] )] returns {type name} is"
+          "\n\nfunction {name} [( x [, y ...] )] return {type name} is"
           "\nbegin [statement ...]"
           "\n[ exception [ when {exception name} then [statement ...] ...] ]"
           "\nend;"
@@ -199,7 +199,6 @@ const char * Statement::HELPS[] = {
   /*ASC   */  "See statement FOR.",
   /*DESC  */  "See statement FOR.",
   /*IS    */  "See statement FUNCTION.",
-  /*RETURNS*/ "See statement FUNCTION.",
   /*FORALL*/  "The FORALL statement provides row fetch construct. It defines an iterator"
           "\nvariable that points to current value. Then block of statements after the"
           "\nLOOP keyword will be executed until last row is reached."

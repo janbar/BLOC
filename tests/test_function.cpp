@@ -16,7 +16,7 @@ TEST_CASE("create and replace function")
   ctx.purge();
   Executable * e;
   ctx.reset(
-          "function func(r) returns decimal is\n"
+          "function func(r) return decimal is\n"
           "begin\n"
           "  fn2 = 12.0 , fn1 = 6.0;\n"
           "  for i in 2 to r loop\n"
@@ -38,7 +38,7 @@ TEST_CASE("create and replace function")
   REQUIRE( *(ctx.loadVariable("A")->numeric()) == 1.618034 );
 
   ctx.reset(
-          "function func(s) returns string is\n"
+          "function func(s) return string is\n"
           "begin\n"
           "  return upper(s);\n"
           "end;\n"
@@ -54,7 +54,7 @@ TEST_CASE("create and replace function")
   REQUIRE( *(ctx.loadVariable("A")->literal()) == "HELLO WORLD!" );
 
   ctx.reset(
-          "function func(i) returns integer is\n"
+          "function func(i) return integer is\n"
           "begin\n"
           "  r = 0;\n"
           "  for j in 0 to i loop\n"
@@ -74,7 +74,7 @@ TEST_CASE("create and replace function")
   REQUIRE( *(ctx.loadVariable("A")->integer()) == 45 );
 
   ctx.reset(
-          "function func(a,b,c) returns boolean is\n"
+          "function func(a,b,c) return boolean is\n"
           "begin\n"
           "  return a && b && c;\n"
           "end;\n"
@@ -101,7 +101,7 @@ TEST_CASE("function returns table")
   ctx.purge();
   Executable * e;
   ctx.reset(
-          "function func(t) returns table is\n"
+          "function func(t) return table is\n"
           "begin\n"
           "  for i in 0 to t.count()-1 loop t.put(i, 1); end loop;\n"
           "  return t;\n"
@@ -125,7 +125,7 @@ TEST_CASE("function returns tuple")
   ctx.purge();
   Executable * e;
   ctx.reset(
-          "function func(t) returns tuple is\n"
+          "function func(t) return tuple is\n"
           "begin\n"
           "  t.set@1(upper(t@1));\n"
           "  return t;\n"

@@ -50,7 +50,7 @@ end loop;
 ```
 And create your customized function.
 ```
-function tokenize(buf, delim, trimnull) returns table is
+function tokenize(buf, delim, trimnull) return table is
 begin
   t = tab(0, str()); /* The table will be returned */
   p = 0; /* The current position in buf */
@@ -72,11 +72,11 @@ begin
   return t;
 end;
 
-function tokenize(buf, delim) returns table is begin
+function tokenize(buf, delim) return table is begin
   return tokenize(buf,delim,false);
 end;
 
-function tokenize(buf) returns table is begin
+function tokenize(buf) return table is begin
   return tokenize(buf," ",true);
 end;
 

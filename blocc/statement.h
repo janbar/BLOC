@@ -74,8 +74,7 @@ public:
     STMT_ASC        = 27,
     STMT_DESC       = 28,
     STMT_IS         = 29,
-    STMT_RETURNS    = 30,
-    STMT_FORALL     = 31,
+    STMT_FORALL     = 30,
   };
 
   virtual ~Statement();

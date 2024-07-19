@@ -65,7 +65,9 @@ void FUNCTIONStatement::unparse(Context& ctx, FILE * out) const
     }
     fputc(')', out);
   }
-  fputs(" returns ", out);
+  fputc(' ', out);
+  fputs(Statement::KEYWORDS[Statement::STMT_RETURN], out);
+  fputc(' ', out);
   if (_functor->returns.level() > 0)
     fputs("table", out);
   else
@@ -123,8 +125,8 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     }
 
     /* returns */
-    if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_RETURNS])
-      throw ParseError(EXC_PARSE_OTHER_S, "Keyword RETURNS required for FUNCTION.");
+    if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_RETURN])
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword RETURN required for FUNCTION.");
     t = p.pop();
     if (t->code != TOKEN_KEYWORD)
       throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
