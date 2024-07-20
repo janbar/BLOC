@@ -134,7 +134,9 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
     for (;;)
     {
       Expression * exp = ParseExpression::expression(p, ctx);
-      if (exp->type(ctx) != Type::BOOLEAN)
+      const Type& exp_type = exp->type(ctx);
+      if (exp_type.level() > 0 ||
+              (exp_type != Type::BOOLEAN && exp_type != Type::NO_TYPE))
       {
         delete exp;
         throw ParseError(EXC_PARSE_OTHER_S, "Boolean expression required for IF.");
