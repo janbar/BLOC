@@ -57,9 +57,11 @@ static PLUGIN_TYPE ctor_1_args[]  = {
 static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,   ctor_0_args,
-          "Create new plot for the given device name." },
+          "Create new plot for the given device name.\n"
+  "1  : device name (interactive)" },
   { 1,      2,   ctor_1_args,
-          "Create new plot for the given device name and output file name." },
+          "Create new plot for the given device name and output file name.\n"
+  "1  : device name\n2  : output filename" },
 };
 
 enum Method
@@ -150,7 +152,7 @@ static PLUGIN_ARG scolbga_args[]  = {
 };
 
 static PLUGIN_ARG scol0a_args[]  = {
-  { PLUGIN_IN,    { "I", 0 } }, // ivol0
+  { PLUGIN_IN,    { "I", 0 } }, // icol0
   { PLUGIN_IN,    { "I", 0 } }, // r
   { PLUGIN_IN,    { "I", 0 } }, // g
   { PLUGIN_IN,    { "I", 0 } }, // b
@@ -448,128 +450,181 @@ static PLUGIN_METHOD methods[] =
   { Init,     "init",       { "B", 0 },     0, nullptr,
           "Initialize the plotting session." },
   { Init1,    "init",       { "B", 0 },     1, init1_args,
-          "Initialize the plotting session with the given options." },
+          "Initialize the plotting session with the given options.\n"
+  "1  : options" },
   { Flush,    "flush",      { "B", 0 },     0, nullptr,
           "Flushes the output stream." },
   { Replot,   "replot",     { "B", 0 },     0, nullptr,
           "Replays contents of plot buffer to current device/file." },
   { Pause,   "pause",       { "B", 0 },     1, pause_args,
-          "Set the pause (on end-of-page) status. Default is off." },
+          "Set the pause (on end-of-page) status. Default is off.\n"
+  "1  : paused" },
   { Pause1,  "pause",       { "B", 0 },     0, nullptr,
           "Returns the pause status." },
   { Close,    "close",      { "B", 0 },     0, nullptr,
           "End plotting session." },
   { Adv,      "adv",        { "B", 0 },     1, adv_args,
-          "Advance the (sub-)page." },
+          "Advance the (sub-)page.\n"
+  "1  : page" },
   { Axes,     "axes",       { "B", 0 },     8, axes_args,
-          "Draw a box with axes, etc. with arbitrary origin." },
+          "Draw a box with axes, etc. with arbitrary origin.\n"
+  "1  : x0\n2  : y0\n3  : xopt\n4  : xtick\n5  : nxsub\n"
+  "6  : yopt\n7  : ytick\n8  : nysub" },
   { Bin,      "bin",        { "B", 0 },     3, bin_args,
-          "Plot a histogram from binned data." },
+          "Plot a histogram from binned data.\n"
+  "1  : x\n2  : y\n3  : center" },
   { Box,      "box",        { "B", 0 },     6, box_args,
-          "Draw a box with axes, etc." },
+          "Draw a box with axes, etc.\n"
+  "1  : xopt\n2  : xtick\n3  : nxsub\n4  : yopt\n5  : ytick\n"
+  "6  : nysub" },
   { Box3,     "box3",       { "B", 0 },     12, box3_args,
-          "Draw a box with axes, etc, in 3D." },
+          "Draw a box with axes, etc, in 3D.\n"
+  "1  : xopt\n2  : xlabel\n3  : xtick\n4  : nxsub\n5  : yopt\n"
+  "6  : ylabel\n7  : ytick\n8  : nysub\n9  : zopt\n10 : zlabel\n"
+  "11 : ztick\n12 : nzsub" },
   { Col0,     "col0",       { "B", 0 },     1, col0_args,
-          "Sets the color index for cmap0." },
+          "Sets the color index for cmap0.\n"
+  "1  : color" },
   { Col1,     "col1",       { "B", 0 },     1, col1_args,
-          "Sets the color index for cmap1." },
+          "Sets the color index for cmap1.\n"
+  "1  : col1" },
   { Env,      "env",        { "B", 0 },     4, env_args,
-          "Set up standard window and draw box." },
+          "Set up standard window and draw box.\n"
+  "1  : xmin\n2  : xmax\n3  : ymin\n4  : ymax" },
   { Env1,     "env",        { "B", 0 },     6, env1_args,
-          "Set up standard window and draw box." },
+          "Set up standard window and draw box.\n"
+  "1  : xmin\n2  : xmax\n3  : xymin\n4  : ymax\n5  : just\n"
+  "6  : axis" },
   { Errx,     "errx",       { "B", 0 },     3, errx_args,
-          "Draw error bars in the x direction." },
+          "Draw error bars in the x direction.\n"
+  "1  : xmin\n2  : xmax\n3  : y" },
   { Erry,     "erry",       { "B", 0 },     3, erry_args,
-          "Draw error bars in the y direction." },
+          "Draw error bars in the y direction.\n"
+  "1  : x\n2  : ymin\n3  : ymax" },
   { Fill,     "fill",       { "B", 0 },     2, fill_args,
-          "Draw filled polygon." },
+          "Draw filled polygon.\n"
+  "1  : x\n2  : y" },
   { Fill3,    "fill3",      { "B", 0 },     3, fill3_args,
-          "Draw filled polygon in 3D." },
+          "Draw filled polygon in 3D.\n"
+  "1  : x\n2  : y\n3  : z" },
   { Font,     "font",       { "B", 0 },     1, font_args,
-          "Set font." },
+          "Set font.\n"
+  "1  : font" },
   { Lab,      "lab",        { "B", 0 },     3, lab_args,
-          "Simple routine to write labels." },
+          "Simple routine to write labels.\n"
+  "1  : xlabel\n2  : ylabel\n3  : tlabel" },
   { Lightsource,  "lightsource",  { "B", 0 }, 3, lightsource_args,
-          "Sets the 3D position of the light source." },
+          "Sets the 3D position of the light source.\n"
+  "1  : x\n2  : y\n3  : z" },
   { Line,     "line",       { "B", 0 },     2, line_args,
-          "Draw a line." },
+          "Draw a line.\n"
+  "1  : x\n2  : y" },
   { Line3,    "line3",      { "B", 0 },     3, line3_args,
-          "Draw a line in 3D." },
+          "Draw a line in 3D.\n"
+  "1  : x\n2  : y\n3  : z" },
   { Lsty,     "lsty",       { "B", 0 },     1, lsty_args,
-          "Select line style." },
+          "Select line style.\n"
+  "1  : lin" },
   { MinMax2dGrid, "minmax2dgrid", { "B", 0 }, 5, minmax2dgrid_args,
-          "Find the minimum and maximum of a Z matrix." },
+          "Find the minimum and maximum of a Z matrix.\n"
+  "1  : f matrix\n2  : nx\n3  : ny\n4  : out zmax\n5  : out zmin" },
   { Mesh,     "mesh",       { "B", 0 },     4, mesh_args,
           "Plot surface mesh.\n"
-          "(4) 1=DRAW_LINEX 2=DRAW_LINEY" },
+  "1  : x\n2  : y\n3  : z\n4  : 1=DRAW_LINEX 2=DRAW_LINEY" },
   { Meshc,    "meshc",      { "B", 0 },     5, meshc_args,
           "Magnitude colored plot surface mesh with contour.\n"
-          "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
-          "    64=DRAW_SIDES" },
+  "1  : x\n2  : y\n3  : z\n"
+  "4  : 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT 64=DRAW_SIDES\n"
+  "5  : clevel" },
   { Mtex,      "mtex",      { "B", 0 },     5, mtex_args,
-          "Write text relative to viewport boundaries." },
+          "Write text relative to viewport boundaries.\n"
+  "1  : side\n2  : disp\n3  : pos\n4  : just\n5  : text" },
   { Mtex3,    "mtex3",      { "B", 0 },     5, mtex3_args,
-          "Write text relative to viewport boundaries in 3D plots." },
+          "Write text relative to viewport boundaries in 3D plots.\n"
+  "1  : side\n2  : disp\n3  : pos\n4  : just\n5  : text" },
   { Pat,      "pat",        { "B", 0 },     2, pat_args,
-          "Set area line fill pattern." },
+          "Set area line fill pattern.\n"
+  "1  : inc\n2  : del" },
   { Poin,     "poin",       { "B", 0 },     3, poin_args,
-          "Plot a glyph at the specified points." },
+          "Plot a glyph at the specified points.\n"
+  "1  : x\n2  : y\n3  :code" },
   { Poin3,    "poin3",      { "B", 0 },     4, poin3_args,
-          "Plot a glyph at the specified 3D points." },
+          "Plot a glyph at the specified 3D points.\n"
+  "1  : x\n2  : y\n3  : z\n4  : code" },
   { Plot3d,   "plot3d",     { "B", 0 },     5, plot3d_args,
           "Plot 3D surface plot.\n"
-          "(4) 1=DRAW_LINEX 2=DRAW_LINEY" },
+  "1  : x\n2  : y\n3  : z\n4  : 1=DRAW_LINEX 2=DRAW_LINEY\n"
+  "5  : side" },
   { Plot3dc,  "plot3dc",    { "B", 0 },     5, plot3dc_args,
           "Magnitude colored plot surface with contour.\n"
-          "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
-          "    64=DRAW_SIDES" },
+  "1  : x\n2  : y\n3  : z\n"
+  "4  : 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT 64=DRAW_SIDES\n"
+  "5  : clevel" },
   { Prec,      "prec",      { "B", 0 },     2, prec_args,
-          "Set precision in numeric labels." },
+          "Set precision in numeric labels.\n"
+  "1  : setp\n2  : prec" },
   { Ptex,      "ptex",      { "B", 0 },     6, ptex_args,
-          "Write text inside the viewport." },
+          "Write text inside the viewport.\n"
+  "1  : x\n2  : y\n3  : dx\n4  : dy\n5  : just\n6  : text" },
   { Ptex3,     "ptex3",     { "B", 0 },     11, ptex3_args,
-          "Write text inside the viewport of a 3D plot." },
+          "Write text inside the viewport of a 3D plot.\n"
+  "1  : wx\n2  : wy\n3  : wz\n4  : dx\n5  : dy\n6  : dz\n"
+  "7  : sx\n8  : sy\n9  : sz\n10 : just\n11 : text" },
   { Schr,     "schr",       { "B", 0 },     2, schr_args,
-          "Set character size." },
+          "Set character size.\n"
+  "1  : def\n2  : scale" },
   { Scmap1n,  "scmap1n",    { "B", 0 },     1, scmap1n_args,
-          "Set number of colors in cmap1." },
+          "Set number of colors in cmap1.\n"
+  "1  : ncol1" },
   { Scmap1l,  "scmap1l",    { "B", 0 },     6, scmap1l_args,
-          "Set cmap1 colors using a piece-wise linear relationship." },
+          "Set cmap1 colors using a piece-wise linear relationship.\n"
+  "1  : itype\n2  : intensity\n3  : coord1\n4  : coord2\n5  : coord3\n"
+  "6  : alt_hue_path" },
   { Scmap1l_1,  "scmap1l",  { "B", 0 },     5, scmap1l_1_args,
-          "Set cmap1 colors using a piece-wise linear relationship." },
+          "Set cmap1 colors using a piece-wise linear relationship.\n"
+  "1  : itype\n2  : intensity\n3  : coord1\n4  : coord2\n5  : coord3" },
   { Scmap1la,   "scmap1la", { "B", 0 },     7, scmap1la_args,
-          "Set cmap1 colors and alpha transparency using a piece-wise linear relationship." },
+          "Set cmap1 colors and alpha transparency using a piece-wise linear relationship.\n"
+  "1  : itype\n2  : intensity\n3  : coord1\n4  : coord2\n5  : coord3\n6  : alpha\n"
+  "7  : alt_hue_path" },
   { Scmap1la_1, "scmap1la", { "B", 0 },     6, scmap1la_1_args,
-          "Set cmap1 colors and alpha transparency using a piece-wise linear relationship." },
+          "Set cmap1 colors and alpha transparency using a piece-wise linear relationship.\n"
+  "1  : itype\n2  : intensity\n3  : coord1\n4  : coord2\n5  : coord3\n6  : alpha" },
   { Scol0a,   "scol0a",     { "B", 0 },     5, scol0a_args,
-          "Set 8-bit RGB values and floating alpha transparency value for given cmap0 color index." },
+          "Set 8-bit RGB values and floating alpha transparency value for given cmap0 color index.\n"
+  "1  : icol0\n2  : r\n3  : g\n4  : b\n5  : alpha" },
   { Scolbga,  "scolbga",    { "B", 0 },     4, scolbga_args,
-          "Set the background color by 8-bit RGB value and floating alpha transparency value." },
+          "Set the background color by 8-bit RGB value and floating alpha transparency value.\n"
+  "1  : r\n2  : g\n3  : b\n4  : alpha" },
   { String,   "string",     { "B", 0 },     3, string_args,
-          "Plot a glyph at the specified points." },
+          "Plot a glyph at the specified points.\n"
+  "1  : x\n2  : y\n3  : string" },
   { String3,  "string3",    { "B", 0 },     4, string3_args,
-          "Plot a glyph at the specified 3D points." },
+          "Plot a glyph at the specified 3D points.\n"
+  "1  : x\n2  : y\n3  : z\n4  : string" },
   { Surf3d,   "surf3d",     { "B", 0 },     5, surf3d_args,
           "Plot shaded 3D surface plot.\n"
-          "(4) 4=MAG_COLOR 8=BASE_CONT 32=SURF_CONT 64=DRAW_SIDES\n"
-          "    128=FACETED" },
+  "1  : x\n2  : y\n3  : z\n"
+  "4  : 4=MAG_COLOR 8=BASE_CONT 32=SURF_CONT 64=DRAW_SIDES 128=FACETED\n"
+  "5  : clevel" },
   { Surf3dl,  "surf3dl",    { "B", 0 },     9, surf3dl_args,
           "Plot shaded 3D surface plot.\n"
-          "(4) 4=MAG_COLOR 8=BASE_CONT 32=SURF_CONT 64=DRAW_SIDES\n"
-          "    128=FACETED" },
+  "1  : x\n2  : y\n3  : z\n"
+  "4  : 4=MAG_COLOR 8=BASE_CONT 32=SURF_CONT 64=DRAW_SIDES 128=FACETED\n"
+  "5  : clevel\n6  : indexxmin\n7  : indexxmax\n8  : indexymin\n9  : indexymax" },
   { Vpor,     "vpor",       { "B", 0 },     4, vpor_args,
-          "Specify viewport using normalized subpage coordinates." },
+          "Specify viewport using normalized subpage coordinates.\n"
+  "1  : xmin\n2  : xmax\n3  : ymin\n4  : ymax" },
   { W3d,      "w3d",        { "B", 0 },     11, w3d_args,
-          "Configure the transformations required for projecting a 3D surface on a 2D window." },
+          "Configure the transformations required for projecting a 3D surface on a 2D window.\n"
+  "1  : basex\n2  : basey\n3  : height\n4  : xmin\n5  : xmax\n6  : ymin\n7  : ymax\n"
+  "8  : zmin\n9  : zmax\n10 : alt\n11 : az" },
   { Width,    "width",      { "B", 0 },     1, width_args,
-          "Set pen width." },
+          "Set pen width.\n"
+  "1  : width" },
   { Wind,     "wind",       { "B", 0 },     4, wind_args,
-          "Specify window." },
-/*
-          "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
-          "    16=TOP_CONT 32=SURF_CONT 64=DRAW_SIDES 128=FACETED\n"
-          "    256=MESH"
- */
+          "Specify window.\n"
+  "1  : xmin\n2  : xmax\n3  : ymin\n4  : ymax" },
 };
 
 template<class T>
