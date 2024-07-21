@@ -235,7 +235,7 @@ begin
   rt.at(0).put(0, 0.0);
   rt.at(0).put(1, 1.0);
 
-  if gray == true then
+  if gray then
     rt.at(1).put(0, 0.0);
     rt.at(1).put(1, 0.0);
     /* L and S */
@@ -330,47 +330,45 @@ end loop;
 
 plot.lightsource( 1.0, 1.0, 1.0 );
 
-begin
-  plot.adv( 0 );
-  plot.vpor( 0.0, 1.0, 0.0, 0.9 );
-  plot.wind( -1.0, 1.0, -0.9, 1.1 );
-  plot.col0( 3 );
-  plot.mtex( "t", 1.0, 0.5, 0.5, title.at(k) );
-  plot.col0( 1 );
-  plot.w3d( 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, zmin, zmax, alt.at(k), az.at(k) );
+plot.adv( 0 );
+plot.vpor( 0.0, 1.0, 0.0, 0.9 );
+plot.wind( -1.0, 1.0, -0.9, 1.1 );
+plot.col0( 3 );
+plot.mtex( "t", 1.0, 0.5, 0.5, title.at(k) );
+plot.col0( 1 );
+plot.w3d( 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, zmin, zmax, alt.at(k), az.at(k) );
 
-  plot.box3( "bnstu", "x axis", 0.0, 0,
-            "bnstu", "y axis", 0.0, 0,
-            "bcdmnstuv", "z axis", 0.0, 0 );
-  plot.col0( 2 );
+plot.box3( "bnstu", "x axis", 0.0, 0,
+          "bnstu", "y axis", 0.0, 0,
+          "bcdmnstuv", "z axis", 0.0, 0 );
+plot.col0( 2 );
 
-  if ifshade == 0 then /* diffuse light surface plot */
-    cmap1 = cmap1_init( true );
-    plot.scmap1n( 256 );
-    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
-    plot.surf3d( x, y, z, 0, tab(0, num()) );
-  elsif ifshade == 1 then /* magnitude colored plot */
-    cmap1 = cmap1_init( false );
-    plot.scmap1n( 256 );
-    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
-    plot.surf3d( x, y, z, 4, tab(0, num()) );
-  elsif ifshade == 2 then /* magnitude colored plot with faceted squares */
-    cmap1 = cmap1_init( false );
-    plot.scmap1n( 256 );
-    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
-    plot.surf3d( x, y, z, 4+128, tab(0, num()) );
-  elsif ifshade == 3 then /* magnitude colored plot with contours */
-    cmap1 = cmap1_init( false );
-    plot.scmap1n( 256 );
-    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
-    plot.surf3d( x, y, z, 4+32+8, clevel );
-  else /* magnitude colored plot with contours and index limits */
-    cmap1 = cmap1_init( false );
-    plot.scmap1n( 256 );
-    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
-    plot.surf3dl( x, y, zlimited, 4+32+8, clevel, indexxmin, indexxmax, indexymin, indexymax );
-  end if;
-end;
+if ifshade == 0 then /* diffuse light surface plot */
+  cmap1 = cmap1_init( true );
+  plot.scmap1n( 256 );
+  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  plot.surf3d( x, y, z, 0, tab(0, num()) );
+elsif ifshade == 1 then /* magnitude colored plot */
+  cmap1 = cmap1_init( false );
+  plot.scmap1n( 256 );
+  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  plot.surf3d( x, y, z, 4, tab(0, num()) );
+elsif ifshade == 2 then /* magnitude colored plot with faceted squares */
+  cmap1 = cmap1_init( false );
+  plot.scmap1n( 256 );
+  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  plot.surf3d( x, y, z, 4+128, tab(0, num()) );
+elsif ifshade == 3 then /* magnitude colored plot with contours */
+  cmap1 = cmap1_init( false );
+  plot.scmap1n( 256 );
+  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  plot.surf3d( x, y, z, 4+32+8, clevel );
+else /* magnitude colored plot with contours and index limits */
+  cmap1 = cmap1_init( false );
+  plot.scmap1n( 256 );
+  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  plot.surf3dl( x, y, zlimited, 4+32+8, clevel, indexxmin, indexxmax, indexymin, indexymax );
+end if;
 
 plot.flush();
 plot.pause(true);
