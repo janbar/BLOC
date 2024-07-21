@@ -519,7 +519,7 @@ static PLUGIN_METHOD methods[] =
   { Plot3d,   "plot3d",     { "B", 0 },     5, plot3d_args,
           "Plot 3D surface plot.\n"
           "(4) 1=DRAW_LINEX 2=DRAW_LINEY" },
-  { Plot3dc,  "plot3dc",    { "B", 0 },     5, plot3d_args,
+  { Plot3dc,  "plot3dc",    { "B", 0 },     5, plot3dc_args,
           "Magnitude colored plot surface with contour.\n"
           "(4) 1=DRAW_LINEX 2=DRAW_LINEY 4=MAG_COLOR 8=BASE_CONT\n"
           "    64=DRAW_SIDES" },
