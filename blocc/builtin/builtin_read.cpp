@@ -46,7 +46,7 @@ Value& READExpression::value(Context & ctx) const
     n = *a1.integer();
   }
 
-  a0.swap(Value(new Literal()));
+  a0.swap(Value(new Literal()).to_lvalue(a0.lvalue()));
   if (n > 32)
   {
     char * buf = new char[n];

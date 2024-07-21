@@ -52,7 +52,7 @@ Value& READLNExpression::value(Context & ctx) const
     /* discard nl */
     if (buf[l - 1] == '\n')
       --l;
-    a0.swap(Value(new Literal(buf, l)));
+    a0.swap(Value(new Literal(buf, l)).to_lvalue(a0.lvalue()));
   }
   return ctx.allocate(Value(Bool(n > 0 ? true : false)));
 }
