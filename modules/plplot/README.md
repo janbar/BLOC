@@ -120,7 +120,7 @@ P.pause(true);
   <img src="./sample3d.png" width="400" height="300"/>
 <p>
 
-Finally a 2D log.
+Next a 2D log.
 ```
 import plplot;
 
@@ -204,3 +204,178 @@ P.pause(true);
   <img src="./sample2d.png" width="400" height="300"/>
 <p>
 
+Finally a 3D surf.
+```
+import plplot;
+
+/* user input for view type, and shading type */
+$var = str();
+readln($var, "View\t? (0 or 1) ");
+if isnum($var) then k = int($var); else k = 0; end if;
+if k < 0 or k > 1 then k = 0; end if;
+readln($var, "Shading\t? (0,1,2,3 or 4) ");
+if isnum($var) then ifshade = int($var); else ifshade = 0; end if;
+if ifshade < 0 or ifshade > 4 then ifshade = 0; end if;
+
+$XPTS = 35;
+$YPTS = 45;
+
+alt = tab(2, num());
+alt.put(0, 60.0);
+alt.put(1, 40.0);
+az = tab(2, num());
+az.put(0, 30.0);
+az.put(1, -30.0);
+
+function cmap1_init(gray) return table is
+begin
+  /* initialize 4 tables of 2 decimals: Intensity, H, L, S */
+  rt = tab(4, tab(2, num()));
+  /* left and right boundaries */
+  rt.at(0).put(0, 0.0);
+  rt.at(0).put(1, 1.0);
+
+  if gray == true then
+    rt.at(1).put(0, 0.0);
+    rt.at(1).put(1, 0.0);
+    /* L and S */
+    rt.at(2).put(0, 0.5);
+    rt.at(2).put(1, 1.0);
+    rt.at(3).put(0, 0.0);
+    rt.at(3).put(1, 0.0);
+  else
+    /* blue - green - yellow - red */
+    rt.at(1).put(0, 240.0);
+    rt.at(1).put(1, 0.0);
+    /* L and S */
+    rt.at(2).put(0, 0.6);
+    rt.at(2).put(1, 0.6);
+    rt.at(3).put(0, 0.8);
+    rt.at(3).put(1, 0.8);
+  end if;
+  return rt;
+end;
+
+title = tab(2, str());
+title.put(0, "#frPLplot Example 8 - Alt=60, Az=30");
+title.put(1, "#frPLplot Example 8 - Alt=40, Az=-30");
+
+$LEVELS = 10;
+x = tab($XPTS, num());
+y = tab($YPTS, num());
+z = tab($XPTS, tab($YPTS, num()));
+dx = 2.0 / ( $XPTS - 1 );
+dy = 2.0 / ( $YPTS - 1 );
+zmin = num();
+zmax = num();
+step = num();
+clevel = tab($LEVELS, num());
+nlevel = $LEVELS;
+
+indexxmin = 0;
+indexxmax = $XPTS;
+
+x0 = 0.5 * ( $XPTS - 1 );
+a  = 0.9 * x0;
+y0 = 0.5 * ( $YPTS - 1 );
+b  = 0.7 * y0;
+
+plot = plplot("xwin");
+plot.init("-geometry 800x600");
+
+z_row_major = tab($XPTS * $YPTS, num());
+z_col_major = tab($XPTS * $YPTS, num());
+
+for i in 0 to $XPTS-1 loop
+  x.put(i, -1.0 + i * dx );
+end loop;
+
+for j in 0 to $YPTS-1 loop
+  y.put(j, -1.0 + j * dy );
+end loop;
+
+for i in 0 to $XPTS-1 loop
+  xx = x.at(i);
+  for j in 0 to $YPTS-1 loop
+    yy = y.at(j);
+    r = sqrt( xx * xx + yy * yy );
+    z.at(i).put(j, exp( -r * r ) * cos( 2.0 * pi * r ));
+
+    z_row_major.put(i * $YPTS + j, z.at(i).at(j));
+    z_col_major.put(i + $XPTS * j, z.at(i).at(j));
+  end loop;
+end loop;
+
+/* Allocate and calculate y index ranges and corresponding zlimited */
+zlimited = tab($XPTS, tab($YPTS, 0.0));
+indexymin = tab($XPTS, int());
+indexymax = tab($XPTS, int());
+
+for i in indexxmin to indexxmax-1 loop
+  square_root = sqrt( 1.0 - min( 1.0, pow( ( i - x0 ) / a, 2.0 ) ) );
+  indexymin.put(i, max( 0, ( 0.5 + y0 - b * square_root )));
+  indexymax.put(i, min( $YPTS, 1 + ( 0.5 + y0 + b * square_root )));
+
+  for j in indexymin.at(i) to indexymax.at(i)-1 loop
+    zlimited.at(i).put(j, z.at(i).at(j));
+  end loop;
+end loop;
+
+plot.minmax2dgrid( z, $XPTS, $YPTS, zmax, zmin );
+step = ( zmax - zmin ) / ( nlevel + 1 );
+
+for i in 0 to nlevel-1 loop
+  clevel.put(i, zmin + step + step * i);
+end loop;
+
+plot.lightsource( 1.0, 1.0, 1.0 );
+
+begin
+  plot.adv( 0 );
+  plot.vpor( 0.0, 1.0, 0.0, 0.9 );
+  plot.wind( -1.0, 1.0, -0.9, 1.1 );
+  plot.col0( 3 );
+  plot.mtex( "t", 1.0, 0.5, 0.5, title.at(k) );
+  plot.col0( 1 );
+  plot.w3d( 1.0, 1.0, 1.0, -1.0, 1.0, -1.0, 1.0, zmin, zmax, alt.at(k), az.at(k) );
+
+  plot.box3( "bnstu", "x axis", 0.0, 0,
+            "bnstu", "y axis", 0.0, 0,
+            "bcdmnstuv", "z axis", 0.0, 0 );
+  plot.col0( 2 );
+
+  if ifshade == 0 then /* diffuse light surface plot */
+    cmap1 = cmap1_init( true );
+    plot.scmap1n( 256 );
+    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+    plot.surf3d( x, y, z, 0, tab(0, num()) );
+  elsif ifshade == 1 then /* magnitude colored plot */
+    cmap1 = cmap1_init( false );
+    plot.scmap1n( 256 );
+    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+    plot.surf3d( x, y, z, 4, tab(0, num()) );
+  elsif ifshade == 2 then /* magnitude colored plot with faceted squares */
+    cmap1 = cmap1_init( false );
+    plot.scmap1n( 256 );
+    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+    plot.surf3d( x, y, z, 4+128, tab(0, num()) );
+  elsif ifshade == 3 then /* magnitude colored plot with contours */
+    cmap1 = cmap1_init( false );
+    plot.scmap1n( 256 );
+    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+    plot.surf3d( x, y, z, 4+32+8, clevel );
+  else /* magnitude colored plot with contours and index limits */
+    cmap1 = cmap1_init( false );
+    plot.scmap1n( 256 );
+    plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+    plot.surf3dl( x, y, zlimited, 4+32+8, clevel, indexxmin, indexxmax, indexymin, indexymax );
+  end if;
+end;
+
+plot.flush();
+plot.pause(true);
+```
+<p align="center">
+  <img src="./sample3ds2.png" width="400" height="300"/>
+  <img src="./sample3ds3.png" width="400" height="300"/>
+<p>
