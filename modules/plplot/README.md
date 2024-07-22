@@ -64,22 +64,28 @@ for I in 0 to (XPTS - 1) loop
 end loop;
 
 /* a function to initialize the colors map */
-function cmap1_init() return table is
+function cmap1_init(pl:plplot) return boolean is
 begin
   /* initialize 4 tables of 2 decimals: Intensity, H, L, S */
-  rt = tab(4, tab(2, num()));
-  /* left and right boundaries */
-  rt.at(0).put(0, 0.0);
-  rt.at(0).put(1, 1.0);
-  /* blue - green - yellow - red */
-  rt.at(1).put(0, 240.0);
-  rt.at(1).put(1, 0.0);
-  /* L and S */
-  rt.at(2).put(0, 0.6);
-  rt.at(2).put(1, 0.6);
-  rt.at(3).put(0, 0.8);
-  rt.at(3).put(1, 0.8);
-  return rt;
+  i = tab(2, num());
+  i.put(0, 0.0); /* left boundaries */
+  i.put(1, 1.0); /* right boundaries */
+  /* H : blue - green - yellow - red */
+  h = tab(2, num());
+  h.put(0, 240.0);
+  h.put(1, 0.0);
+  /* L */
+  l = tab(2, num());
+  l.put(0, 0.6);
+  l.put(1, 0.6);
+  /* S */
+  s = tab(2, num());
+  s.put(0, 0.8);
+  s.put(1, 0.8);
+
+  pl.scmap1n( 256 );
+  pl.scmap1l( false, i, h, l, s );
+  return true;
 end;
 
 P = plplot("xwin");
@@ -99,9 +105,7 @@ for I in 0 to (NLEVEL - 1) loop
 end loop;
 
 /* set cmap1 colors */
-cmap1 = cmap1_init();
-P.scmap1n( 256 );
-P.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+cmap1_init(P);
 
 /* Draw ... */
 P.adv(0);
@@ -227,33 +231,43 @@ az = tab(2, num());
 az.put(0, 30.0);
 az.put(1, -30.0);
 
-function cmap1_init(gray) return table is
+/* a function to initialize the colors map */
+function cmap1_init(pl:plplot, gray:boolean) return table is
 begin
   /* initialize 4 tables of 2 decimals: Intensity, H, L, S */
-  rt = tab(4, tab(2, num()));
-  /* left and right boundaries */
-  rt.at(0).put(0, 0.0);
-  rt.at(0).put(1, 1.0);
+  i = tab(2, num());
+  h = tab(2, num());
+  l = tab(2, num());
+  s = tab(2, num());
+
+  i.put(0, 0.0); /* left boundaries */
+  i.put(1, 1.0); /* right boundaries */
 
   if gray then
-    rt.at(1).put(0, 0.0);
-    rt.at(1).put(1, 0.0);
-    /* L and S */
-    rt.at(2).put(0, 0.5);
-    rt.at(2).put(1, 1.0);
-    rt.at(3).put(0, 0.0);
-    rt.at(3).put(1, 0.0);
+    /* H */
+    h.put(0, 0.0);
+    h.put(1, 0.0);
+    /* L */
+    l.put(0, 0.5);
+    l.put(1, 1.0);
+    /* S */
+    s.put(0, 0.0);
+    s.put(1, 0.0);
   else
-    /* blue - green - yellow - red */
-    rt.at(1).put(0, 240.0);
-    rt.at(1).put(1, 0.0);
-    /* L and S */
-    rt.at(2).put(0, 0.6);
-    rt.at(2).put(1, 0.6);
-    rt.at(3).put(0, 0.8);
-    rt.at(3).put(1, 0.8);
+    /* H: blue - green - yellow - red */
+    h.put(0, 240.0);
+    h.put(1, 0.0);
+    /* L */
+    l.put(0, 0.6);
+    l.put(1, 0.6);
+    /* S */
+    s.put(0, 0.8);
+    s.put(1, 0.8);
   end if;
-  return rt;
+
+  pl.scmap1n( 256 );
+  pl.scmap1l( false, i, h, l, s );
+  return true;
 end;
 
 title = tab(2, str());
@@ -344,29 +358,19 @@ plot.box3( "bnstu", "x axis", 0.0, 0,
 plot.col0( 2 );
 
 if ifshade == 0 then /* diffuse light surface plot */
-  cmap1 = cmap1_init( true );
-  plot.scmap1n( 256 );
-  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  cmap1_init( plot, true );
   plot.surf3d( x, y, z, 0, tab(0, num()) );
 elsif ifshade == 1 then /* magnitude colored plot */
-  cmap1 = cmap1_init( false );
-  plot.scmap1n( 256 );
-  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  cmap1_init( plot, false );
   plot.surf3d( x, y, z, 4, tab(0, num()) );
 elsif ifshade == 2 then /* magnitude colored plot with faceted squares */
-  cmap1 = cmap1_init( false );
-  plot.scmap1n( 256 );
-  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  cmap1_init( plot, false );
   plot.surf3d( x, y, z, 4+128, tab(0, num()) );
 elsif ifshade == 3 then /* magnitude colored plot with contours */
-  cmap1 = cmap1_init( false );
-  plot.scmap1n( 256 );
-  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  cmap1_init( plot, false );
   plot.surf3d( x, y, z, 4+32+8, clevel );
 else /* magnitude colored plot with contours and index limits */
-  cmap1 = cmap1_init( false );
-  plot.scmap1n( 256 );
-  plot.scmap1l( false, cmap1.at(0), cmap1.at(1), cmap1.at(2), cmap1.at(3) );
+  cmap1_init( plot, false );
   plot.surf3dl( x, y, zlimited, 4+32+8, clevel, indexxmin, indexxmax, indexymin, indexymax );
 end if;
 
