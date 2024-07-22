@@ -232,7 +232,7 @@ az.put(0, 30.0);
 az.put(1, -30.0);
 
 /* a function to initialize the colors map */
-function cmap1_init(pl:plplot, gray:boolean) return table is
+function cmap1_init(pl:plplot, gray:boolean) return boolean is
 begin
   /* initialize 4 tables of 2 decimals: Intensity, H, L, S */
   i = tab(2, num());
