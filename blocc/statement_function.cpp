@@ -58,9 +58,23 @@ void FUNCTIONStatement::unparse(Context& ctx, FILE * out) const
     bool chained = false;
     for (Symbol& s : _functor->params)
     {
+      /* parameter name */
       if (chained)
         fputc(Parser::Chain, out);
       fputs(s.name().c_str(), out);
+      /* type declaration */
+      if (s.level() > 0)
+        fputs(":table", out);
+      else if (s.major() == Type::COMPLEX && s.minor() != 0)
+      {
+        fputs(":", out);
+        fputs(PluginManager::instance().plugged(s.minor()).interface.name, out);
+      }
+      else if (s.major() != Type::NO_TYPE)
+      {
+        fputs(":", out);
+        fputs(s.typeName().c_str(), out);
+      }
       chained = true;
     }
     fputc(')', out);
@@ -108,15 +122,46 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
         t = p.pop();
       else
       {
+        /* parsing the declaration of parameters */
         do
         {
           t = p.pop();
           if (t->code != TOKEN_KEYWORD)
             throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
-          std::transform(t->text.begin(), t->text.end(), t->text.begin(), ::toupper);
-          /* register the symbol for later use */
-          fct->params.push_back(fct->ctx->registerSymbol(t->text, Type::NO_TYPE));
+          std::string param_name = t->text;
+          std::transform(param_name.begin(), param_name.end(), param_name.begin(), ::toupper);
           t = p.pop();
+          /* check if a type declaration follows the symbol */
+          if (t->code == Colon)
+          {
+            t = p.pop();
+            if (t->code != TOKEN_KEYWORD)
+              throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+            if (t->text == "table")
+              /* register type table opaque */
+              fct->params.push_back(fct->ctx->registerSymbol(param_name, Type(Type::NO_TYPE).levelUp()));
+            else
+            {
+              Type::TypeMinor typeId = PluginManager::instance().findModuleTypeId(t->text);
+              if (typeId != 0)
+                fct->params.push_back(fct->ctx->registerSymbol(param_name, Type(Type::COMPLEX, typeId)));
+              else
+              {
+                /* typeName returns undefined for unknown type, so check the name back */
+                const Type tmp = Type::nameType(t->text);
+                if (t->text == Type::typeName(tmp.major()))
+                  fct->params.push_back(fct->ctx->registerSymbol(param_name, tmp));
+                else
+                  throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str());
+              }
+            }
+            t = p.pop();
+          }
+          else
+          {
+            /* register type opaque */
+            fct->params.push_back(fct->ctx->registerSymbol(param_name, Type::NO_TYPE));
+          }
         } while (t->code == Parser::Chain);
         if (t->code != ')')
           throw ParseError(EXC_PARSE_MM_PARENTHESIS);

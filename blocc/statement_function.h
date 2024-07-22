@@ -45,6 +45,7 @@ class FUNCTIONStatement : public Statement
 {
 private:
   FunctorPtr _functor;
+  static const char Colon = ':';
 
 public:
   virtual ~FUNCTIONStatement();

@@ -26,6 +26,7 @@
 #include "context.h"
 #include "statement.h"
 #include "functor_manager.h"
+#include "plugin_manager.h"
 #include "exception_parse.h"
 #include "collection.h"
 #include "tuple.h"
@@ -352,9 +353,32 @@ void Context::dumpFunctors()
         if (n)
           fputc(',', _sout);
         fputs(p.name().c_str(), _sout);
+        /* type declaration */
+        if (p.level() > 0)
+          fputs(":table", _sout);
+        else if (p.major() == Type::COMPLEX && p.minor() != 0)
+        {
+          fputs(":", _sout);
+          fputs(PluginManager::instance().plugged(p.minor()).interface.name, _sout);
+        }
+        else if (p.major() != Type::NO_TYPE)
+        {
+          fputs(":", _sout);
+          fputs(p.typeName().c_str(), _sout);
+        }
         n = true;
       }
-      fprintf(_sout, ") returns %s\n", func->returns.typeName().c_str());
+      fputs(") returns ", _sout);
+      if (func->returns.level() > 0)
+        fputs("table", _sout);
+      else
+      {
+        if (func->returns.major() == Type::COMPLEX && func->returns.minor() != 0)
+          fputs(PluginManager::instance().plugged(func->returns.minor()).interface.name, _sout);
+        else
+          fputs(func->returns.typeName().c_str(), _sout);
+      }
+      fputc('\n', _sout);
       fflush(_sout);
     }
   }
