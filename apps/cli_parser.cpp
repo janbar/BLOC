@@ -280,6 +280,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
 #ifdef HAVE_READLINE
   if (rl_line)
     free(rl_line);
+  rl_clear_history();
 #endif
 }
 
