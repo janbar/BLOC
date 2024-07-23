@@ -242,6 +242,9 @@ static bool output(bloc::Context& ctx)
         case bloc::Type::ROWTYPE:
           ::fputs(bloc::Value::readableTuple(*(val->tuple())).c_str(), ctx.ctxout());
           break;
+        case bloc::Type::IMAGINARY:
+          ::fputs(bloc::Value::readableImaginary(*(val->imaginary())).c_str(), ctx.ctxout());
+          break;
         default:
           /* not printable */
          break;
