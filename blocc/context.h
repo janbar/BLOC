@@ -410,8 +410,8 @@ private:
       for (Value * v : pool)
         v->swap(Value());
     }
-    size_t count() const { return pool.size(); }
-    size_t reserved() const { return pool.max_size(); }
+    size_t count() const { return wm; }
+    size_t reserved() const { return pool.size(); }
   };
 
   Pool _temporary_storage;
