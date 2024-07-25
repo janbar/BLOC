@@ -137,8 +137,8 @@ struct Handle {
   bool serialize(std::string& out, const CSVParser::container& data);
   bool deserialize(CSVParser::container& out, const std::string& line);
   bool deserialize_next(CSVParser::container& out, const std::string& line);
-  bool in_error() { return _parser.in_error(); }
-  unsigned error_position() { return _parser.error_position(); }
+  bool in_error() const { return _parser.in_error(); }
+  unsigned error_position() const { return _parser.error_position(); }
 };
 
 } /* namespace csv */
