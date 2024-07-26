@@ -70,7 +70,8 @@ Value& OpBNOTExpression::value(Context& ctx) const
 std::string OpBNOTExpression::unparse(Context&ctx) const
 {
   std::string str;
-  str.append(Operator::OPVALS[Operator::OP_BNOT]).append(arg1->unparse(ctx));
+  str.append(Operator::OPVALS[Operator::OP_BNOT]).append(" ")
+          .append(arg1->unparse(ctx));
   return str;
 }
 
