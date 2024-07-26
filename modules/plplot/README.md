@@ -214,10 +214,10 @@ import plplot;
 
 /* user input for view type, and shading type */
 $var = str();
-readln($var, "View\t? (0 or 1) ");
+input($var, "View\t? (0 or 1) ");
 if isnum($var) then k = int($var); else k = 0; end if;
 if k < 0 or k > 1 then k = 0; end if;
-readln($var, "Shading\t? (0,1,2,3 or 4) ");
+input($var, "Shading\t? (0,1,2,3 or 4) ");
 if isnum($var) then ifshade = int($var); else ifshade = 0; end if;
 if ifshade < 0 or ifshade > 4 then ifshade = 0; end if;
 

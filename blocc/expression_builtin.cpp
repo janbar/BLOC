@@ -79,6 +79,7 @@
 #include "builtin/builtin_imag.h"
 #include "builtin/builtin_iphase.h"
 #include "builtin/builtin_iconj.h"
+#include "builtin/builtin_input.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -99,7 +100,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tup",        "getsys",     "getenv",     "true",       "on",
     "false",      "off",        "error",      "phi",        "pi",
-    "ee",         "random",     "bool",       "ii",         "",
+    "ee",         "random",     "bool",       "ii",         "input",
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
     "strpos",     "replace",    "subraw",     "hash",       "imag",
@@ -262,6 +263,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return BOOLExpression::parse(p, ctx);
   case FUNC_II:
     return new IIExpression();
+  case FUNC_INPUT:
+    return INPUTExpression::parse(p, ctx);
   case FUNC_LSUB:
     return LSUBSTRExpression::parse(p, ctx);
   case FUNC_RSUB:
@@ -380,10 +383,9 @@ const char * BuiltinExpression::HELPS[] = {
           "\nfirst."
           "\n\nread( var [, y] )",
   /*READLN*/  "returns true when new line has been read from the input."
-          "\nThe read value without newline terminator, is stored into var. The 'string'"
-          "\nvariable var must be initialized first. Optionally y contains the desired"
-          "\nprompt."
-          "\n\nreadln( var [, y] )",
+          "\nThe read value ended with LF or limited to the size of the internal buffer,"
+          "\nis stored into var. The 'string' variable var must be initialized first."
+          "\n\nreadln( var )",
   /*ISNUM */  "returns true if x can be converted to number."
           "\n\nisnum( x )",
   /*RAW   */  "returns a new bytes array filled with string x, or filled with"
@@ -428,7 +430,11 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nbool( [ x ] )"
           "\n\nWhen x is 0 the boolean false is returned, else true.",
   /*II    */  "is the imaginary number.",
-  "",
+  /*INPUT*/   "returns true when new data has been read from the input."
+          "\nThe read value without newline terminator, is stored into var. The 'string'"
+          "\nvariable var must be initialized first. Optionally y contains the desired"
+          "\nprompt."
+          "\n\ninput( var [, y] )",
   /*LSUB  */  "returns left part of string x."
           "\n\nlsubstr( x , count )",
   /*RSUB  */  "returns right part of string x."

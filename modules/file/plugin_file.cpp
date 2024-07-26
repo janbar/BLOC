@@ -39,7 +39,7 @@
 #define FILE_SEPARATOR '/'
 #endif
 
-#define BLOC_FILE_BUFSZ 1024
+#define BLOC_FILE_BUFSZ 4096
 
 /*
  * Create the module FileImport
@@ -138,8 +138,8 @@ static PLUGIN_METHOD methods[] =
           "Reads up to count characters into the variable, and returns the number of"
           "\ncharacter read successfully." },
   { Readln,   "readln",     { "B", 0 },     1, readln_args,
-          "Reads line of characters into the variable without the newline character."
-          "\nAt EOF it returns false else true.", },
+          "Reads a chunk of characters into the variable, ended by LF or limited by"
+          "\nthe size of the internal buffer. At EOF it returns FALSE else TRUE.", },
   { SeekSet,  "seekset",    { "I", 0 },     1, seek_args,
           "Moves the file position indicator to an absolute location in a file." },
   { SeekCur,  "seekcur",    { "I", 0 },     1, seek_args,
@@ -356,7 +356,7 @@ bloc::Value * FilePlugin::executeMethod(
     if (args[0]->symbol() == nullptr)
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
 
-    char buf[1024]; /* max length */
+    char buf[BLOC_FILE_BUFSZ]; /* max length */
     int n = file->readln(buf, sizeof(buf));
     if (n >= 0)
     {
@@ -547,9 +547,9 @@ int file::Handle::flush()
 int file::Handle::readln(char * buf, unsigned n)
 {
   int c = 0, r = 0;
-  while (r < n)
+  while (r < n &&  c != '\n')
   {
-    if ((c = ::fgetc(_file)) <= 0 || c == '\n')
+    if ((c = ::fgetc(_file)) <= 0)
       break;
     *buf = (char)c;
     ++buf;

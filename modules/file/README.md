@@ -41,8 +41,8 @@ Reads up to count characters into the variable, and returns the number of
 character read successfully.
 
 readln(string INOUT) returns boolean
-Reads line of characters into the variable without the newline character.
-At EOF it returns false else true.
+Reads a chunk of characters into the variable, ended by LF or limited by
+the size of the internal buffer. At EOF it returns FALSE else TRUE.
 
 seekset(integer IN) returns integer
 Moves the file position indicator to an absolute location in a file.

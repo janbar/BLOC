@@ -85,7 +85,7 @@ public:
     FUNC_ISNIL  = 27, // isnull(x)
 
     FUNC_READ   = 30, // read(var,count)
-    FUNC_READLN = 31, // readline(x)
+    FUNC_READLN = 31, // readln(var)
     FUNC_ISNUM  = 32, // isnum(x)
     FUNC_RAW    = 33, // raw() | raw(x) | raw(x,y)
     FUNC_TAB    = 34, // tab(x) | tab(x,y)
@@ -103,7 +103,7 @@ public:
     FUNC_RANDOM = 46, // random | random(x)
     FUNC_BOOL   = 47, // bool(x)
     FUNC_II     = 48, // ii
-
+    FUNC_INPUT  = 49, // input(var,prompt)
     FUNC_LSUB   = 50, // lsubstr(x,count)
     FUNC_RSUB   = 51, // rsubstr(x,count)
     FUNC_SUBSTR = 52, // substr(x,begin) | substr(x,begin,count)

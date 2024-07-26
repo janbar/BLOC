@@ -1,5 +1,5 @@
 /*
- *      Copyright (C) 2022 Jean-Luc Barriere
+ *      Copyright (C) 2024 Jean-Luc Barriere
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
  *
  */
 
-#include "builtin_readln.h"
+#include "builtin_input.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
@@ -31,20 +31,33 @@
 namespace bloc
 {
 
-Value& READLNExpression::value(Context & ctx) const
+Value& INPUTExpression::value(Context & ctx) const
 {
   if (_args[0]->symbol() == nullptr)
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   Value& a0 = _args[0]->value(ctx);
 
+  if (_args.size() > 1)
+  {
+    Value& a1 = _args[1]->value(ctx);
+    if (!a1.isNull())
+      fputs(a1.literal()->c_str(), stdout);
+    fflush(stdout);
+  }
   char buf[1024];
   int n = bloc_readstdin(buf, sizeof(buf));
   if (n > 0)
-    a0.swap(Value(new Literal(buf, n)).to_lvalue(a0.lvalue()));
+  {
+    int l = n;
+    /* discard nl */
+    if (buf[l - 1] == '\n')
+      --l;
+    a0.swap(Value(new Literal(buf, l)).to_lvalue(a0.lvalue()));
+  }
   return ctx.allocate(Value(Bool(n > 0 ? true : false)));
 }
 
-READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
+INPUTExpression * INPUTExpression::parse(Parser& p, Context& ctx)
 {
   std::vector<Expression*> args;
 
@@ -52,13 +65,20 @@ READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_READLN]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_INPUT]);
     args.push_back(ParseExpression::expression(p, ctx));
     VariableExpression * var = dynamic_cast<VariableExpression*>(args.back());
     if (var == nullptr || !ParseExpression::typeChecking(var, Type::LITERAL, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN]);
-    assertClosedFunction(p, ctx, FUNC_READLN);
-    return new READLNExpression(std::move(args));
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INPUT]);
+    if (p.front()->code == Parser::Chain)
+    {
+      t = p.pop();
+      args.push_back(ParseExpression::expression(p, ctx));
+      if (!ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INPUT]);
+    }
+    assertClosedFunction(p, ctx, FUNC_INPUT);
+    return new INPUTExpression(std::move(args));
   }
   catch (ParseError& pe)
   {
