@@ -291,7 +291,7 @@ public:
    * Examples:
    *   try {
    *     Expression * e = Parser.parseExpression();
-   *     result = e->literal(ctx);
+   *     result = e->value(ctx).clone();
    *     delete e;
    *     ctx.purgeWorkingMemory();  --> run the purge after copying result
    *   } catch (RuntimeError& re) {
