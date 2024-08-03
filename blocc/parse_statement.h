@@ -48,7 +48,6 @@ private:
   Statement * parse();
   Statement * beyond_statement(Statement * s);
   Statement * chain_statement(Statement * s);
-  bool test_assignation();
 };
 
 }

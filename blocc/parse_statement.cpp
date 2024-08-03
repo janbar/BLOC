@@ -25,6 +25,7 @@
 
 #include "statement_print.h"
 #include "statement_let.h"
+#include "statement_letn.h"
 #include "statement_import.h"
 #include "statement_for.h"
 #include "statement_break.h"
@@ -151,10 +152,17 @@ Statement * ParseStatement::parse()
       else
       {
         /* check for an assignation */
-        if (test_assignation())
+        if (p.front()->code == '=' || p.front()->code == TOKEN_ASSIGN)
         {
           p.push(t);
           s = LETStatement::parse(p, ctx);
+          return chain_statement(s);
+        }
+        /* check for a declaration */
+        if (p.front()->code == ':')
+        {
+          p.push(t);
+          s = LETNStatement::parse(p, ctx);
           return chain_statement(s);
         }
         /* else parse DO expression */
@@ -203,14 +211,6 @@ Statement * ParseStatement::chain_statement(Statement * s)
   }
   p.push(t);
   return beyond_statement(s);
-}
-
-bool ParseStatement::test_assignation()
-{
-  /* is var assignation */
-  if (p.front()->code == '=' || p.front()->code == TOKEN_ASSIGN)
-    return true;
-  return false;
 }
 
 }

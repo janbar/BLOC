@@ -50,6 +50,7 @@ file(GLOB blocc_SOURCES
   statement_if.cpp
   statement_import.cpp
   statement_let.cpp
+  statement_letn.cpp
   statement_print.cpp
   statement_put.cpp
   statement_return.cpp
@@ -121,6 +122,7 @@ file(GLOB blocc_PRIVATE_HEADERS
   statement_if.h
   statement_import.h
   statement_let.h
+  statement_letn.h
   statement_print.h
   statement_put.h
   statement_return.h
