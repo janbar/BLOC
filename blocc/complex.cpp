@@ -74,9 +74,9 @@ Complex::~Complex()
 }
 
 Complex::Complex(const Complex& c)
-: _refcount(c._refcount)
+: _type(c._type)
 , _instance(c._instance)
-, _type(c._type)
+, _refcount(c._refcount)
 {
 #ifdef DEBUG_COMPLEX
   DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
@@ -85,9 +85,9 @@ Complex::Complex(const Complex& c)
 }
 
 Complex::Complex(Complex&& c) noexcept
-: _refcount(c._refcount)
+: _type(c._type)
 , _instance(c._instance)
-, _type(c._type)
+, _refcount(c._refcount)
 {
 #ifdef DEBUG_COMPLEX
   DBG(DBG_DEBUG, "%s line %d\n", __PRETTY_FUNCTION__, __LINE__);
