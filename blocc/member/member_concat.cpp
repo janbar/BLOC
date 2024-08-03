@@ -227,15 +227,23 @@ Value& MemberCONCATExpression::value(Context& ctx) const
     {
       /* literal + literal */
     case Type::LITERAL:
-      if (val.isNull())
-        return a0;
       if (_exp->isConst())
       {
+        if (val.isNull())
+          return ctx.allocate(std::move(Value(new Literal(*a0.literal()))));
         Value v(new Literal(*val.literal()));
         v.literal()->append(*a0.literal());
         return ctx.allocate(std::move(v));
       }
-      val.literal()->append(*a0.literal());
+      if (val.isNull())
+      {
+        if (a0.lvalue())
+          val = std::move(a0.clone());
+        else
+          val.swap(a0);
+      }
+      else
+        val.literal()->append(*a0.literal());
       return val;
       /* literal + char */
     case Type::INTEGER:
@@ -243,20 +251,18 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       Integer c = *a0.integer();
       if (c < 1 || c > 255)
         throw RuntimeError(EXC_RT_OUT_OF_RANGE);
-      if (val.isNull())
-      {
-        if (val.lvalue())
-          return ctx.allocate(Value(new Literal(1, (char)c)));
-        val.swap(Value(new Literal(1, (char)c)));
-        return val;
-      }
       if (_exp->isConst())
       {
+        if (val.isNull())
+          return ctx.allocate(Value(new Literal(1, (char)c)));
         Value v(new Literal(*val.literal()));
         v.literal()->append(1, (char)c);
         return ctx.allocate(std::move(v));
       }
-      val.literal()->append(1, (char)c);
+      if (val.isNull())
+       val = std::move(Value(new Literal(1, (char)c)));
+      else
+        val.literal()->append(1, (char)c);
       return val;
     }
     default:
@@ -271,16 +277,24 @@ Value& MemberCONCATExpression::value(Context& ctx) const
     case Type::TABCHAR:
     {
       if (val.isNull())
-        return a0;
-      TabChar * rv = val.tabchar();
-      TabChar * a = a0.tabchar();
-      if (a == rv)
       {
-        TabChar _a(*a);
-        rv->insert(rv->end(), _a.begin(), _a.end());
+        if (a0.lvalue())
+          val = std::move(a0.clone());
+        else
+          val.swap(a0);
       }
       else
-        rv->insert(rv->end(), a->begin(), a->end());
+      {
+        TabChar * rv = val.tabchar();
+        TabChar * a = a0.tabchar();
+        if (a == rv)
+        {
+          TabChar _a(*a);
+          rv->insert(rv->end(), _a.begin(), _a.end());
+        }
+        else
+          rv->insert(rv->end(), a->begin(), a->end());
+      }
       return val;
     }
       /* tabchar + literal */
@@ -291,13 +305,13 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       {
         TabChar * rv = new TabChar();
         rv->insert(rv->end(), a->begin(), a->end());
-        if (val.lvalue())
-          return ctx.allocate(Value(rv));
         val.swap(Value(rv));
-        return val;
       }
-      TabChar * rv = val.tabchar();
-      rv->insert(rv->end(), a->begin(), a->end());
+      else
+      {
+        TabChar * rv = val.tabchar();
+        rv->insert(rv->end(), a->begin(), a->end());
+      }
       return val;
     }
       /* tabchar + char */
@@ -307,14 +321,12 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       if (c < 0 || c > 255)
         throw RuntimeError(EXC_RT_OUT_OF_RANGE);
       if (val.isNull())
-      {
-        if (val.lvalue())
-          return ctx.allocate(Value(new TabChar(1, (char)c)));
         val.swap(Value(new TabChar(1, (char)c)));
-        return val;
+      else
+      {
+        TabChar * rv = val.tabchar();
+        rv->push_back((char)c);
       }
-      TabChar * rv = val.tabchar();
-      rv->push_back((char)c);
       return val;
     }
     default:
