@@ -46,9 +46,9 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         if (a0.isNull())
           return val;
         if (a0.lvalue())
-          val.swap(a0.clone());
+          val.swap(a0.clone().to_lvalue(val.lvalue()));
         else
-          val.swap(std::move(a0));
+          val.swap(std::move(a0.to_lvalue(val.lvalue())));
         /* a symbol must be upgraded */
         if (_exp->symbol())
         {
@@ -84,8 +84,8 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         rv->push_back(a0.clone());
       else
         rv->push_back(std::move(a0));
-      /* swap, return */
-      val.swap(Value(rv));
+      /* swap and return */
+      val.swap(Value(rv).to_lvalue(val.lvalue()));
       return val;
     }
 
@@ -216,7 +216,14 @@ Value& MemberCONCATExpression::value(Context& ctx) const
     switch (a0.type().major())
     {
     case Type::LITERAL:
-      return a0;
+      if (a0.lvalue())
+        val.swap(a0.clone().to_lvalue(val.lvalue()));
+      else
+        val.swap(a0.to_lvalue(val.lvalue()));
+      /* a symbol must be upgraded */
+      if (_exp->symbol())
+        ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
+      return val;
     case Type::INTEGER:
     {
       Integer c = *a0.integer();
@@ -224,14 +231,16 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         break;
       if (c == 0)
       {
-        if (val.lvalue())
-          return ctx.allocate(Value(new TabChar(1, (char)c)));
-        val.swap(Value(new TabChar(1, (char)c)));
+        val.swap(Value(new TabChar(1, (char)c)).to_lvalue(val.lvalue()));
+        /* a symbol must be upgraded */
+        if (_exp->symbol())
+          ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
         return val;
       }
-      if (val.lvalue())
-        return ctx.allocate(Value(new Literal(1, (char)c)));
-      val.swap(Value(new Literal(1, (char)c)));
+      val.swap(Value(new Literal(1, (char)c)).to_lvalue(val.lvalue()));
+      /* a symbol must be upgraded */
+      if (_exp->symbol())
+        ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
       return val;
     }
     default:
@@ -254,9 +263,9 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       if (val.isNull())
       {
         if (a0.lvalue())
-          val = std::move(a0.clone());
+          val.swap(a0.clone().to_lvalue(val.lvalue()));
         else
-          val.swap(a0);
+          val.swap(a0.to_lvalue(val.lvalue()));
       }
       else
         val.literal()->append(*a0.literal());
@@ -276,7 +285,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         return ctx.allocate(std::move(v));
       }
       if (val.isNull())
-       val = std::move(Value(new Literal(1, (char)c)));
+       val.swap(Value(new Literal(1, (char)c)).to_lvalue(val.lvalue()));
       else
         val.literal()->append(1, (char)c);
       return val;
@@ -295,9 +304,9 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       if (val.isNull())
       {
         if (a0.lvalue())
-          val = std::move(a0.clone());
+          val.swap(a0.clone().to_lvalue(val.lvalue()));
         else
-          val.swap(a0);
+          val.swap(a0.to_lvalue(val.lvalue()));
       }
       else
       {
@@ -321,7 +330,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       {
         TabChar * rv = new TabChar();
         rv->insert(rv->end(), a->begin(), a->end());
-        val.swap(Value(rv));
+        val.swap(Value(rv).to_lvalue(val.lvalue()));
       }
       else
       {
@@ -337,7 +346,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       if (c < 0 || c > 255)
         throw RuntimeError(EXC_RT_OUT_OF_RANGE);
       if (val.isNull())
-        val.swap(Value(new TabChar(1, (char)c)));
+        val.swap(Value(new TabChar(1, (char)c)).to_lvalue(val.lvalue()));
       else
       {
         TabChar * rv = val.tabchar();
