@@ -353,8 +353,8 @@ private:
     Symbol * symbol;
     Value value;
     ~MemorySlot() { delete symbol; }
-    explicit MemorySlot(const Symbol& s) : symbol(new Symbol(s)), value() { }
-    explicit MemorySlot(Symbol&& s) : symbol(new Symbol(std::move(s))), value() { }
+    explicit MemorySlot(const Symbol& s) : symbol(new Symbol(s)), value(s) { }
+    explicit MemorySlot(Symbol&& s) : symbol(new Symbol(std::move(s))), value(s) { }
     MemorySlot(const MemorySlot& m) = delete;
     MemorySlot& operator=(MemorySlot& m) = delete;
     MemorySlot(MemorySlot&& m) noexcept

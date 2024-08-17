@@ -171,7 +171,6 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
         throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
       throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
     case Symbol::SAFE_EQU:
-    case Symbol::SAFE_FEA:
       return *s;
     case Symbol::SAFE_UPG:
       break;
@@ -211,7 +210,6 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
         throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->tuple_decl().tupleName().c_str());
       throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, s->typeName().c_str());
     case Symbol::SAFE_EQU:
-    case Symbol::SAFE_FEA:
       return *s;
     case Symbol::SAFE_UPG:
       break;
@@ -240,9 +238,7 @@ Value& Context::storeVariable(const Symbol& symbol, Value&& e)
     /* safety flag forbids any change of qualified type */
     if (slot.symbol->safety())
     {
-      /* allow upgrade an undefined to any, or [undefined] to [any] */
-      if (slot.value.type() != Type::NO_TYPE ||
-              (slot.value.type().level() > 0 && e.type().level() == 0))
+      if (slot.symbol->check_safety(e.type()) == Symbol::SAFE_KO)
         throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, slot.value.typeName().c_str());
     }
     /* upgrade the symbol registered in the context for next parsing */

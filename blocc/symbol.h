@@ -83,9 +83,8 @@ public:
    */
   enum SafetyCheck {
     SAFE_KO = 0, /* not safe */
-    SAFE_FEA,    /* feasible */
-    SAFE_EQU,    /* as well  */
-    SAFE_UPG,    /* safer    */
+    SAFE_EQU,    /* safer    */
+    SAFE_UPG,    /* feasible */
   };
   /**
    * Try to valid an opaque or qualified type against this symbol in safe mode,

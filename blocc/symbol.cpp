@@ -53,60 +53,19 @@ Symbol::SafetyCheck Symbol::check_safety(const Type& type) const noexcept
   DBG(DBG_DEBUG, "%s line %d : S={%d,%d,%d} T={%d,%d,%d}\n", __PRETTY_FUNCTION__, __LINE__,
           major(), minor(), level(), type.major(), type.minor(), type.level());
 #endif
-  switch (major())
+  if (type == *this)
+    return SAFE_EQU;
+  else if (level() > 0)
   {
-
-  /* symbol is table null or undefined */
-  case Type::NO_TYPE:
-     /* undefined / undefinded */
-    if (type == Type::NO_TYPE)
-    {
-      /* undefined / undefinded */
-      if (level() == type.level())
-        return SAFE_EQU;
-      if (type.level() > 0)
-        return SAFE_UPG;
-      return SAFE_FEA;
-    }
-    /* table null / table qualified */
-    if (level() > 0 && type.level() > 0)
+    /* qualified or undefined table */
+    if (type.level() > 0)
       return SAFE_UPG;
-    /* undefined / qualified */
-    if (level() == type.level())
+  }
+  else if (type.level() == 0)
+  {
+    /* qualified type */
+    if (major() == type.major())
       return SAFE_UPG;
-
-    break; /* KO */
-
-  /* symbol is qualified or tuple opaque */
-  default:
-    if (level() > 0)
-    {
-      /* qualified table / undefined */
-      if (type == Type::NO_TYPE)
-        return SAFE_FEA;
-      /* qualified table / qualified table */
-      if (type == *this)
-        return SAFE_EQU;
-    }
-    /* not table */
-    else if (type.level() == 0)
-    {
-      /* any / undefined */
-      if (type == Type::NO_TYPE)
-        return SAFE_FEA;
-      /* qualified / qualified */
-      if (type == *this)
-        return SAFE_EQU;
-      if (major() == type.major())
-      {
-        if (minor() == 0)
-          return SAFE_UPG;
-        if (type.minor() == 0)
-          return SAFE_FEA;
-      }
-    }
-
-    break; /* KO */
   }
   return SAFE_KO;
 }
