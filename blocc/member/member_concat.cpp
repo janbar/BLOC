@@ -43,10 +43,20 @@ Value& MemberCONCATExpression::value(Context& ctx) const
     {
       if (a0.type().level() > 0) /* null + tab */
       {
+        if (a0.isNull())
+          return val;
         if (a0.lvalue())
           val.swap(a0.clone());
         else
           val.swap(std::move(a0));
+        /* a symbol must be upgraded */
+        if (_exp->symbol())
+        {
+          if (a0.type().major() == Type::ROWTYPE)
+            ctx.getSymbol(_exp->symbol()->id())->upgrade(val.collection()->table_decl(), val.collection()->table_type().level());
+          else
+            ctx.getSymbol(_exp->symbol()->id())->upgrade(val.collection()->table_type());
+        }
         return val;
       }
       /* initialize new collection */
@@ -56,12 +66,18 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         if (a0.isNull()) /* null + tuple null */
           return val;
         rv = new Collection(a0.tuple()->tuple_decl(), 1);
+        /* a symbol must be upgraded */
+        if (_exp->symbol())
+          ctx.getSymbol(_exp->symbol()->id())->upgrade(rv->table_decl(), 1);
       }
       else
       {
         if (a0.type() == Type::NO_TYPE)
           return val;
         rv = new Collection(a0.type().levelUp());
+        /* a symbol must be upgraded */
+        if (_exp->symbol())
+          ctx.getSymbol(_exp->symbol()->id())->upgrade(rv->table_type());
       }
       /* push item */
       if (a0.lvalue())
