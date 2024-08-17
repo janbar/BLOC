@@ -149,9 +149,9 @@ static PLUGIN_METHOD methods[] =
   { Position, "position",   { "I", 0 },     0, nullptr,
           "Returns the file position indicator." },
   { Flush,    "flush",      { "B", 0 },     0, nullptr,
-          "synchronizes output stream with the actual file." },
+          "synchronizes output stream with the file." },
   { Filename, "filename",   { "L", 0 },     0, nullptr,
-          "Returns filename of the actual file." },
+          "Returns filename of the file." },
   { IsOpen,   "isopen",     { "B", 0 },     0, nullptr,
           "Checks whether the file is open." },
   { Write_B,  "write",      { "I", 0 },     1, write_b_args,
@@ -160,12 +160,16 @@ static PLUGIN_METHOD methods[] =
           "Reads up to count bytes into the variable, and returns the number of byte"
           "\nread successfully." },
   { Mode,     "mode",       { "L", 0 },     0, nullptr,
-          "Returns open flags of the actual file." },
-  { Stat,     "stat",       { "I", 0 },     1, stat_args,
-          "Returns information about a file: Regular=1, Directory=2, Other=3." },
-  { Dir,      "dir",        { "IL", 1 },    1, dir_args,
-          "Returns the entry list of a directory."
-          "\nFirst field contains the entry type, second contains the entry name." },
+          "Returns open flags of the file." },
+  { Stat,     "stat",       { "II", 0 },    1, stat_args,
+          "Returns a tuple containing basic informations about a file: { Type, Size }"
+          "\nType: 1=Regular, 2=Directory, 3=Other"
+          "\nSize: file size in byte" },
+  { Dir,      "dir",        { "ILI", 1 },    1, dir_args,
+          "Returns the entry list of a directory: [{ Type, Name, Size }]"
+          "\nType: 1=Regular, 2=Directory, 3=Other"
+          "\nName: file name"
+          "\nSize: file size in byte" },
 };
 
 /**
@@ -196,21 +200,30 @@ struct Handle {
 /**
  * stat file
  */
-static int _stat(const std::string& path)
+static int _stat(const std::string& path, int * fmode, size_t * fsize)
 {
   struct stat buf;
   int r = ::stat(path.c_str(), &buf);
   if (r == 0)
   {
     if (S_ISREG(buf.st_mode))
-      return 1;
-    if (S_ISDIR(buf.st_mode))
-      return 2;
-    return 3;
+    {
+      *fmode = 1;
+      *fsize = (size_t) buf.st_size;
+    }
+    else if (S_ISDIR(buf.st_mode))
+    {
+      *fmode = 2;
+      *fsize = 0;
+    }
+    else
+    {
+      *fmode = 3;
+      *fsize = 0;
+    }
+    return 0;
   }
   r = errno;
-  if (r == ENOENT)
-    return 0;
   return (-r);
 }
 
@@ -224,14 +237,20 @@ static int _dir(const std::string& path, bloc::Collection ** out)
   if ((dirp = ::opendir(path.c_str())) == nullptr)
     return (-1);
 
-  *out = new bloc::Collection(bloc::plugin::make_decl("IL", 0), 1);
+  *out = new bloc::Collection(bloc::plugin::make_decl("ILI", 0), 1);
   while ((dp = ::readdir(dirp)) != nullptr)
   {
+    int fmode = 0;
+    size_t fsize = 0;
+    _stat(std::string(path).append(1, FILE_SEPARATOR).append(dp->d_name), &fmode, &fsize);
     /* create the row */
     bloc::Tuple::container_t row;
-    row.push_back(bloc::Value(bloc::Integer(
-        _stat(std::string(path).append(1, FILE_SEPARATOR).append(dp->d_name)))));
+    row.push_back(bloc::Value(bloc::Integer(fmode)));
     row.push_back(bloc::Value(new bloc::Literal(dp->d_name)));
+    if (fmode == 1)
+      row.push_back(bloc::Value(bloc::Integer(fsize)));
+    else
+      row.push_back(bloc::Value(bloc::Value::type_integer));
     /* fill collection with the new tuple */
     (*out)->push_back(Value(new bloc::Tuple(std::move(row))));
   }
@@ -458,7 +477,20 @@ bloc::Value * FilePlugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    return new bloc::Value(bloc::Integer(file::_stat(*a0.literal())));
+    int fmode = 0;
+    size_t fsize = 0;
+    if (file::_stat(*a0.literal(), &fmode, &fsize) == 0)
+    {
+      /* create the row */
+      bloc::Tuple::container_t row;
+      row.push_back(bloc::Value(bloc::Integer(fmode)));
+      if (fmode == 1)
+        row.push_back(bloc::Value(bloc::Integer(fsize)));
+      else
+        row.push_back(bloc::Value(bloc::Value::type_integer));
+      return new bloc::Value(new bloc::Tuple(std::move(row)));
+    }
+    return new bloc::Value(bloc::Value::type_rowtype);
   }
 
   case file::Dir:
