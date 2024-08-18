@@ -133,20 +133,26 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
       }
     }
 
-    /* find method */
-    bool fname = false;
+    /* find method with compatible specs
+     * it returns the first found with exact match, else the one with the
+     * highest score will be returned
+     */
+    bool f_name = false; /* a method exists with this name */
+    int f_sc = 0; /* the highest score */
+    int f_no = 0; /* the index of the first method with the highest score */
     for (int m = 0; m < plug.interface.method_count; ++m)
     {
       const PLUGIN_METHOD& method = plug.interface.methods[m];
       if (method.name != m_name)
         continue;
-      fname = true;
+      f_name = true;
       if (method.args_count == args.size())
       {
         bool found = true;
+        int match = 2 * method.args_count; /* the best score: 2 pts per arg */
+        int score = 0;
         /* check arguments list */
-        int a = 0;
-        while (found && a < method.args_count)
+        for (int a = 0; found && a < method.args_count; ++a)
         {
           /* the expected type */
           Type m_arg_type = plugin::make_type(method.args[a].type, type_id);
@@ -154,29 +160,65 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
           {
           case PLUGIN_IN:
             /* check type */
-            found = ParseExpression::typeChecking(args[a], m_arg_type, p, ctx);
+            if (!ParseExpression::typeChecking(args[a], m_arg_type, p, ctx))
+              found = false;
+            else
+            {
+              found = true;
+              const Type& _type = args[a]->type(ctx);
+              if (m_arg_type.level() == _type.level())
+                score += 2;
+              else if (_type == Type::NO_TYPE)
+                score += 1;
+            }
             break;
           case PLUGIN_INOUT:
           {
             /* must be variable expression with same type */
             const Symbol * symbol = args[a]->symbol();
-            found = (symbol != nullptr && ParseExpression::typeChecking(args[a], m_arg_type, p, ctx));
+            if (symbol == nullptr || !ParseExpression::typeChecking(args[a], m_arg_type, p, ctx))
+              found = false;
+            else
+            {
+              found = true;
+              score += 2;
+            }
             break;
           }
           default:
             found = false;
             break;
           }
-          ++a;
         }
+
         if (found)
         {
-          DBG(DBG_DEBUG, "%s: found method %s id=%d\n", __FUNCTION__, method.name, method.id);
-          return new MemberMETHODExpression(method, exp_type.minor(), exp, std::move(args));
+          /* return the method with exact match */
+          if (score == match)
+          {
+            DBG(DBG_DEBUG, "%s: found method %s id=%d\n", __FUNCTION__, method.name, method.id);
+            return new MemberMETHODExpression(method, exp_type.minor(), exp, std::move(args));
+          }
+          /* else keep the one with the highest score */
+          if (score > f_sc)
+          {
+            f_sc = score;
+            f_no = m;
+          }
         }
       }
+      /* loop next method */
     }
-    if (fname)
+
+    /* if score exists returns method found, otherwise fails */
+    if (f_sc > 0)
+    {
+      const PLUGIN_METHOD& method = plug.interface.methods[f_no];
+      DBG(DBG_DEBUG, "%s: found method %s id=%d\n", __FUNCTION__, method.name, method.id);
+      return new MemberMETHODExpression(method, exp_type.minor(), exp, std::move(args));
+    }
+
+    if (f_name)
       throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, m_name.c_str());
     throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, m_name.c_str());
   }
