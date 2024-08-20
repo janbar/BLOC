@@ -348,9 +348,10 @@ bloc::Value * FilePlugin::executeMethod(
 
     bloc::Literal * str = new bloc::Literal();
     bloc::Integer r = 0;
-    if (*a1.integer() > 0)
+    bloc::Integer l = *a1.integer();
+    if (l > 0)
     {
-      bloc::Integer n = *a1.integer();
+      bloc::Integer n = l;
       str->reserve(n);
       char buf[BLOC_FILE_BUFSZ];
       while (n > 0)
@@ -452,9 +453,10 @@ bloc::Value * FilePlugin::executeMethod(
 
     bloc::TabChar * raw = new bloc::TabChar();
     bloc::Integer r = 0;
-    if (*a1.integer() > 0)
+    bloc::Integer l = *a1.integer();
+    if (l > 0)
     {
-      bloc::Integer n = *a1.integer();
+      bloc::Integer n = l;
       raw->reserve(n);
       char buf[BLOC_FILE_BUFSZ];
       while (n > 0)
