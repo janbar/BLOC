@@ -161,6 +161,8 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   PRINT("\nType \"help\" , \"copyright\" or \"license\" for more information.\n");
 
   bloc::Context ctx;
+  /* set context as trusted to allow use of restricted plugins */
+  ctx.trusted(true);
   /* setup breaking state */
   g_breaker = { true, &ctx };
 #ifdef __WINDOWS__

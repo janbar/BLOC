@@ -58,12 +58,18 @@ public:
   unsigned importModuleByName(const std::string& name);
   unsigned importModuleByPath(const char * libpath);
 
+  void clearPermissions() { _trustedPluginNames.clear(); }
+  void unbanPlugin(const std::string& name);
+  bool bannedPlugin(const std::string& name);
+
 private:
   PluginManager();
 
   static PluginManager * _instance;
   std::vector<PLUGGED_MODULE> _modules;
   static PLUGIN_INTERFACE _internal;
+
+  std::vector<std::string> _trustedPluginNames;
 
   unsigned registerModule(void* dlhandle);
 };

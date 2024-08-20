@@ -50,9 +50,8 @@ public:
    * Make a shallow clone
    * @param ctx context
    * @param recursion level of recursion
-   * @param trace enable trace
    */
-  Context(const Context& ctx, uint8_t recursion, bool trace);
+  Context(const Context& ctx, uint8_t recursion);
 
   /**
    * Purge the context including all symbols and storage pool.
@@ -144,40 +143,22 @@ public:
   /* Control and stack                                                      */
   /**************************************************************************/
 
-  void stackControl(const Statement * s)
-  {
-    _controlstack.stack(s);
-  }
+  void stackControl(const Statement * s) { _controlstack.stack(s); }
 
   const Statement * topControl()
   {
     return _controlstack.empty() ? nullptr : _controlstack.top();
   }
 
-  void unstackControl()
-  {
-    _controlstack.unstack();
-  }
+  void unstackControl() { _controlstack.unstack(); }
 
-  size_t execLevel() const
-  {
-    return _execstack.size();
-  }
+  size_t execLevel() const { return _execstack.size(); }
 
-  const Statement * execStatement() const
-  {
-    return _execstack.top();
-  }
+  const Statement * execStatement() const { return _execstack.top(); }
 
-  void execBegin(const Statement * s)
-  {
-    _execstack.stack(s);
-  }
+  void execBegin(const Statement * s) { _execstack.stack(s); }
 
-  void execEnd()
-  {
-    _execstack.unstack();
-  }
+  void execEnd() { _execstack.unstack(); }
 
   bool stopCondition() const
   {
@@ -185,35 +166,17 @@ public:
             || _root->_returnCondition); /* handle program exit */
   }
 
-  void breakCondition(bool b)
-  {
-    _breakCondition = b;
-  }
+  void breakCondition(bool b) { _breakCondition = b; }
 
-  bool breakCondition() const
-  {
-    return _breakCondition;
-  }
+  bool breakCondition() const { return _breakCondition; }
 
-  void continueCondition(bool b)
-  {
-    _continueCondition = b;
-  }
+  void continueCondition(bool b) { _continueCondition = b; }
 
-  bool continueCondition() const
-  {
-    return _continueCondition;
-  }
+  bool continueCondition() const { return _continueCondition; }
 
-  void returnCondition(bool b)
-  {
-    _returnCondition = b;
-  }
+  void returnCondition(bool b) { _returnCondition = b; }
 
-  bool returnCondition() const
-  {
-    return _returnCondition;
-  }
+  bool returnCondition() const { return _returnCondition; }
 
   void saveReturned(Value& ret);
   Value * dropReturned();
@@ -222,10 +185,7 @@ public:
   /* Events                                                                 */
   /**************************************************************************/
 
-  void onStatementEnd(const Statement * s)
-  {
-    _temporary_storage.clear();
-  }
+  void onStatementEnd(const Statement * s) { _temporary_storage.clear(); }
 
   void onRuntimeError();
 
@@ -247,34 +207,19 @@ public:
     return (diff.count() - from);
   }
 
-  void trace(bool b)
-  {
-    _trace = b;
-  }
+  void trace(bool b) { _trace = b; }
 
-  bool trace() const
-  {
-    return _trace;
-  }
+  bool trace() const { return _trace; }
 
-  void recursion(uint8_t r)
-  {
-    _recursion = r;
-  }
+  void recursion(uint8_t r) { _recursion = r; }
 
-  uint8_t recursion() const
-  {
-    return _recursion;
-  }
+  uint8_t recursion() const { return _recursion; }
 
   /**************************************************************************/
   /* Temporary management                                                   */
   /**************************************************************************/
 
-  Value& allocate(Value&& v)
-  {
-    return _temporary_storage.keep(std::move(v));
-  }
+  Value& allocate(Value&& v) { return _temporary_storage.keep(std::move(v)); }
 
   size_t allocationCount() const { return _temporary_storage.count(); }
 
@@ -315,10 +260,7 @@ public:
    *     ...
    *   }
    */
-  void purgeWorkingMemory()
-  {
-    _temporary_storage.purge();
-  }
+  void purgeWorkingMemory() { _temporary_storage.purge(); }
 
   /**************************************************************************/
   /* Environment                                                            */
@@ -342,10 +284,18 @@ public:
 
   static double random(double max);
 
+  /**
+   * Set context as trusted to allow use of restricted plugins
+   * @param b enable or disable use of restricted plugins
+   */
+  void trusted(bool b);
+
+  bool trusted() { return (_flags & FLAG_TRUSTED) != 0; }
+
 private:
   Context * _root;
   FunctorManager * _fctm = nullptr;
-  std::chrono::system_clock::time_point _ts_init = std::chrono::system_clock::now();
+  std::chrono::system_clock::time_point _ts_init;
 
   /* memory slots */
   struct MemorySlot
@@ -416,21 +366,26 @@ private:
 
   Pool _temporary_storage;
 
-  bool _trace = false;
+  std::vector<Symbol> _backed_symbols;
+
+  RuntimeError _last_error;
+
+  bool _parsing = false;
   bool _breakCondition = false;
   bool _continueCondition = false;
   bool _returnCondition = false;
+
   Value * _returned = nullptr;
 
   FILE * _sout = nullptr; // stream for output
   FILE * _serr = nullptr; // stream for errors
 
+  bool _trace = false;
+
+  enum Flag { FLAG_TRUSTED = 0x01 };
+  uint8_t _flags = 0;
+  
   uint8_t _recursion = 0;
-
-  RuntimeError _last_error;
-
-  bool _parsing = false;
-  std::vector<Symbol> _backed_symbols;
 };
 
 }

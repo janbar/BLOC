@@ -16,13 +16,6 @@
  *
  */
 
-#ifndef LIBVERSION
-#define LIBVERSION  "[undefined]"
-#endif
-
-#include "debug.h"
-#define LIBHEADER   LIBTAG " version " LIBVERSION " compiled on " __DATE__ " at " __TIME__
-
 #include "context.h"
 #include "statement.h"
 #include "functor_manager.h"
@@ -45,26 +38,18 @@
 #include <unistd.h>
 #endif
 
+#define COMPATIBLE  8
+#ifndef LIBVERSION
+#define LIBVERSION  "[undefined]"
+#endif
+#define LIBHEADER   LIBTAG " version " LIBVERSION " compiled on " __DATE__ " at " __TIME__
+
 namespace bloc
 {
 
-const char * Context::version()
-{
-  return LIBVERSION;
-}
-
-const char * Context::versionHeader()
-{
-  return LIBHEADER;
-}
-
-int Context::compatible()
-{
-  return 8;
-}
-
 Context::Context()
 : _root(this)
+, _ts_init(std::chrono::system_clock::now())
 {
   _sout = ::fdopen(::dup(STDOUT_FILENO), "w");
   _serr = _sout;
@@ -72,6 +57,7 @@ Context::Context()
 
 Context::Context(int fd_out, int fd_err)
 : _root(this)
+, _ts_init(std::chrono::system_clock::now())
 {
   _sout = ::fdopen(::dup(fd_out), "w");
   if (fd_err == fd_out)
@@ -88,8 +74,11 @@ Context::~Context()
   ::fclose(_sout);
 }
 
-Context::Context(const Context& ctx, uint8_t recursion, bool trace)
-: _root(ctx._root), _trace(trace), _recursion(recursion)
+Context::Context(const Context& ctx, uint8_t recursion)
+: _root(ctx._root)
+, _ts_init(ctx._ts_init)
+, _flags(ctx._flags)
+, _recursion(recursion)
 {
   /* duplicate file descriptors */
   _sout = ::fdopen(::dup(::fileno(ctx._sout)), "w");
@@ -418,6 +407,21 @@ void Context::onRuntimeError()
 /* Environment                                                            */
 /**************************************************************************/
 
+const char * Context::version()
+{
+  return LIBVERSION;
+}
+
+const char * Context::versionHeader()
+{
+  return LIBHEADER;
+}
+
+int Context::compatible()
+{
+  return COMPATIBLE;
+}
+
 const char * Context::country()
 {
   static const char * COUNTRY = "US";
@@ -441,6 +445,14 @@ double Context::random(double max)
     (void)r();
   }
   return (double)r() / std::minstd_rand::max() * max;
+}
+
+void Context::trusted(bool b)
+{
+  if (b)
+    _flags |= FLAG_TRUSTED;
+  else
+    _flags &= ~(FLAG_TRUSTED);
 }
 
 }

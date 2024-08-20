@@ -82,6 +82,20 @@ LIBBLOC_API int
 bloc_compatible();
 
 /**
+ * Authorize the use of the given plugin.
+ * WARNING: Some plugins may modify the system environment, even execute
+ * system commands.
+ */
+LIBBLOC_API void
+bloc_unban_plugin(const char * name);
+
+/**
+ * Remove all permissions on plugins
+ */
+LIBBLOC_API void
+bloc_clear_plugin_permissions();
+
+/**
  * Unload all imported modules; It should be called on program exit.
  */
 LIBBLOC_API void
@@ -117,7 +131,7 @@ bloc_ctx_load_variable(bloc_context *ctx, const bloc_symbol *symbol);
 LIBBLOC_API void
 bloc_ctx_enable_trace(bloc_context *ctx, bloc_bool yesno);
 
-bloc_bool
+LIBBLOC_API bloc_bool
 bloc_ctx_trace(bloc_context *ctx);
 
 LIBBLOC_API void

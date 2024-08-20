@@ -65,6 +65,11 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
     if (type_id == 0)
       throw ParseError(EXC_PARSE_NOT_COMPLEX);
     const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
+
+    /* check permissions */
+    if (!ctx.trusted() && PluginManager::instance().bannedPlugin(plug.interface.name))
+      throw ParseError(EXC_PARSE_OTHER_S, "Access to the plugin is restricted.");
+
     /* parse arguments list */
     TokenPtr t = p.pop();
     if (t->code != '(')

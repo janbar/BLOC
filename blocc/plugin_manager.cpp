@@ -134,6 +134,22 @@ unsigned PluginManager::importModuleByPath(const char * libpath)
   return registerModule(dlhandle);
 }
 
+void PluginManager::unbanPlugin(const std::string& name)
+{
+  if (bannedPlugin(name))
+    _trustedPluginNames.push_back(name);
+}
+
+bool PluginManager::bannedPlugin(const std::string& name)
+{
+  for (auto& n : _trustedPluginNames)
+  {
+    if (n == name)
+      return false;
+  }
+  return true;
+}
+
 unsigned PluginManager::registerModule(void* dlhandle)
 {
   /* check for already registered dlhandle */

@@ -50,7 +50,10 @@ Functor::Env Functor::createEnv(Context& parent, const std::vector<Expression*>&
 
   Context * _ctx;
   if (ctx_cache.empty())
-    _ctx = new Context(*(ctx), r + 1, parent.trace());
+  {
+    _ctx = new Context(*(ctx), r + 1);
+    _ctx->trace(parent.trace());
+  }
   else
   {
     _ctx = ctx_cache.front();

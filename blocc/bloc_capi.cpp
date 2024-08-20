@@ -67,6 +67,19 @@ int
 bloc_compatible() { return bloc::Context::compatible(); }
 
 void
+bloc_unban_plugin(const char * name)
+{
+  if (name != nullptr)
+    bloc::PluginManager::instance().unbanPlugin(name);
+}
+
+void
+bloc_clear_plugin_permissions()
+{
+  bloc::PluginManager::instance().clearPermissions();
+}
+
+void
 bloc_deinit_plugins() { bloc::PluginManager::destroy(); }
 
 void

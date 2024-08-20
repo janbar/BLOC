@@ -176,6 +176,8 @@ int main(int argc, char **argv) {
     }
 
     bloc::Context ctx(::fileno(outfile), ::fileno(STDERR));
+    /* set context as trusted to allow use of restricted plugins */
+    ctx.trusted(true);
 
     /* load arguments 1..n into the context, as table named $ARG */
     bloc::Collection * c_arg = new bloc::Collection(bloc::Value::type_literal.levelUp());
