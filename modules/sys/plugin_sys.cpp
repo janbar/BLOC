@@ -38,7 +38,7 @@ namespace sys
 
 enum Method
 {
-  Exec0 = 0, Exec1, Exec2,
+  Exec0 = 0,
 };
 
 /**********************************************************************/
@@ -118,33 +118,6 @@ bloc::Value * SYSPlugin::executeMethod(
     if (a0.isNull())
       return new bloc::Value(bloc::Value::type_integer);
     return new bloc::Value(bloc::Bool(sys->exec(*a0.literal())));
-  }
-
-  case sys::Exec1:
-  {
-    bloc::Value& a0 = args[0]->value(ctx);
-    bloc::Value& a1 = args[1]->value(ctx);
-    if (a0.isNull())
-      return new bloc::Value(bloc::Value::type_integer);
-    std::string cmd = *a0.literal();
-    if (!a1.isNull())
-      cmd.append(" ").append(*a1.literal());
-    return new bloc::Value(bloc::Bool(sys->exec(cmd)));
-  }
-
-  case sys::Exec2:
-  {
-    bloc::Value& a0 = args[0]->value(ctx);
-    bloc::Value& a1 = args[1]->value(ctx);
-    if (a0.isNull())
-      return new bloc::Value(bloc::Value::type_integer);
-    std::string cmd = *a0.literal();
-    if (!a1.isNull())
-    {
-      for (bloc::Value& val : *a1.collection())
-        cmd.append(" ").append(*val.literal());
-    }
-    return new bloc::Value(bloc::Bool(sys->exec(cmd)));
   }
 
   default:
