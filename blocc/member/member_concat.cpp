@@ -39,23 +39,29 @@ Value& MemberCONCATExpression::value(Context& ctx) const
   /* collection */
   if (val.type().level() > 0)
   {
+    /* when expression is null table, the value will be swapped with that given
+     * as an argument; also the linked symbol must be upgraded to the new
+     * type, calling ctx.storeVariable(symbol, value) */
     if (val.isNull())
     {
       if (a0.type().level() > 0) /* null + tab */
       {
         if (a0.isNull())
           return val;
-        if (a0.lvalue())
-          val.swap(a0.clone().to_lvalue(val.lvalue()));
-        else
-          val.swap(std::move(a0.to_lvalue(val.lvalue())));
         /* a symbol must be upgraded */
         if (_exp->symbol())
         {
-          if (a0.type().major() == Type::ROWTYPE)
-            ctx.getSymbol(_exp->symbol()->id())->upgrade(val.collection()->table_decl(), val.collection()->table_type().level());
+          if (a0.lvalue())
+            ctx.storeVariable(*_exp->symbol(), a0.clone());
           else
-            ctx.getSymbol(_exp->symbol()->id())->upgrade(val.collection()->table_type());
+            ctx.storeVariable(*_exp->symbol(), std::move(a0));
+        }
+        else
+        {
+          if (a0.lvalue())
+            val.swap(a0.clone().to_lvalue(val.lvalue()));
+          else
+            val.swap(std::move(a0.to_lvalue(val.lvalue())));
         }
         return val;
       }
@@ -66,29 +72,27 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         if (a0.isNull()) /* null + tuple null */
           return val;
         rv = new Collection(a0.tuple()->tuple_decl(), 1);
-        /* a symbol must be upgraded */
-        if (_exp->symbol())
-          ctx.getSymbol(_exp->symbol()->id())->upgrade(rv->table_decl(), 1);
       }
       else
       {
         if (a0.type() == Type::NO_TYPE)
           return val;
         rv = new Collection(a0.type().levelUp());
-        /* a symbol must be upgraded */
-        if (_exp->symbol())
-          ctx.getSymbol(_exp->symbol()->id())->upgrade(rv->table_type());
       }
       /* push item */
       if (a0.lvalue())
         rv->push_back(a0.clone());
       else
         rv->push_back(std::move(a0));
-      /* swap and return */
-      val.swap(Value(rv).to_lvalue(val.lvalue()));
+      /* a symbol must be upgraded */
+      if (_exp->symbol())
+        ctx.storeVariable(*_exp->symbol(), Value(rv));
+      else
+        val.swap(Value(rv).to_lvalue(val.lvalue()));
       return val;
     }
 
+    /* when expression isn't null, then process concatenation */
     Collection * rv = val.collection();
     const Type& rv_type = rv->table_type();
     const Type& a0_type = a0.type();
