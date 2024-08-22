@@ -26,6 +26,7 @@
 
 #include <cassert>
 #include <cinttypes>
+#include <cmath>
 #include <string>
 
 //#define DEBUG_VALUE
@@ -378,7 +379,7 @@ std::string Value::readableImaginary(Imaginary& i)
 {
   char buf[64];
   snprintf(buf, sizeof(buf), "(%.16g %s %.16g * ii)",
-          i.a, (i.b < 0  ? "-" : "+"), std::abs(i.b));
+          i.a, (i.b < 0  ? "-" : "+"), std::fabs(i.b));
   return buf;
 }
 
