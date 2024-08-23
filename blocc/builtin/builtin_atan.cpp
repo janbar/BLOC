@@ -24,9 +24,11 @@
 #include <blocc/debug.h>
 
 #include <cmath>
+#include <complex>
 
 namespace bloc
 {
+#define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
 Value& ATANExpression::value(Context & ctx) const
 {
@@ -47,6 +49,14 @@ Value& ATANExpression::value(Context & ctx) const
       return val;
     v = Value(Numeric(std::atan(*val.numeric())));
     break;
+  case Type::IMAGINARY:
+    if (val.isNull())
+      return val;
+    else
+    {
+      auto z = std::atan(IMAGINARY_TO_COMPLEX(*val.imaginary()));
+      v = Value(new Imaginary{z.real(), z.imag()});
+    }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }

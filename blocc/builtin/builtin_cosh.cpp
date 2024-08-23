@@ -24,9 +24,11 @@
 #include <blocc/debug.h>
 
 #include <cmath>
+#include <complex>
 
 namespace bloc
 {
+#define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
 Value& COSHExpression::value(Context & ctx) const
 {
@@ -46,6 +48,15 @@ Value& COSHExpression::value(Context & ctx) const
     if (val.isNull())
       return val;
     v = Value(Numeric(std::cosh(*val.numeric())));
+    break;
+  case Type::IMAGINARY:
+    if (val.isNull())
+      return val;
+    else
+    {
+      auto z = std::cosh(IMAGINARY_TO_COMPLEX(*val.imaginary()));
+      v = Value(new Imaginary{z.real(), z.imag()});
+    }
     break;
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);

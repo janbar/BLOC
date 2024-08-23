@@ -24,9 +24,11 @@
 #include <blocc/debug.h>
 
 #include <cmath>
+#include <complex>
 
 namespace bloc
 {
+#define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
 const Type& EXPExpression::type (Context &ctx) const
 {
@@ -57,9 +59,11 @@ Value& EXPExpression::value(Context & ctx) const
   case Type::IMAGINARY:
     if (val.isNull())
       return val;
-    v = Value(new Imaginary{
-              std::exp(val.imaginary()->a) * std::cos(val.imaginary()->b),
-              std::exp(val.imaginary()->a) * std::sin(val.imaginary()->b)});
+    else
+    {
+      auto z = std::exp(IMAGINARY_TO_COMPLEX(*val.imaginary()));
+      v = Value(new Imaginary{z.real(), z.imag()});
+    }
     break;
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);

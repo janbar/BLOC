@@ -24,9 +24,11 @@
 #include <blocc/debug.h>
 
 #include <cmath>
+#include <complex>
 
 namespace bloc
 {
+#define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
 const Type& SQRTExpression::type (Context &ctx) const
 {
@@ -55,14 +57,14 @@ Value& SQRTExpression::value(Context & ctx) const
     v = Value(Numeric(std::sqrt(*val.numeric())));
     break;
   case Type::IMAGINARY:
-  {
     if (val.isNull())
       return val;
-    double r = std::sqrt(std::sqrt(std::pow(val.imaginary()->a, 2) + std::pow(val.imaginary()->b, 2)));
-    double t = std::atan2(val.imaginary()->b, val.imaginary()->a) / 2.0;
-    v = Value(new Imaginary{r * std::cos(t), r * std::sin(t)});
+    else
+    {
+      auto z = std::sqrt(IMAGINARY_TO_COMPLEX(*val.imaginary()));
+      v = Value(new Imaginary{z.real(), z.imag()});
+    }
     break;
-  }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }

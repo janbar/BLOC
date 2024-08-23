@@ -24,9 +24,11 @@
 #include <blocc/debug.h>
 
 #include <cmath>
+#include <complex>
 
 namespace bloc
 {
+#define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
 Value& ABSExpression::value(Context & ctx) const
 {
@@ -56,7 +58,7 @@ Value& ABSExpression::value(Context & ctx) const
   {
     if (val.isNull())
       return val;
-    v = Value(Numeric(std::sqrt(std::pow(val.imaginary()->a, 2) + std::pow(val.imaginary()->b, 2))));
+    v = Value(Numeric(std::abs(IMAGINARY_TO_COMPLEX(*val.imaginary()))));
     break;
   }
   default:

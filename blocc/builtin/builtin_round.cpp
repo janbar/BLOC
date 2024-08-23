@@ -67,6 +67,15 @@ Value& ROUNDExpression::value(Context & ctx) const
       else
         v = Value(Numeric(std::floor(*val.numeric() * d + 0.5) / d));
       break;
+    case Type::IMAGINARY:
+      if (val.isNull())
+        return val;
+      else
+      {
+        Imaginary z = *val.imaginary();
+        v = Value(new Imaginary{std::floor(z.a * d + 0.5) / d, std::floor(z.b * d + 0.5) / d});
+      }
+      break;
     default:
       throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
     }
@@ -91,6 +100,15 @@ Value& ROUNDExpression::value(Context & ctx) const
         return val;
       else
         v = Value(Numeric(std::floor(*val.numeric() + 0.5)));
+      break;
+    case Type::IMAGINARY:
+      if (val.isNull())
+        return val;
+      else
+      {
+        Imaginary z = *val.imaginary();
+        v = Value(new Imaginary{std::floor(z.a + 0.5), std::floor(z.b + 0.5)});
+      }
       break;
     default:
       throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);

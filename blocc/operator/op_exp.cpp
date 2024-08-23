@@ -26,9 +26,11 @@
 
 #include <cmath>
 #include <climits>
+#include <complex>
 
 namespace bloc
 {
+#define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
 OpEXPExpression::~OpEXPExpression()
 {
@@ -72,6 +74,7 @@ Value& OpEXPExpression::value(Context& ctx) const
         return LVAL2(Value(Value::type_numeric), a1, a2);
       case Type::INTEGER:
       case Type::NUMERIC:
+      case Type::IMAGINARY:
         return LVAL2(Value(a2.type()), a1, a2);
       default:
         break;
@@ -97,7 +100,13 @@ Value& OpEXPExpression::value(Context& ctx) const
         return LVAL2(val, a1, a2);
       }
       case Type::IMAGINARY:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED, Operator::OPVALS[Operator::OP_EXP]);
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        auto z = std::pow(Numeric(*a1.integer()), IMAGINARY_TO_COMPLEX(*a2.imaginary()));
+        Value val(new Imaginary{z.real(), z.imag()});
+        return LVAL2(val, a1, a2);
+      }
       default:
         break;
       }
@@ -122,7 +131,13 @@ Value& OpEXPExpression::value(Context& ctx) const
         return LVAL2(val, a1, a2);
       }
       case Type::IMAGINARY:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED, Operator::OPVALS[Operator::OP_EXP]);
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        auto z = std::pow(*a1.numeric(), IMAGINARY_TO_COMPLEX(*a2.imaginary()));
+        Value val(new Imaginary{z.real(), z.imag()});
+        return LVAL2(val, a1, a2);
+      }
       default:
         break;
       }
@@ -136,22 +151,26 @@ Value& OpEXPExpression::value(Context& ctx) const
       {
         if (a2.isNull() || a1.isNull())
           return LVAL2(Value(Value::type_imaginary), a1, a2);
-        double rp = std::pow(std::sqrt(std::pow(a1.imaginary()->a, 2) + std::pow(a1.imaginary()->b, 2)), Numeric(*a2.integer()));
-        double tp = Numeric(*a2.integer()) * std::atan2(a1.imaginary()->b, a1.imaginary()->a);
-        Value val(new Imaginary{rp * std::cos(tp), rp * std::sin(tp)});
+        auto z = std::pow(IMAGINARY_TO_COMPLEX(*a1.imaginary()), Numeric(*a2.integer()));
+        Value val(new Imaginary{z.real(), z.imag()});
         return LVAL2(val, a1, a2);
       }
       case Type::NUMERIC:
       {
         if (a2.isNull() || a1.isNull())
           return LVAL2(Value(Value::type_imaginary), a1, a2);
-        double rp = std::pow(std::sqrt(std::pow(a1.imaginary()->a, 2) + std::pow(a1.imaginary()->b, 2)), *a2.numeric());
-        double tp = *a2.numeric() * std::atan2(a1.imaginary()->b, a1.imaginary()->a);
-        Value val(new Imaginary{rp * std::cos(tp), rp * std::sin(tp)});
+        auto z = std::pow(IMAGINARY_TO_COMPLEX(*a1.imaginary()), *a2.numeric());
+        Value val(new Imaginary{z.real(), z.imag()});
         return LVAL2(val, a1, a2);
       }
       case Type::IMAGINARY:
-        throw RuntimeError(EXC_RT_NOT_IMPLEMENTED, Operator::OPVALS[Operator::OP_EXP]);
+      {
+        if (a2.isNull() || a1.isNull())
+          return LVAL2(Value(Value::type_imaginary), a1, a2);
+        auto z = std::pow(IMAGINARY_TO_COMPLEX(*a1.imaginary()), IMAGINARY_TO_COMPLEX(*a2.imaginary()));
+        Value val(new Imaginary{z.real(), z.imag()});
+        return LVAL2(val, a1, a2);
+      }
       default:
         break;
       }

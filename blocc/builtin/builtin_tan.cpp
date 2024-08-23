@@ -24,9 +24,11 @@
 #include <blocc/debug.h>
 
 #include <cmath>
+#include <complex>
 
 namespace bloc
 {
+#define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
 const Type& TANExpression::type (Context &ctx) const
 {
@@ -55,18 +57,14 @@ Value& TANExpression::value(Context & ctx) const
     v = Value(Numeric(std::tan(*val.numeric())));
     break;
   case Type::IMAGINARY:
-  {
     if (val.isNull())
       return val;
-    Imaginary cc = {std::cos(val.imaginary()->a) * std::cosh(val.imaginary()->b),
-              - std::sin(val.imaginary()->a) * std::sinh(val.imaginary()->b)};
-    double s = std::pow(cc.a, 2) + std::pow(cc.b, 2);
-    Imaginary rc = {cc.a / s , (-cc.b) / s};
-    Imaginary ss = {std::sin(val.imaginary()->a) * std::cosh(val.imaginary()->b),
-              std::cos(val.imaginary()->a) * std::sinh(val.imaginary()->b)};
-    v = Value(new Imaginary{ss.a * rc.a - ss.b * rc.b, ss.a * rc.b + ss.b * rc.a});
+    else
+    {
+      auto z = std::tan(IMAGINARY_TO_COMPLEX(*val.imaginary()));
+      v = Value(new Imaginary{z.real(), z.imag()});
+    }
     break;
-  }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }

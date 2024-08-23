@@ -47,6 +47,15 @@ Value& CEILExpression::value(Context & ctx) const
       return val;
     v = Value(Numeric(std::ceil(*val.numeric())));
     break;
+  case Type::IMAGINARY:
+    if (val.isNull())
+      return val;
+    else
+    {
+      Imaginary z = *val.imaginary();
+      v = Value(new Imaginary{std::ceil(z.a), std::ceil(z.b)});
+    }
+    break;
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
   }

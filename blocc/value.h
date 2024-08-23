@@ -37,7 +37,7 @@ class Collection;
 typedef bool Bool;
 typedef int64_t Integer;
 typedef double Numeric;
-typedef struct { double a; double b; } Imaginary;
+typedef struct { Numeric a; Numeric b; } Imaginary;
 typedef std::string Literal;
 typedef std::vector<char> TabChar;
 
