@@ -76,9 +76,13 @@ while F.readln(LINE) loop
         /* push data of new CSV row */
         NEEDMORE = CSV.deserialize(LINE, T);
     end if;
-    /* discard the CSV header */
-    if !isnum(T.at(0)) then continue; end if;
-    /* */
+
+    /* test the row is completed and not like the CSV header */
+    if NEEDMORE || !isnum(T.at(0)) then
+        continue;
+    end if;
+
+    /* insert the new row into the database table */
     VALUES = tup(int(T.at(0)),str(T.at(1)),int(T.at(2)));
     if !DB.exec("insert into stats values (:1,:2,:3)", VALUES) then
       print "!!! Error inserting new row !!!";
