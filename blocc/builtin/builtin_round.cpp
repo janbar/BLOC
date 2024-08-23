@@ -59,7 +59,7 @@ Value& ROUNDExpression::value(Context & ctx) const
       if (val.isNull())
         v = Value(Value::type_numeric);
       else
-        v = Value(Numeric(std::floor(*val.integer() * d + 0.5) / d));
+        v = Value(Numeric(std::floor(Numeric(*val.integer()) + 0.5)));
       break;
     case Type::NUMERIC:
       if (val.isNull())
@@ -93,7 +93,7 @@ Value& ROUNDExpression::value(Context & ctx) const
       if (val.isNull())
         v = Value(Value::type_numeric);
       else
-        v = Value(Numeric(std::floor(*val.integer() + 0.5)));
+        v = Value(Numeric(std::floor(Numeric(*val.integer()) + 0.5)));
       break;
     case Type::NUMERIC:
       if (val.isNull())
