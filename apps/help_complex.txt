@@ -22,4 +22,5 @@ The following operators can be used with the complex value.
 
 The following functions accept the complex value as argument.
 
-exp, log, pow, sin, cos, tan, abs, imag, iphase, iconj, num, int, isnull
+exp, log, log10, pow, sin, cos, tan, asin, acos, atan, sinh, cosh, tanh,
+round, floor, ceil, abs, imag, iphase, iconj, num, int, isnull
