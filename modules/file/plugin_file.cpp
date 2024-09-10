@@ -72,39 +72,36 @@ static PLUGIN_TYPE ctor_0_args[]  = {
 static PLUGIN_CTOR ctors[] =
 {
   { 0,      2,  ctor_0_args,
-          "Build and open file for the given filename, and flags." },
+          "Open file for the given filename, and flags." },
 };
 
 enum Method
 {
-  Close = 0, Open, Write_S, Write_B, Read_S, Read_B, Flush,
-  SeekSet, SeekCur, SeekEnd, Position, Filename, IsOpen, Mode,
-  Stat, Dir, Readln,
+  Close = 0, Open, Write_S, Write_B, Read_S, Read_B, Readln, Flush,
+  SeekSet, SeekCur, SeekEnd, Position, IsOpen, Mode, Filename,
+  FDirname, FBasename, FStat,
+  Stat, Dir, Separator, Dirname, Basename,
 };
 
 /**********************************************************************/
 /*  Method arguments                                                  */
 /*  mode:         type: decl,ndim                                     */
 /**********************************************************************/
-static PLUGIN_ARG stat_args[]  = {
-  { PLUGIN_IN,    { "L", 0 } }, // filename
+static PLUGIN_ARG string1_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // string
 };
 
-static PLUGIN_ARG dir_args[]  = {
-  { PLUGIN_IN,    { "L", 0 } }, // filename
+static PLUGIN_ARG string2_args[]     = {
+  { PLUGIN_IN,    { "L", 0 } }, // string
+  { PLUGIN_IN,    { "L", 0 } }, // string
 };
 
-static PLUGIN_ARG open_args[]     = {
-  { PLUGIN_IN,    { "L", 0 } }, // filename
-  { PLUGIN_IN,    { "L", 0 } }, // open flags
+static PLUGIN_ARG raw_args[]  = {
+  { PLUGIN_IN,    { "X", 0 } }, // raw
 };
 
-static PLUGIN_ARG write_s_args[]  = {
-  { PLUGIN_IN,    { "L", 0 } }, // write string
-};
-
-static PLUGIN_ARG write_b_args[]  = {
-  { PLUGIN_IN,    { "X", 0 } }, // write raw
+static PLUGIN_ARG int_args[]     = {
+  { PLUGIN_IN,    { "I", 0 } }, // integer
 };
 
 static PLUGIN_ARG read_s_args[]   = {
@@ -121,10 +118,6 @@ static PLUGIN_ARG read_b_args[]   = {
   { PLUGIN_IN,    { "I", 0 } }, // read size
 };
 
-static PLUGIN_ARG seek_args[]     = {
-  { PLUGIN_IN,    { "I", 0 } }, // seek offset
-};
-
 /**********************************************************************/
 /*  Methods list                                                      */
 /*  id:       name:         ret: decl,ndim  args_count,args:          */
@@ -133,48 +126,65 @@ static PLUGIN_METHOD methods[] =
 {
   { Close,    "close",      { "B", 0 },     0, nullptr,
           "Close the file handle." },
-  { Open,     "open",       { "I", 0 },     2, open_args,
-          "Opens a file indicated by filename and flags, and returns the system error"
+  { Open,     "open",       { "I", 0 },     1, string2_args,
+          "Opens the file indicated by path and flags, and returns the system error"
           "\nnumber or 0 for success." },
-  { Write_S,  "write",      { "I", 0 },     1, write_s_args,
+  { Write_S,  "write",      { "I", 0 },     1, string1_args,
           "Writes string, and returns the number of character written successfully." },
-  { Read_S,   "read",       { "I", 0 },     2, read_s_args,
-          "Reads up to count characters into the variable, and returns the number of"
-          "\ncharacter read successfully." },
+  { Write_B,  "write",      { "I", 0 },     1, raw_args,
+          "Writes bytes, and returns the number of byte written successfully." },
+  { Flush,    "flush",      { "B", 0 },     0, nullptr,
+          "synchronizes output stream with the file." },
   { Readln,   "readln",     { "B", 0 },     1, readln_args,
           "Reads a chunk of characters into the variable, ended by LF or limited by"
           "\nthe size of the internal buffer. At EOF it returns FALSE else TRUE.", },
-  { SeekSet,  "seekset",    { "I", 0 },     1, seek_args,
-          "Moves the file position indicator to an absolute location in a file." },
-  { SeekCur,  "seekcur",    { "I", 0 },     1, seek_args,
-          "Moves the file position indicator from the current file position." },
-  { SeekEnd,  "seekend",    { "I", 0 },     1, seek_args,
-          "Moves the file position indicator from the end of the file." },
-  { Position, "position",   { "I", 0 },     0, nullptr,
-          "Returns the file position indicator." },
-  { Flush,    "flush",      { "B", 0 },     0, nullptr,
-          "synchronizes output stream with the file." },
-  { Filename, "filename",   { "L", 0 },     0, nullptr,
-          "Returns filename of the file." },
-  { IsOpen,   "isopen",     { "B", 0 },     0, nullptr,
-          "Checks whether the file is open." },
-  { Write_B,  "write",      { "I", 0 },     1, write_b_args,
-          "Writes bytes, and returns the number of byte written successfully." },
+  { Read_S,   "read",       { "I", 0 },     2, read_s_args,
+          "Reads up to count characters into the variable, and returns the number of"
+          "\ncharacter read successfully." },
   { Read_B,   "read",       { "I", 0 },     2, read_b_args,
           "Reads up to count bytes into the variable, and returns the number of byte"
           "\nread successfully." },
+  { SeekSet,  "seekset",    { "I", 0 },     1, int_args,
+          "Moves the file position indicator to an absolute location in a file." },
+  { SeekCur,  "seekcur",    { "I", 0 },     1, int_args,
+          "Moves the file position indicator from the current file position." },
+  { SeekEnd,  "seekend",    { "I", 0 },     1, int_args,
+          "Moves the file position indicator from the end of the file." },
+  { Position, "position",   { "I", 0 },     0, nullptr,
+          "Returns the file position indicator." },
+  { IsOpen,   "isopen",     { "B", 0 },     0, nullptr,
+          "Checks whether the file is open." },
   { Mode,     "mode",       { "L", 0 },     0, nullptr,
           "Returns open flags of the file." },
-  { Stat,     "stat",       { "IIL", 0 },   1, stat_args,
-          "Returns a tuple containing basic informations about a file: { Type, Size, Path }"
+  { Filename, "filename",   { "L", 0 },     0, nullptr,
+          "Returns filename of the file." },
+  { FDirname, "dirname",    { "L", 0 },     0, nullptr,
+          "Returns the dirname of the file." },
+  { FBasename,  "basename",  { "L", 0 },    0, nullptr,
+          "Returns the basename of the file." },
+  { FStat,    "stat",       { "IIL", 0 },   0, nullptr,
+          "Returns a tuple containing basic informations about the file:"
+          "\n{ Type, Size, Absolute Path }"
           "\nType: 1=Regular, 2=Directory, 3=Other"
-          "\nSize: file size in byte"
-          "\nPath: The absolute real path" },
-  { Dir,      "dir",        { "ILI", 1 },    1, dir_args,
-          "Returns the entry list of a directory: [{ Type, Name, Size }]"
-          "\nType: 1=Regular, 2=Directory, 3=Other"
-          "\nName: file name"
           "\nSize: file size in byte" },
+  //
+  // global methods
+  //
+  { Stat,     "stat",       { "IIL", 0 },   1, string1_args,
+          "Returns a tuple containing basic informations about the given path:"
+          "\n{ Type, Size, Absolute Path }"
+          "\nType: 1=Regular, 2=Directory, 3=Other"
+          "\nSize: file size in byte" },
+  { Dir,      "dir",        { "ILI", 1 },    1, string1_args,
+          "Returns the entry list of a directory: [{ Type, Size, Name }]"
+          "\nType: 1=Regular, 2=Directory, 3=Other"
+          "\nSize: file size in byte" },
+  { Separator, "separator", { "L", 0 },      0, nullptr,
+          "Returns the file separator character." },
+  { Dirname, "dirname",     { "L", 0 },      1, string1_args,
+          "Returns the dirname of the given path." },
+  { Basename,  "basename",  { "L", 0 },      1, string1_args,
+          "Returns the basename of the given path." },
 };
 
 /**
@@ -232,9 +242,36 @@ static int _stat(const std::string& path, int * fmode, size_t * fsize)
 }
 
 /**
+ * basename
+ */
+std::string _baseName(const std::string& path)
+{
+  size_t p = path.find_last_of(FILE_SEPARATOR);
+  if (p == std::string::npos)
+    return path;
+  p += 1;
+  if (p == path.length())
+    return _baseName(path.substr(0, p - 1));
+  return path.substr(p);
+}
+
+/**
+ * dirname
+ */
+std::string _dirName(const std::string& path)
+{
+  size_t p = path.find_last_of(FILE_SEPARATOR);
+  if (p == std::string::npos)
+    return std::string(".");
+  if (p > 0 && (p + 1) == path.length())
+    return _dirName(path.substr(0, p - 1));
+  return path.substr(0, p);
+}
+
+/**
  * absolute path name
  */
-static std::string _absolute_path(const std::string& path)
+static std::string _absolutePath(const std::string& path)
 {
   char buf[PATH_MAX];
   *buf = '\0';
@@ -441,10 +478,24 @@ bloc::Value * FilePlugin::executeMethod(
     return new bloc::Value(bloc::Integer(file->position()));
 
   case file::Flush:
+    if (!file->_file)
+      throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
     return new bloc::Value(bloc::Bool(file->flush() == 0 ? true : false));
 
   case file::Filename:
+    if (!file->_file)
+      throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
     return new bloc::Value(new bloc::Literal(file->_path));
+
+  case file::FDirname:
+    if (!file->_file)
+      throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
+    return new bloc::Value(new bloc::Literal(file::_dirName(file->_path)));
+
+  case file::FBasename:
+    if (!file->_file)
+      throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
+    return new bloc::Value(new bloc::Literal(file::_baseName(file->_path)));
 
   case file::Mode:
     return new bloc::Value(new bloc::Literal(file->_mode));
@@ -493,6 +544,27 @@ bloc::Value * FilePlugin::executeMethod(
     return new bloc::Value(bloc::Integer(r));
   }
 
+  case file::FStat:
+  {
+    if (!file->_file)
+      throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
+    int fmode = 0;
+    size_t fsize = 0;
+    if (file::_stat(file->_path, &fmode, &fsize) == 0)
+    {
+      /* create the row */
+      bloc::Tuple::container_t row;
+      row.push_back(bloc::Value(bloc::Integer(fmode)));
+      if (fmode == 1)
+        row.push_back(bloc::Value(bloc::Integer(fsize)));
+      else
+        row.push_back(bloc::Value(bloc::Value::type_integer));
+      row.push_back(bloc::Value(new bloc::Literal(file::_absolutePath(file->_path))));
+      return new bloc::Value(new bloc::Tuple(std::move(row)));
+    }
+    return new bloc::Value(bloc::Value::type_rowtype);
+  }
+
   case file::Stat:
   {
     bloc::Value& a0 = args[0]->value(ctx);
@@ -510,7 +582,7 @@ bloc::Value * FilePlugin::executeMethod(
         row.push_back(bloc::Value(bloc::Integer(fsize)));
       else
         row.push_back(bloc::Value(bloc::Value::type_integer));
-      row.push_back(bloc::Value(new bloc::Literal(file::_absolute_path(path))));
+      row.push_back(bloc::Value(new bloc::Literal(file::_absolutePath(path))));
       return new bloc::Value(new bloc::Tuple(std::move(row)));
     }
     return new bloc::Value(bloc::Value::type_rowtype);
@@ -524,6 +596,27 @@ bloc::Value * FilePlugin::executeMethod(
     Collection * c = nullptr;
     file::_dir(*a0.literal(), &c);
     return new Value(c);
+  }
+
+  case file::Separator:
+  {
+    return new Value(new bloc::Literal(1, FILE_SEPARATOR));
+  }
+
+  case file::Dirname:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new Value(new bloc::Literal(file::_dirName(*a0.literal())));
+  }
+
+  case file::Basename:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    return new Value(new bloc::Literal(file::_baseName(*a0.literal())));
   }
 
   }
