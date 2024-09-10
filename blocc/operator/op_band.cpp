@@ -50,49 +50,61 @@ OpBANDExpression::~OpBANDExpression()
 Value& OpBANDExpression::value(Context& ctx) const
 {
   Value& a1 = arg1->value(ctx);
-  Value& a2 = arg2->value(ctx);
 
-  if (a1.type().level() == 0 && a2.type().level() == 0)
+  if (a1.type().level() == 0)
   {
     switch (a1.type().major())
     {
     case Type::NO_TYPE:
-      switch (a2.type().major())
+    {
+      Value& a2 = arg2->value(ctx);
+      if (a2.type().level() == 0)
       {
-      case Type::NO_TYPE:
-      case Type::BOOLEAN:
-        if (!a2.isNull() && *a2.boolean() == false)
-          return LVAL2(Value(Bool(false)), a1, a2);       /* false */
-        return LVAL2(Value(Value::type_boolean), a1, a2); /* null */
-      default:
-        break;
-      }
-      break;
-    case Type::BOOLEAN:
-      switch (a2.type().major())
-      {
-      case Type::NO_TYPE:
-        if (!a1.isNull() && *a1.boolean() == false)
-          return LVAL2(Value(Bool(false)), a1, a2);       /* false */
-        return LVAL2(Value(Value::type_boolean), a1, a2); /* null */
-      case Type::BOOLEAN:
-      {
-        if (!a2.isNull())
+        switch (a2.type().major())
         {
-          if (!a1.isNull())
-            return LVAL2(Value(Bool(*a1.boolean() && *a2.boolean())), a1, a2);
-          if (*a2.boolean() == false)
-            return LVAL2(Value(Bool(false)), a1, a2);   /* false */
-          return a1;                                    /* null */
+        case Type::NO_TYPE:
+          return LVAL2(Value(Value::type_boolean), a1, a2);   /* null */
+        case Type::BOOLEAN:
+        {
+          if (!a2.isNull() && *a2.boolean() == false)
+            return LVAL2(Value(Bool(false)), a1, a2);         /* false */
+          return LVAL2(Value(Value::type_boolean), a1, a2);   /* null */
         }
-        if (!a1.isNull() && *a1.boolean() == false)
-          return LVAL2(Value(Bool(false)), a1, a2);     /* false */
-        return a2;                                      /* null */
-      }
-      default:
-        break;
+        default:
+          break;
+        }
       }
       break;
+    }
+    case Type::BOOLEAN:
+    {
+      if (!a1.isNull() && *a1.boolean() == false)
+        return LVAL1(Value(Bool(false)), a1);                 /* false */
+      // a1 is null or true
+      Value& a2 = arg2->value(ctx);
+      if (a2.type().level() == 0)
+      {
+        switch (a2.type().major())
+        {
+        case Type::NO_TYPE:
+          return LVAL2(Value(Value::type_boolean), a1, a2);   /* null */
+        case Type::BOOLEAN:
+        {
+          if (!a2.isNull())
+          {
+            if (*a2.boolean() == false)
+              return LVAL2(Value(Bool(false)), a1, a2);       /* false */
+            if (!a1.isNull())
+              return LVAL2(Value(Bool(true)), a1, a2);        /* true */
+          }
+          return LVAL2(Value(Value::type_boolean), a1, a2);   /* null */
+        }
+        default:
+          break;
+        }
+      }
+      break;
+    }
     default:
       break;
     }
