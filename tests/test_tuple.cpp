@@ -25,16 +25,30 @@ TEST_CASE("tuple item 0")
 {
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@0");
-  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
+  try
+  {
+    e = ctx.parseExpression();
+    delete e;
+    FAIL("No throw");
+  }
   catch(ParseError& pe) { SUCCEED(pe.what()); }
 }
 
-TEST_CASE("tuple item out")
+TEST_CASE("tuple item out at parse time")
 {
   Expression * e;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@6");
-  try { e = ctx.parseExpression(); delete e; FAIL("No throw"); }
-  catch(ParseError& pe) { SUCCEED(pe.what()); }
+  REQUIRE_NOTHROW( (e = ctx.parseExpression()) );
+  delete e;
+}
+
+TEST_CASE("tuple item out at run time")
+{
+  Expression * e;
+  ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@6");
+  e = ctx.parseExpression();
+  REQUIRE_THROWS( e->value(ctx) );
+  delete e;
 }
 
 TEST_CASE("tuple item@")
