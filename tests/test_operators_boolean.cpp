@@ -175,3 +175,33 @@ TEST_CASE("operator !B (NOT)")
   REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
+
+TEST_CASE("break on first operand")
+{
+  Expression * e;
+  ctx.reset("false && (1/0 == 1)");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+  ctx.reset("null && (1/0 == 1)");
+  e = ctx.parseExpression();
+  REQUIRE_THROWS( e->value(ctx) );
+  delete e;
+  ctx.reset("true && (1/0 == 1)");
+  e = ctx.parseExpression();
+  REQUIRE_THROWS( e->value(ctx) );
+  delete e;
+
+  ctx.reset("true || (1/0 == 1)");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == true );
+  delete e;
+  ctx.reset("false || (1/0 == 1)");
+  e = ctx.parseExpression();
+  REQUIRE_THROWS( e->value(ctx) );
+  delete e;
+  ctx.reset("null || (1/0 == 1)");
+  e = ctx.parseExpression();
+  REQUIRE_THROWS( e->value(ctx) );
+  delete e;
+}
