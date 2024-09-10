@@ -17,6 +17,7 @@
  */
 
 #include "member_count.h"
+#include "blocc/tuple.h"
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/collection.h>
@@ -47,6 +48,9 @@ Value& MemberCOUNTExpression::value(Context& ctx) const
         break;
       case Type::TABCHAR:
         v = Value(Integer(val.tabchar()->size()));
+        break;
+      case Type::ROWTYPE:
+        v = Value(Integer(val.tuple()->size()));
         break;
       default:
         throw RuntimeError(EXC_RT_MEMB_ARG_TYPE_S, KEYWORDS[_builtin]);
@@ -79,6 +83,7 @@ MemberCOUNTExpression * MemberCOUNTExpression::parse(Parser& p, Context& ctx, Ex
       {
       case Type::LITERAL:
       case Type::TABCHAR:
+      case Type::ROWTYPE:
       case Type::NO_TYPE: /* opaque */
         break;
       default:
