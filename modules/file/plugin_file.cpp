@@ -26,6 +26,7 @@
 #include "win32/dirent.h"
 #else
 #include <dirent.h>
+#include <limits.h>
 #endif
 #include <sys/stat.h>
 
@@ -35,6 +36,9 @@
 
 #ifdef __WINDOWS__
 #define FILE_SEPARATOR '\\'
+#ifndef PATH_MAX
+#define PATH_MAX 4096
+#endif
 #else
 #define FILE_SEPARATOR '/'
 #endif
@@ -161,10 +165,11 @@ static PLUGIN_METHOD methods[] =
           "\nread successfully." },
   { Mode,     "mode",       { "L", 0 },     0, nullptr,
           "Returns open flags of the file." },
-  { Stat,     "stat",       { "II", 0 },    1, stat_args,
-          "Returns a tuple containing basic informations about a file: { Type, Size }"
+  { Stat,     "stat",       { "IIL", 0 },   1, stat_args,
+          "Returns a tuple containing basic informations about a file: { Type, Size, Path }"
           "\nType: 1=Regular, 2=Directory, 3=Other"
-          "\nSize: file size in byte" },
+          "\nSize: file size in byte"
+          "\nPath: The absolute real path" },
   { Dir,      "dir",        { "ILI", 1 },    1, dir_args,
           "Returns the entry list of a directory: [{ Type, Name, Size }]"
           "\nType: 1=Regular, 2=Directory, 3=Other"
@@ -193,7 +198,6 @@ struct Handle {
   int seek_end(int64_t s);
   int64_t position();
   int flush();
-  int status(const std::string& path);
   int readln(char * buf, unsigned n);
 };
 
@@ -225,6 +229,21 @@ static int _stat(const std::string& path, int * fmode, size_t * fsize)
   }
   r = errno;
   return (-r);
+}
+
+/**
+ * absolute path name
+ */
+static std::string _absolute_path(const std::string& path)
+{
+  char buf[PATH_MAX];
+  *buf = '\0';
+#if defined(__WINDOWS__)
+  _fullpath(buf, path.c_str(), PATH_MAX);
+#else
+  realpath(path.c_str(), buf);
+#endif
+  return std::string(buf);
 }
 
 /**
@@ -481,7 +500,8 @@ bloc::Value * FilePlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     int fmode = 0;
     size_t fsize = 0;
-    if (file::_stat(*a0.literal(), &fmode, &fsize) == 0)
+    const std::string& path = *a0.literal();
+    if (file::_stat(path, &fmode, &fsize) == 0)
     {
       /* create the row */
       bloc::Tuple::container_t row;
@@ -490,6 +510,7 @@ bloc::Value * FilePlugin::executeMethod(
         row.push_back(bloc::Value(bloc::Integer(fsize)));
       else
         row.push_back(bloc::Value(bloc::Value::type_integer));
+      row.push_back(bloc::Value(new bloc::Literal(file::_absolute_path(path))));
       return new bloc::Value(new bloc::Tuple(std::move(row)));
     }
     return new bloc::Value(bloc::Value::type_rowtype);
