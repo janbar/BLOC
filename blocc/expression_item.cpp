@@ -69,12 +69,12 @@ ItemExpression * ItemExpression::parse(Parser& p, Context& ctx, Expression * exp
   {
   case Type::NO_TYPE:
   case Type::ROWTYPE:
-//    // check indice at compile time
-//    if (exp_type.minor() != 0) /* not opaque */
-//    {
-//      if (item_no < 1 || item_no > exp->tuple_decl(ctx).size())
-//        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
-//    }
+    if (exp_type.minor() != 0) /* not opaque */
+    {
+      // check indice at compile time: should not be less than 1
+      if (item_no < 1 /*|| item_no > exp->tuple_decl(ctx).size()*/)
+        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
+    }
     return new ItemExpression(exp, item_no - 1);
   default:
     throw ParseError(EXC_PARSE_NOT_ROWTYPE);
