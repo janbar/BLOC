@@ -83,6 +83,7 @@ public:
     FUNC_TANH   = 25, // tanh(x)
     FUNC_CLAMP  = 26, // clamp(x,y,z)
     FUNC_ISNIL  = 27, // isnull(x)
+    FUNC_ATAN2  = 28, // atan2(x,y)
 
     FUNC_READ   = 30, // read(var,count)
     FUNC_READLN = 31, // readln(var)

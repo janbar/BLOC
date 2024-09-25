@@ -80,6 +80,7 @@
 #include "builtin/builtin_iphase.h"
 #include "builtin/builtin_iconj.h"
 #include "builtin/builtin_input.h"
+#include "builtin/builtin_atan2.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -96,7 +97,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "sin",        "cos",        "tan",        "atan",       "int",
     "pow",        "sqrt",       "log",        "exp",        "log10",
     "mod",        "asin",       "acos",       "sinh",       "cosh",
-    "tanh",       "clamp",      "isnull",     "",           "",
+    "tanh",       "clamp",      "isnull",     "atan2",      "",
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tup",        "getsys",     "getenv",     "true",       "on",
     "false",      "off",        "error",      "phi",        "pi",
@@ -227,6 +228,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return CLAMPExpression::parse(p, ctx);
   case FUNC_ISNIL:
     return ISNULLExpression::parse(p, ctx);
+  case FUNC_ATAN2:
+    return ATAN2Expression::parse(p, ctx);
   case FUNC_READ:
     return READExpression::parse(p, ctx);
   case FUNC_READLN:
@@ -376,7 +379,9 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\nclamp( x , y , z )",
   /*ISNIL*/  "returns true if x is null."
           "\n\nisnull( x )",
-  "", "",
+  /*ATAN2*/  "returns the angle in radians for the quadrant y , x."
+          "\n\natan2( y , x )",
+  "",
   /*READ  */  "returns the count of characters read from the input."
           "\nThe read value, including newline terminator, is stored into var with"
           "\na maximum of y characters. The 'string' variable var must be initialized"
