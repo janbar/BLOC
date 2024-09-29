@@ -322,6 +322,8 @@ Context * Context::createChild()
 {
   Context * child = new Context(::fileno(_sout), ::fileno(_serr));
   child->_root = this->_root;
+  // child inherits flags
+  child->_flags = this->_flags;
   return child;
 }
 
