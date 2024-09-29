@@ -301,30 +301,39 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
 #ifdef HAVE_READLINE
   /* a static variable to store the read position */
   static char * rl_pos = nullptr;
+  unsigned n = 0;
   if (rl_pos)
   {
-    if (*rl_pos == 0)
-    {
-      /* free old buffer before read new line */
-      free(rl_line);
-      rl_line = rl_pos = nullptr;
-    }
-    else
+    if (*rl_pos)
     {
       /* fill a chunk from previous read */
-      unsigned n = 0;
-      while (*rl_pos && n < (max_size - 1))
+      while (*rl_pos && n < max_size)
       {
-        buf[n] = *rl_pos;
+        char c = *rl_pos;
+        buf[n] = c;
         ++rl_pos;
         ++n;
+        if (c == bloc::Parser::NewLine)
+        {
+          *len = n;
+          return;
+        }
       }
-      if (*rl_pos == 0)
-        buf[n++] = bloc::Parser::NewLine;
-      *len = n;
-      return;
+      if (n >= max_size)
+      {
+        /* buffer is full */
+        *len = max_size;
+        return;
+      }
     }
+    /* free old buffer */
+    free(rl_line);
+    rl_line = rl_pos = nullptr;
+    buf[n++] = bloc::Parser::NewLine;
+    *len = n;
+    return;
   }
+
   /* get a new line */
   if (p->state() == bloc::Parser::Parsing)
     rl_line = readline("... ");
@@ -338,29 +347,35 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
     {
       /* save it on the history */
       add_history(rl_line);
-      unsigned n = 0;
       rl_pos = rl_line;
-      while (*rl_pos && n < (max_size - 1))
+      while (*rl_pos && n < max_size)
       {
-        buf[n] = *rl_pos;
+        char c = *rl_pos;
+        buf[n] = c;
         ++rl_pos;
         ++n;
+        if (c == bloc::Parser::NewLine)
+        {
+          *len = n;
+          return;
+        }
       }
-      if (*rl_pos == 0)
-        buf[n++] = bloc::Parser::NewLine;
-      *len = n;
+      if (n >= max_size)
+      {
+        /* buffer is full */
+        *len = max_size;
+        return;
+      }
     }
-    else
-    {
-      *buf = bloc::Parser::NewLine;
-      *len = 1;
-    }
+    /* free old buffer */
+    free(rl_line);
+    rl_line = rl_pos = nullptr;
+    buf[n++] = bloc::Parser::NewLine;
+    *len = n;
+    return;
   }
-  else
-  {
-    /* EOF */
-    *len = 0;
-  }
+  /* EOF */
+  *len = 0;
 #else
   if (p->state() == bloc::Parser::Parsing)
     PRINT("... ");
