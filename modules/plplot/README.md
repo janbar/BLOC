@@ -209,7 +209,6 @@ P.pause(true);
 <p>
 
 Finally a 3D surf.
-The following source is too large to paste it to the CLI. So you have to fill a file with its content, and run the command `bloc $file` from the shell, or doing `load $file` followed by `run` from the CLI.
 ```
 import plplot;
 
