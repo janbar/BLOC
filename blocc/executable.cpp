@@ -18,6 +18,7 @@
 
 #include "executable.h"
 #include "parser.h"
+#include "debug.h"
 
 namespace bloc
 {
@@ -33,9 +34,12 @@ int Executable::run(Context& ctx, const std::list<const Statement*>& statements)
 {
   try
   {
-    /* return condition must be cleared before rerun */
+    /* return condition has been set */
     if (ctx.returnCondition())
-      throw RuntimeError(EXC_RT_REQUIRE_PURGE);
+    {
+      DBG(DBG_DEBUG, "%s stopped ahead because return is requested\n", __FUNCTION__);
+      return 0;
+    }
     /* the statement loop */
     for (auto s : statements)
     {

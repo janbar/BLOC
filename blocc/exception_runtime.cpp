@@ -54,7 +54,6 @@ const char * RuntimeError::RUNTIME_ERROR[] =
   "Bad type of argument calling method '%s'.",
   "Method '%s' not applicable.",
   "A compound type cannot be opaque. All items must be of defined type.",
-  "The context must be purged after a RETURN.",
   "No value returned.",
   "The recursion limit has been reached.",
   "All items of table must be uniform.",
