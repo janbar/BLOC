@@ -126,7 +126,7 @@ static PLUGIN_METHOD methods[] =
 {
   { Close,    "close",      { "B", 0 },     0, nullptr,
           "Close the file handle." },
-  { Open,     "open",       { "I", 0 },     1, string2_args,
+  { Open,     "open",       { "I", 0 },     2, string2_args,
           "Opens the file indicated by path and flags, and returns the system error"
           "\nnumber or 0 for success." },
   { Write_S,  "write",      { "I", 0 },     1, string1_args,
