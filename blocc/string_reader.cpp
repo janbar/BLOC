@@ -31,7 +31,7 @@ int StringReader::read(char * buf, int max_size)
   return (int) r;
 }
 
-void StringReader::read_input(void * string_reader, char * buf, int * len, int max_size)
+void StringReader::token_read(void * string_reader, char * buf, int * len, int max_size)
 {
   StringReader * sr = static_cast<StringReader*>(string_reader);
   *len = sr->read(buf, max_size);

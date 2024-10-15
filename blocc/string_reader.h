@@ -42,7 +42,7 @@ public:
   int read(char * buf, int max_size);
 
   /* TOKEN_READER */
-  static void read_input(void * string_reader, char * buf, int * len, int max_size);
+  static void token_read(void * string_reader, char * buf, int * len, int max_size);
 };
 
 }

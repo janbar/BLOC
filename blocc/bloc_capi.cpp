@@ -437,7 +437,7 @@ bloc_parse_expression(bloc_context *ctx, const char *text)
 {
   bloc::Context& _ctx = *reinterpret_cast<bloc::Context*>(ctx);
   bloc::StringReader reader(text);
-  bloc::Parser * p = bloc::Parser::createInteractiveParser(_ctx, &reader, bloc::StringReader::read_input);
+  bloc::Parser * p = bloc::Parser::createInteractiveParser(_ctx, &reader, bloc::StringReader::token_read);
   try
   {
     bloc_error_raz();
@@ -498,7 +498,7 @@ bloc_parse_executable(bloc_context *ctx, const char *text)
     bloc_error_raz();
     bloc::Context& _ctx = *reinterpret_cast<bloc::Context*>(ctx);
     bloc::StringReader reader(text);
-    bloc::Executable * x = bloc::Parser::parse(_ctx, &reader, bloc::StringReader::read_input);
+    bloc::Executable * x = bloc::Parser::parse(_ctx, &reader, bloc::StringReader::token_read);
     return reinterpret_cast<bloc_executable*>(x);
   }
   catch (bloc::ParseError& pe)

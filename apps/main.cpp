@@ -126,7 +126,7 @@ int main(int argc, char **argv) {
     /* mark the end of expression: could be semi-colon or nl */
     reader.append(";");
     bloc::Context ctx(::fileno(STDOUT), ::fileno(STDERR));
-    bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &reader, bloc::StringReader::read_input);
+    bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &reader, bloc::StringReader::token_read);
     bloc::Expression * exp = nullptr;
     try
     {
