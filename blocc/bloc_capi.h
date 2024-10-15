@@ -211,7 +211,19 @@ bloc_value_type(bloc_value *v);
 LIBBLOC_API bloc_bool
 bloc_value_isnull(bloc_value *v);
 
-/* */
+/* The functions to follow allow to bind the data of value, for a type.
+ * Each one fills the reference of the data, or NULL for a null value,
+ * into the given pointer. It returns true if the type of value matches,
+ * else false.
+ *
+ * You can test for a null value before binding, using bloc_value_isnull(),
+ * else you have to check for a NULL pointer before deref.
+ *
+ *   *double data;
+ *   if (bloc_numeric(val, &data) && data) {
+ *     printf("value = %g\n", *data);
+ *   }
+ */
 
 LIBBLOC_API bloc_bool
 bloc_boolean(bloc_value *v, bloc_bool **buf);
@@ -237,7 +249,7 @@ bloc_tuple(bloc_value *v, bloc_row **row);
 LIBBLOC_API bloc_bool
 bloc_imaginary(bloc_value *v, bloc_pair **buf);
 
-/* */
+/* About array */
 
 /**
  * Returns the count of items in the table.
@@ -257,6 +269,8 @@ bloc_array_size(bloc_array *array);
 LIBBLOC_API bloc_bool
 bloc_array_item(bloc_array *array, unsigned index, bloc_value **v);
 
+/* About row */
+
 /**
  * Returns the count of items wrapped in the tuple.
  * @param row the tuple value
@@ -275,7 +289,7 @@ bloc_tuple_size(bloc_row *row);
 LIBBLOC_API bloc_bool
 bloc_tuple_item(bloc_row *row, unsigned index, bloc_value **v);
 
-/* */
+/* About parsing and processing */
 
 /**
  * Returns expression from source.
