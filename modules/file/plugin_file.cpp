@@ -134,7 +134,7 @@ static PLUGIN_METHOD methods[] =
   { Write_B,  "write",      { "I", 0 },     1, raw_args,
           "Writes bytes, and returns the number of byte written successfully." },
   { Flush,    "flush",      { "B", 0 },     0, nullptr,
-          "synchronizes output stream with the file." },
+          "Synchronizes output stream with the file." },
   { Readln,   "readln",     { "B", 0 },     1, readln_args,
           "Reads a chunk of characters into the variable, ended by LF or limited by"
           "\nthe size of the internal buffer. At EOF it returns FALSE else TRUE.", },
