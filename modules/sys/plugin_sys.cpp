@@ -177,7 +177,11 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
   size_t head = 0;      /* head cut */
   size_t tail = chunk;  /* tail cut */
 
+#if (defined(_WIN32) || defined(_WIN64))
+  FILE * pout = _popen(cmd.c_str(), "r");
+#else
   FILE * pout = ::popen(cmd.c_str(), "r");
+#endif
   if (pout)
   {
     char * bin = nullptr;
@@ -247,7 +251,11 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
     tmp = nullptr;
     bin = nullptr;
 
+#if (defined(_WIN32) || defined(_WIN64))
+    int r = _pclose(pout);
+#else
     int r = pclose(pout);
+#endif
     if (!err && r)
       err = r; /* push error */
 
