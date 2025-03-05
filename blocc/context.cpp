@@ -122,8 +122,9 @@ void Context::parsingEnd()
 {
   /* restore all upgraded symbols during parsing */
   std::vector<Symbol>::const_iterator it = _backed_symbols.cend();
-  while (_backed_symbols.begin() != it--)
+  while (_backed_symbols.begin() != it)
   {
+    --it;
     if (it->major() == Type::ROWTYPE)
       _storage_pool[it->id()].symbol->upgrade(it->tuple_decl(), it->level());
     else
