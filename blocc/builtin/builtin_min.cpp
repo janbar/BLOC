@@ -28,9 +28,11 @@
 namespace bloc
 {
 
-const Type& MINExpression::type (Context &ctx) const
+const Type& MINExpression::type(Context &ctx) const
 {
-  if (_args[0]->type(ctx) == Type::INTEGER && _args[1]->type(ctx) == Type::INTEGER)
+  const Type& t0 = _args[0]->type(ctx);
+  const Type& t1 = _args[1]->type(ctx);
+  if (t0 == Type::INTEGER && t1 == Type::INTEGER)
     return Value::type_integer;
   return Value::type_numeric;
 }

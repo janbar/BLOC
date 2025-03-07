@@ -40,7 +40,9 @@ OpMODExpression::~OpMODExpression()
 
 const Type& OpMODExpression::type(Context& ctx) const
 {
-  if (arg1->type(ctx) == Type::INTEGER && arg2->type(ctx) == Type::INTEGER)
+  const Type& t1 = arg1->type(ctx);
+  const Type& t2 = arg2->type(ctx);
+  if (t1 == Type::INTEGER && t2 == Type::INTEGER)
     return Value::type_integer;
   return Value::type_numeric;
 }

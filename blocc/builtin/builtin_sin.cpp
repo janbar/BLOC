@@ -30,9 +30,10 @@ namespace bloc
 {
 #define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
-const Type& SINExpression::type (Context &ctx) const
+const Type& SINExpression::type(Context &ctx) const
 {
-  if (_args[0]->type(ctx) == Type::IMAGINARY)
+  const Type& t0 = _args[0]->type(ctx);
+  if (t0 == Type::IMAGINARY)
     return Value::type_imaginary;
   return Value::type_numeric;
 }

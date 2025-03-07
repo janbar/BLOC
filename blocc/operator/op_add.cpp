@@ -40,13 +40,15 @@ OpADDExpression::~OpADDExpression()
 
 const Type& OpADDExpression::type(Context& ctx) const
 {
-  if (arg1->type(ctx) == Type::LITERAL)
+  const Type& t1 = arg1->type(ctx);
+  if (t1 == Type::LITERAL)
     return Value::type_literal;
-  if (arg1->type(ctx) == Type::IMAGINARY || arg2->type(ctx) == Type::IMAGINARY)
+  const Type& t2 = arg2->type(ctx);
+  if (t1 == Type::IMAGINARY || t2 == Type::IMAGINARY)
     return Value::type_imaginary;
-  if (arg1->type(ctx) == Type::INTEGER && arg2->type(ctx) == Type::INTEGER)
+  if (t1 == Type::INTEGER && t2 == Type::INTEGER)
     return Value::type_integer;
-  if (arg1->type(ctx) == Type::NUMERIC || arg2->type(ctx) == Type::NUMERIC)
+  if (t1 == Type::NUMERIC || t2 == Type::NUMERIC)
     return Value::type_numeric;
   return Value::type_no_type;
 }

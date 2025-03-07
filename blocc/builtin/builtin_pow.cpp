@@ -30,11 +30,13 @@ namespace bloc
 {
 #define IMAGINARY_TO_COMPLEX(i) std::complex<Numeric>((i).a, (i).b)
 
-const Type& POWExpression::type (Context &ctx) const
+const Type& POWExpression::type(Context &ctx) const
 {
-  if (_args[0]->type(ctx) == Type::IMAGINARY || _args[1]->type(ctx) == Type::IMAGINARY)
+  const Type& t0 = _args[0]->type(ctx);
+  const Type& t1 = _args[1]->type(ctx);
+  if (t0 == Type::IMAGINARY || t1 == Type::IMAGINARY)
     return Value::type_imaginary;
-  if (_args[0]->type(ctx) == Type::INTEGER && _args[1]->type(ctx) == Type::INTEGER)
+  if (t0 == Type::INTEGER && t1 == Type::INTEGER)
     return Value::type_integer;
   return Value::type_numeric;
 }
