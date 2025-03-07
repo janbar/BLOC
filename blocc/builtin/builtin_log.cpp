@@ -34,8 +34,6 @@ const Type& LOGExpression::type (Context &ctx) const
 {
   if (_args[0]->type(ctx) == Type::IMAGINARY)
     return Value::type_imaginary;
-  if (_args[0]->type(ctx) == Type::INTEGER && _args[1]->type(ctx) == Type::INTEGER)
-    return Value::type_integer;
   return Value::type_numeric;
 }
 
