@@ -24,6 +24,7 @@
 #include "executable.h"
 #include "statement.h"
 #include "expression.h"
+#include "exception_parse.h"
 
 #include <list>
 
@@ -132,6 +133,7 @@ private:
 
   bool _trace = false;      ///< forward token string to stderr
   bool _semantic = true;    ///< enable/disable semantic analyze
+  PARSING_POSITION _position = { 1, 0 }; ///< position in the source stream
 };
 
 }

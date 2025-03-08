@@ -61,6 +61,8 @@ enum EXC_PARSE
   EXC_PARSE_OTHER_S,
 };
 
+typedef struct { int lno; int pno; } PARSING_POSITION;
+
 class ParseError : public Error
 {
   public:
@@ -70,6 +72,7 @@ class ParseError : public Error
     explicit ParseError(EXC_PARSE no) : Error(PARSE_ERROR[no]), no(no) { }
     ParseError(EXC_PARSE no, const char * arg) : Error(PARSE_ERROR[no], arg), no(no) { }
     const EXC_PARSE no;
+    PARSING_POSITION position = { 0, 0 };
 };
 
 }

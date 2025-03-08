@@ -19,7 +19,6 @@
 #include "parser.h"
 #include "context.h"
 #include "debug.h"
-#include "exception_parse.h"
 #include "parse_statement.h"
 #include "parse_expression.h"
 #include "plugin_manager.h"
@@ -229,6 +228,8 @@ Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader,
   }
   catch (ParseError& pe)
   {
+    pe.position.lno = p._position.lno;
+    pe.position.pno = p._position.pno - 1; // token in error is back
     ctx.parsingEnd();
     for (auto s : statements)
       delete s;
@@ -259,12 +260,20 @@ bool Parser::next_token(TokenPtr& token) {
     if (state() == Cleared)
     {
       if (tc == NewLine)
+      {
         state(Begin);
+        /* reset position */
+        _position.lno += 1;
+        _position.pno = 0;
+      }
       continue;
     }
 
     switch (tc) {
     case NewLine:
+      /* reset position */
+      _position.lno += 1;
+      _position.pno = 0;
       /* until new statement, let the caller handling NL  */
       if (state() != Parsing)
         t = new Token(tc, ts);
@@ -321,6 +330,7 @@ bool Parser::next_token(TokenPtr& token) {
   }
 
   token.reset(t);
+  _position.pno += 1;
   return true;
 }
 

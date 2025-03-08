@@ -190,7 +190,7 @@ int main(int argc, char **argv) {
     try { exec = bloc::Parser::parse(ctx, progfile, &read_file); }
     catch (bloc::ParseError& pe)
     {
-      fprintf(STDERR, "Error: %s\n", pe.what());
+      fprintf(STDERR, "Error (%d,%d): %s\n", pe.position.lno, pe.position.pno, pe.what());
     }
     if (!exec)
       return EXIT_FAILURE;
