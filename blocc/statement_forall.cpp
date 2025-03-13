@@ -161,6 +161,22 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     ctx.continueCondition(false);
     return this;
   }
+  /* restore the value payload into the target if it still exists */
+  restoreValue(_data.target->collection(), _data.index,
+               &ctx.loadVariable(*_var->symbol()));
+  /* restore the state of the iterator variable */
+  ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
+  _var->symbol()->safety(_data.it_safety_bak);
+  if (_expSymbol)
+  {
+    /* restore the safety state of the symbol */
+    _expSymbol->safety(_data.ex_safety_bak);
+  }
+  else
+  {
+    /* delete temporary storage */
+    delete _data.target;
+  }
   ctx.breakCondition(false);
   ctx.unstackControl();
   return _next;

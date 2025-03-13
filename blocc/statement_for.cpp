@@ -110,6 +110,8 @@ const Statement * FORStatement::doit(Context& ctx) const
     ctx.continueCondition(false);
     return this;
   }
+  /* restore the safety state of the variable */
+  _var->symbol()->safety(_data.safety_bak);
   ctx.breakCondition(false);
   ctx.unstackControl();
   return _next;
