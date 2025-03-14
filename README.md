@@ -1,5 +1,6 @@
 [![build-ubuntu](https://github.com/janbar/BLOC/actions/workflows/build-ubuntu-latest.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-ubuntu-latest.yml)
 [![build-macos](https://github.com/janbar/BLOC/actions/workflows/build-macos.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-macos.yml)
+[![build-windows](https://github.com/janbar/BLOC/actions/workflows/build-windows.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-windows.yml)
 
 # BLOC
 A modular interpreter based on PL syntax.
