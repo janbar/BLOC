@@ -145,7 +145,7 @@ struct Handle {
   int query(const std::string& str, bloc::Tuple& args, bloc::Collection ** rs);
   int exec(const std::string& str);
   int exec(const std::string& str, bloc::Tuple& args);
-  const char * errmsg() { return sqlite3_errmsg(_db); }
+  const char * errmsg() { return (_db ? sqlite3_errmsg(_db) : ""); }
   int prepare(const std::string& str);
   int bind(bloc::Tuple& args);
   int execute();
@@ -220,8 +220,6 @@ bloc::Value * SQLITE3Plugin::executeMethod(
           )
 {
   SQLITE3::Handle * h = static_cast<SQLITE3::Handle*>(object_this.instance());
-  if (h->_db == nullptr && method_id != SQLITE3::Open)
-    throw RuntimeError(EXC_RT_OTHER_S, "Database Connection not open.");
 
   switch (method_id)
   {
@@ -243,6 +241,13 @@ bloc::Value * SQLITE3Plugin::executeMethod(
   case SQLITE3::IsOpen:
     return new bloc::Value(bloc::Bool(h->isOpen()));
 
+  default:
+    if (!h->isOpen())
+      throw RuntimeError(EXC_RT_OTHER_S, "Database Connection not open.");
+  }
+
+  switch (method_id)
+  {
   case SQLITE3::Query1:
   {
     bloc::Value& a0 = args[0]->value(ctx);
