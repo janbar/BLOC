@@ -389,11 +389,8 @@ int SQLITE3::Handle::fetchall(bloc::Collection ** rs)
         case SQLITE_BLOB:
         {
           int sz = sqlite3_column_bytes(_stmt, i);
-          bloc::TabChar bytes((size_t)sz);
           const char * blob = (const char*) sqlite3_column_blob(_stmt, i);
-          for (int p = 0; p < sz; ++p)
-            bytes.push_back(blob[p]);
-          t.push_back(bloc::Value(new bloc::TabChar(std::move(bytes))));
+          t.push_back(bloc::Value(new bloc::TabChar(blob, blob + sz)));
           decl[i] = Type::TABCHAR;
           break;
         }
@@ -677,11 +674,8 @@ int SQLITE3::Handle::fetch(bloc::Tuple ** row)
       case SQLITE_BLOB:
       {
         int sz = sqlite3_column_bytes(_stmt, i);
-        bloc::TabChar bytes((size_t)sz);
         const char * blob = (const char*) sqlite3_column_blob(_stmt, i);
-        for (int p = 0; p < sz; ++p)
-          bytes.push_back(blob[p]);
-        t.push_back(bloc::Value(new bloc::TabChar(std::move(bytes))));
+        t.push_back(bloc::Value(new bloc::TabChar(blob, blob + sz)));
         break;
       }
       case SQLITE_NULL:
