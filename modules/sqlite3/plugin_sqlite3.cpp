@@ -128,6 +128,7 @@ struct Handle {
   struct sqlite3 * _db = nullptr;
   struct sqlite3_stmt * _stmt = nullptr;
   enum { STMT_NEW, STMT_ROW, STMT_DONE } _stmt_status = STMT_NEW;
+  std::string _errmsg;
 
   ~Handle()
   {
@@ -254,7 +255,8 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Collection * c;
-    int r = h->query(*a0.literal(), &c);
+    if (!h->query(*a0.literal(), &c))
+      throw RuntimeError(EXC_RT_USER_S, h->_errmsg.c_str());
     return new bloc::Value(c);
   }
 
@@ -265,7 +267,8 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     if (a0.isNull() || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Collection * c;
-    int r = h->query(*a0.literal(), *a1.tuple(), &c);
+    if (!h->query(*a0.literal(), *a1.tuple(), &c))
+      throw RuntimeError(EXC_RT_USER_S, h->_errmsg.c_str());
     return new bloc::Value(c);
   }
 
@@ -422,8 +425,12 @@ int SQLITE3::Handle::query(const std::string& str, bloc::Collection ** rs)
   *rs = nullptr;
   r = sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail);
   if (r != SQLITE_OK)
+  {
+    _errmsg = "Statement prepare failed.";
     return 0;
-  r = fetchall(rs);
+  }
+  if (!(r = fetchall(rs)))
+    _errmsg = "Statement execute failed.";
   sqlite3_finalize(_stmt);
   _stmt = nullptr;
   return r;
@@ -439,7 +446,10 @@ int SQLITE3::Handle::query(const std::string& str, bloc::Tuple& args, bloc::Coll
   *rs = nullptr;
   r = sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail);
   if (r != SQLITE_OK)
+  {
+    _errmsg = "Statement prepare failed.";
     return 0;
+  }
   /* bind arguments */
   int i = 0;
   for (bloc::Value& v : args)
@@ -469,7 +479,8 @@ int SQLITE3::Handle::query(const std::string& str, bloc::Tuple& args, bloc::Coll
         break;
       }
   }
-  r = fetchall(rs);
+  if (!(r = fetchall(rs)))
+    _errmsg = "Statement execute failed.";
   sqlite3_finalize(_stmt);
   _stmt = nullptr;
   return r;
@@ -582,7 +593,7 @@ int SQLITE3::Handle::bind(bloc::Tuple& args)
       default:
         break;
       }
-    }
+  }
   return 1;
 }
 
