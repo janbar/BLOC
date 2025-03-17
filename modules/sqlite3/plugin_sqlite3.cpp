@@ -254,7 +254,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    bloc::Collection * c;
+    bloc::Collection * c = nullptr;
     if (!h->query(*a0.literal(), &c))
       throw RuntimeError(EXC_RT_USER_S, h->_errmsg.c_str());
     return new bloc::Value(c);
@@ -266,7 +266,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     bloc::Value& a1 = args[1]->value(ctx);
     if (a0.isNull() || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    bloc::Collection * c;
+    bloc::Collection * c = nullptr;
     if (!h->query(*a0.literal(), *a1.tuple(), &c))
       throw RuntimeError(EXC_RT_USER_S, h->_errmsg.c_str());
     return new bloc::Value(c);
@@ -313,7 +313,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
 
   case SQLITE3::Header:
   {
-    bloc::Collection * c;
+    bloc::Collection * c = nullptr;
     if (h->header(&c) != 1)
       throw RuntimeError(EXC_RT_OTHER_S, "No query in progress.");
     return new bloc::Value(c);
@@ -321,7 +321,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
 
   case SQLITE3::Fetch:
   {
-    bloc::Tuple * t;
+    bloc::Tuple * t = nullptr;
     int r = h->fetch(&t);
     if (r == 1)
     {
