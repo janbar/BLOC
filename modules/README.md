@@ -10,6 +10,7 @@ Then the user has to grant the permission for each module, in exemple using the 
 | csv | safe | None |
 | date | safe | None |
 | file | **unsafe** | Create, modify or delete any local files |
+| mysql | safe | None |
 | plplot | **unsafe** | Create or modify local files for plot output |
 | sqlite3 | **unsafe** | Create or modify local files (DB) |
 | sys | **unsafe** | Execute local system command |
@@ -54,8 +55,13 @@ F.close();
 /* open or create a new database   */
 /***********************************/
 DB = sqlite3("data.db");
-DB.exec("drop table stats");
-DB.exec("create table stats (id integer, timestr varchar2(20), stat integer)");
+begin
+    DB.exec("drop table stats");
+exception
+when others then /* catch any exception */
+    print error@1;
+end;
+DB.exec("create table stats (id integer, timestr text, stat integer) strict");
 
 /***********************************/
 /* MAIN                            */
