@@ -19,3 +19,28 @@ Description: BLOC is a modular PL scripting language
  BLOC can be used as is or embedded in a C/C++ program to perform dynamic
  processing. The language is of the PASCALIAN type, and capabilities can be
  extended dynamically importing external modules.
+
+Package: bloc-dev
+Architecture: all
+Depends: bloc, ${misc:Depends}
+Description: BLOC development files.
+
+Package: bloc-module-base
+Architecture: any
+Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
+Description: Set of basic modules for BLOC.
+
+Package: bloc-module-sqlite3
+Architecture: any
+Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
+Description: Set of basic modules for BLOC.
+
+Package: bloc-module-plplot
+Architecture: any
+Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
+Description: Set of basic modules for BLOC.
+
+Package: bloc-module-mysql
+Architecture: any
+Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
+Description: Set of basic modules for BLOC.

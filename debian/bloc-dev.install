@@ -1,0 +1,3 @@
+usr/include/blocc/*
+usr/lib/*/pkgconfig/blocc.pc
+usr/lib/*/cmake/blocc/*
