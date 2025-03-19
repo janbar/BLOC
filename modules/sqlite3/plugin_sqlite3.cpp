@@ -141,12 +141,12 @@ struct Handle {
   int open(const std::string& path);
   int close();
   int isOpen() { return (_db == nullptr ? 0 : 1); }
-  int fetchall(bloc::Collection ** rs);
+  int fetchall(struct sqlite3_stmt * stmt, bloc::Collection ** rs);
   int query(const std::string& str, bloc::Collection ** rs);
   int query(const std::string& str, bloc::Tuple& args, bloc::Collection ** rs);
   int exec(const std::string& str);
   int exec(const std::string& str, bloc::Tuple& args);
-  const char * errmsg() { return (_db ? sqlite3_errmsg(_db) : ""); }
+  const char * errmsg() const { return _errmsg.c_str(); }
   int prepare(const std::string& str);
   int bind(bloc::Tuple& args);
   int execute();
@@ -256,7 +256,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Collection * c = nullptr;
     if (!h->query(*a0.literal(), &c))
-      throw RuntimeError(EXC_RT_USER_S, h->_errmsg.c_str());
+      throw RuntimeError(EXC_RT_USER_S, h->errmsg());
     return new bloc::Value(c);
   }
 
@@ -268,7 +268,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Collection * c = nullptr;
     if (!h->query(*a0.literal(), *a1.tuple(), &c))
-      throw RuntimeError(EXC_RT_USER_S, h->_errmsg.c_str());
+      throw RuntimeError(EXC_RT_USER_S, h->errmsg());
     return new bloc::Value(c);
   }
 
@@ -277,7 +277,9 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    return new bloc::Value(bloc::Bool(h->exec(*a0.literal())));
+    if (!h->exec(*a0.literal()))
+      throw RuntimeError(EXC_RT_USER_S, h->errmsg());
+    return new bloc::Value(bloc::Bool(true));
   }
 
   case SQLITE3::Exec2:
@@ -286,7 +288,9 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     bloc::Value& a1 = args[1]->value(ctx);
     if (a0.isNull() || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    return new bloc::Value(bloc::Bool(h->exec(*a0.literal(), *a1.tuple())));
+    if (!h->exec(*a0.literal(), *a1.tuple()))
+      throw RuntimeError(EXC_RT_USER_S, h->errmsg());
+    return new bloc::Value(bloc::Bool(true));
   }
 
   case SQLITE3::ErrMsg:
@@ -297,7 +301,9 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    return new bloc::Value(bloc::Bool(h->prepare(*a0.literal())));
+    if (!h->prepare(*a0.literal()))
+      throw RuntimeError(EXC_RT_USER_S, h->errmsg());
+    return new bloc::Value(bloc::Bool(true));
   }
 
   case SQLITE3::Bind:
@@ -305,11 +311,15 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    return new bloc::Value(bloc::Bool(h->bind(*a0.tuple())));
+    if (!h->bind(*a0.tuple()))
+      throw RuntimeError(EXC_RT_USER_S, h->errmsg());
+    return new bloc::Value(bloc::Bool(true));
   }
 
   case SQLITE3::Execute:
-    return new bloc::Value(bloc::Bool(h->execute()));
+    if (!h->execute())
+      throw RuntimeError(EXC_RT_USER_S, h->errmsg());
+    return new bloc::Value(bloc::Bool(true));
 
   case SQLITE3::Header:
   {
@@ -321,15 +331,13 @@ bloc::Value * SQLITE3Plugin::executeMethod(
 
   case SQLITE3::Fetch:
   {
+    /* INOUT */
+    if (!args[0]->symbol())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Tuple * t = nullptr;
     int r = h->fetch(&t);
     if (r == 1)
-    {
-      /* INOUT */
-      if (!args[0]->symbol())
-        throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
       ctx.storeVariable(*args[0]->symbol(), bloc::Value(t));
-    }
     return new bloc::Value(bloc::Bool(r));
   }
 
@@ -355,46 +363,45 @@ int SQLITE3::Handle::close()
 {
   if (_stmt)
     sqlite3_finalize(_stmt);
-  _stmt = nullptr;
   int r = sqlite3_close(_db);
   _db = nullptr;
   _path.clear();
   return (r == SQLITE_OK ? 1 : 0);
 }
 
-int SQLITE3::Handle::fetchall(bloc::Collection ** rs)
+int SQLITE3::Handle::fetchall(struct sqlite3_stmt * stmt, bloc::Collection ** rs)
 {
   /* fetch rows */
-  int r = sqlite3_step(_stmt);
+  int r = sqlite3_step(stmt);
   if (r == SQLITE_ROW)
   {
-    bloc::TupleDecl::Decl decl(sqlite3_column_count(_stmt), Type::NO_TYPE);
+    bloc::TupleDecl::Decl decl(sqlite3_column_count(stmt), bloc::Type::NO_TYPE);
     bloc::Collection::container_t c;
     do
     {
       std::vector<bloc::Value> t;
-      for (int i = 0; i < sqlite3_column_count(_stmt); ++i)
+      for (int i = 0; i < sqlite3_column_count(stmt); ++i)
       {
-        switch (sqlite3_column_type(_stmt, i))
+        switch (sqlite3_column_type(stmt, i))
         {
         case SQLITE_INTEGER:
-          t.push_back(bloc::Value(bloc::Integer(sqlite3_column_int64(_stmt, i))));
-          decl[i] = Type::INTEGER;
+          t.push_back(bloc::Value(bloc::Integer(sqlite3_column_int64(stmt, i))));
+          decl[i] = bloc::Type::INTEGER;
           break;
         case SQLITE_FLOAT:
-          t.push_back(bloc::Value(bloc::Numeric(sqlite3_column_double(_stmt, i))));
-          decl[i] = Type::NUMERIC;
+          t.push_back(bloc::Value(bloc::Numeric(sqlite3_column_double(stmt, i))));
+          decl[i] = bloc::Type::NUMERIC;
           break;
         case SQLITE_TEXT:
-          t.push_back(bloc::Value(new bloc::Literal((const char*) sqlite3_column_text(_stmt, i))));
-          decl[i] = Type::LITERAL;
+          t.push_back(bloc::Value(new bloc::Literal((const char*) sqlite3_column_text(stmt, i))));
+          decl[i] = bloc::Type::LITERAL;
           break;
         case SQLITE_BLOB:
         {
-          int sz = sqlite3_column_bytes(_stmt, i);
-          const char * blob = (const char*) sqlite3_column_blob(_stmt, i);
+          int sz = sqlite3_column_bytes(stmt, i);
+          const char * blob = (const char*) sqlite3_column_blob(stmt, i);
           t.push_back(bloc::Value(new bloc::TabChar(blob, blob + sz)));
-          decl[i] = Type::TABCHAR;
+          decl[i] = bloc::Type::TABCHAR;
           break;
         }
         case SQLITE_NULL:
@@ -403,51 +410,47 @@ int SQLITE3::Handle::fetchall(bloc::Collection ** rs)
           break;
         default:
           t.push_back(bloc::Value(bloc::Value::type_complex));
-          decl[i] = Type::COMPLEX;
+          decl[i] = bloc::Type::COMPLEX;
           break;
         }
       }
       c.push_back(bloc::Value(new bloc::Tuple(std::move(t))));
-      r = sqlite3_step(_stmt);
+      r = sqlite3_step(stmt);
     } while (r == SQLITE_ROW);
     *rs = new bloc::Collection(decl, 1, std::move(c));
   }
-  return (r == SQLITE_DONE ? 1 : 0);
+  if (r == SQLITE_DONE)
+    return 1;
+  _errmsg.assign(sqlite3_errmsg(_db));
+  return 0;
 }
 
 int SQLITE3::Handle::query(const std::string& str, bloc::Collection ** rs)
 {
-  int r;
+  int r = 0;
   const char * tail = nullptr;
-  if (_stmt)
-    sqlite3_finalize(_stmt);
-  _stmt = nullptr;
+  struct sqlite3_stmt * stmt = nullptr;
   *rs = nullptr;
-  r = sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail);
-  if (r != SQLITE_OK)
+  if (sqlite3_prepare_v2(_db, str.c_str(), str.size(), &stmt, &tail) != SQLITE_OK)
   {
-    _errmsg = "Statement prepare failed.";
+    _errmsg.assign(sqlite3_errmsg(_db));
     return 0;
   }
-  if (!(r = fetchall(rs)))
-    _errmsg = "Statement execute failed.";
-  sqlite3_finalize(_stmt);
-  _stmt = nullptr;
+  else if (fetchall(stmt, rs))
+    r = 1;
+  sqlite3_finalize(stmt);
   return r;
 }
 
 int SQLITE3::Handle::query(const std::string& str, bloc::Tuple& args, bloc::Collection ** rs)
 {
-  int r;
+  int r = 0;
   const char * tail = nullptr;
-  if (_stmt)
-    sqlite3_finalize(_stmt);
-  _stmt = nullptr;
+  struct sqlite3_stmt * stmt = nullptr;
   *rs = nullptr;
-  r = sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail);
-  if (r != SQLITE_OK)
+  if (sqlite3_prepare_v2(_db, str.c_str(), str.size(), &stmt, &tail) != SQLITE_OK)
   {
-    _errmsg = "Statement prepare failed.";
+    _errmsg.assign(sqlite3_errmsg(_db));
     return 0;
   }
   /* bind arguments */
@@ -456,107 +459,125 @@ int SQLITE3::Handle::query(const std::string& str, bloc::Tuple& args, bloc::Coll
   {
     ++i;
     if (v.isNull())
-      sqlite3_bind_null(_stmt, i);
+      sqlite3_bind_null(stmt, i);
     else
+    {
       switch (v.type().major())
       {
       case Type::BOOLEAN:
-        sqlite3_bind_int(_stmt, i, (*v.boolean() ? 1 : 0));
+        sqlite3_bind_int(stmt, i, (*v.boolean() ? 1 : 0));
         break;
       case Type::INTEGER:
-        sqlite3_bind_int64(_stmt, i, *v.integer());
+        sqlite3_bind_int64(stmt, i, *v.integer());
         break;
       case Type::NUMERIC:
-        sqlite3_bind_double(_stmt, i, *v.numeric());
+        sqlite3_bind_double(stmt, i, *v.numeric());
         break;
       case Type::LITERAL:
-        sqlite3_bind_text(_stmt, i, v.literal()->c_str(), v.literal()->size(), SQLITE_STATIC);
+        sqlite3_bind_text(stmt, i, v.literal()->c_str(), v.literal()->size(), SQLITE_STATIC);
         break;
       case Type::TABCHAR:
-        sqlite3_bind_blob(_stmt, i, v.tabchar()->data(), v.tabchar()->size(), SQLITE_STATIC);
+        sqlite3_bind_blob(stmt, i, v.tabchar()->data(), v.tabchar()->size(), SQLITE_STATIC);
         break;
       default:
         break;
       }
+    }
   }
-  if (!(r = fetchall(rs)))
-    _errmsg = "Statement execute failed.";
-  sqlite3_finalize(_stmt);
-  _stmt = nullptr;
+  if (fetchall(stmt, rs))
+    r = 1;
+  sqlite3_finalize(stmt);
   return r;
 }
 
 int SQLITE3::Handle::exec(const std::string& str)
 {
-  int r;
+  int r = 0;
   const char * tail = nullptr;
-  if (_stmt)
-    sqlite3_finalize(_stmt);
-  _stmt = nullptr;
-  r = sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail);
-  if (r != SQLITE_OK)
+  struct sqlite3_stmt * stmt = nullptr;
+  if (sqlite3_prepare_v2(_db, str.c_str(), str.size(), &stmt, &tail) != SQLITE_OK)
+  {
+    _errmsg.assign(sqlite3_errmsg(_db));
     return 0;
-  r = sqlite3_step(_stmt);
-  sqlite3_finalize(_stmt);
-  _stmt = nullptr;
-  return (r == SQLITE_DONE || r == SQLITE_ROW ? 1 : 0);
+  }
+  r = sqlite3_step(stmt);
+  if (r == SQLITE_DONE || r == SQLITE_ROW)
+    r = 1;
+  else
+  {
+    _errmsg.assign(sqlite3_errmsg(_db));
+    r = 0;
+  }
+  sqlite3_finalize(stmt);
+  return r;
 }
 
 int SQLITE3::Handle::exec(const std::string& str, bloc::Tuple& args)
 {
-  int r;
+  int r = 0;
   const char * tail = nullptr;
-  if (_stmt)
-    sqlite3_finalize(_stmt);
-  _stmt = nullptr;
-  r = sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail);
-  if (r != SQLITE_OK)
+  struct sqlite3_stmt * stmt = nullptr;
+  if (sqlite3_prepare_v2(_db, str.c_str(), str.size(), &stmt, &tail) != SQLITE_OK)
+  {
+    _errmsg.assign(sqlite3_errmsg(_db));
     return 0;
+  }
   /* bind arguments */
   int i = 0;
   for (bloc::Value& v : args)
   {
     ++i;
     if (v.isNull())
-      sqlite3_bind_null(_stmt, i);
+      sqlite3_bind_null(stmt, i);
     else
+    {
       switch (v.type().major())
       {
       case Type::BOOLEAN:
-        sqlite3_bind_int(_stmt, i, (*v.boolean() ? 1 : 0));
+        sqlite3_bind_int(stmt, i, (*v.boolean() ? 1 : 0));
         break;
       case Type::INTEGER:
-        sqlite3_bind_int64(_stmt, i, *v.integer());
+        sqlite3_bind_int64(stmt, i, *v.integer());
         break;
       case Type::NUMERIC:
-        sqlite3_bind_double(_stmt, i, *v.numeric());
+        sqlite3_bind_double(stmt, i, *v.numeric());
         break;
       case Type::LITERAL:
-        sqlite3_bind_text(_stmt, i, v.literal()->c_str(), v.literal()->size(), SQLITE_STATIC);
+        sqlite3_bind_text(stmt, i, v.literal()->c_str(), v.literal()->size(), SQLITE_STATIC);
         break;
       case Type::TABCHAR:
-        sqlite3_bind_blob(_stmt, i, v.tabchar()->data(), v.tabchar()->size(), SQLITE_STATIC);
+        sqlite3_bind_blob(stmt, i, v.tabchar()->data(), v.tabchar()->size(), SQLITE_STATIC);
         break;
       default:
         break;
       }
+    }
   }
-  r = sqlite3_step(_stmt);
-  sqlite3_finalize(_stmt);
-  _stmt = nullptr;
-  return (r == SQLITE_DONE || r == SQLITE_ROW ? 1 : 0);
+  r = sqlite3_step(stmt);
+  if (r == SQLITE_DONE || r == SQLITE_ROW)
+    r = 1;
+  else
+  {
+    _errmsg.assign(sqlite3_errmsg(_db));
+    r = 0;
+  }
+  sqlite3_finalize(stmt);
+  return r;
 }
 
 int SQLITE3::Handle::prepare(const std::string& str)
 {
-  int r;
   const char * tail = nullptr;
   if (_stmt)
     sqlite3_finalize(_stmt);
   _stmt = nullptr;
   _stmt_status = STMT_NEW;
-  r = sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail);
-  return (r == SQLITE_OK ? 1 : 0);
+  if (sqlite3_prepare_v2(_db, str.c_str(), str.size(), &_stmt, &tail) != SQLITE_OK)
+  {
+    _errmsg.assign(sqlite3_errmsg(_db));
+    return 0;
+  }
+  return 1;
 }
 
 int SQLITE3::Handle::bind(bloc::Tuple& args)
@@ -616,6 +637,7 @@ int SQLITE3::Handle::execute()
   default:
     break;
   }
+  _errmsg.assign(sqlite3_errmsg(_db));
   return 0;
 }
 
@@ -709,9 +731,12 @@ int SQLITE3::Handle::fetch(bloc::Tuple ** row)
 int SQLITE3::Handle::finalize()
 {
   if (_stmt)
+  {
     sqlite3_finalize(_stmt);
-  _stmt = nullptr;
-  return 1;
+    _stmt = nullptr;
+    return 1;
+  }
+  return 0;
 }
 
 } /* namespace import */
