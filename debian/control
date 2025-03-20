@@ -33,6 +33,7 @@ Description: Set of basic modules for BLOC.
 Package: bloc-module-plplot
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
+Suggests: plplot-driver-xwin
 Description: Set of basic modules for BLOC.
 
 Package: bloc-module-mysql
