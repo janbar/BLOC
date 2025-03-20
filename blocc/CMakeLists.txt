@@ -129,7 +129,6 @@ file(GLOB blocc_PRIVATE_HEADERS
   statement_trace.h
   statement_while.h
   statement_raise.h
-  template_dtor.h
   member/*.h
   operator/*.h
   builtin/*.h
