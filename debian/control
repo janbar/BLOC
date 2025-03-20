@@ -25,11 +25,6 @@ Architecture: all
 Depends: bloc, ${misc:Depends}
 Description: BLOC development files.
 
-Package: bloc-module-base
-Architecture: any
-Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
-Description: Set of basic modules for BLOC.
-
 Package: bloc-module-sqlite3
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
