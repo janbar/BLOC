@@ -14,7 +14,7 @@ Ubuntu packages are available in the repository `ppa:jlbarriere68/bloc`. You can
 ```
 sudo add-apt-repository ppa:jlbarriere68/bloc
 sudo apt-get update
-sudo apt-get install bloc
+sudo apt-get install bloc bloc-module-*
 ```
 For other OS, you have to build it yourself.
 
