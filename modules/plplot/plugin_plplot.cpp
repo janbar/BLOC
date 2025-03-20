@@ -58,7 +58,7 @@ static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,   ctor_0_args,
           "Create new plot for the given device name.\n"
-  "1  : device name (interactive)" },
+  "1  : device name" },
   { 1,      2,   ctor_1_args,
           "Create new plot for the given device name and output file name.\n"
   "1  : device name\n2  : output filename" },
