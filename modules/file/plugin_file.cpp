@@ -72,7 +72,14 @@ static PLUGIN_TYPE ctor_0_args[]  = {
 static PLUGIN_CTOR ctors[] =
 {
   { 0,      2,  ctor_0_args,
-          "Open file for the given filename, and flags." },
+          "Open file for the given filename, and flags:"
+          "\nr or rb    Open file for reading."
+          "\nw or wb    Truncate to zero length or create file for writing"
+          "\na or ab    Append, open or create file for writing at end-of-file"
+          "\nr+ or rb+  Open file for update (reading and writing)"
+          "\nw+ or wb+  Truncate to zero length or create file for update"
+          "\na+ or ab+  Append, open or create file for update, writing at end-of-file"
+   },
 };
 
 enum Method
@@ -165,7 +172,7 @@ static PLUGIN_METHOD methods[] =
   { FStat,    "stat",       { "IIL", 0 },   0, nullptr,
           "Returns a tuple containing basic informations about the file:"
           "\n{ Type, Size, Absolute Path }"
-          "\nType: 1=Regular, 2=Directory, 3=Other"
+          "\nType: 0=Invalid, 1=Regular, 2=Directory, 3=Other"
           "\nSize: file size in byte" },
   //
   // global methods
@@ -173,7 +180,7 @@ static PLUGIN_METHOD methods[] =
   { Stat,     "stat",       { "IIL", 0 },   1, string1_args,
           "Returns a tuple containing basic informations about the given path:"
           "\n{ Type, Size, Absolute Path }"
-          "\nType: 1=Regular, 2=Directory, 3=Other"
+          "\nType: 0=Invalid, 1=Regular, 2=Directory, 3=Other"
           "\nSize: file size in byte" },
   { Dir,      "dir",        { "ILI", 1 },    1, string1_args,
           "Returns the entry list of a directory: [{ Type, Size, Name }]"
@@ -278,7 +285,8 @@ static std::string _absolutePath(const std::string& path)
 #if defined(__WINDOWS__)
   _fullpath(buf, path.c_str(), PATH_MAX);
 #else
-  realpath(path.c_str(), buf);
+  if (realpath(path.c_str(), buf) == nullptr)
+    return std::string();
 #endif
   return std::string(buf);
 }
@@ -550,19 +558,21 @@ bloc::Value * FilePlugin::executeMethod(
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
     int fmode = 0;
     size_t fsize = 0;
+    /* initialize the row */
+    bloc::Tuple::container_t row;
+    row.push_back(bloc::Value(bloc::Value::type_integer));
+    row.push_back(bloc::Value(bloc::Value::type_integer));
+    row.push_back(bloc::Value(bloc::Value::type_literal));
     if (file::_stat(file->_path, &fmode, &fsize) == 0)
     {
-      /* create the row */
-      bloc::Tuple::container_t row;
-      row.push_back(bloc::Value(bloc::Integer(fmode)));
+      row[0].swap(bloc::Value(bloc::Integer(fmode)));
       if (fmode == 1)
-        row.push_back(bloc::Value(bloc::Integer(fsize)));
-      else
-        row.push_back(bloc::Value(bloc::Value::type_integer));
-      row.push_back(bloc::Value(new bloc::Literal(file::_absolutePath(file->_path))));
-      return new bloc::Value(new bloc::Tuple(std::move(row)));
+        row[1].swap(bloc::Value(bloc::Integer(fsize)));
+      row[2].swap(bloc::Value(new bloc::Literal(file::_absolutePath(file->_path))));
     }
-    return new bloc::Value(bloc::Value::type_rowtype);
+    else
+      row[0].swap(bloc::Value(bloc::Integer(0)));
+    return new bloc::Value(new bloc::Tuple(std::move(row)));
   }
 
   case file::Stat:
@@ -573,19 +583,21 @@ bloc::Value * FilePlugin::executeMethod(
     int fmode = 0;
     size_t fsize = 0;
     const std::string& path = *a0.literal();
+    /* initialize the row */
+    bloc::Tuple::container_t row;
+    row.push_back(bloc::Value(bloc::Value::type_integer));
+    row.push_back(bloc::Value(bloc::Value::type_integer));
+    row.push_back(bloc::Value(bloc::Value::type_literal));
     if (file::_stat(path, &fmode, &fsize) == 0)
     {
-      /* create the row */
-      bloc::Tuple::container_t row;
-      row.push_back(bloc::Value(bloc::Integer(fmode)));
+      row[0].swap(bloc::Value(bloc::Integer(fmode)));
       if (fmode == 1)
-        row.push_back(bloc::Value(bloc::Integer(fsize)));
-      else
-        row.push_back(bloc::Value(bloc::Value::type_integer));
-      row.push_back(bloc::Value(new bloc::Literal(file::_absolutePath(path))));
-      return new bloc::Value(new bloc::Tuple(std::move(row)));
+        row[1].swap(bloc::Value(bloc::Integer(fsize)));
+      row[2].swap(bloc::Value(new bloc::Literal(file::_absolutePath(path))));
     }
-    return new bloc::Value(bloc::Value::type_rowtype);
+    else
+      row[0].swap(bloc::Value(bloc::Integer(0)));
+    return new bloc::Value(new bloc::Tuple(std::move(row)));
   }
 
   case file::Dir:
