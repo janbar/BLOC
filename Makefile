@@ -1,5 +1,5 @@
 CMAKE = cmake
-BUILDDIR = $(PWD)/release
+BUILDDIR = ./release
 
 all: CMakeLists.txt
 	mkdir -p $(BUILDDIR)
@@ -9,3 +9,6 @@ all: CMakeLists.txt
 
 clean:
 	$(CMAKE) --build $(BUILDDIR) --target clean
+
+install:
+	$(CMAKE) --build $(BUILDDIR) --target install
