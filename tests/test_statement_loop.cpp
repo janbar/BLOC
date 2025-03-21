@@ -7,6 +7,8 @@
 #include <hashvalue.c>
 #include <blocc/exception_parse.h>
 
+#include "blocc/exception_runtime.h"
+
 TestingContext ctx;
 
 using namespace bloc;
@@ -47,6 +49,23 @@ TEST_CASE("for loop")
   ctx.reset("for i in 0 to 1 loop i=true; break; end loop;\n");
   try { e = ctx.parse(); delete e; FAIL("No throw"); }
   catch(ParseError& pe) { SUCCEED(pe.what()); }
+}
+
+TEST_CASE("Safety reset on broken for loop")
+{
+  ctx.purge();
+  Executable * e;
+  ctx.reset(
+    "for i in 0 to 1 loop break; end loop;\n"
+    "i=\"OK\";\n"
+  );
+  try {
+    e = ctx.parse();
+    e->run();
+    delete e;
+    REQUIRE( *(ctx.loadVariable("I")->literal()) == "OK" );
+  }
+  catch(Error& er) { delete e; FAIL(er.what()); }
 }
 
 TEST_CASE("forall loop")
@@ -90,4 +109,21 @@ TEST_CASE("forall loop")
   ctx.reset("forall i in a loop i=true; break; end loop;\n");
   try { e = ctx.parse(); delete e; FAIL("No throw"); }
   catch(ParseError& pe) { SUCCEED(pe.what()); }
+}
+
+TEST_CASE("Safety reset on broken forall loop")
+{
+  ctx.purge();
+  Executable * e;
+  ctx.reset(
+    "forall i in tab(2,0) loop break; end loop;\n"
+    "i=\"OK\";\n"
+  );
+  try {
+    e = ctx.parse();
+    e->run();
+    delete e;
+    REQUIRE( *(ctx.loadVariable("I")->literal()) == "OK" );
+  }
+  catch(Error& er) { delete e; FAIL(er.what()); }
 }
