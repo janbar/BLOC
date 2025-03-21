@@ -99,7 +99,7 @@ Returns a tuple containing basic informations about the given path:
 Type: 0=Invalid, 1=Regular, 2=Directory, 3=Other
 Size: file size in byte
 
-dir(string IN) returns [{ integer, string, integer }]
+dir(string IN) returns [{ integer, integer, string }]
 Returns the entry list of a directory: [{ Type, Size, Name }]
 Type: 1=Regular, 2=Directory, 3=Other
 Size: file size in byte

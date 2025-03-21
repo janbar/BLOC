@@ -182,7 +182,7 @@ static PLUGIN_METHOD methods[] =
           "\n{ Type, Size, Absolute Path }"
           "\nType: 0=Invalid, 1=Regular, 2=Directory, 3=Other"
           "\nSize: file size in byte" },
-  { Dir,      "dir",        { "ILI", 1 },    1, string1_args,
+  { Dir,      "dir",        { "IIL", 1 },    1, string1_args,
           "Returns the entry list of a directory: [{ Type, Size, Name }]"
           "\nType: 1=Regular, 2=Directory, 3=Other"
           "\nSize: file size in byte" },
@@ -301,7 +301,7 @@ static int _dir(const std::string& path, bloc::Collection ** out)
   if ((dirp = ::opendir(path.c_str())) == nullptr)
     return (-1);
 
-  *out = new bloc::Collection(bloc::plugin::make_decl("ILI", 0), 1);
+  *out = new bloc::Collection(bloc::plugin::make_decl("IIL", 0), 1);
   while ((dp = ::readdir(dirp)) != nullptr)
   {
     int fmode = 0;
@@ -310,11 +310,11 @@ static int _dir(const std::string& path, bloc::Collection ** out)
     /* create the row */
     bloc::Tuple::container_t row;
     row.push_back(bloc::Value(bloc::Integer(fmode)));
-    row.push_back(bloc::Value(new bloc::Literal(dp->d_name)));
     if (fmode == 1)
       row.push_back(bloc::Value(bloc::Integer(fsize)));
     else
       row.push_back(bloc::Value(bloc::Value::type_integer));
+    row.push_back(bloc::Value(new bloc::Literal(dp->d_name)));
     /* fill collection with the new tuple */
     (*out)->push_back(Value(new bloc::Tuple(std::move(row))));
   }
