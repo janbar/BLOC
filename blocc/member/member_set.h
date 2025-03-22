@@ -42,6 +42,9 @@ public:
 
   Value& value(Context& ctx) const override;
 
+  /* it is a mutator method */
+  const Symbol * symbol() const override { return _exp->symbol(); }
+
   const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return _exp->tuple_decl(ctx); }
 
   std::string typeName(Context& ctx) const override { return _exp->typeName(ctx); }
