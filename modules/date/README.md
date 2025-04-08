@@ -30,11 +30,15 @@ Build a new calendar as a copy of the given one.
 date(string, string)
 Build a new calendar from the given string and format.
 
+date(integer)
+Build a new calendar from the given unix time.
+
 
 METHODS
 
 format(string IN) returns string
-Formats calendar time according to the directives in the given format string.
+Formats calendar time according to the directives in the given format
+string (ISO C), i.e "%Y-%m-%d %H:%M:%S %Z".
 
 unixtime() returns integer
 Converts calendar time to time since epoch.

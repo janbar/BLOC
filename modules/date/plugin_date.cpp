@@ -65,6 +65,10 @@ static PLUGIN_TYPE ctor_2_args[]  = {
   { "L", 0 }, // format
 };
 
+static PLUGIN_TYPE ctor_3_args[]  = {
+  { "I", 0 }, // unixtime
+};
+
 static PLUGIN_CTOR ctors[] =
 {
   { 0,      1,  ctor_0_args,
@@ -74,6 +78,8 @@ static PLUGIN_CTOR ctors[] =
           "Build a new calendar as a copy of the given one." },
   { 2,      2,  ctor_2_args,
           "Build a new calendar from the given string and format." },
+  { 3,      1,  ctor_3_args,
+          "Build a new calendar from the given unix time." },
 };
 
 /**********************************************************************/
@@ -108,7 +114,8 @@ static PLUGIN_ARG trunc_args[]  = {
 static PLUGIN_METHOD methods[] =
 {
   { Format,     "format",       { "L", 0 },     1, format_args,
-          "Formats calendar time according to the directives in the given format string." },
+          "Formats calendar time according to the directives in the given format"
+          "\nstring (ISO C), i.e \"%Y-%m-%d %H:%M:%S %Z\"." },
   { Unixtime,   "unixtime",     { "I", 0 },     0, nullptr,
           "Converts calendar time to time since epoch." },
   { Iso8601,    "iso8601",      { "L", 0 },     0, nullptr,
@@ -253,6 +260,16 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       time_t tt = mktime(&_tm);
       if (tt == INVALID_TIME)
         throw RuntimeError(EXC_RT_OTHER_S, "The system does not support this date range.");
+      localtime_r(&tt, &dd->_tm);
+      break;
+    }
+
+    case 3: /* date ( unixtime ) */
+    {
+      time_t tt = (time_t)0;
+      bloc::Value& a0 = args[0]->value(ctx);
+      if (!a0.isNull())
+        tt = (time_t)(*a0.integer());
       localtime_r(&tt, &dd->_tm);
       break;
     }
