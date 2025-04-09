@@ -44,7 +44,7 @@ TokenPtr Parser::front()
     TokenPtr t;
     if(!next_token(t))
       throw ParseError();
-    push_back(t);
+    _tokens.push_back(t);
   }
   return _tokens.front();
 }
@@ -55,7 +55,7 @@ TokenPtr Parser::pop() {
   {
     if(!next_token(t))
       throw ParseError();
-    push_back(t);
+    _tokens.push_back(t);
   }
   t = _tokens.front();
   _tokens.pop_front();
@@ -66,10 +66,6 @@ TokenPtr Parser::pop() {
 void Parser::push(const TokenPtr& t) {
   _tokens.push_front(t);
   DBG(DBG_PROTO, "%s [%d] : %s\n", __FUNCTION__, t->code, t->text.c_str());
-}
-
-void Parser::push_back(const TokenPtr& t) {
-  _tokens.push_back(t);
 }
 
 void Parser::clear() {

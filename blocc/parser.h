@@ -101,10 +101,18 @@ public:
 
   Context& context() { return _ctx; }
 
+  /**
+   * Retrieve the next token from queue
+   */
   TokenPtr front();
+  /**
+   * Pop the next token from queue
+   */
   TokenPtr pop();
+  /**
+   * Restore or push the token in front of queue
+   */
   void push(const TokenPtr& t);
-  void push_back(const TokenPtr& t);
 
   /**
    * Clear the parser state. It should be called after ParseError to purge
@@ -112,6 +120,9 @@ public:
    */
   void clear();
 
+  /**
+   * Pop a token directly from the stream buffer including end of line marker.
+   */
   bool popAny(TokenPtr& token);
 
   void trace(bool b) { _trace = b; }
