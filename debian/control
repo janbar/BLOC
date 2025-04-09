@@ -28,15 +28,15 @@ Description: BLOC development files.
 Package: bloc-module-sqlite3
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
-Description: Set of basic modules for BLOC.
+Description: Module sqlite3 for BLOC.
 
 Package: bloc-module-plplot
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
-Suggests: plplot-driver-xwin
-Description: Set of basic modules for BLOC.
+Recommends: plplot-driver-xwin
+Description: Module plplot for BLOC.
 
 Package: bloc-module-mysql
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
-Description: Set of basic modules for BLOC.
+Description: Module mysql for BLOC.
