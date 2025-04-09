@@ -34,6 +34,15 @@ namespace bloc
 class Parser {
 
 public:
+  /**
+   * The interface of the input stream reader
+   */
+  class StreamReader
+  {
+  public:
+    virtual int read(Parser * parser, char * buf, int max_size) = 0;
+  };
+
   static const char NewLine       = '\n';
   static const char Separator     = ';';
   static const char Chain         = ',';
@@ -55,31 +64,20 @@ public:
    * Make an executable from a source stream. On failure it throws exception
    * ParseError. Finally the returned pointer must be freed by the caller.
    * @param ctx         the context used to perform the parse
-   * @param reader_hdl  the pointer to pass to the reader
    * @param reader      the function to read stream
    * @param trace       enable or disable tracing (default false)
    * @return            the new executable or throws
    */
-  static Executable * parse(Context& ctx, void * reader_hdl, TOKEN_READER reader, bool trace = false);
+  static Executable * parse(Context& ctx, StreamReader& reader, bool trace = false);
 
   /**
    * Returns an interactive parser for a source stream. The returned pointer
    * must be freed by the caller.
    * @param ctx         the context used to perform the parse
-   * @param reader_hdl  the pointer to pass to the reader
    * @param reader      the function to read stream
    * @return            the new parser
    */
-  static Parser * createInteractiveParser(Context& ctx, void * reader_hdl, TOKEN_READER reader);
-
-  /**
-   * Returns an interactive parser for a source stream, initialized to pass itself
-   * to the stream reader. The returned pointer must be freed by the caller.
-   * @param ctx         the context used to perform the parse
-   * @param reader      the function to read stream
-   * @return            the new parser
-   */
-  static Parser * createInteractiveParser(Context& ctx, TOKEN_READER reader);
+  static Parser * createInteractiveParser(Context& ctx, StreamReader& reader);
 
   /**
    * Parse the next statement read from stream. On failure it throws exception
@@ -129,16 +127,21 @@ public:
   bool semantic() const { return _semantic; }
 
 private:
-  explicit Parser(Context& ctx) : _ctx(ctx) { }
+  /* TOKEN_READER */
+  static void token_read(void * hdl, char * buf, int * len, int max_size);
+
+  explicit Parser(Context& ctx, StreamReader& reader)
+  : _ctx(ctx), _reader(reader) { }
 
   Context& _ctx;
+  StreamReader& _reader;
   State _state = Begin;
   TOKEN_SCANNER _scanner = nullptr;
   std::list<TokenPtr> _tokens;
   std::string _string_buffer;
 
   void state(State state) { _state = state; }
-  bool init_scanner(void * reader_hdl, TOKEN_READER reader);
+  bool init_scanner();
   void close_scanner();
   bool next_token(TokenPtr& token);
 

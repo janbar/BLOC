@@ -19,6 +19,8 @@
 #ifndef STRING_READER_H_
 #define STRING_READER_H_
 
+#include "parser.h"
+
 #include <string>
 
 namespace bloc
@@ -27,7 +29,7 @@ namespace bloc
 /**
  * Helper class that provides stream reader from string
  */
-class StringReader
+class StringReader : public Parser::StreamReader
 {
   std::string _text;
   size_t _pos = 0;
@@ -39,10 +41,8 @@ public:
 
   StringReader& reset(const std::string& text) { _text.assign(text); _pos = 0; return *this; }
   StringReader& append(const std::string& text) { _text.append(text); return *this; }
-  int read(char * buf, int max_size);
 
-  /* TOKEN_READER */
-  static void token_read(void * string_reader, char * buf, int * len, int max_size);
+  int read(Parser *, char * buf, int max_size) override;
 };
 
 }

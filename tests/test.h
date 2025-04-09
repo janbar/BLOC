@@ -17,7 +17,7 @@ public:
   virtual ~TestingContext () { delete parser; }
   TestingContext () : Context ()
   {
-    parser = bloc::Parser::createInteractiveParser (*this, &input, &bloc::StringReader::token_read);
+    parser = bloc::Parser::createInteractiveParser(*this, input);
   }
 
   void reset (const std::string &text)
@@ -40,7 +40,7 @@ public:
   bloc::Executable * parse ()
   {
     parser->clear();
-    return bloc::Parser::parse (*this, &input, &bloc::StringReader::token_read);
+    return bloc::Parser::parse(*this, input);
   }
 };
 

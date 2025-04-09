@@ -20,18 +20,17 @@
 
 #include <cstdio>
 
-void read_file(void * handle, char * buf, int * len, int max_size)
+int ReadFile::read(bloc::Parser *, char * buf, int max_size)
 {
-  FILE * file = static_cast<FILE*>(handle);
   int read = 0;
   while (read < max_size)
   {
-    if (::fread(&buf[read], sizeof(char), 1, file) == 1)
+    if (::fread(&buf[read], sizeof(char), 1, _file) == 1)
     {
       if (buf[read++] != '\n')
         continue;
     }
     break;
   }
-  *len = read;
+  return read;
 }

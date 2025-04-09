@@ -129,7 +129,6 @@ enum FG
 static bool g_has_color = false;
 
 static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args);
-static void read_input(void * handle, char * buf, int * len, int max_size);
 static CMD find_cmd(const std::string& c);
 static void set_color(enum FG c);
 static void reset_color(void);
@@ -142,6 +141,12 @@ static void print_help(const std::string& what);
 static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::Statement*>& statements);
 
 static breaker_t g_breaker;
+
+class ReadInput : public bloc::Parser::StreamReader
+{
+public:
+  int read(bloc::Parser * p, char * buf, int max_size) override;
+};
 
 void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
 {
@@ -178,7 +183,8 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   stifle_history(512);
 #endif
 
-  bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, &read_input);
+  ReadInput input;
+  bloc::Parser * p = bloc::Parser::createInteractiveParser(ctx, input);
   if (!p)
     return;
 
@@ -213,7 +219,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
         set_color(fgRED); PRINT1("%s\n", pe.what()); reset_color();
         ::clearerr(stdin);
         delete p;
-        p = bloc::Parser::createInteractiveParser(ctx, &read_input);
+        p = bloc::Parser::createInteractiveParser(ctx, input);
       }
       else
       {
@@ -286,18 +292,8 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
 #endif
 }
 
-static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args)
+int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
 {
-  /* load arguments into the context, as table named $ARG */
-  bloc::Collection * c = new bloc::Collection(
-          bloc::Value::type_literal.levelUp(), std::move(args));
-  const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$ARG"), c->table_type());
-  ctx.storeVariable(symbol, bloc::Value(c));
-}
-
-static void read_input(void * handle, char * buf, int * len, int max_size)
-{
-  bloc::Parser * p = static_cast<bloc::Parser*>(handle);
 #ifdef HAVE_READLINE
   /* a static variable to store the read position */
   static char * rl_pos = nullptr;
@@ -315,23 +311,20 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
         ++n;
         if (c == bloc::Parser::NewLine)
         {
-          *len = n;
-          return;
+          return n;
         }
       }
       if (n >= max_size)
       {
         /* buffer is full */
-        *len = max_size;
-        return;
+        return max_size;
       }
     }
     /* free old buffer */
     free(rl_line);
     rl_line = rl_pos = nullptr;
     buf[n++] = bloc::Parser::NewLine;
-    *len = n;
-    return;
+    return n;
   }
 
   /* get a new line */
@@ -356,34 +349,40 @@ static void read_input(void * handle, char * buf, int * len, int max_size)
         ++n;
         if (c == bloc::Parser::NewLine)
         {
-          *len = n;
-          return;
+          return n;
         }
       }
       if (n >= max_size)
       {
         /* buffer is full */
-        *len = max_size;
-        return;
+        return max_size;
       }
     }
     /* free old buffer */
     free(rl_line);
     rl_line = rl_pos = nullptr;
     buf[n++] = bloc::Parser::NewLine;
-    *len = n;
-    return;
+    return n;
   }
   /* EOF */
-  *len = 0;
+  return 0;
 #else
   if (p->state() == bloc::Parser::Parsing)
     PRINT("... ");
   else
     PRINT(">>> ");
   FLUSHOUT;
-  *len = bloc_readstdin(buf, max_size);
+  return bloc_readstdin(buf, max_size);
 #endif
+}
+
+static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args)
+{
+  /* load arguments into the context, as table named $ARG */
+  bloc::Collection * c = new bloc::Collection(
+          bloc::Value::type_literal.levelUp(), std::move(args));
+  const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$ARG"), c->table_type());
+  ctx.storeVariable(symbol, bloc::Value(c));
 }
 
 static CMD find_cmd(const std::string& c)
@@ -898,7 +897,11 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
       return 1;
     }
     bloc::Executable * exec = nullptr;
-    try { exec = bloc::Parser::parse(ctx, progfile, &read_file, true); }
+    try
+    {
+      ReadFile file(progfile);
+      exec = bloc::Parser::parse(ctx, file, true);
+    }
     catch (bloc::ParseError& pe)
     {
       set_color(fgRED); PRINT1("Error: %s\n", pe.what()); reset_color();

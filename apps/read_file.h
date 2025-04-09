@@ -19,7 +19,15 @@
 #ifndef READ_FILE_H
 #define READ_FILE_H
 
-extern void read_file(void * handle, char * buf, int * len, int max_size);
+#include <blocc/parser.h>
+
+class ReadFile : public bloc::Parser::StreamReader
+{
+  FILE * _file;
+public:
+  explicit ReadFile(FILE * file) : _file(file) { }
+  int read(bloc::Parser *, char * buf, int max_size) override;
+};
 
 #endif /* READ_FILE_H */
 

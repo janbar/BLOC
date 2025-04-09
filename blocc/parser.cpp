@@ -86,10 +86,16 @@ bool Parser::popAny(TokenPtr& token) {
   return true;
 }
 
-bool Parser::init_scanner(void * reader_hdl, TOKEN_READER reader)
+void Parser::token_read(void * hdl, char * buf, int * len, int max_size)
+{
+  Parser * p = static_cast<Parser*>(hdl);
+  *len = p->_reader.read(p, buf, max_size);
+}
+
+bool Parser::init_scanner()
 {
   close_scanner();
-  _scanner = tokenizer_init(reader_hdl, reader);
+  _scanner = tokenizer_init(this, &token_read);
   if (_scanner == nullptr)
     return false;
   tokenizer_enable_space(_scanner);
@@ -102,21 +108,10 @@ void Parser::close_scanner()
     tokenizer_free(_scanner);
 }
 
-Parser * Parser::createInteractiveParser(Context& ctx, void * reader_hdl, TOKEN_READER reader)
+Parser * Parser::createInteractiveParser(Context& ctx, StreamReader& reader)
 {
-  Parser * p = new Parser(ctx);
-  if (!p->init_scanner(reader_hdl, reader))
-  {
-    delete p;
-    p = nullptr;
-  }
-  return p;
-}
-
-Parser * Parser::createInteractiveParser(Context& ctx, TOKEN_READER reader)
-{
-  Parser * p = new Parser(ctx);
-  if (!p->init_scanner(p, reader))
+  Parser * p = new Parser(ctx, reader);
+  if (!p->init_scanner())
   {
     delete p;
     p = nullptr;
@@ -188,10 +183,10 @@ bool Parser::reservedKeyword(const std::string& text)
           );
 }
 
-Executable * Parser::parse(Context& ctx, void * reader_hdl, TOKEN_READER reader, bool trace /*= false*/)
+Executable * Parser::parse(Context& ctx, StreamReader& reader, bool trace /*= false*/)
 {
-  Parser p(ctx);
-  if (!p.init_scanner(reader_hdl, reader))
+  Parser p(ctx, reader);
+  if (!p.init_scanner())
     return nullptr;
 
   p.trace(trace);

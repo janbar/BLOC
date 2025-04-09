@@ -23,18 +23,12 @@
 namespace bloc
 {
 
-int StringReader::read(char * buf, int max_size)
+int StringReader::read(Parser *, char * buf, int max_size)
 {
   size_t r = (max_size  > _text.size() - _pos ? _text.size() - _pos : max_size);
   ::memcpy(buf, &_text[_pos], r);
   _pos += r;
   return (int) r;
-}
-
-void StringReader::token_read(void * string_reader, char * buf, int * len, int max_size)
-{
-  StringReader * sr = static_cast<StringReader*>(string_reader);
-  *len = sr->read(buf, max_size);
 }
 
 }
