@@ -208,6 +208,12 @@ public:
   bool returnCondition() const { return _returnCondition; }
 
   void saveReturned(Value& ret);
+
+  /**
+   * Returns a pointer to returned value by the last RUN. The returned pointer
+   * must be freed by the caller.
+   * @return            a value, or null
+   */
   Value * dropReturned();
 
   /*========================================================================*/
