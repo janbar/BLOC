@@ -59,10 +59,16 @@ public:
    */
   void purge();
 
-  /**************************************************************************/
+  /*========================================================================*/
   /* Symbol and pointer                                                     */
-  /**************************************************************************/
+  /*========================================================================*/
 
+  /**
+   * Returns the pointer to the symbol with the given name, or null.
+   * Note that the symbol name must be in UPPERCASE.
+   * @param name        the name
+   * @return            the pointer to the found symbol
+   */
   Symbol * findSymbol(const std::string& name)
   {
     for (MemorySlot& e : _storage_pool)
@@ -97,6 +103,12 @@ public:
    */
   Symbol& registerSymbol(const std::string& name, const TupleDecl::Decl& decl, Type::TypeLevel level);
 
+  /**
+   * Returns the pointer to the value bound to the given name, or null.
+   * Note that the symbol name must be in UPPERCASE.
+   * @param name        the name
+   * @return            the pointer to the value
+   */
   Value * loadVariable(const std::string& symbolName)
   {
     const Symbol * symbol = findSymbol(symbolName);
@@ -105,16 +117,33 @@ public:
     return nullptr;
   }
 
+  /**
+   * Returns the value bound to the given symbol.
+   * @param symbol      the symbol
+   * @return            the value
+   */
   Value& loadVariable(const Symbol& symbol)
   {
     return _storage_pool[symbol.id()].value;
   }
 
+  /**
+   * Clear the value bound to the given symbol.
+   * @param symbol      the symbol
+   */
   void clearVariable(const Symbol& symbol)
   {
     _storage_pool[symbol.id()].value = Value();
   }
 
+  /**
+   * Bind the given value to the given symbol.
+   * Note that values are swapped, therefore the passed value will contain the
+   * payload of the old bound value.
+   * @param symbol      the symbol
+   * @param value       the value
+   * @return            the bound value
+   */
   Value& storeVariable(const Symbol& symbol, Value&& e);
 
   void describeSymbol(const std::string& name);
@@ -123,9 +152,9 @@ public:
   void dumpVariables();
 
 
-  /**************************************************************************/
+  /*========================================================================*/
   /* Functors                                                               */
-  /**************************************************************************/
+  /*========================================================================*/
 
   /**
    * Returns the root manager of this
@@ -139,9 +168,9 @@ public:
 
   void dumpFunctors();
 
-  /**************************************************************************/
+  /*========================================================================*/
   /* Control and stack                                                      */
-  /**************************************************************************/
+  /*========================================================================*/
 
   void stackControl(const Statement * s) { _controlstack.stack(s); }
 
@@ -181,17 +210,17 @@ public:
   void saveReturned(Value& ret);
   Value * dropReturned();
 
-  /**************************************************************************/
+  /*========================================================================*/
   /* Events                                                                 */
-  /**************************************************************************/
+  /*========================================================================*/
 
   void onStatementEnd(const Statement * s) { _temporary_storage.clear(); }
 
   void onRuntimeError();
 
-  /**************************************************************************/
+  /*========================================================================*/
   /* Trace                                                                  */
-  /**************************************************************************/
+  /*========================================================================*/
 
   double timestamp() const
   {
@@ -215,9 +244,9 @@ public:
 
   uint8_t recursion() const { return _recursion; }
 
-  /**************************************************************************/
-  /* Temporary management                                                   */
-  /**************************************************************************/
+  /*========================================================================*/
+  /* Temporary storage management                                           */
+  /*========================================================================*/
 
   Value& allocate(Value&& v) { return _temporary_storage.keep(std::move(v)); }
 
@@ -262,9 +291,9 @@ public:
    */
   void purgeWorkingMemory() { _temporary_storage.purge(); }
 
-  /**************************************************************************/
+  /*========================================================================*/
   /* Environment                                                            */
-  /**************************************************************************/
+  /*========================================================================*/
 
   FILE * ctxout() const { return _sout; }
   FILE * ctxerr() const { return _serr; }
@@ -384,7 +413,7 @@ private:
 
   enum Flag { FLAG_TRUSTED = 0x01 };
   uint8_t _flags = 0;
-  
+
   uint8_t _recursion = 0;
 };
 
