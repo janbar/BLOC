@@ -1361,8 +1361,8 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     double ztick = (a10.type() == bloc::Type::NUMERIC ? *a10.numeric() : *a10.integer());
     return new bloc::Value(bloc::Bool(h->box3(
             *a0.literal(), *a1.literal(), xtick, (int) *a3.integer(),
-            *a4.literal(), *a1.literal(), ytick, (int) *a7.integer(),
-            *a8.literal(), *a9.literal(), ytick, (int) *a11.integer())));
+            *a4.literal(), *a5.literal(), ytick, (int) *a7.integer(),
+            *a8.literal(), *a9.literal(), ztick, (int) *a11.integer())));
   }
 
   case PLPLOT::Mesh:
