@@ -323,7 +323,10 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     const Type& exp_type = s->_exp->type(ctx);
     if (exp_type == Type::NO_TYPE)
     {
-      s->_var = new VariableExpression(ctx.registerSymbol(vname, exp_type));
+      if (exp_type.level() > 0)
+        s->_var = new VariableExpression(ctx.registerSymbol(vname, exp_type.levelDown()));
+      else
+        s->_var = new VariableExpression(ctx.registerSymbol(vname, exp_type));
     }
     else
     {
