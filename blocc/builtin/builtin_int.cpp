@@ -117,6 +117,7 @@ INTExpression * INTExpression::parse(Parser& p, Context& ctx)
       case Type::INTEGER:
       case Type::NUMERIC:
       case Type::IMAGINARY:
+      case Type::TABCHAR:
         break;
       default:
         throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INT]);
