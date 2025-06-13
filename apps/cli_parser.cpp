@@ -734,8 +734,13 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       g_breaker.state = false;
       bloc::Executable::run(ctx, statements);
-      if (ctx.returnCondition() && !g_breaker.state)
-        output_cli(ctx);
+      if (ctx.returnCondition())
+      {
+        /* clear stop condition in interative mode */
+        ctx.returnCondition(false);
+        if (!g_breaker.state)
+          output_cli(ctx);
+      }
     }
     catch(bloc::RuntimeError& re)
     {
