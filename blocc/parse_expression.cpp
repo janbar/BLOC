@@ -498,7 +498,7 @@ Expression * ParseExpression::relation()
       return new OpGTExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx));
     case TOKEN_KEYWORD:
       if (t->text == Operator::OPVALS[Operator::OP_MATCH])
-        return new OpMATCHExpression(assertType(result, Type::LITERAL, p, ctx, false), assertType(element(), Type::LITERAL, p, ctx));
+        return new OpMATCHExpression(assertType(result, Type::LITERAL, p, ctx, false), assertType(bitlogic(), Type::LITERAL, p, ctx));
       break;
     default:
       break;
