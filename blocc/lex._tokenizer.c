@@ -2520,6 +2520,21 @@ void tokenizer_lex(TOKEN_SCANNER scanner, int * token, const char ** text)
   *token = r;
 }
 
+int tokenizer_state(TOKEN_SCANNER scanner)
+{
+  struct yyguts_t * yyg = (struct yyguts_t*)(scanner->scanner);
+  return YY_START;
+}
+
+void tokenizer_clear(TOKEN_SCANNER scanner)
+{
+  /* reset scanner state */
+  while (tokenizer_state(scanner) != INITIAL)
+  {
+    yy_pop_state(scanner->scanner);
+  }
+}
+
 void tokenizer_enable_space(TOKEN_SCANNER scanner)
 {
   scanner->enable_space = 1;

@@ -78,6 +78,10 @@ extern void tokenizer_scan(TOKEN_SCANNER scanner, TOKEN_CALLBACK callback);
  */
 extern void tokenizer_lex(TOKEN_SCANNER scanner, int * token, const char ** text);
 
+extern int tokenizer_state(TOKEN_SCANNER scanner);
+
+extern void tokenizer_clear(TOKEN_SCANNER scanner);
+
 extern void tokenizer_enable_space(TOKEN_SCANNER scanner);
 
 extern void tokenizer_disable_space(TOKEN_SCANNER scanner); /* default */
