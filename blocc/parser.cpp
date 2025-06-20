@@ -257,6 +257,11 @@ bool Parser::next_token(TokenPtr& token) {
         _position.lno += 1;
         _position.pno = 0;
       }
+      else
+      {
+        /* reset the state */
+        tokenizer_clear(_scanner);
+      }
       continue;
     }
 
