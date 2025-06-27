@@ -75,6 +75,7 @@ public:
     STMT_DESC       = 28,
     STMT_IS         = 29,
     STMT_FORALL     = 30,
+    STMT_INCLUDE    = 31,
   };
 
   virtual ~Statement();

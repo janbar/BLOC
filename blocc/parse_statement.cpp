@@ -41,6 +41,7 @@
 #include "statement_raise.h"
 #include "statement_function.h"
 #include "statement_forall.h"
+#include "statement_include.h"
 #include "expression_item.h"
 
 #include <forward_list>
@@ -143,6 +144,12 @@ Statement * ParseStatement::parse()
           /* perform loading now */
           dynamic_cast<IMPORTStatement*>(beyond_statement(s))->loadModule(ctx);
           return s;
+        }
+
+        case Statement::STMT_INCLUDE:
+        {
+          s = INCLUDEStatement::parse(p, ctx);
+          return beyond_statement(s);
         }
 
         default:

@@ -24,8 +24,6 @@
 #include "plugin_manager.h"
 #include "expression_builtin.h"
 
-#include <cstring>
-
 namespace bloc
 {
 

@@ -23,7 +23,7 @@ const char * Statement::KEYWORDS[] = {
   "begin",    "break",    "continue", "end",      "end if",
   "end loop", "print",    "put",      "do",       "exception",
   "when",     "raise",    "asc",      "desc",     "is",
-  "forall",
+  "forall",   "include",
 };
 
 Statement::~Statement()
@@ -210,6 +210,9 @@ const char * Statement::HELPS[] = {
           "\n    [statement ...]"
           "\nend loop;"
           "\n\nInside the loop, the target table can be modified without care.",
+  /*INCLUDE*/  "The INCLUDE statement is the directive to embed another source."
+          "\nYou can have up to three levels of nesting."
+          "\n\ninclude {encapsulated string containing the file path};",
 };
 
 }

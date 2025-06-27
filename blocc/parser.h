@@ -95,8 +95,6 @@ public:
    */
   Expression * parseExpression();
 
-  State state() { return _state; }
-
   Context& context() { return _ctx; }
 
   /**
@@ -125,6 +123,14 @@ public:
 
   void trace(bool b) { _trace = b; }
 
+  void state(State state) { _state = state; }
+
+  State state() { return _state; }
+
+  void nesting(int n) { _nesting = n; }
+
+  int nesting() const { return _nesting; }
+
 private:
   /* TOKEN_READER */
   static void token_read(void * hdl, char * buf, int * len, int max_size);
@@ -139,13 +145,13 @@ private:
   std::list<TokenPtr> _tokens;
   std::string _string_buffer;
 
-  void state(State state) { _state = state; }
   bool init_scanner();
   void close_scanner();
   bool next_token(TokenPtr& token);
 
   bool _trace = false;      ///< forward token string to stderr
   PARSING_POSITION _position = { 1, 0 }; ///< position in the source stream
+  int _nesting = 0;
 };
 
 }
