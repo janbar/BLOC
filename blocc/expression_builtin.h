@@ -122,6 +122,7 @@ public:
     FUNC_IMAG   = 64, // imag(x)
     FUNC_IPHASE = 65, // iphase(x)
     FUNC_ICONJ  = 66, // iconj(x)
+    FUNC_TKNIZE = 67, // tokenize(x,y,z)
   };
 
   std::string unparse(Context& ctx) const override;

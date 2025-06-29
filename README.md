@@ -51,7 +51,7 @@ end loop;
 ```
 And create your customized function.
 ```
-function tokenize(buf, delim, trimnull:boolean) return table is
+function split(buf, delim, trimnull:boolean) return table is
 begin
   t = tab(0, str()); /* The table will be returned */
   p = 0; /* The current position in buf */
@@ -73,16 +73,16 @@ begin
   return t;
 end;
 
-function tokenize(buf, delim) return table is begin
-  return tokenize(buf,delim,false);
+function split(buf, delim) return table is begin
+  return split(buf,delim,false);
 end;
 
-function tokenize(buf) return table is begin
-  return tokenize(buf," ",true);
+function split(buf) return table is begin
+  return split(buf," ",true);
 end;
 
 
-forall e in tokenize("abcd  1234 efgh   6789 ") loop print e; end loop;
+forall e in split("abcd  1234 efgh   6789 ") loop print e; end loop;
 ```
 Learn more about typing:
 `help type`, `help function`, `help table`, `help string`, `help while`,

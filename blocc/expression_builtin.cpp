@@ -81,6 +81,7 @@
 #include "builtin/builtin_iconj.h"
 #include "builtin/builtin_input.h"
 #include "builtin/builtin_atan2.h"
+#include "builtin/builtin_tokenize.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -105,7 +106,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
     "strpos",     "replace",    "subraw",     "hash",       "imag",
-    "iphase",     "iconj",
+    "iphase",     "iconj",      "tokenize",
 };
 
 BuiltinExpression::~BuiltinExpression()
@@ -302,6 +303,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return IPHASEExpression::parse(p, ctx);
   case FUNC_ICONJ:
     return ICONJExpression::parse(p, ctx);
+  case FUNC_TKNIZE:
+    return TOKENIZEExpression::parse(p, ctx);
 
   default:
     throw ParseError(EXC_PARSE_NOT_A_FUNCTION);
@@ -477,6 +480,9 @@ const char * BuiltinExpression::HELPS[] = {
           "\n\niphase( x )",
   /*ICONJ */  "returns the complex as the conjugate of the given complex."
           "\n\niconj( x )",
+  /*TKNIZE */ "splits the values in the string x, using the string y as separator."
+          "\nIf the boolean z is true, then null values will be trimmed."
+          "\n\ntokenize( x , y [, z] )",
 };
 
 }
