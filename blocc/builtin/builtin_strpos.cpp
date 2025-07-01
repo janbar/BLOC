@@ -55,7 +55,7 @@ Value& STRPOSExpression::value(Context & ctx) const
         s = *a2.integer();
         break;
       case Type::NUMERIC:
-        s = *a2.numeric();
+        s = Integer(*a2.numeric());
         break;
       default:
         throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);

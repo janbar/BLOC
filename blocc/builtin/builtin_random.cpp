@@ -38,7 +38,7 @@ Value& RANDOMExpression::value(Context & ctx) const
     {
     case Type::INTEGER:
       if (!val.isNull())
-        d = *val.integer();
+        d = double(*val.integer());
       break;
     case Type::NUMERIC:
       if (!val.isNull())
