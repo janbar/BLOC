@@ -16,9 +16,9 @@ jobs:
       matrix:
         config:
         - {
-            name: "windows-2019", artifact: "windows-2019.zip",
-            os: windows-2019,
-            generator: "Visual Studio 16 2019"
+            name: "windows-2022", artifact: "windows-2022.zip",
+            os: windows-2022,
+            generator: "Visual Studio 17 2022"
           }
     runs-on: ${{ matrix.config.os }}
 
