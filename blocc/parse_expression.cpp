@@ -76,7 +76,7 @@ Expression * ParseExpression::expression(Parser& p, Context& ctx)
 bool ParseExpression::typeChecking(Expression * exp, const Type& type, Parser& p, Context& ctx)
 {
   const Type& exp_type = exp->type(ctx);
-  return !p.semantic() || exp_type == type ||
+  return exp_type == type ||
           /* opaque */
           type == Type::NO_TYPE || exp_type == Type::NO_TYPE ||
           (exp_type.level() == type.level() && (
@@ -102,7 +102,7 @@ Expression * ParseExpression::assertType(Expression * exp, const Type& type, Par
 Expression * ParseExpression::assertTypeUniform(Expression * exp, const Type& type, Parser& p, Context& ctx, bool deleteOnFailure /*= true*/)
 {
   const Type& exp_type = exp->type(ctx);
-  if (!p.semantic() || exp_type == type ||
+  if (exp_type == type ||
       /* opaque */
       type == Type::NO_TYPE || exp_type == Type::NO_TYPE)
     return exp;

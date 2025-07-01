@@ -124,7 +124,6 @@ public:
   bool popAny(TokenPtr& token);
 
   void trace(bool b) { _trace = b; }
-  bool semantic() const { return _semantic; }
 
 private:
   /* TOKEN_READER */
@@ -146,7 +145,6 @@ private:
   bool next_token(TokenPtr& token);
 
   bool _trace = false;      ///< forward token string to stderr
-  bool _semantic = true;    ///< enable/disable semantic analyze
   PARSING_POSITION _position = { 1, 0 }; ///< position in the source stream
 };
 
