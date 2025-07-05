@@ -7,7 +7,10 @@ A modular interpreter based on PL syntax.
 
 BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). Samples of module are "file", "date", "utf8", "sqlite3", or "plplot" that allows to operate others types. See [modules](./modules/).
 
-Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table. For now, it processes twice as fast as Python.
+The language is strongly typed and the syntax is extremely readable, which avoids misunderstandings and design ambiguities.
+The declaration and execution of functions are confined in their own context.
+Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table.
+For now, it processes twice as fast as Python, and twenty as fast than Perl.
 
 ## Install BLOC
 Ubuntu packages are available in the repository `ppa:jlbarriere68/bloc`. You can install BLOC on Ubuntu by the following:
@@ -30,7 +33,8 @@ cmake --build release --target test
 cmake --build release --target install
 ```
 
-To enable the build of the modules SQLite3 and PLplot, prior you have to install their dependencies.
+The modules **file**, **date**, **csv**, **utf8** and **sys** don't require external dependencies, and so they are made with the core library.
+To enable the build of the modules **sqlite3**, **mysql** and **plplot**, prior you have to install their dependencies.
 
 ## Run the CLI
 Launch **bloc** and type "help".
@@ -53,7 +57,7 @@ And create your customized function.
 ```
 function split(buf, delim, trimnull:boolean) return table is
 begin
-  t = tab(0, str()); /* The table will be returned */
+  t = tab(0, str()); /* The strongly typed table will be returned */
   p = 0; /* The current position in buf */
   s = delim.count();
   while true loop /* Or use limit: for i in 1 to 256 loop */
@@ -85,8 +89,7 @@ end;
 forall e in split("abcd  1234 efgh   6789 ") loop print e; end loop;
 ```
 Learn more about typing:
-`help type`, `help function`, `help table`, `help string`, `help while`,
-`help strpos`, `help substr` ...
+`help type`, `help statement`, `help builtin`, `help operator`, or `help` + *keyword*.
 
 The example to follow uses the complex type (ii) to calculate Z of a Low Pass Filter order 2 (LC) loaded by a resistor R.
 ```

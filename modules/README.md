@@ -3,13 +3,13 @@
 Modules extend the functionality of the language. For more details about a particular module, see the README file in the module folder.
 Using the CLI, all modules are authorized without any restrictions, as the running context is trusted.
 On the other hand, when using the embedded C/C++ library, none of the modules are authorized by default for security reasons.
-Then the user has to grant the permission for each module, in exemple using the C function `bloc_unban_plugin(const char * name)`.
+Then the user has to grant the permission for each module, in example using the C function `bloc_unban_plugin(const char * name)`.
 
 | Module  | Status | Security issues |
 |---------|:------:|:----------------|
 | csv | safe | None |
 | date | safe | None |
-| file | **unsafe** | Create, modify or delete any local files |
+| file | **unsafe** | Create or modify local files |
 | mysql | safe | None |
 | plplot | **unsafe** | Create or modify local files for plot output |
 | sqlite3 | **unsafe** | Create or modify local files (DB) |
