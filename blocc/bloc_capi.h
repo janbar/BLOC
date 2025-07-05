@@ -219,7 +219,7 @@ bloc_value_isnull(bloc_value *v);
  * You can test for a null value before binding, using bloc_value_isnull(),
  * else you have to check for a NULL pointer before deref.
  *
- *   *double data;
+ *   double *data;
  *   if (bloc_numeric(val, &data) && data) {
  *     printf("value = %g\n", *data);
  *   }
