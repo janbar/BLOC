@@ -25,6 +25,8 @@
 #include <cstdio>
 
 #include <list>
+#include <chrono>
+#include <thread>
 
 /*
  * Create the module CSVImport
@@ -44,8 +46,10 @@ namespace sys
 
 enum Method
 {
-  Exec0 = 0,
-  Exec1 = 1,
+  Exec0     = 0,
+  Exec1     = 1,
+  Setenv    = 2,
+  Sleep     = 3,
 };
 
 /**********************************************************************/
@@ -62,6 +66,15 @@ static PLUGIN_ARG exec1_args[]  = {
   { PLUGIN_IN,    { "I", 0 } }, // maxsize
 };
 
+static PLUGIN_ARG setenv_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // name
+  { PLUGIN_IN,    { "L", 0 } }, // value
+};
+
+static PLUGIN_ARG sleep_args[]  = {
+  { PLUGIN_IN,    { "I", 0 } }, // duration ms
+};
+
 /**********************************************************************/
 /*  Methods list                                                      */
 /*  id:       name:         ret: decl,ndim  args_count,args:          */
@@ -73,6 +86,11 @@ static PLUGIN_METHOD methods[] =
   { Exec1,        "exec",             { "B", 0 },     3, exec1_args,
           "Execute a system command or a block of commands, and tail the output into"
           "\nthe specified variable as a byte array with the given max size." },
+  { Setenv,       "setenv",           { "L", 0 },     2, setenv_args,
+          "Sets the environment variable to the given value and returns the old value."
+          "\nPassing a null value will unset the variable." },
+  { Sleep,        "sleep",            { "I", 0 },     1, sleep_args,
+          "Delay for a specified amount of time in seconds." },
 };
 
 /**
@@ -84,6 +102,10 @@ struct Handle
   Handle() { }
   bool exec(const std::string& cmd);
   bool execout(const std::string& cmd, bloc::TabChar& out, size_t maxsize);
+  const char * getvar(const std::string& name);
+  void setvar(const std::string& name, const std::string& value);
+  void unsetvar(const std::string& name);
+  void delayms(unsigned millisec);
 };
 
 } /* namespace sys */
@@ -150,6 +172,44 @@ bloc::Value * SYSPlugin::executeMethod(
     bool success = bloc::Bool(sys->execout(*a0.literal(), *out.tabchar(), *a2.integer()));
     ctx.storeVariable(*args[1]->symbol(), std::move(out));
     return new bloc::Value(success);
+  }
+
+  case sys::Setenv:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    if (a0.isNull())
+      return new bloc::Value(bloc::Value::type_literal);
+    bloc::Value old;
+    const char * buf = sys->getvar(*a0.literal());
+    if (buf != nullptr)
+      old.swap(bloc::Value(new bloc::Literal(buf)));
+    if (a1.isNull())
+      sys->unsetvar(*a0.literal());
+    else
+      sys->setvar(*a0.literal(), *a1.literal());
+    return new bloc::Value(std::move(old));
+  }
+
+  case sys::Sleep:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (!a0.isNull())
+    {
+      unsigned tenth = 0;
+      uint32_t rest = (uint32_t)(*a0.integer());
+      while (!ctx.stopCondition() && rest != 0)
+      {
+        sys->delayms(100);
+        if (++tenth >= 10)
+        {
+          rest -= 1;
+          tenth = 0;
+        }
+      }
+      return new bloc::Value(bloc::Integer(rest));
+    }
+    return new bloc::Value(bloc::Value::type_integer);
   }
 
   default:
@@ -294,6 +354,42 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
     assert(buf.size() == 0);
   }
   return (err == 0);
+}
+
+const char * sys::Handle::getvar(const std::string& name)
+{
+  return ::getenv(name.c_str());
+}
+
+void sys::Handle::setvar(const std::string& name, const std::string& value)
+{
+  if (name.length() == 0)
+    return;
+#if (defined(_WIN32) || defined(_WIN64))
+  std::string buf;
+  buf.append(name).append("=").append(value);
+  _putenv(buf.c_str());
+#else
+  ::setenv(name.c_str(), value.c_str(), 1);
+#endif
+}
+
+void sys::Handle::unsetvar(const std::string& name)
+{
+  if (name.length() == 0)
+    return;
+#if (defined(_WIN32) || defined(_WIN64))
+  std::string buf;
+  buf.append(name).append("=");
+  _putenv(buf.c_str());
+#else
+  ::unsetenv(name.c_str());
+#endif
+}
+
+void sys::Handle::delayms(unsigned millisec)
+{
+  std::this_thread::sleep_for(std::chrono::milliseconds(millisec));
 }
 
 } /* namespace import */

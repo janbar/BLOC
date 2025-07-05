@@ -15,9 +15,25 @@ Once loaded, you can print the object interface.
 help sys
 ```
 
-Below, I expose the use case.
 ```
-import sys;
+CONSTRUCTORS
 
-ret = sys().exec("touch dummy.tmp");
+sys() is default contructor
+
+
+METHODS
+
+exec(string IN) returns boolean
+Execute a system command or a block of commands.
+
+exec(string IN, bytes INOUT, integer IN) returns boolean
+Execute a system command or a block of commands, and tail the output into
+the specified variable as a byte array with the given max size.
+
+setenv(string IN, string IN) returns string
+Sets the environment variable to the given value and returns the old value.
+Passing a null value will unset the variable.
+
+sleep(integer IN) returns integer
+Delay for a specified amount of time in seconds.
 ```
