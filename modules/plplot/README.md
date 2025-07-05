@@ -33,6 +33,10 @@ end loop;
 
 p.line(x,y);
 p.flush();
+
+dummy:string;
+input(dummy, "Type RETURN to close ...");
+p.close();
 ```
 <p align="center">
   <img src="./sample.png" width="400" height="300"/>
