@@ -26,12 +26,8 @@ if(NOT SKIP_INSTALL_ALL)
     include(GNUInstallDirs)
     install(TARGETS bloc_file LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
   else()
-    install(TARGETS bloc_file CONFIGURATIONS Debug
-      RUNTIME DESTINATION Debug
-      ARCHIVE DESTINATION Debug)
-    install(TARGETS bloc_file CONFIGURATIONS Release
-      RUNTIME DESTINATION Release
-      ARCHIVE DESTINATION Release)
+    install(TARGETS bloc_file CONFIGURATIONS Debug Release MinSizeRel
+      RUNTIME DESTINATION bin)
   endif()
 
 endif()

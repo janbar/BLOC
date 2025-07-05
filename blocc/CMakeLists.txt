@@ -220,14 +220,14 @@ if(NOT SKIP_INSTALL_ALL)
     install(EXPORT bloccTargets
       DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT dev)
   else()
-    install(TARGETS blocc CONFIGURATIONS Debug
-      RUNTIME DESTINATION Debug
-      ARCHIVE DESTINATION Debug
-      LIBRARY DESTINATION Debug)
-    install(TARGETS blocc CONFIGURATIONS Release
-      RUNTIME DESTINATION Release
-      ARCHIVE DESTINATION Release
-      LIBRARY DESTINATION Release)
+    install(TARGETS blocc CONFIGURATIONS Debug Release MinSizeRel
+      RUNTIME DESTINATION bin
+      ARCHIVE DESTINATION bin
+      LIBRARY DESTINATION bin)
+    install(FILES
+      ${CMAKE_CURRENT_BINARY_DIR}/include/blocc/bloc_capi.h
+      ${CMAKE_CURRENT_BINARY_DIR}/include/blocc/declspec.h
+      DESTINATION bin)
   endif()
 
 endif()

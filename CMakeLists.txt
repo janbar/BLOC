@@ -20,8 +20,11 @@ if(MSVC)
 endif()
 
 # set lib version here
-set (BLOC_LIB_VERSION "2.6.4")
-set (BLOC_LIB_SOVERSION 2)
+set(VERSION_MAJOR "2")
+set(VERSION_MINOR "6")
+set(VERSION_PATCH "4")
+set (BLOC_LIB_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
+set (BLOC_LIB_SOVERSION "${VERSION_MAJOR}")
 
 add_subdirectory (blocc)
 add_subdirectory (apps)
@@ -32,6 +35,13 @@ configure_file(
   "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
   IMMEDIATE @ONLY
 )
+
+# Configure CPack
+set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+set(CPACK_GENERATOR "ZIP")
+include(CPack)
 
 # Configure uninstall
 add_custom_target(uninstall
