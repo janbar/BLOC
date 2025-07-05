@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 env:
-  BUILD_TYPE: Release
+  BUILD_TYPE: MinSizeRel
 
 jobs:
   build:
@@ -16,7 +16,7 @@ jobs:
       matrix:
         config:
         - {
-            name: "windows-2022", artifact: "windows-2022.zip",
+            name: "windows-2022",
             os: windows-2022,
             generator: "Visual Studio 17 2022"
           }
@@ -41,4 +41,16 @@ jobs:
       run: |
         copy blocc/${{env.BUILD_TYPE}}/blocc*.dll tests/${{env.BUILD_TYPE}}/
         ctest -C ${{env.BUILD_TYPE}}
+
+    - name: CPack
+      working-directory: ${{github.workspace}}/build
+      run: |
+        cpack -C ${{env.BUILD_TYPE}}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: bloc-win64.zip
+        path: ${{ github.workspace }}/build/bloc-*-win64.zip
+        retention-days: 5
 
