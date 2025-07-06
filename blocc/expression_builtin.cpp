@@ -419,7 +419,7 @@ const char * BuiltinExpression::HELPS[] = {
           "\nnum(), str() or raw().",
   /*GETSYS*/  "returns the corresponding value of context environment variable x."
           "\n\ngetsys( x ) , where x could be 'compatible', 'language', 'country',"
-          "\n'integer_max', or 'integer_min'."
+          "\n'integer_max', 'integer_min', 'system', or 'endianess'."
           "\n\nThe type of value depends of the selected variable.",
   /*GETENV*/  "returns the corresponding value string of the environment variable x."
           "\n\ngetenv( x )",

@@ -29,6 +29,24 @@
 namespace bloc
 {
 
+namespace
+{
+#ifndef BYTE_ORDER
+#define LITTLE_ENDIAN     1234
+#define BIG_ENDIAN        4321
+#define BYTE_ORDER        machine_bom
+#endif
+#define is_big_endian     (BYTE_ORDER == BIG_ENDIAN)
+#define is_little_endian  (BYTE_ORDER == LITTLE_ENDIAN)
+
+static int test_endianess() {
+  unsigned int test = 1;
+  return (*((char*)(&test))) ? LITTLE_ENDIAN : BIG_ENDIAN;
+}
+
+int machine_bom = test_endianess();
+}
+
 Value& GETSYSExpression::value(Context & ctx) const
 {
   Value& val = _args[0]->value(ctx);
@@ -51,6 +69,16 @@ Value& GETSYSExpression::value(Context & ctx) const
       v = Value(Integer(INT64_MAX));
     else if (*(val.literal()) == "integer_min")
       v = Value(Integer(INT64_MIN));
+    else if (*(val.literal()) == "system")
+#if defined(LIBBLOC_MSWIN)
+      v = Value(new Literal("MSWIN"));
+#elif defined(LIBBLOC_UNIX)
+      v = Value(new Literal("UNIX"));
+#else
+      v = Value(Value::type_literal);
+#endif
+    else if (*(val.literal()) == "endianess")
+      v = Value(new Literal((machine_bom == BIG_ENDIAN ? "BE" : "LE")));
     else
       throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
     break;
