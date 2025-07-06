@@ -20,7 +20,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#if (defined(_WIN32) || defined(_WIN64))
+#if (defined(_WIN32) || defined(_WIN64) || defined(_M_ARM64))
 #define __WINDOWS__
 #endif
 

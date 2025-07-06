@@ -1,11 +1,13 @@
 #ifndef DECLSPEC_H_
 #define DECLSPEC_H_
 
-#if (defined(_WIN32) || defined(_WIN64))
+#if (defined(_WIN32) || defined(_WIN64) || defined(_M_ARM64))
+#define LIBBLOC_MSWIN
 #define LIBBLOC_DLL_EXPORT __declspec(dllexport)
 #define LIBBLOC_DLL_IMPORT __declspec(dllimport)
 #define LIBBLOC_DLL_LOCAL
 #else
+#define LIBBLOC_UNIX
 #if __GNUC__ >= 4
 #define LIBBLOC_DLL_EXPORT __attribute__ ((visibility ("default")))
 #define LIBBLOC_DLL_IMPORT __attribute__ ((visibility ("default")))

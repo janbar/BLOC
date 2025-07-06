@@ -20,7 +20,7 @@
 /* Disable features we do not need. */
 #define YY_NEVER_INTERACTIVE 1
 #define YY_NO_UNPUT 1
-#if (defined(_WIN32) || defined(_WIN64))
+#if (defined(_WIN32) || defined(_WIN64) || defined(_M_ARM64))
 #define YY_NO_UNISTD_H 1
 #endif
 %}

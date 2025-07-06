@@ -22,7 +22,7 @@
 
 #include <cstdio>
 #include <cerrno>
-#if (defined(_WIN32) || defined(_WIN64))
+#if defined(LIBBLOC_MSWIN)
 #include "win32/dirent.h"
 #else
 #include <dirent.h>
@@ -30,11 +30,7 @@
 #endif
 #include <sys/stat.h>
 
-#if (defined(_WIN32) || defined(_WIN64))
-#define __WINDOWS__
-#endif
-
-#ifdef __WINDOWS__
+#if defined(LIBBLOC_MSWIN)
 #define FILE_SEPARATOR '\\'
 #ifndef PATH_MAX
 #define PATH_MAX 4096
@@ -282,7 +278,7 @@ static std::string _absolutePath(const std::string& path)
 {
   char buf[PATH_MAX];
   *buf = '\0';
-#if defined(__WINDOWS__)
+#if defined(LIBBLOC_MSWIN)
   _fullpath(buf, path.c_str(), PATH_MAX);
 #else
   if (realpath(path.c_str(), buf) == nullptr)

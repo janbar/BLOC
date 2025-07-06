@@ -237,7 +237,7 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
   size_t head = 0;      /* head cut */
   size_t tail = chunk;  /* tail cut */
 
-#if (defined(_WIN32) || defined(_WIN64))
+#if defined(LIBBLOC_MSWIN)
   FILE * pout = _popen(cmd.c_str(), "r");
 #else
   FILE * pout = ::popen(cmd.c_str(), "r");
@@ -311,7 +311,7 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
     tmp = nullptr;
     bin = nullptr;
 
-#if (defined(_WIN32) || defined(_WIN64))
+#if defined(LIBBLOC_MSWIN)
     int r = _pclose(pout);
 #else
     int r = pclose(pout);
@@ -365,7 +365,7 @@ void sys::Handle::setvar(const std::string& name, const std::string& value)
 {
   if (name.length() == 0)
     return;
-#if (defined(_WIN32) || defined(_WIN64))
+#if defined(LIBBLOC_MSWIN)
   std::string buf;
   buf.append(name).append("=").append(value);
   _putenv(buf.c_str());
@@ -378,7 +378,7 @@ void sys::Handle::unsetvar(const std::string& name)
 {
   if (name.length() == 0)
     return;
-#if (defined(_WIN32) || defined(_WIN64))
+#if defined(LIBBLOC_MSWIN)
   std::string buf;
   buf.append(name).append("=");
   _putenv(buf.c_str());

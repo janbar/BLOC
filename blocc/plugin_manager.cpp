@@ -22,7 +22,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#if (defined(_WIN32) || defined(_WIN64))
+#if defined(LIBBLOC_MSWIN)
 #include "win32/dlfcn.h"
 #define FILE_SEPARATOR '\\'
 #define LIBPREFIX "bloc_"

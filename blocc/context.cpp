@@ -30,7 +30,7 @@
 #include <random>
 #include <cassert>
 
-#if (defined(_WIN32) || defined(_WIN64))
+#if defined(LIBBLOC_MSWIN)
 #include <process.h>  /* for getpid */
 #include <io.h>       /* for dup */
 #define STDOUT_FILENO _fileno(stdout)

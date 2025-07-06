@@ -58,11 +58,7 @@
 static char * rl_line = nullptr;
 #endif
 
-#if (defined(_WIN32) || defined(_WIN64))
-#define __WINDOWS__
-#endif
-
-#ifdef __WINDOWS__
+#ifdef LIBBLOC_MSWIN
 #define STDOUT stdout
 #define STDOUT_FILENO _fileno(stdout)
 #define FLUSHOUT fflush(STDOUT)
@@ -170,7 +166,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   ctx.trusted(true);
   /* setup breaking state */
   g_breaker = { true, &ctx };
-#ifdef __WINDOWS__
+#ifdef LIBBLOC_MSWIN
   init_ctrl_handler(&g_breaker);
 #else
   SignalHandler sh;
@@ -279,7 +275,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   }
   for (auto s : statements) delete s;
   delete p;
-#ifdef __WINDOWS__
+#ifdef LIBBLOC_MSWIN
   stop_ctrl_handler();
 #else
   sh.omitSignal(SIGINT);

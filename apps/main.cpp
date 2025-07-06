@@ -37,8 +37,7 @@
 #include "cli_parser.h"
 #include "usage.h"
 
-#if (defined(_WIN32) || defined(_WIN64))
-#define __WINDOWS__
+#if defined(LIBBLOC_MSWIN)
 #define STDOUT stdout
 #define STDERR stderr
 #define FLUSHOUT fflush(STDOUT)
@@ -70,7 +69,7 @@ struct AutoFILEClose final
   }
 };
 
-#ifdef __WINDOWS__
+#ifdef LIBBLOC_MSWIN
 /* MSC handler for C runtime */
 static void on_invalid_parameter(
     const wchar_t * expression, const wchar_t * function,
@@ -82,7 +81,7 @@ static void on_invalid_parameter(
 
 int main(int argc, char **argv) {
 
-#ifdef __WINDOWS__
+#ifdef LIBBLOC_MSWIN
   /* configure the main handler for C runtime */
   (void) _set_invalid_parameter_handler(on_invalid_parameter);
 #endif
