@@ -10,7 +10,12 @@ BLOC can be used as is or embedded in a C/C++ program to perform dynamic process
 The language is strongly typed and the syntax is extremely readable, which avoids misunderstandings and design ambiguities.
 The declaration and execution of functions are confined in their own context.
 Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table.
-For now, it processes twice as fast as Python, and twenty as fast than Perl.
+For now, it processes twice as fast as Python and Lua, and twenty as fast than Perl.
+
+It is my common scripting language, running secure, fast, and as same on all platforms (MS-Windows, Linux, BSD, MacOS, Illumos, SunOS).
+By using the modules SQLite3 or MySQL, it interoperates natively with a database.
+And by using the modules sys, file, date, it makes it a powerful scripting language for everyday processing.
+Finally, it is my powerful calculator, and my replacement for the farmer *bc* or *expr*.
 
 ## Install BLOC
 Ubuntu packages are available in the repository `ppa:jlbarriere68/bloc`. You can install BLOC on Ubuntu by the following:
@@ -19,7 +24,7 @@ sudo add-apt-repository ppa:jlbarriere68/bloc
 sudo apt-get update
 sudo apt-get install bloc bloc-module-*
 ```
-For other OS, you have to build it yourself.
+For other OS, please check if there is an artifact on the release page, otherwise you need to build it yourself.
 
 ## Build BLOC
 You can build and test BLOC on Unix (Linux, BSD, MacOS, Illumos, SunOS), and MS-Windows. This repository contains the CMake project to configure and build BLOC. To achieve the build you will need to install **cmake** and a C99/C++11 compiler (**GCC** or **CLang**).
@@ -33,8 +38,8 @@ cmake --build release --target test
 cmake --build release --target install
 ```
 
-The modules **file**, **date**, **csv**, **utf8** and **sys** don't require external dependencies, and so they are made with the core library.
-To enable the build of the modules **sqlite3**, **mysql** and **plplot**, prior you have to install their dependencies.
+At least the modules **file**, **date**, **csv**, **utf8** and **sys** don't require external dependencies, and so they are made with the core library.
+To enable the build of the others modules **sqlite3**, **mysql** and **plplot**, prior you have to install and configure the dependencies.
 
 ## Run the CLI
 Launch **bloc** and type "help".
