@@ -13,7 +13,7 @@ Internally, BLOC supports scalar data types like boolean, integer, decimal, stri
 For now, it processes twice as fast as Python and Lua, and twenty as fast than Perl.
 
 It is my common scripting language, running secure, fast, and as same on all platforms (MS-Windows, Linux, BSD, MacOS, Illumos, SunOS).
-By using the modules SQLite3 or MySQL, it interoperates natively with a database.
+By using the modules SQLite3 or MariaDB, it interoperates natively with a database.
 And by using the modules sys, file, date, it makes it a powerful scripting language for everyday processing.
 Finally, it is my powerful calculator, and my replacement for the farmer *bc* or *expr*.
 
@@ -39,7 +39,7 @@ cmake --build release --target install
 ```
 
 At least the modules **file**, **date**, **csv**, **utf8** and **sys** don't require external dependencies, and so they are made with the core library.
-To enable the build of the others modules **sqlite3**, **mysql** and **plplot**, prior you have to install and configure the dependencies.
+To enable the build of the others modules **sqlite3**, **mariadb** and **plplot**, prior you have to install and configure the dependencies.
 
 ## Run the CLI
 Launch **bloc** and type "help".

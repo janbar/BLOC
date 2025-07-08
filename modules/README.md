@@ -10,6 +10,7 @@ Then the user has to grant the permission for each module, in example using the 
 | csv | safe | None |
 | date | safe | None |
 | file | **unsafe** | Create or modify local files |
+| mariadb | safe | None |
 | mysql | safe | None |
 | plplot | **unsafe** | Create or modify local files for plot output |
 | sqlite3 | **unsafe** | Create or modify local files (DB) |
