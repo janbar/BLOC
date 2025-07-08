@@ -19,7 +19,7 @@ jobs:
     - name: Add more dependecies
       run: |
         sudo apt install -y \
-            libreadline-dev libplplot-dev libsqlite3-dev libmysqlclient-dev
+            libreadline-dev libplplot-dev libsqlite3-dev libmariadb-dev
 
     - name: Configure CMake
       run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTING=ON
