@@ -8,7 +8,7 @@ Build-Depends: cmake,
                libsqlite3-dev,
                libreadline-dev,
                libplplot-dev,
-               libmysqlclient-dev
+               libmariadb-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/janbar/BLOC
 
@@ -36,7 +36,7 @@ Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
 Recommends: plplot-driver-xwin
 Description: Module plplot for BLOC.
 
-Package: bloc-module-mysql
+Package: bloc-module-mariadb
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
-Description: Module mysql for BLOC.
+Description: Module mariadb for BLOC.
