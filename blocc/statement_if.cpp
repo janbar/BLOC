@@ -91,8 +91,9 @@ void IFStatement::unparse(Context& ctx, FILE * out) const
   }
 }
 
-Executable * IFStatement::parse_clause(Parser& p, Context& ctx)
+Executable * IFStatement::parse_clause(Parser& p, Context& ctx, IFStatement * s)
 {
+  ctx.execBegin(s);
   std::list<const Statement*> statements;
   try
   {
@@ -121,8 +122,10 @@ Executable * IFStatement::parse_clause(Parser& p, Context& ctx)
   {
     for (auto ss : statements)
       delete ss;
+    ctx.execEnd();
     throw;
   }
+  ctx.execEnd();
   return new Executable(ctx, statements);
 }
 
@@ -152,14 +155,14 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
         delete exp;
         throw ParseError(EXC_PARSE_OTHER_S, "Missing THEN keyword in IF statement.");
       }
-      Executable * exec = parse_clause(p, ctx);
+      Executable * exec = parse_clause(p, ctx, s);
       s->_rules.push_back(std::make_pair(exp, exec));
       t = p.pop();
       if (t->text == KEYWORDS[STMT_ELSIF])
         continue; /* process next rule */
       if (t->text == KEYWORDS[STMT_ELSE])
       {
-        exec = parse_clause(p, ctx);
+        exec = parse_clause(p, ctx,s);
         s->_rules.push_back(std::make_pair(nullptr, exec));
         t = p.pop();
       }
