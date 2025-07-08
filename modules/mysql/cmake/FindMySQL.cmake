@@ -3,7 +3,7 @@
 #
 
 # This module defines
-# MYSQL_INCLUDE_DIRECTORIES, where to find mysql.h
+# MYSQL_INCLUDE_DIRS, where to find mysql.h
 # MYSQL_LIBRARIES, the libraries to link against to connect to MySQL
 # MYSQL_FOUND, If false, you cannot build anything that requires MySQL
 
@@ -17,8 +17,8 @@
 
 SET( MYSQL_FOUND 0 )
 
-FIND_PATH(MYSQL_INCLUDE_DIRS mysql.h
-  PATH_SUFFIXES mysql mariadb/mysql
+FIND_PATH( MYSQL_INCLUDE_DIRS mysql.h
+  PATH_SUFFIXES mysql
   PATHS
   "C:/Program Files/MySQL/include"
   "C:/MySQL/include"
@@ -26,8 +26,7 @@ FIND_PATH(MYSQL_INCLUDE_DIRS mysql.h
 )
 
 FIND_LIBRARY( MYSQL_LIBRARY
-  NAMES mysql libmysql mysqlclient
-  PATH_SUFFIXES mysql mariadb/mysql
+  NAMES mysql mysqlclient libmysql libmysqlclient
   PATHS
   "C:/Program Files/MySQL/lib"
   "C:/MySQL/lib"
