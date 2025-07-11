@@ -1,0 +1,3 @@
+The $$DO$$ statement execute the expression to follow.
+
+do {expression};

@@ -1,0 +1,6 @@
+
+$$bool$$ returns the boolean representation of numeric x, or the null boolean.
+
+bool( [ x ] )
+
+When x is 0 the boolean false is returned, else true.

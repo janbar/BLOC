@@ -1,0 +1,3 @@
+The $$CONTINUE$$ statement "jumps over" one iteration in the loop.
+
+continue;

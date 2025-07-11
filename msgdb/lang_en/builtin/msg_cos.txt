@@ -1,0 +1,4 @@
+
+$$cos$$ returns the cosine of a radian angle x.
+
+cos( x )

@@ -1,0 +1,4 @@
+
+$$subraw$$ returns a part of bytes array x.
+
+subraw( x , begin [, count] )

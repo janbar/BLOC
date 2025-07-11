@@ -1,0 +1,38 @@
+
+$$exit$$
+    Quit the command line. All unsaved work will be lost.
+
+$$clear$$
+    Clear statements buffer. All unsaved work will be lost.
+
+$$load$$ {path}
+    Load statements from file to be parsed and added to buffer.
+    See command 'save'.
+
+$$list$$
+    List statements in buffer. Statements previously parsed successfully are
+    stored in buffer, to be saved or rerun.
+
+$$run$$
+    Execute statements in buffer.
+
+$$save$$ {path}
+    Save statements buffer to file. See command 'load'.
+
+$$dump$$
+    List all functions, and variables in memory.
+
+$$desc$$ {VARIABLE NAME}
+    Describe variable.
+
+$$!$$ {command}
+    Executes an operating system command without leaving.
+
+$$=$$ {EXPRESSION}
+    Process the inline expression to follow. The expression can use any
+    available operator and function.
+
+$$help$$ {keyword}
+    Show help about keyword to follow. Keyword could be the name of any
+    available statement or command, a category among statement, builtin,
+    expression, operator, type, or variable, else an imported module.

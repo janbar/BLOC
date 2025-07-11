@@ -1,0 +1,4 @@
+
+$$num$$ returns the decimal value of x else throw error, or the null decimal.
+
+num( [ x ] )

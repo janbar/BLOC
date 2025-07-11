@@ -1,0 +1,7 @@
+
+$$str$$ returns the string representation of x, or the null string.
+
+str( [ x ] )
+
+String has the method at(), put(), insert(), delete(), count(),
+and concat({STRING | INTEGER}).

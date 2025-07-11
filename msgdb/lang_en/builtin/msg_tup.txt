@@ -1,0 +1,14 @@
+
+$$tup$$ returns a new tuple of items, or the null tuple.
+
+tup( [ x [, ...] ] )
+
+Item can be boolean, integer, decimal, string, object, or bytes array.
+Nesting and table are not allowed. Tuple is unchangeable, meaning that we
+cannot change type, add or remove items after the tuple has been created.
+The operator '@#' accesses the item at position # [1..n], as shown below.
+Expression {TUPLE}@1 returns the value of item at position 1.
+Tuple has the method set@#(x) to assign the value x to the item of rank #.
+Item type must be qualified. Therefore to assign null you have to use one
+of builtin function providing the null type qualified, i.e bool(), int(),
+num(), str() or raw().

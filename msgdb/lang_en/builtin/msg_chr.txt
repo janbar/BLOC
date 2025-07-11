@@ -1,0 +1,4 @@
+
+$$chr$$ returns a character from the specified ASCII value x.
+
+chr( x )

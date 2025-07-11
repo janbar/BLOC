@@ -1,0 +1,9 @@
+The $$FOR$$ statement provides iterator construct. It defines a control variable
+that is initialized to an initial value. Then block of statements after the
+LOOP keyword will be executed while the specified limit isn't reached. The
+control value is incremented or decremented after each iteration. The sequence
+order is automatic else it could be specified with keywords ASC or DESC.
+
+for {var} in {integer expression} to {integer expression} [asc|desc] loop
+    [statement ...]
+end loop;

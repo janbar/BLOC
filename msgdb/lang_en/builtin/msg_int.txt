@@ -1,0 +1,4 @@
+
+$$int$$ returns the integer value of x else throw error, or the null integer.
+
+int( [ x ] )

@@ -1,0 +1,4 @@
+
+$$max$$ returns the largest value among numbers x and y.
+
+max( x , y )

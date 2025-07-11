@@ -49,7 +49,6 @@ struct Operator
    */
 
   LIBBLOC_API static const char * OPVALS[];
-  LIBBLOC_API static const char * HELPS[];
 
   enum OP {
     OP_NIL  = 0,

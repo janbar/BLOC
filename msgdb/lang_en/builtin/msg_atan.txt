@@ -1,0 +1,4 @@
+
+$$atan$$ returns the arc tangent of x in radians.
+
+atan( x )

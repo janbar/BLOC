@@ -1,0 +1,4 @@
+
+$$exp$$ returns the value of e raised to the xth power.
+
+exp( x )

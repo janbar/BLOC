@@ -1,0 +1,4 @@
+
+$$mod$$ returns the remainder of x divided by y.
+
+mod( x , y )

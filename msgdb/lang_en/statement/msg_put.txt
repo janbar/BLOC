@@ -1,0 +1,6 @@
+The $$PUT$$ statement writes out the string value of expression(s).
+
+put [{expression} ...];
+
+Only boolean, integer, decimal, and string expression can be written out.
+All other types must be converted first (see function STR).

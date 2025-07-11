@@ -1,0 +1,4 @@
+
+$$lower$$ convert any uppercase letters in string x to lowercase letters.
+
+lower( x )

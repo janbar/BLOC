@@ -1,0 +1,4 @@
+
+$$floor$$ returns the largest integer value less than or equal to x.
+
+floor( x )

@@ -1,0 +1,5 @@
+The $$RETURN$$ statement exit from program returning a payload value or not.
+
+return [{expression}];
+
+Only boolean, integer, numeric, and literal expression can be returned.

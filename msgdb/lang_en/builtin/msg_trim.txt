@@ -1,0 +1,4 @@
+
+$$trim$$ Remove whitespace from the left and right side of string x.
+
+trim( x )

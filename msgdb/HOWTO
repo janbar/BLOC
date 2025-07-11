@@ -1,0 +1,7 @@
+# Generate sources by running the script with "bloc"
+
+# On UNIX
+./bloc generate.b
+
+# On MS-Windows
+bloc.exe generate.b

@@ -1,0 +1,8 @@
+
+$$tab$$ returns a new uniform table filled with x element(s) y, or the null table.
+
+tab( [ x , y ] )
+
+Nested element can be any type, or tuple. Nesting level is supported up
+to 254 dimmensions. Table has the methods at(), put(), insert(), delete(),
+count(), and concat({TABLE | ELEMENT}).

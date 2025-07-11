@@ -1,0 +1,25 @@
+
+$$INTEGER$$
+
+In BLOC, integers are zero, positive or negative whole numbers without
+fractional part, e.g. 0, 100, -10. Integers can be hexadecimal values. The
+followings are valid integer literals in BLOC.
+
+0 , 100 , -10, 1234567890, 0xFF00, 0xabcdef
+
+Leading zeros in non-zero integers is allowed e.g. 000123 is integer 123.
+Note that integers must be without a fractional part (decimal point). If it
+includes a fractional then it is a $$decimal$$. The precision of integers is
+64 bits regardless of the system architecture.
+
+Use the $$int( x )$$ function to convert string, or decimal to integer.
+
+int(456)        >>> integer 456
+int(123.456)    >>> integer 123
+int("1.234e5")  >>> integer 123400
+
+Use the $$isnum( x )$$ function to validate a number literal.
+
+isnum("123")    >>> boolean true
+isnum("456XYZ") >>> boolean true
+isnum("XYZ456") >>> boolean false

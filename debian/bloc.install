@@ -1,5 +1,6 @@
 usr/bin/bloc
 usr/lib/*/libblocc.so*
+usr/lib/*/libbloc_msgdb.so*
 usr/lib/*/libbloc_csv.so*
 usr/lib/*/libbloc_date.so*
 usr/lib/*/libbloc_file.so*

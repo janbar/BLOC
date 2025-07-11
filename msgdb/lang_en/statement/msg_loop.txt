@@ -1,0 +1,1 @@
+The $$LOOP$$ statement begins the block of statements inside loop FOR or WHILE.

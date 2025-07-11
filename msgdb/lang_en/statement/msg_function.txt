@@ -1,0 +1,18 @@
+The $$FUNCTION$$ statement declares a block of code which only runs
+when it is called, and should return data as a result. You can pass
+data, known as parameters, into a function.
+
+function {name} [( x [, y [:{type name}] ...] )] return {type name} is
+begin [statement ...]
+[ exception [ when {exception name} then [statement ...] ...] ]
+end;
+
+The type of each parameter can be declared as needed, otherwise they
+remain opaque. If specified the type name must follow the parameter name
+after a colon, like this \
+The returned type can be boolean, integer, decimal, string, bytes,
+tuple, table, undefined or an imported object. Types among undefined,
+tuple, and table are opaque, so the result must be handled by the caller.
+In any case, that is only a declaration intended to aid the programmer,
+and no checks are performed at runtime.
+See statement BEGIN.

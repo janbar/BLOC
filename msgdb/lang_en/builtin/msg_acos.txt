@@ -1,0 +1,4 @@
+
+$$acos$$ returns the arc cosine of x in radians.
+
+acos( x )

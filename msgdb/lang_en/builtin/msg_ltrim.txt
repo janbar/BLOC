@@ -1,0 +1,4 @@
+
+$$ltrim$$ removes whitespace from the left side of string x.
+
+ltrim( x )

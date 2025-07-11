@@ -1,0 +1,9 @@
+The $$IMPORT$$ statement is the directive to load an external module.
+External module provides new type with features (object). Loading is
+performed immediately, so the new type can be used now.
+
+import {module name};
+import {encapsulated string containing the library file path};
+
+Using module name will try to load the library 'libbloc_{name}.so'
+on UNIX, and 'bloc_{name}.dll' on WINDOWS.

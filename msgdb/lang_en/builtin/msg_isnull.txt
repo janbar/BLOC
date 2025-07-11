@@ -1,0 +1,4 @@
+
+$$isnull$$ returns true if x is null.
+
+isnull( x )

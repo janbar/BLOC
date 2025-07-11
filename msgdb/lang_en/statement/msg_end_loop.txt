@@ -1,0 +1,2 @@
+The $$END LOOP$$ statement close the latest block of statement in a loop. See $$FOR$$,
+or $$WHILE$$.

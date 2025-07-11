@@ -1,0 +1,4 @@
+
+$$min$$ returns the smallest value among numbers x and y.
+
+min( x , y )

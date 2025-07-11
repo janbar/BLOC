@@ -1,0 +1,9 @@
+The $$WHILE$$ statement provides loop flow in execution.
+It has a boolean expression associated with it that is evaluated at runtime.
+While the result of that evaluation is a 'true' value, then statement after
+the LOOP keyword will be executed. If multiple statements follow the LOOP
+keyword, they are executed in sequence but only while the expression is true.
+
+while {boolean expression} loop
+    [statement ...]
+end loop;

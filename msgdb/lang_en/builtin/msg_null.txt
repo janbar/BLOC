@@ -1,0 +1,6 @@
+
+$$null$$ is the typeless null value. You can use the builtin isnull( x ) to check
+whether a value is null or not.
+
+See bool(), int(), num(), str(), raw(), tup() or tab() to provide a type
+qualified null value.

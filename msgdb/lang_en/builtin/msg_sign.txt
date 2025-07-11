@@ -1,0 +1,4 @@
+
+$$sign$$ returns the signed unity of x, i.e the number +1 or -1.
+
+sign( x )

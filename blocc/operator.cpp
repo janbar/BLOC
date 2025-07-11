@@ -41,39 +41,4 @@ std::set<Operator::OP> Operator::operatorSet()
   return lst;
 }
 
-const char * Operator::HELPS[] = {
-  "",
-  "addition ( x + y )",
-  "subtraction ( x - y )",
-  "multiplication ( x * y )",
-  "division ( x / y )",
-  "factor ( x ** y ), alias ( x power y ), alias pow( x , y )",
-  "unary minus ( -x )",
-  "unary positive ( +x )",
-  "modulo ( x % y ), alias mod( x , y )",
-  "",
-  "bitwise AND ( x & y )",
-  "bitwise inclusive OR ( x | y )",
-  "bitwise exclusive OR ( x ^ y )",
-  "unary Bitwise NOT ( ~x )",
-  "",
-  "left shift bit ( x << y )",
-  "right shift bit ( x >> y )",
-  "member operator {var}.member(...)",
-  "", "",
-  "equality ( x == y )",
-  "inequality ( x != y )",
-  "less than ( x < y )",
-  "less than or equal ( x <= y )",
-  "greater than ( x > y )",
-  "greater than or equal ( x >= y )",
-  "", "", "", "",
-  "logical AND ( x && y ), alias ( x and y )",
-  "logical inclusive OR ( x || y ), alias ( x or y )",
-  "logical exclusive OR ( x xor y )",
-  "logical negation ( !x ), alias ( not x )",
-  "",
-  "regular expression ( x matches y )",
-};
-
 }

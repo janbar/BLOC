@@ -1,0 +1,4 @@
+
+$$rtrim$$ Remove whitespace from the right side of string x.
+
+rtrim( x )

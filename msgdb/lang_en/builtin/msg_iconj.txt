@@ -1,0 +1,4 @@
+
+$$iconj$$ returns the complex as the conjugate of the given complex.
+
+iconj( x )

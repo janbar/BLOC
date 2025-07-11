@@ -1,0 +1,4 @@
+
+$$log$$ returns the natural logarithm (base-e logarithm) of x.
+
+log( x )

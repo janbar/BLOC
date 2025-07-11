@@ -1,0 +1,27 @@
+
+$$DATA TYPE$$
+
+In BLOC, an expandable list of data types are supported and can be used to load
+variables. However built-in operators handle only the internal types.
+
+$$BOOLEAN$$     Logical Boolean
+$$INTEGER$$     Signed 64 bits
+$$DECIMAL$$     Double precision floating-point number
+$$COMPLEX$$     Complex with double precision floating-point parts
+$$STRING$$      Character string up to 4GB in size
+$$BYTES$$       Binary data up to 4GB in size
+
+In addition we can import many other types from dynamic modules. These types
+are objects with specialized features. e.g date, file, etc.
+
+$$OBJECT$$      Imported types from dynamic modules
+
+Scalar and object types can be grouped together within tuple.
+
+$$TUPLE$$       Ordered group of values or objects (row)
+
+Finally, BLOC supports uniform n-dimensional arrays of any type.
+
+$$TABLE$$       n-dimensional uniform array (n < 255)
+
+Type "help {type}" for more information on given type.

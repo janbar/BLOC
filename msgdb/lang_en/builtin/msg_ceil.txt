@@ -1,0 +1,4 @@
+
+$$ceil$$ returns the smallest integer value greater than or equal to x.
+
+ceil( x )

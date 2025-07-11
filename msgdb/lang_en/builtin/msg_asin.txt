@@ -1,0 +1,4 @@
+
+$$asin$$ returns the arc sine of x in radians.
+
+asin( x )

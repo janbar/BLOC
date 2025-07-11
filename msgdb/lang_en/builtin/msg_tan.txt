@@ -1,0 +1,4 @@
+
+$$tan$$ returns the tangent of a radian angle x.
+
+tan( x )

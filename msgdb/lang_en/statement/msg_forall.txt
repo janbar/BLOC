@@ -1,0 +1,10 @@
+The $$FORALL$$ statement provides row fetch construct. It defines an iterator
+variable that points to current value. Then block of statements after the
+LOOP keyword will be executed until last row is reached.
+The fetch order could be specified with keywords ASC or DESC.
+
+forall {var} in {table expression} [asc|desc] loop
+    [statement ...]
+end loop;
+
+Inside the loop, the target table can be modified without care.

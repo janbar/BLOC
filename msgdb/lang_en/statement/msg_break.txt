@@ -1,0 +1,3 @@
+The $$BREAK$$ statement jumps out of a loop.
+
+break;

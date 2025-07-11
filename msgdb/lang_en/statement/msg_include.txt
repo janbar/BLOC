@@ -1,0 +1,4 @@
+The $$INCLUDE$$ statement is the directive to embed another source.
+You can have up to three levels of nesting.
+
+include {encapsulated string containing the file path};

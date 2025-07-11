@@ -1,0 +1,4 @@
+
+$$imag$$ returns the modulus or magnitude of the given complex.
+
+imag( x )

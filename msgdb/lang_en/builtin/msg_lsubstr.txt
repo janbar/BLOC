@@ -1,0 +1,4 @@
+
+$$lsubstr$$ returns left part of string x.
+
+lsubstr( x , count )

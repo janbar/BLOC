@@ -1,0 +1,6 @@
+
+$$strlen$$ returns the size of string x.
+
+strlen( x )
+
+See the member $$count$$ of type STRING.

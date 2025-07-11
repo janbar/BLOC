@@ -1,0 +1,3 @@
+The $$TRACE$$ statement enable or disable trace verbosity.
+
+trace {boolean expression};

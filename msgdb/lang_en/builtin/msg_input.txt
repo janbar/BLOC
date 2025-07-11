@@ -1,0 +1,7 @@
+
+$$input$$ returns true when new data has been read from the input.
+The read value without newline terminator, is stored into var. The 'string'
+variable var must be initialized first. Optionally y contains the desired
+prompt.
+
+input( var [, y] )

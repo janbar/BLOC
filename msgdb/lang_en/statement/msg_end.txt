@@ -1,0 +1,2 @@
+The $$END$$ statement close the latest block of statements opened by BEGIN, FOR,
+WHILE or IF.

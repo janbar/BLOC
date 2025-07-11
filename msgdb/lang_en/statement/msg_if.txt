@@ -1,0 +1,10 @@
+The $$IF$$ statement provides conditional control flow in execution.
+It has a boolean expression associated with it that is evaluated at runtime.
+If the result of that evaluation is a 'true' value, then statements beyond
+the THEN keyword will be executed until end delimited by ELSIF or ELSE or
+END IF.
+
+if {boolean expression} then [statement ...]
+[ elsif {boolean expression} then [statement ...] ...]
+[ else [statement ...] ]
+end if;

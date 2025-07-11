@@ -17,24 +17,11 @@
  */
 
 #include "cli_parser.h"
+#include "cli_msgdb.h"
 #include "read_file.h"
 #include "breaker.h"
 #include "license.h"
 #include "copyright.h"
-#include "help.h"
-#include "help_expression.h"
-#include "help_variable.h"
-#include "help_type.h"
-#include "help_boolean.h"
-#include "help_integer.h"
-#include "help_decimal.h"
-#include "help_complex.h"
-#include "help_string.h"
-#include "help_object.h"
-#include "help_bytes.h"
-#include "help_tuple.h"
-#include "help_table.h"
-
 #include <blocc/parser.h>
 #include <blocc/readstdin.h>
 #include <blocc/exception_parse.h>
@@ -95,25 +82,6 @@ static const char * CMD_KEYWORDS[] =
   "" /*unknown command*/,
 };
 
-typedef struct { const char * help; unsigned * text_len; unsigned char * text; }
-HELP_CATEGORY;
-static const HELP_CATEGORY HELP_CATEGORIES[] =
-{
-  { "",           &help_txt_len,              help_txt },
-  { "expression", &help_expression_txt_len,   help_expression_txt },
-  { "variable",   &help_variable_txt_len,     help_variable_txt },
-  { "type",       &help_type_txt_len,         help_type_txt },
-  { "boolean",    &help_boolean_txt_len,      help_boolean_txt },
-  { "integer",    &help_integer_txt_len,      help_integer_txt },
-  { "decimal",    &help_decimal_txt_len,      help_decimal_txt },
-  { "complex",    &help_complex_txt_len,      help_complex_txt },
-  { "string",     &help_string_txt_len,       help_string_txt },
-  { "object",     &help_object_txt_len,       help_object_txt },
-  { "bytes",      &help_bytes_txt_len,        help_bytes_txt },
-  { "tuple",      &help_tuple_txt_len,        help_tuple_txt },
-  { "table",      &help_table_txt_len,        help_table_txt },
-};
-
 /* ANSI terminal colors */
 enum FG
 {
@@ -123,6 +91,7 @@ enum FG
 };
 
 static bool g_has_color = false;
+static MsgDB * g_msgdb = nullptr;
 
 static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args);
 static CMD find_cmd(const std::string& c);
@@ -146,6 +115,7 @@ public:
 
 void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
 {
+  g_msgdb = new MsgDB();
   /* first check for virtual terminal and colored output */
   if (options.color)
     g_has_color = true;
@@ -286,6 +256,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
     free(rl_line);
   clear_history();
 #endif
+  delete g_msgdb;
 }
 
 int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
@@ -505,6 +476,7 @@ static const char NORM[4] = { 0x1b, 0x5b, 0x30, 0x6d };
 static void print_btml(const void * buf, unsigned len)
 {
   const char * cur = (const char *)buf;
+  char color = 0;
   char pc = 0;
   char c;
   while (len > 0)
@@ -515,15 +487,20 @@ static void print_btml(const void * buf, unsigned len)
     {
       switch (c)
       {
-      case 'B':
+      case '$':
         pc = 0;
-        if (g_has_color)
-          PRINTBUF(BOLD, sizeof(BOLD), STDOUT);
-        break;
-      case 'N':
-        pc = 0;
-        if (g_has_color)
-          PRINTBUF(NORM, sizeof(NORM), STDOUT);
+        if (color)
+        {
+          color = 0;
+          if (g_has_color)
+            PRINTBUF(NORM, sizeof(NORM), STDOUT);
+        }
+        else
+        {
+          color = 1;
+          if (g_has_color)
+            PRINTBUF(BOLD, sizeof(BOLD), STDOUT);
+        }
         break;
       case 'T':
         pc = 0;
@@ -547,7 +524,7 @@ static void print_btml(const void * buf, unsigned len)
   }
   if (pc != 0)
     fputc(pc, STDOUT);
-  if (g_has_color)
+  if (color && g_has_color)
     PRINTBUF(NORM, sizeof(NORM), STDOUT);
 }
 
@@ -555,13 +532,13 @@ static void describe_module(unsigned type_id)
 {
   char buf[80];
   const bloc::PLUGGED_MODULE& plug = bloc::PluginManager::instance().plugged(type_id);
-  print_btml("\n$BCONSTRUCTORS\n\n", UINT16_MAX);
-  snprintf(buf, sizeof(buf), "$B%s$N", plug.interface.name);
+  print_btml("\n$$CONSTRUCTORS$$\n\n", UINT16_MAX);
+  snprintf(buf, sizeof(buf), "$$%s$$", plug.interface.name);
   print_btml(buf, sizeof(buf));
   PRINT("() is default contructor\n\n");
   for (unsigned i = 0; i < plug.interface.ctors_count; ++i)
   {
-    snprintf(buf, sizeof(buf), "$B%s$N", plug.interface.name);
+    snprintf(buf, sizeof(buf), "$$%s$$", plug.interface.name);
     print_btml(buf, sizeof(buf));
     PRINT("(");
     for (unsigned j = 0; j < plug.interface.ctors[i].args_count; ++j)
@@ -584,10 +561,10 @@ static void describe_module(unsigned type_id)
       PRINT1("%s\n", plug.interface.ctors[i].brief);
     PRINT("\n");
   }
-  print_btml("\n$BMETHODS\n\n", UINT16_MAX);
+  print_btml("\n$$METHODS$$\n\n", UINT16_MAX);
   for (unsigned i = 0; i < plug.interface.method_count; ++i)
   {
-    snprintf(buf, sizeof(buf), "$B%s$N", plug.interface.methods[i].name);
+    snprintf(buf, sizeof(buf), "$$%s$$", plug.interface.methods[i].name);
     print_btml(buf, sizeof(buf));
     PRINT("(");
     for (unsigned j = 0; j < plug.interface.methods[i].args_count; ++j)
@@ -638,68 +615,70 @@ static void print_help(const std::string& what)
 {
   std::string w(what);
   std::transform(w.begin(), w.end(), w.begin(), ::tolower);
-  /* help from libbloc */
   if (w == "builtin")
   {
-    print_btml("\n$BBUILTIN FUNCTION\n\n", UINT16_MAX);
+    print_btml("\n$$BUILTIN FUNCTION$$\n\n", UINT16_MAX);
     print_table(bloc::BuiltinExpression::keywordSet(), -10, 6);
   }
   else if (w == "statement")
   {
-    print_btml("\n$BSTATEMENT\n\n", UINT16_MAX);
+    print_btml("\n$$STATEMENT$$\n\n", UINT16_MAX);
     print_table(bloc::Statement::keywordSet(), -10, 6);
   }
-  else if (w == "operator")
+  else if (g_msgdb->initialize())
   {
-    print_btml("\n$BOPERATOR\n\n", UINT16_MAX);
-    for (auto& op : bloc::Operator::operatorSet())
+    /* break the search string for section name, and keyword */
+    std::string ws;
+    auto w2 = w.find(" : ", 0);
+    if (w2 != std::string::npos)
     {
-      char buf[16];
-      snprintf(buf, 16, "$B%s$N$T  ", bloc::Operator::OPVALS[op]);
-      print_btml(buf, 16);
-      print_btml(bloc::Operator::HELPS[op], UINT16_MAX);
-      PRINT("\n");
+      ws.assign(w.substr(0, w2)); // the section
+      w.assign(w.substr(w2 + 3)); // the keyword
     }
-    PRINT("\n");
-  }
-  else
-  {
-    /* search category from the local table */
-    int cat = 0;
-    for (int i = 0; i < (sizeof(HELP_CATEGORIES) / sizeof(HELP_CATEGORY)); ++i)
-    {
-      if (w != HELP_CATEGORIES[i].help)
-        continue;
-      cat = i;
-      break;
-    }
-    if (cat > 0)
-    {
-      print_btml(HELP_CATEGORIES[cat].text, *HELP_CATEGORIES[cat].text_len);
-      PRINT("\n");
-    }
+
+    const MsgDB::msgdb_keyword * pk = nullptr;
+    const MsgDB::msgdb_section * ps = nullptr;
+    if (ws.empty())
+      ps = g_msgdb->getSection("main"); // start from main
     else
+      ps = g_msgdb->getSection(ws);
+
+    if (ps)
     {
-      /* search keyword */
-      int k;
-      if ((k = bloc::Statement::findKeyword(w)) != bloc::Statement::unknown)
+      pk = ps->keyword_table;
+      while (pk && pk->keyword)
       {
-        char buf[16];
-        snprintf(buf, 16, "\n$B%s\n\n", bloc::Statement::KEYWORDS[k]);
-        print_btml(buf, 16);
-        print_btml(bloc::Statement::HELPS[k], UINT16_MAX);
+        if (w == pk->keyword)
+          break;
+        pk += 1;
+      }
+    }
+    if (pk && pk->text)
+    {
+      print_btml(pk->text, pk->text_len);
+      PRINT("\n");
+    }
+    else if (ws.empty())
+    {
+      /* search for statement */
+      if (bloc::Statement::findKeyword(w) != bloc::Statement::unknown)
+      {
+        pk = g_msgdb->getText("statement", w);
+        if (pk && pk->text)
+          print_btml(pk->text, pk->text_len);
         PRINT("\n\n");
       }
-      else if ((k = bloc::BuiltinExpression::findKeyword(w)) != bloc::BuiltinExpression::unknown)
+      /* search for builtin expression */
+      else if (bloc::BuiltinExpression::findKeyword(w) != bloc::BuiltinExpression::unknown)
       {
-        char buf[16];
-        snprintf(buf, 16, "\n$B%s ", bloc::BuiltinExpression::KEYWORDS[k]);
-        print_btml(buf, 16);
-        print_btml(bloc::BuiltinExpression::HELPS[k], UINT16_MAX);
+        pk = g_msgdb->getText("builtin", w);
+        if (pk && pk->text)
+          print_btml(pk->text, pk->text_len);
         PRINT("\n\n");
       }
       else
       {
+        /* search for external module */
         unsigned type_id = bloc::PluginManager::instance().findModuleTypeId(w);
         if (type_id > 0)
           describe_module(type_id);
@@ -709,6 +688,19 @@ static void print_help(const std::string& what)
         }
       }
     }
+    else
+    {
+      set_color(fgYELLOW);
+      if (ps)
+        PRINT("Unknown keyword.\n");
+      else
+        PRINT1("Section '%s' not found.\n", ws.c_str());
+      reset_color();
+    }
+  }
+  else
+  {
+    set_color(fgYELLOW); PRINT("Help not available.\n"); reset_color();
   }
 }
 
@@ -1012,14 +1004,22 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     t = p.pop();
     if (t->code == bloc::Parser::NewLine)
     {
-      print_btml(HELP_CATEGORIES[0].text, *HELP_CATEGORIES[0].text_len);
+      const MsgDB::msgdb_keyword * pk = nullptr;
+      if (g_msgdb->initialize())
+        pk = g_msgdb->getText("main", "CLI");
+      if (pk && pk->text)
+        print_btml(pk->text, pk->text_len);
+      else
+      {
+        set_color(fgYELLOW); PRINT("Help not available.\n"); reset_color();
+      }
       PRINT("\n");
       return 1;
     }
     std::string w;
     if (t->code == TOKEN_KEYWORD)
       w.assign(t->text);
-    while ((t = p.pop())->code == TOKEN_KEYWORD)
+    while ((t = p.pop())->code == TOKEN_KEYWORD || t->code == ':')
       w.append(" ").append(t->text);
     if (!w.empty())
       print_help(w);

@@ -1,0 +1,11 @@
+The keyword $$EXCEPTION$$ marks the beginning of exception processing section,
+inside a block BEGIN...END. We could catch user defined exception by RAISE,
+or throwable error among $$divide_by_zero$$, $$out_of_range$$.
+The keyword $$others$$ allows us to catch any throwable exception.
+
+exception
+[ when {exception name} then [statement ...] ...]
+[ when others then [statement ...] ]
+
+We can retrieve the catched exception calling the constant $$error$$.
+See statement BEGIN, or RAISE.

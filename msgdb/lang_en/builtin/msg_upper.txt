@@ -1,0 +1,4 @@
+
+$$upper$$ converts any lowercase letters in string x to uppercase letters.
+
+upper( x )

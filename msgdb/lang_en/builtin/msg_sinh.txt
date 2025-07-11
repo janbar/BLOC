@@ -1,0 +1,4 @@
+
+$$sinh$$ returns the hyperbolic sine of x.
+
+sinh( x )

@@ -1,0 +1,5 @@
+The $$RAISE$$ statement throws a user named exception, or throwable error.
+
+raise {exception name};
+
+See EXCEPTION, or statement BEGIN.

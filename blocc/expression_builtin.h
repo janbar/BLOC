@@ -51,7 +51,6 @@ protected:
 public:
 
   LIBBLOC_API static const char * KEYWORDS[];
-  LIBBLOC_API static const char * HELPS[];
 
   enum FUNCTION {
     unknown = -1,

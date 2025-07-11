@@ -1,0 +1,1 @@
+The $$END IF$$ statement close the latest block of statement IF. See $$IF$$.

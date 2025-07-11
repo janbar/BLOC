@@ -1,0 +1,4 @@
+
+$$replace$$ returns a string from x with all occurences of y replaced by z.
+
+replace( x , y , z)

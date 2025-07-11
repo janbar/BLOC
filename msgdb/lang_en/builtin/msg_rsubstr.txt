@@ -1,0 +1,4 @@
+
+$$rsubstr$$ returns right part of string x.
+
+rsubstr( x , count )

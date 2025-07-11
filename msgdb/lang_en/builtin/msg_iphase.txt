@@ -1,0 +1,4 @@
+
+$$iphase$$ returns theta or the phase of the given complex.
+
+iphase( x )

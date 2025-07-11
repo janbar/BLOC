@@ -1,0 +1,4 @@
+
+$$substr$$ returns a part of string x.
+
+substr( x , begin [, count] )

@@ -1,0 +1,5 @@
+
+$$clamp$$ restricts the given value x between the lower bound y and upper bound z.
+In this way, it acts like a combination of the min() and max() functions.
+
+clamp( x , y , z )

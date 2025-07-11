@@ -1,0 +1,6 @@
+The $$LET$$ statement is the standard variable declaration and assignment.
+
+let {var} = {expression} [, var = ... [, var:{type} ] ];
+
+However we allow you to omit the LET or simply use:
+{var} = {expression} [, var = ... [, var:{type} ] ];

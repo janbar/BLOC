@@ -1,0 +1,4 @@
+
+$$sin$$ returns the sine of a radian angle x.
+
+sin( x )

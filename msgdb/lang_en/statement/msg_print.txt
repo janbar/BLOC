@@ -1,0 +1,6 @@
+The $$PRINT$$ statement writes out the string representation of expression(s),
+terminated by a newline.
+
+print [{expression} ...];
+
+The printed values are human readable text, depending of expression type.

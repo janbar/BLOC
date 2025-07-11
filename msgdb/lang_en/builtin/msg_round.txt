@@ -1,0 +1,4 @@
+
+$$round$$ returns a value to the nearest integer, or round to the decimal place y.
+
+round( x [, y] )

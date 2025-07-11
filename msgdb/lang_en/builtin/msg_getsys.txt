@@ -1,0 +1,16 @@
+
+$$getsys$$ returns the corresponding value of context environment variable x.
+
+getsys( x )
+
+Where x could be any string of the following values.
+
+'compatible'        Language compatibility level
+'language'          Lang code from locale
+'country'           Country code from locale
+'integer_max'       Maximum value of integer
+'integer_min'       Minimum value of integer
+'system'            System type: UNIX | MSWIN
+'endianess'         System bit order: BE | LE
+
+The type of returned value depends of the selected variable.

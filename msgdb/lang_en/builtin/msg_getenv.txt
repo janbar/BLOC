@@ -1,0 +1,4 @@
+
+$$getenv$$ returns the corresponding value string of the environment variable x.
+
+getenv( x )

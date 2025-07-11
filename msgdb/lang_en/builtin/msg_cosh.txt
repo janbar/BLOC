@@ -1,0 +1,4 @@
+
+$$cosh$$ returns the hyperbolic cos of x.
+
+cosh( x )

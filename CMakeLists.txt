@@ -28,6 +28,7 @@ set (BLOC_LIB_SOVERSION "${VERSION_MAJOR}")
 
 add_subdirectory (blocc)
 add_subdirectory (apps)
+add_subdirectory (msgdb)
 add_subdirectory (modules)
 
 configure_file(

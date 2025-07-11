@@ -1,0 +1,8 @@
+
+$$raw$$ returns a new bytes array filled with string x, or filled with
+x byte y, or the null bytes array.
+
+raw( [ x [, y] ] )
+
+Bytes array has the method at(), put(), insert(), delete(), count(),
+and concat({BYTES | INTEGER}).

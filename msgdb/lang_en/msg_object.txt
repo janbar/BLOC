@@ -1,0 +1,25 @@
+
+$$OBJECT$$
+
+In BLOC, objects are imported types from dynamic modules. The constructor
+function is the module name with or without arguments, e.g xyz( x [, ...] ).
+The module must be imported beforehand.
+
+import file; ... O = file();                     >>> O is file(..)
+import "libbloc_xyz.so"; ... O = xyz(A,B);       >>> O is xyz(..)
+
+Objects have members declared by the module. See the documentation of the
+module for more information. A use case is shown below.
+
+import file;
+a = file();
+dir = a.dir("/");
+
+>>> desc dir
+DIR is [{ integer, string }][25]
+
+forall e in dir loop print e; end loop;
+2, "bin"
+2, "etc"
+2, "dev"
+...

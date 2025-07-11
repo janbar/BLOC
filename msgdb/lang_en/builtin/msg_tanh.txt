@@ -1,0 +1,4 @@
+
+$$tanh$$ returns the hyperbolic tangent of x.
+
+tanh( x )

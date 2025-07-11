@@ -1,0 +1,5 @@
+
+$$strpos$$ finds the position of the first occurrence of the string y starting
+at position z, inside the string x. If none then null is returned.
+
+strpos( x , y [, z] )

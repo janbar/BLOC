@@ -1,0 +1,5 @@
+
+$$hash$$ returns the DJB Hash value (32 bits) of string or bytes array.
+Optionally the number of buckets is specified by y [1..n].
+
+hash( x [, y] )

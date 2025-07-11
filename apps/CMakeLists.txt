@@ -1,8 +1,13 @@
 
+add_definitions(
+  "-DLIBVERSION=\"${BLOC_LIB_VERSION}\""
+)
+
 file(GLOB bloc_SOURCES
   main.cpp
   main_options.cpp
   cli_parser.cpp
+  cli_msgdb.cpp
   read_file.cpp
 )
 
@@ -20,7 +25,7 @@ if(UNIX)
   endif()
   list(APPEND bloc_SOURCES signalhandler.cpp)
 elseif(MSVC)
-  list(APPEND bloc_SOURCES winstub.cpp)
+  list(APPEND bloc_SOURCES "winstub.cpp" "win32/dlfcn.c")
 endif()
 
 add_executable(bloc ${bloc_SOURCES})

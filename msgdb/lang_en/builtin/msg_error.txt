@@ -1,0 +1,6 @@
+
+$$error$$ is the tuple containing the description of current thrown error.
+
+{ name:string , message:string , code:integer }
+
+See type TUPLE.

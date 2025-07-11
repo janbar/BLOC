@@ -1,0 +1,4 @@
+
+$$isnum$$ returns true if x can be converted to number.
+
+isnum( x )

@@ -37,7 +37,6 @@ class Statement {
 public:
 
   LIBBLOC_API static const char * KEYWORDS[];
-  LIBBLOC_API static const char * HELPS[];
 
   /**
    * This constants should match the indexes of the above KEYWORDS.

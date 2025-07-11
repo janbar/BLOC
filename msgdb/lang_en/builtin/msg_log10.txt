@@ -1,0 +1,4 @@
+
+$$log10$$ returns the common logarithm (base-10 logarithm) of x.
+
+log10( x )

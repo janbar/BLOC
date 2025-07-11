@@ -1,0 +1,7 @@
+The $$BEGIN$$ statement begins a new block of statements.
+
+begin [statement ...]
+[ exception [ when {exception name} then [statement ...] ...] ]
+end;
+
+See EXCEPTION, or statement RAISE.
