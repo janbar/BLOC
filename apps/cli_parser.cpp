@@ -666,7 +666,7 @@ static void print_help(const std::string& what)
         pk = g_msgdb->getText("statement", w);
         if (pk && pk->text)
           print_btml(pk->text, pk->text_len);
-        PRINT("\n\n");
+        PRINT("\n");
       }
       /* search for builtin expression */
       else if (bloc::BuiltinExpression::findKeyword(w) != bloc::BuiltinExpression::unknown)
@@ -674,7 +674,7 @@ static void print_help(const std::string& what)
         pk = g_msgdb->getText("builtin", w);
         if (pk && pk->text)
           print_btml(pk->text, pk->text_len);
-        PRINT("\n\n");
+        PRINT("\n");
       }
       else
       {
