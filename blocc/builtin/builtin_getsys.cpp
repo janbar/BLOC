@@ -59,6 +59,8 @@ Value& GETSYSExpression::value(Context & ctx) const
   case Type::LITERAL:
     if (val.isNull())
       break;
+    else if (*(val.literal()) == "clock")
+      v = Value(Numeric(ctx.timestamp()));
     else if (*(val.literal()) == "compatible")
       v = Value(Integer(Context::compatible()));
     else if (*(val.literal()) == "language")

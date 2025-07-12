@@ -12,5 +12,6 @@ Where x could be any string of the following values.
 'integer_min'       Minimum value of integer
 'system'            System type: UNIX | MSWIN
 'endianess'         System bit order: BE | LE
+'clock'             Seconds elapsed since context incarnation
 
 The type of returned value depends of the selected variable.

@@ -38,7 +38,7 @@
 #include <unistd.h>
 #endif
 
-#define COMPATIBLE  10
+#define COMPATIBLE  11
 #ifndef LIBVERSION
 #define LIBVERSION  "[undefined]"
 #endif
