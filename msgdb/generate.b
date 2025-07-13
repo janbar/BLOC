@@ -1,20 +1,8 @@
 import file;
 
-function TOHEX(c:integer) return string is
-begin
-  r:string;
-  for i in 1 to 2 loop
-    v = (c % 16);
-    if v > 9 then h = chr(v + 87); else h = chr(v + 48); end if;
-    c = c / 16;
-    r = h.concat(r);
-  end loop;
-  return "0x" + r;
-end;
-
 function HASHSTR(key:string) return string is
 begin
-  return rsubstr("0000000000" + str(hash(key)), 10);
+  return hex(hash(key), 8);
 end;
 
 function generate_source(lang:string, path:string) return string is
@@ -50,7 +38,7 @@ begin
 
         out.write("static const unsigned char " + txtname + "[] = {\n");
         for i in 1 to buf.count() loop
-          out.write(TOHEX(buf.at(i-1)));
+          out.write("0x" + hex(buf.at(i-1), 2));
           if i < buf.count() then
             if i % 12 == 0 then out.write(",\n  "); else out.write(", "); end if;
           end if;
@@ -111,3 +99,5 @@ main.write("\n#endif /* MSGDB_LANG_H */\n");
 
 print "... File " main.filename() " has been updated";
 main.close();
+
+print "Elapsed: " getsys("clock");

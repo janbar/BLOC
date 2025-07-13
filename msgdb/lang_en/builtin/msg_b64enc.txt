@@ -1,0 +1,5 @@
+
+$$b64enc$$ returns a string that contains the base64-encoded version of source x
+as a string or bytes array type.
+
+b64enc( x )

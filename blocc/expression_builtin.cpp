@@ -82,6 +82,9 @@
 #include "builtin/builtin_input.h"
 #include "builtin/builtin_atan2.h"
 #include "builtin/builtin_tokenize.h"
+#include "builtin/builtin_hex.h"
+#include "builtin/builtin_b64enc.h"
+#include "builtin/builtin_b64dec.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -98,7 +101,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "sin",        "cos",        "tan",        "atan",       "int",
     "pow",        "sqrt",       "log",        "exp",        "log10",
     "mod",        "asin",       "acos",       "sinh",       "cosh",
-    "tanh",       "clamp",      "isnull",     "atan2",      "",
+    "tanh",       "clamp",      "isnull",     "atan2",      "hex",
     "read",       "readln",     "isnum",      "raw",        "tab",
     "tup",        "getsys",     "getenv",     "true",       "on",
     "false",      "off",        "error",      "phi",        "pi",
@@ -106,7 +109,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "lsubstr",    "rsubstr",    "substr",     "chr",        "strlen",
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
     "strpos",     "replace",    "subraw",     "hash",       "imag",
-    "iphase",     "iconj",      "tokenize",
+    "iphase",     "iconj",      "tokenize",   "b64enc",     "b64dec",
 };
 
 BuiltinExpression::~BuiltinExpression()
@@ -231,6 +234,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return ISNULLExpression::parse(p, ctx);
   case FUNC_ATAN2:
     return ATAN2Expression::parse(p, ctx);
+  case FUNC_HEX:
+    return HEXExpression::parse(p, ctx);
   case FUNC_READ:
     return READExpression::parse(p, ctx);
   case FUNC_READLN:
@@ -305,6 +310,10 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return ICONJExpression::parse(p, ctx);
   case FUNC_TKNIZE:
     return TOKENIZEExpression::parse(p, ctx);
+  case FUNC_B64ENC:
+    return B64ENCExpression::parse(p, ctx);
+  case FUNC_B64DEC:
+    return B64DECExpression::parse(p, ctx);
 
   default:
     throw ParseError(EXC_PARSE_NOT_A_FUNCTION);

@@ -83,7 +83,7 @@ public:
     FUNC_CLAMP  = 26, // clamp(x,y,z)
     FUNC_ISNIL  = 27, // isnull(x)
     FUNC_ATAN2  = 28, // atan2(x,y)
-
+    FUNC_HEX    = 29, // hex(x,y)
     FUNC_READ   = 30, // read(var,count)
     FUNC_READLN = 31, // readln(var)
     FUNC_ISNUM  = 32, // isnum(x)
@@ -122,6 +122,8 @@ public:
     FUNC_IPHASE = 65, // iphase(x)
     FUNC_ICONJ  = 66, // iconj(x)
     FUNC_TKNIZE = 67, // tokenize(x,y,z)
+    FUNC_B64ENC = 68, // b64enc(x)
+    FUNC_B64DEC = 69, // b64dec(x)
   };
 
   std::string unparse(Context& ctx) const override;

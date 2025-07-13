@@ -1,0 +1,5 @@
+
+$$b64dec$$ returns a bytes array that contains the base64-decoded version of the
+source x as a string or bytes array type.
+
+b64dec( x )
