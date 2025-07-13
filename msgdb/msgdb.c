@@ -33,7 +33,7 @@ msgdb_setup(const char * lang)
     strncpy(msgdb_current_lang, rl->lang, sizeof(msgdb_current_lang));
   else
     strncpy(msgdb_current_lang, msgdb_default_lang, sizeof(msgdb_current_lang));
-  if (lang && strncmp(lang, msgdb_current_lang, sizeof(msgdb_current_lang)) == 0)
+  if (lang && strcmp(lang, msgdb_current_lang) == 0)
     return lang;
   return msgdb_current_lang;
 }
@@ -47,7 +47,7 @@ msgdb_get_text(const char * section, const char * keyword)
     const MSGDB_KEYWORD_ROW * rk = rs->keyword_table;
     while (rk && rk->keyword)
     {
-      if (strncmp(keyword, rk->keyword, strlen(rk->keyword)) == 0)
+      if (strcmp(keyword, rk->keyword) == 0)
         return rk;
       rk += 1;
     }
@@ -64,7 +64,7 @@ msgdb_get_section(const char * section)
     const MSGDB_SECTION_ROW * rs = rl->section_table;
     while (rs && rs->section)
     {
-      if (strncmp(section, rs->section, strlen(rs->section)) == 0)
+      if (strcmp(section, rs->section) == 0)
         return rs;
       rs += 1;
     }
@@ -79,9 +79,9 @@ msgdb_get_lang(const char * lang)
   const MSGDB_LANG_ROW * def = NULL;
   while (rl && rl->lang)
   {
-    if (lang && strncmp(lang, rl->lang, strlen(lang)) == 0)
+    if (lang && strcmp(lang, rl->lang) == 0)
       return rl;
-    if (strncmp(msgdb_default_lang, rl->lang, strlen(rl->lang)) == 0)
+    if (strcmp(msgdb_default_lang, rl->lang) == 0)
       def = rl;
     rl += 1;
   }
