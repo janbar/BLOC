@@ -196,18 +196,26 @@ bloc::Value * SYSPlugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (!a0.isNull())
     {
-      unsigned tenth = 0;
-      uint32_t rest = (uint32_t)(*a0.integer());
-      while (!ctx.stopCondition() && rest != 0)
+      double cur = ctx.timestamp();
+      double brk = cur + *a0.integer();
+      int tick = 0;
+      while (!ctx.stopCondition() && cur < brk)
       {
-        sys->delayms(100);
-        if (++tenth >= 10)
+        // yield for 500 ms
+        sys->delayms(500);
+        // resync the clock every 1 minutes
+        if (++tick == 120)
         {
-          rest -= 1;
-          tenth = 0;
+          // resync the clock
+          cur = ctx.timestamp();
+          tick = 0;
+        }
+        else
+        {
+          cur += 0.5;
         }
       }
-      return new bloc::Value(bloc::Integer(rest));
+      return new bloc::Value(bloc::Integer(brk - cur));
     }
     return new bloc::Value(bloc::Value::type_integer);
   }
