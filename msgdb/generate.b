@@ -36,14 +36,14 @@ begin
         # fill section source
         secsrc.concat("{ """ + keyword + """, " + str(buf.count()) + ", " + txtname + " },\n");
 
-        out.write("static const unsigned char " + txtname + "[] = {\n");
+        out.write("static const unsigned char " + txtname + "[] = {\n  ");
         for i in 1 to buf.count() loop
           out.write("0x" + hex(buf.at(i-1), 2));
           if i < buf.count() then
             if i % 12 == 0 then out.write(",\n  "); else out.write(", "); end if;
           end if;
         end loop;
-        out.write("};\n\n");
+        out.write(" };\n\n");
       end if;
     end loop;
 
