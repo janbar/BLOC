@@ -40,6 +40,9 @@ public:
     {
       if (::fread(&buf[read], sizeof(char), 1, _file) == 1)
       {
+        // discard cr to fix source formated msdos
+        if (buf[read] == '\r')
+          continue;
         if (buf[read++] != '\n')
           continue;
       }
