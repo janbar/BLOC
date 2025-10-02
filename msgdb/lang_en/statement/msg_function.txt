@@ -9,7 +9,7 @@ end;
 
 The type of each parameter can be declared as needed, otherwise they
 remain opaque. If specified the type name must follow the parameter name
-after a colon, like this \
+after a colon, like this "{parameter name} : {type name}".
 The returned type can be boolean, integer, decimal, string, bytes,
 tuple, table, undefined or an imported object. Types among undefined,
 tuple, and table are opaque, so the result must be handled by the caller.
