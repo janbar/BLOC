@@ -150,6 +150,7 @@ private:
   bool next_token(TokenPtr& token);
 
   bool _trace = false;      ///< forward token string to stderr
+  typedef struct { int lno; int pno; } PARSING_POSITION;
   PARSING_POSITION _position = { 1, 0 }; ///< position in the source stream
   int _nesting = 0;
 };

@@ -74,7 +74,8 @@ IMPORTStatement * IMPORTStatement::parse(Parser& p, Context& ctx)
   IMPORTStatement * s = nullptr;
   try
   {
-    if (p.front()->code == TOKEN_KEYWORD)
+    TokenPtr t = p.front();
+    if (t->code == TOKEN_KEYWORD)
     {
       s = new IMPORTStatement(p.front()->text);
       p.pop();
@@ -82,15 +83,10 @@ IMPORTStatement * IMPORTStatement::parse(Parser& p, Context& ctx)
     else
     {
       Expression * e = ParseExpression::expression(p, ctx);
-      try
-      {
-        if (e->type(ctx) != Type::LITERAL)
-          throw ParseError(EXC_PARSE_NOT_LITERAL);
-      }
-      catch (...)
+      if (e->type(ctx) != Type::LITERAL)
       {
         delete e;
-        throw;
+        throw ParseError(EXC_PARSE_NOT_LITERAL, t);
       }
       s = new IMPORTStatement(e);
     }

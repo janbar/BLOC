@@ -108,15 +108,15 @@ TABExpression * TABExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TAB]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TAB], t);
     if (p.front()->code != ')')
     {
       args.push_back(ParseExpression::expression(p, ctx));
       if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TAB]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TAB], t);
       t = p.pop();
       if (t->code != Parser::Chain)
-        throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TAB]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TAB], t);
       args.push_back(ParseExpression::expression(p, ctx));
       Type b_type = args.back()->type(ctx);
       switch (b_type.major())
@@ -132,10 +132,10 @@ TABExpression * TABExpression::parse(Parser& p, Context& ctx)
       case Type::ROWTYPE:
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[FUNC_TAB]);
+        throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[FUNC_TAB], t);
       }
       if (b_type.level() == TYPE_LEVEL_MAX)
-        throw ParseError(EXC_PARSE_OUT_OF_DIMENSION);
+        throw ParseError(EXC_PARSE_OUT_OF_DIMENSION, t);
     }
     assertClosedFunction(p, ctx, FUNC_TAB);
     return new TABExpression(std::move(args));

@@ -84,7 +84,7 @@ ISNUMExpression * ISNUMExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_ISNUM]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_ISNUM], t);
     args.push_back(ParseExpression::expression(p, ctx));
     assertClosedFunction(p, ctx, FUNC_ISNUM);
     return new ISNUMExpression(std::move(args));

@@ -58,10 +58,10 @@ CHRExpression * CHRExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_CHR]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_CHR], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_CHR]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_CHR], t);
     assertClosedFunction(p, ctx, FUNC_CHR);
     return new CHRExpression(std::move(args));
   }

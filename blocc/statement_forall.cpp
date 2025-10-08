@@ -278,7 +278,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
     }
     /* requires at least one statement, even NOP */
     if (statements.empty())
-      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     p.push(t);
   }
   catch (ParseError& pe)
@@ -306,16 +306,16 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
-      throw ParseError(EXC_PARSE_OTHER_S, "Symbol of iterator required for FORALL.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Symbol of iterator required for FORALL.", t);
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IN])
-      throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FORALL.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FORALL.", t);
     s->_exp = ParseExpression::expression(p, ctx);
     t = p.pop();
     if (t->code == ')')
-      throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+      throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
     /* retrieve the symbol name for a variable expression, that is required to
      * point to the target table when processing the clause of the statement */
     s->_expSymbol = s->_exp->symbol();
@@ -331,7 +331,7 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     else
     {
       if (exp_type.level() == 0)
-        throw ParseError(EXC_PARSE_OTHER_S, "Table expression required for FORALL.");
+        throw ParseError(EXC_PARSE_OTHER_S, "Table expression required for FORALL.", t);
       /* define the variable to store fetched element */
       if (exp_type.major() == Type::ROWTYPE)
         /* register symbol of tuple */
@@ -343,7 +343,7 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     /* a progressing iterator cannot be reused in the body loop; also its type
      * must be safe; therefore enable the safety flag for the symbol */
     if (s->_var->symbol()->safety())
-      throw ParseError(EXC_PARSE_OTHER_S, "Cannot use a protected symbol as iterator variable.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Cannot use a protected symbol as iterator variable.", t);
     if (t->code == TOKEN_KEYWORD)
     {
       if (t->text == KEYWORDS[STMT_ASC])
@@ -358,16 +358,16 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
       }
     }
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
-      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in FORALL statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in FORALL statement.", t);
     s->_exec = parse_clause(p, ctx, s);
     t = p.pop();
     if (t->text != KEYWORDS[STMT_END])
-      throw ParseError(EXC_PARSE_OTHER_S, "Endless FORALL LOOP statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Endless FORALL LOOP statement.", t);
     /* parse statement END */
     s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
     t = p.pop();
     if (t->code != Parser::Separator)
-      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str(), t);
     return s;
   }
   catch (ParseError& pe)

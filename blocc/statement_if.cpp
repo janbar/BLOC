@@ -115,7 +115,7 @@ Executable * IFStatement::parse_clause(Parser& p, Context& ctx, IFStatement * s)
     }
     /* requires at least one statement, even NOP */
     if (statements.empty())
-      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     p.push(t);
   }
   catch (ParseError& pe)
@@ -148,12 +148,12 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
       if (t->code == ')')
       {
         delete exp;
-        throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+        throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
       }
       if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_THEN])
       {
         delete exp;
-        throw ParseError(EXC_PARSE_OTHER_S, "Missing THEN keyword in IF statement.");
+        throw ParseError(EXC_PARSE_OTHER_S, "Missing THEN keyword in IF statement.", t);
       }
       Executable * exec = parse_clause(p, ctx, s);
       s->_rules.push_back(std::make_pair(exp, exec));
@@ -167,12 +167,12 @@ IFStatement * IFStatement::parse(Parser& p, Context& ctx)
         t = p.pop();
       }
       if (t->text != KEYWORDS[STMT_END])
-        throw ParseError(EXC_PARSE_OTHER_S, "Endless IF statement.");
+        throw ParseError(EXC_PARSE_OTHER_S, "Endless IF statement.", t);
       /* parse statement END */
       exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDIF));
       t = p.pop();
       if (t->code != Parser::Separator)
-        throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
+        throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str(), t);
       break;
     }
     return s;

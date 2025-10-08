@@ -56,10 +56,10 @@ STRLENExpression * STRLENExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STRLEN]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STRLEN], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRLEN]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRLEN], t);
     assertClosedFunction(p, ctx, FUNC_STRLEN);
     return new STRLENExpression(std::move(args));
   }

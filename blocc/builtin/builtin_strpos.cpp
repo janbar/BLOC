@@ -92,22 +92,22 @@ STRPOSExpression * STRPOSExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STRPOS]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STRPOS], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRPOS]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRPOS], t);
     t = p.pop();
     if (t->code != Parser::Chain)
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STRPOS]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STRPOS], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRPOS]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRPOS], t);
     if (p.front()->code == Parser::Chain)
     {
       t = p.pop();
       args.push_back(ParseExpression::expression(p, ctx));
       if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRPOS]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STRPOS], t);
     }
     assertClosedFunction(p, ctx, FUNC_STRPOS);
     return new STRPOSExpression(std::move(args));

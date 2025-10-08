@@ -83,10 +83,10 @@ COSExpression * COSExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_COS]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_COS], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::NUMERIC, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_COS]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_COS], t);
     assertClosedFunction(p, ctx, FUNC_COS);
     return new COSExpression(std::move(args));
   }

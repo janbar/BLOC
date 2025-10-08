@@ -59,7 +59,7 @@ TRACEStatement * TRACEStatement::parse(Parser& p, Context& ctx)
   {
     s->_exp = ParseExpression::expression(p, ctx);
     if (s->_exp->type(ctx) != Type::BOOLEAN)
-      throw ParseError(EXC_PARSE_NOT_BOOLEAN);
+      throw ParseError(EXC_PARSE_NOT_BOOLEAN, p.front());
     return s;
   }
   catch (ParseError& pe)

@@ -176,16 +176,16 @@ POWExpression * POWExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_POW]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_POW], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::NUMERIC, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_POW]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_POW], t);
     t = p.pop();
     if (t->code != Parser::Chain)
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_POW]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_POW], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::NUMERIC, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_POW]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_POW], t);
     assertClosedFunction(p, ctx, FUNC_POW);
     return new POWExpression(std::move(args));
   }

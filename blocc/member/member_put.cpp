@@ -178,7 +178,7 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
   TokenPtr t = p.pop();
 
   if (t->code != '(')
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_PUT]);
+    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_PUT], t);
   try
   {
     const Type& exp_type = exp->type(ctx);
@@ -192,16 +192,16 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
       case Type::TABCHAR:
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT], t);
       }
     }
 
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_PUT]);
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_PUT], t);
     t = p.pop();
     if (t->code != Parser::Chain)
-      throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, KEYWORDS[BTM_PUT]);
+      throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, KEYWORDS[BTM_PUT], t);
 
     args.push_back(ParseExpression::expression(p, ctx));
     if (exp_type.level() == 0)
@@ -213,10 +213,10 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
       case Type::LITERAL: /* PUT a char */
       case Type::TABCHAR: /* PUT a char */
         if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_PUT]);
+          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_PUT], t);
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_PUT], t);
       }
     }
     /* collection PUT */
@@ -231,7 +231,7 @@ MemberPUTExpression * MemberPUTExpression::parse(Parser& p, Context& ctx, Expres
       if (!exp_opaque && !arg_opaque)
       {
         if (!ParseExpression::typeChecking(args.back(), exp_type.levelDown(), p, ctx))
-          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str(), t);
       }
     }
     assertClosedMember(p, ctx, KEYWORDS[BTM_PUT]);

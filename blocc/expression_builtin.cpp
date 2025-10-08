@@ -172,7 +172,7 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
   TokenPtr t = p.pop();
   FUNCTION fc = (FUNCTION)findKeyword(t->text);
   if (fc == unknown)
-    throw ParseError(EXC_PARSE_NOT_A_FUNCTION);
+    throw ParseError(EXC_PARSE_NOT_A_FUNCTION, t);
 
   switch (fc)
   {
@@ -316,7 +316,7 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return B64DECExpression::parse(p, ctx);
 
   default:
-    throw ParseError(EXC_PARSE_NOT_A_FUNCTION);
+    throw ParseError(EXC_PARSE_NOT_A_FUNCTION, t);
   }
   return nullptr;
 }
@@ -326,7 +326,7 @@ void BuiltinExpression::assertClosedFunction(Parser& p, Context& ctx, FUNCTION f
   TokenPtr t = p.pop();
   /* check for enclosure */
   if (t->code != ')')
-    throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[fc]);
+    throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[fc], t);
 }
 
 }

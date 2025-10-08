@@ -116,7 +116,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
     /* parse arguments list */
     t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_INV_EXPRESSION);
+      throw ParseError(EXC_PARSE_INV_EXPRESSION, t);
     if (p.front()->code == ')')
       p.pop();
     else
@@ -128,7 +128,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
         if (t->code == Parser::Chain)
           continue;
         if (t->code != ')')
-          throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str());
+          throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str(), t);
         break;
       }
     }
@@ -219,8 +219,8 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
     }
 
     if (f_name)
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, m_name.c_str());
-    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, m_name.c_str());
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, m_name.c_str(), t);
+    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, m_name.c_str(), t);
   }
   catch (ParseError& pe)
   {

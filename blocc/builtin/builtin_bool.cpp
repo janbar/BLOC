@@ -63,12 +63,12 @@ BOOLExpression * BOOLExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_BOOL]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_BOOL], t);
     if (p.front()->code != ')')
     {
       args.push_back(ParseExpression::expression(p, ctx));
       if (args.back()->type(ctx).level() > 0)
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_BOOL]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_BOOL], t);
       switch (args.back()->type(ctx).major())
       {
       case Type::NO_TYPE:
@@ -77,7 +77,7 @@ BOOLExpression * BOOLExpression::parse(Parser& p, Context& ctx)
       case Type::NUMERIC:
         break;
       default:
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_BOOL]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_BOOL], t);
       }
     }
     assertClosedFunction(p, ctx, FUNC_BOOL);

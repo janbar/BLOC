@@ -63,17 +63,17 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
   try
   {
     if (type_id == 0)
-      throw ParseError(EXC_PARSE_NOT_COMPLEX);
+      throw ParseError(EXC_PARSE_NOT_COMPLEX, p.front());
     const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);
 
     /* check permissions */
     if (!ctx.trusted() && PluginManager::instance().bannedPlugin(plug.interface.name))
-      throw ParseError(EXC_PARSE_OTHER_S, "Access to the plugin is restricted.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Access to the plugin is restricted.", p.front());
 
     /* parse arguments list */
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_INV_EXPRESSION);
+      throw ParseError(EXC_PARSE_INV_EXPRESSION, t);
     if (p.front()->code == ')')
     {
       p.pop();
@@ -89,7 +89,7 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
         if (t->code == Parser::Chain)
           continue;
         if (t->code != ')')
-          throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str());
+          throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str(), t);
         break;
       }
     }
@@ -121,8 +121,8 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
       }
     }
     if (fid)
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, plug.interface.name);
-    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, plug.interface.name);
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, plug.interface.name, t);
+    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, plug.interface.name, t);
   }
   catch (ParseError& pe)
   {

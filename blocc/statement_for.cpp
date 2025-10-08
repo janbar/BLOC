@@ -177,7 +177,7 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
     }
     /* requires at least one statement, even NOP */
     if (statements.empty())
-      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     p.push(t);
   }
   catch (ParseError& pe)
@@ -201,27 +201,27 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
-      throw ParseError(EXC_PARSE_OTHER_S, "Symbol of variable required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Symbol of variable required for FOR.", t);
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
     s->_var = new VariableExpression(ctx.registerSymbol(vname, Type::INTEGER));
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IN])
-      throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FOR.", t);
     s->_expBeg = ParseExpression::expression(p, ctx);
     if (!ParseExpression::typeChecking(s->_expBeg, Type::NUMERIC, p, ctx))
-      throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.", t);
     t = p.pop();
     if (t->code == ')')
-      throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+      throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_TO])
-      throw ParseError(EXC_PARSE_OTHER_S, "Keyword TO required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword TO required for FOR.", t);
     s->_expEnd = ParseExpression::expression(p, ctx);
     if (!ParseExpression::typeChecking(s->_expEnd, Type::NUMERIC, p, ctx))
-      throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.", t);
     t = p.pop();
     if (t->code == ')')
-      throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+      throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
     if (t->code == TOKEN_KEYWORD)
     {
       if (t->text == KEYWORDS[STMT_ASC])
@@ -236,16 +236,16 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
       }
     }
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
-      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in FOR statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in FOR statement.", t);
     s->_exec = parse_clause(p, ctx, s);
     t = p.pop();
     if (t->text != KEYWORDS[STMT_END])
-      throw ParseError(EXC_PARSE_OTHER_S, "Endless FOR LOOP statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Endless FOR LOOP statement.", t);
     /* parse statement END */
     s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
     t = p.pop();
     if (t->code != Parser::Separator)
-      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str(), t);
     return s;
   }
   catch (ParseError& pe)

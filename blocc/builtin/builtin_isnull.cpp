@@ -46,7 +46,7 @@ ISNULLExpression * ISNULLExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_ISNIL]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_ISNIL], t);
     args.push_back(ParseExpression::expression(p, ctx));
     assertClosedFunction(p, ctx, FUNC_ISNIL);
     return new ISNULLExpression(std::move(args));

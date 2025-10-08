@@ -100,20 +100,20 @@ RAWExpression * RAWExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_RAW]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_RAW], t);
     if (p.front()->code != ')')
     {
       args.push_back(ParseExpression::expression(p, ctx));
       if (!ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
       {
         if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_RAW]);
+          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_RAW], t);
         if (p.front()->code == Parser::Chain)
         {
           t = p.pop();
           args.push_back(ParseExpression::expression(p, ctx));
           if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-            throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_RAW]);
+            throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_RAW], t);
         }
       }
     }

@@ -63,7 +63,7 @@ std::string FunctorExpression::unparse(Context& ctx) const
   return sb;
 }
 
-FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, const std::string& name)
+FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, TokenPtr& token)
 {
   std::vector<Expression*> args;
 
@@ -72,7 +72,7 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, const std:
     /* parse arguments list */
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_INV_EXPRESSION);
+      throw ParseError(EXC_PARSE_INV_EXPRESSION, t);
     if (p.front()->code == ')')
     {
       p.pop();
@@ -86,17 +86,17 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, const std:
         if (t->code == Parser::Chain)
           continue;
         if (t->code != ')')
-          throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str());
+          throw ParseError(EXC_PARSE_EXPRESSION_END_S, t->text.c_str(), t);
         break;
       }
     }
 
-    const FunctorManager::entry fe = ctx.functorManager().findDeclaration(name, args.size());
+    const FunctorManager::entry fe = ctx.functorManager().findDeclaration(token->text, args.size());
     if (fe != ctx.functorManager().npos())
       return new FunctorExpression(fe, std::move(args));
-    if (ctx.functorManager().exists(name))
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, name.c_str());
-    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, name.c_str());
+    if (ctx.functorManager().exists(token->text))
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, token->text.c_str(), token);
+    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, token->text.c_str(), token);
   }
   catch (ParseError& pe)
   {

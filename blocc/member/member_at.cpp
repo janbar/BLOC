@@ -109,12 +109,12 @@ MemberATExpression * MemberATExpression::parse(Parser& p, Context& ctx, Expressi
   TokenPtr t = p.pop();
 
   if (t->code != '(')
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_AT]);
+    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_AT], t);
   try
   {
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_AT]);
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_AT], t);
 
     const Type& exp_type = exp->type(ctx);
     /* supported type: collection, literal, tabchar */
@@ -127,7 +127,7 @@ MemberATExpression * MemberATExpression::parse(Parser& p, Context& ctx, Expressi
       case Type::TABCHAR:
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_AT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_AT], t);
       }
     }
 

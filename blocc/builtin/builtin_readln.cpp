@@ -52,11 +52,11 @@ READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_READLN]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_READLN], t);
     args.push_back(ParseExpression::expression(p, ctx));
     VariableExpression * var = dynamic_cast<VariableExpression*>(args.back());
     if (var == nullptr || !ParseExpression::typeChecking(var, Type::LITERAL, p, ctx))
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN], t);
     assertClosedFunction(p, ctx, FUNC_READLN);
     return new READLNExpression(std::move(args));
   }

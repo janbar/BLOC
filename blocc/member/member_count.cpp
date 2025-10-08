@@ -72,7 +72,7 @@ MemberCOUNTExpression * MemberCOUNTExpression::parse(Parser& p, Context& ctx, Ex
   TokenPtr t = p.pop();
 
   if (t->code != '(')
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_COUNT]);
+    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_COUNT], t);
   try
   {
     const Type& exp_type = exp->type(ctx);
@@ -87,7 +87,7 @@ MemberCOUNTExpression * MemberCOUNTExpression::parse(Parser& p, Context& ctx, Ex
       case Type::NO_TYPE: /* opaque */
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_COUNT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_COUNT], t);
       }
     }
 

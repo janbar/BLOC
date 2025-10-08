@@ -97,10 +97,10 @@ HASHExpression * HASHExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_HASH]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_HASH], t);
     args.push_back(ParseExpression::expression(p, ctx));
     if (args.back()->type(ctx).level() > 0)
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH], t);
     switch (args.back()->type(ctx).major())
     {
     case Type::NO_TYPE: /* opaque */
@@ -108,14 +108,14 @@ HASHExpression * HASHExpression::parse(Parser& p, Context& ctx)
     case Type::TABCHAR:
       break;
     default:
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH], t);
     }
     if (p.front()->code == Parser::Chain)
     {
       t = p.pop();
       args.push_back(ParseExpression::expression(p, ctx));
       if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_HASH], t);
     }
     assertClosedFunction(p, ctx, FUNC_HASH);
     return new HASHExpression(std::move(args));

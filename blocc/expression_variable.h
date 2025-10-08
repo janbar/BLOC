@@ -21,6 +21,7 @@
 
 #include "expression.h"
 #include "context.h"
+#include "token.h"
 
 #include <string>
 
@@ -109,7 +110,7 @@ public:
     ctx.clearVariable(_symbol);
   }
 
-  static VariableExpression * parse(Parser& p, Context& ctx, const std::string& symbol_name);
+  static VariableExpression * parse(Parser& p, Context& ctx, TokenPtr& token);
 };
 
 }

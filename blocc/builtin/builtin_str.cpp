@@ -70,17 +70,17 @@ STRExpression * STRExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STR]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_STR], t);
     if (p.front()->code != ')')
     {
       args.push_back(ParseExpression::expression(p, ctx));
       if (args.back()->type(ctx).level() > 0)
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STR]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STR], t);
       switch (args.back()->type(ctx).major())
       {
       case Type::COMPLEX:
       case Type::ROWTYPE:
-        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STR]);
+        throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_STR], t);
       default:
         break;
       }

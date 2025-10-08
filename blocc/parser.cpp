@@ -24,6 +24,8 @@
 #include "plugin_manager.h"
 #include "expression_builtin.h"
 
+#include <cstring>
+
 namespace bloc
 {
 
@@ -79,7 +81,7 @@ bool Parser::popAny(TokenPtr& token) {
   tokenizer_lex(_scanner, &tc, &ts);
   if (tc <= 0)
     return false;
-  t = new Token(tc, ts);
+  t = new Token(tc, ts, 0, 0);
   token.reset(t);
   return true;
 }
@@ -217,8 +219,6 @@ Executable * Parser::parse(Context& ctx, StreamReader& reader, bool trace /*= fa
   }
   catch (ParseError& pe)
   {
-    pe.position.lno = p._position.lno;
-    pe.position.pno = p._position.pno - 1; // token in error is back
     ctx.parsingEnd();
     for (auto s : statements)
       delete s;
@@ -265,36 +265,56 @@ bool Parser::next_token(TokenPtr& token) {
 
     switch (tc) {
     case NewLine:
+      /* until new statement, let the caller handling NL  */
+      if (state() != Parsing)
+        t = new Token(tc, ts, _position.lno, _position.pno);
       /* reset position */
       _position.lno += 1;
       _position.pno = 0;
-      /* until new statement, let the caller handling NL  */
-      if (state() != Parsing)
-        t = new Token(tc, ts);
       break;
     case TOKEN_SPACE:
       break;
     case TOKEN_LITERALBEG:
       _string_buffer.clear();
       _string_buffer.append(ts);
+      if (*ts == NewLine)
+      {
+        _position.lno += 1;
+        _position.pno = 0;
+      }
       break;
     case TOKEN_LITERALSTR:
       _string_buffer.append(ts);
+      if (*ts == NewLine)
+      {
+        _position.lno += 1;
+        _position.pno = 0;
+      }
       break;
     case TOKEN_LITERALEND:
       _string_buffer.append(ts);
-      t = new Token(TOKEN_LITERALSTR, _string_buffer);
+      t = new Token(TOKEN_LITERALSTR, _string_buffer, _position.lno, _position.pno);
       break;
     case TOKEN_COMMENTBEG:
       _string_buffer.clear();
       _string_buffer.append(ts);
+      if (*ts == NewLine)
+      {
+        _position.lno += 1;
+        _position.pno = 0;
+      }
       break;
     case TOKEN_COMMENTSTR:
       _string_buffer.append(ts);
+      if (*ts == NewLine)
+      {
+        _position.lno += 1;
+        _position.pno = 0;
+      }
       break;
     case TOKEN_COMMENTEND:
       _string_buffer.append(ts);
-      //t = new Token(TOKEN_COMMENT, _string_buffer);
+      // comment is discarded
       break;
     case TOKEN_COMMENT:
     case TOKEN_DIRECTIVE:
@@ -314,9 +334,11 @@ bool Parser::next_token(TokenPtr& token) {
     case TOKEN_INCREMENT:
     case TOKEN_DECREMENT:
     default:
-      t = new Token(tc, ts);
+      t = new Token(tc, ts, _position.lno, _position.pno);
       break;
     }
+
+    _position.pno += strlen(ts);
 
     /* forward token string to trace */
     if (_trace)
@@ -324,7 +346,6 @@ bool Parser::next_token(TokenPtr& token) {
   }
 
   token.reset(t);
-  _position.pno += 1;
   return true;
 }
 

@@ -147,7 +147,7 @@ Executable * BEGINStatement::parse_catch(Parser& p, Context& ctx)
     }
     /* requires at least one statement, even NOP */
     if (statements.empty())
-      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     p.push(t);
   }
   catch (ParseError& pe)
@@ -190,19 +190,19 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
       {
         /* when */
         if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_WHEN])
-          throw ParseError(EXC_PARSE_OTHER_S, "Missing WHEN keyword in EXCEPTION clause.");
+          throw ParseError(EXC_PARSE_OTHER_S, "Missing WHEN keyword in EXCEPTION clause.", t);
         /* exception name */
         t = p.pop();
         if (t->code != TOKEN_KEYWORD)
-          throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+          throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
         if (Parser::reservedKeyword(t->text))
-          throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str());
+          throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
         std::string name(t->text);
         std::transform(name.begin(), name.end(), name.begin(), ::toupper);
         /* then */
         t = p.pop();
         if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_THEN])
-          throw ParseError(EXC_PARSE_OTHER_S, "Missing THEN keyword in EXCEPTION clause.");
+          throw ParseError(EXC_PARSE_OTHER_S, "Missing THEN keyword in EXCEPTION clause.", t);
         /* clause */
         Executable * exec = parse_catch(p, ctx);
         s->_catches.push_back(std::make_pair(name, exec));
@@ -221,7 +221,7 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
     }
     t = p.pop();
     if (t->code != Parser::Separator)
-      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str(), t);
   }
   catch (ParseError& pe)
   {

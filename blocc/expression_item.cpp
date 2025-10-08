@@ -63,7 +63,7 @@ ItemExpression * ItemExpression::parse(Parser& p, Context& ctx, Expression * exp
   const Type& exp_type = exp->type(ctx);
   TokenPtr t = p.pop();
   if (t->code != TOKEN_INTEGER)
-    throw ParseError(EXC_PARSE_INV_EXPRESSION);
+    throw ParseError(EXC_PARSE_INV_EXPRESSION, t);
   unsigned item_no = (unsigned)std::stoul(t->text, nullptr, 10);
   switch (exp_type.major())
   {
@@ -73,11 +73,11 @@ ItemExpression * ItemExpression::parse(Parser& p, Context& ctx, Expression * exp
     {
       // check indice at compile time: should not be less than 1
       if (item_no < 1 /*|| item_no > exp->tuple_decl(ctx).size()*/)
-        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
+        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str(), t);
     }
     return new ItemExpression(exp, item_no - 1);
   default:
-    throw ParseError(EXC_PARSE_NOT_ROWTYPE);
+    throw ParseError(EXC_PARSE_NOT_ROWTYPE, t);
   }
   return nullptr;
 }

@@ -21,6 +21,7 @@
 
 #include "exception.h"
 #include "declspec.h"
+#include "token.h"
 
 namespace bloc
 {
@@ -61,8 +62,6 @@ enum EXC_PARSE
   EXC_PARSE_OTHER_S,
 };
 
-typedef struct { int lno; int pno; } PARSING_POSITION;
-
 class ParseError : public Error
 {
   public:
@@ -70,9 +69,11 @@ class ParseError : public Error
 
     ParseError() : Error(PARSE_ERROR[EXC_PARSE_EOF]), no(EXC_PARSE_EOF) { }
     explicit ParseError(EXC_PARSE no) : Error(PARSE_ERROR[no]), no(no) { }
+    ParseError(EXC_PARSE no, const TokenPtr& token) : Error(PARSE_ERROR[no]), no(no), token(token) { }
     ParseError(EXC_PARSE no, const char * arg) : Error(PARSE_ERROR[no], arg), no(no) { }
+    ParseError(EXC_PARSE no, const char * arg, const TokenPtr& token) : Error(PARSE_ERROR[no], arg), no(no), token(token) { }
     const EXC_PARSE no;
-    PARSING_POSITION position = { 0, 0 };
+    TokenPtr token;
 };
 
 }

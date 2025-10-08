@@ -117,11 +117,11 @@ MemberSETExpression * MemberSETExpression::parse(Parser& p, Context& ctx, Expres
   TokenPtr t = p.pop();
 
   if (t->code != ItemExpression::OPERATOR)
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
+    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET], t);
   t = p.pop();
   /* item no MUST be constant */
   if (t->code != TOKEN_INTEGER)
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
+    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET], t);
   unsigned item_no = (unsigned)std::stoul(t->text, nullptr, 10);
 
   try
@@ -133,21 +133,21 @@ MemberSETExpression * MemberSETExpression::parse(Parser& p, Context& ctx, Expres
     case Type::ROWTYPE:
       break;
     default:
-      throw ParseError(EXC_PARSE_NOT_ROWTYPE);
+      throw ParseError(EXC_PARSE_NOT_ROWTYPE, t);
     }
     t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET]);
+      throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_SET], t);
     args.push_back(ParseExpression::expression(p, ctx));
 
     if (exp_type.minor() != 0) /* not opaque */
     {
       /* test item range */
       if (item_no < 1 || item_no > exp->tuple_decl(ctx).size())
-        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str());
+        throw ParseError(EXC_PARSE_OUT_OF_INDICE, std::to_string(item_no).c_str(), t);
       /* test known types are compatible */
       if (!ParseExpression::typeChecking(args.back(), exp->tuple_decl(ctx)[item_no - 1], p, ctx))
-        throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_SET]);
+        throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_SET], t);
     }
 
     assertClosedMember(p, ctx, KEYWORDS[BTM_SET]);

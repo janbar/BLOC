@@ -79,11 +79,11 @@ std::string VariableExpression::typeName(Context& ctx) const
   }
 }
 
-VariableExpression * VariableExpression::parse(Parser& p, Context& ctx, const std::string& symbol_name)
+VariableExpression * VariableExpression::parse(Parser& p, Context& ctx, TokenPtr& token)
 {
-  const Symbol * symbol = ctx.findSymbol(symbol_name);
+  const Symbol * symbol = ctx.findSymbol(token->text);
   if (!symbol)
-    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, symbol_name.c_str());
+    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, token->text.c_str(), token);
   return new VariableExpression(*symbol);
 }
 

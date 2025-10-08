@@ -72,7 +72,7 @@ LETNStatement * LETNStatement::parse(Parser& p, Context& ctx)
     {
       /* check if keyword is reserved */
       if (Parser::reservedKeyword(t->text))
-        throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str());
+        throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
       std::string name = t->text;
       std::transform(name.begin(), name.end(), name.begin(), ::toupper);
       t = p.pop();
@@ -80,7 +80,7 @@ LETNStatement * LETNStatement::parse(Parser& p, Context& ctx)
       {
         t = p.pop();
         if (t->code != TOKEN_KEYWORD)
-          throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+          throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
         if (t->text == "table")
         {
           /* register type table opaque */
@@ -102,12 +102,12 @@ LETNStatement * LETNStatement::parse(Parser& p, Context& ctx)
             if (t->text == Type::typeName(tmp.major()))
               return new LETNStatement(VariableExpression(ctx.registerSymbol(name, tmp)), tmp);
             else
-              throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str());
+              throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str(), t);
           }
         }
       }
     }
-    throw ParseError(EXC_PARSE_NOT_A_STATEMENT);
+    throw ParseError(EXC_PARSE_NOT_A_STATEMENT, t);
   }
   catch (ParseError& pe)
   {

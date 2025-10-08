@@ -255,7 +255,7 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
   TokenPtr t = p.pop();
 
   if (t->code != '(')
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_INSERT]);
+    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_INSERT], t);
   try
   {
     const Type& exp_type = exp->type(ctx);
@@ -269,16 +269,16 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
       case Type::TABCHAR:
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT], t);
       }
     }
 
     args.push_back(ParseExpression::expression(p, ctx));
     if (!ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT]);
+      throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT], t);
     t = p.pop();
     if (t->code != Parser::Chain)
-      throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, KEYWORDS[BTM_INSERT]);
+      throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, KEYWORDS[BTM_INSERT], t);
 
     args.push_back(ParseExpression::expression(p, ctx));
     if (exp_type.level() == 0)
@@ -291,17 +291,17 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
       case Type::LITERAL:
         if (args.back()->type(ctx) != Type::LITERAL &&
                 !ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT]);
+          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT], t);
         break;
         /* bytes INSERT bytes or string or one byte */
       case Type::TABCHAR:
         if (args.back()->type(ctx) != Type::TABCHAR &&
                 args.back()->type(ctx) != Type::LITERAL &&
                 !ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT]);
+          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_INSERT], t);
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_INSERT], t);
       }
     }
     /* collection INSERT */
@@ -317,14 +317,14 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
       {
         if (arg_type.level() != exp_type.level() &&
               arg_type.level() != exp_type.levelDown().level())
-          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str(), t);
 
         /* test known types are compatible */
         if (!exp_opaque && !arg_opaque)
         {
           if (!ParseExpression::typeChecking(args.back(), exp_type, p, ctx) &&
                   !ParseExpression::typeChecking(args.back(), exp_type.levelDown(), p, ctx))
-            throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+            throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str(), t);
         }
       }
     }

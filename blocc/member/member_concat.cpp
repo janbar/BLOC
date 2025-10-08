@@ -373,7 +373,7 @@ MemberCONCATExpression * MemberCONCATExpression::parse(Parser& p, Context& ctx, 
   TokenPtr t = p.pop();
 
   if (t->code != '(')
-    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_CONCAT]);
+    throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_CONCAT], t);
   try
   {
     const Type& exp_type = exp->type(ctx);
@@ -387,7 +387,7 @@ MemberCONCATExpression * MemberCONCATExpression::parse(Parser& p, Context& ctx, 
       case Type::NO_TYPE: /* opaque */
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_CONCAT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_CONCAT], t);
       }
     }
 
@@ -400,19 +400,19 @@ MemberCONCATExpression * MemberCONCATExpression::parse(Parser& p, Context& ctx, 
       case Type::LITERAL:
         if (args.back()->type(ctx) != Type::LITERAL &&
                 !ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_CONCAT]);
+          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_CONCAT], t);
         break;
         /* bytes CONCAT bytes or string or one byte */
       case Type::TABCHAR:
         if (args.back()->type(ctx) != Type::TABCHAR &&
                 args.back()->type(ctx) != Type::LITERAL &&
                 !ParseExpression::typeChecking(args.back(), Type::INTEGER, p, ctx))
-          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_CONCAT]);
+          throw ParseError(EXC_PARSE_MEMB_ARG_TYPE_S, KEYWORDS[BTM_CONCAT], t);
         break;
       case Type::NO_TYPE: /* opaque */
         break;
       default:
-        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_CONCAT]);
+        throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[BTM_CONCAT], t);
       }
     }
     /* collection CONCAT */
@@ -428,12 +428,12 @@ MemberCONCATExpression * MemberCONCATExpression::parse(Parser& p, Context& ctx, 
       {
         if (arg_type.level() != exp_type.level() &&
               arg_type.level() != exp_type.levelDown().level())
-          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str(), t);
 
         /* test known types are compatible */
         if (!exp_opaque && !arg_opaque &&
                 arg_type != exp_type && arg_type != exp_type.levelDown())
-          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str());
+          throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, exp->typeName(ctx).c_str(), t);
       }
     }
     assertClosedMember(p, ctx, KEYWORDS[BTM_CONCAT]);

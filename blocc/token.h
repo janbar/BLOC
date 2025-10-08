@@ -29,10 +29,14 @@ struct Token {
 
   int code;
   std::string text;
+  int line;
+  int column;
 
-  Token(int code, const std::string& text)
+  Token(int code, const std::string& text, int line, int column)
   : code(code)
   , text(text)
+  , line(line)
+  , column(column)
   { }
 };
 

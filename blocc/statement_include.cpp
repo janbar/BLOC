@@ -145,16 +145,12 @@ INCLUDEStatement * INCLUDEStatement::parse(Parser& p, Context& ctx)
   INCLUDEStatement * s = nullptr;
   try
   {
+    TokenPtr t = p.front();
     Expression * e = ParseExpression::expression(p, ctx);
-    try
-    {
-      if (e->type(ctx) != Type::LITERAL)
-        throw ParseError(EXC_PARSE_NOT_LITERAL);
-    }
-    catch (...)
+    if (e->type(ctx) != Type::LITERAL)
     {
       delete e;
-      throw;
+      throw ParseError(EXC_PARSE_NOT_LITERAL, t);
     }
     s = new INCLUDEStatement(e);
     s->loadSource(p, ctx);

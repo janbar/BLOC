@@ -183,10 +183,12 @@ Statement * ParseStatement::parse()
     default:
       break;
     }
-    throw ParseError(EXC_PARSE_NOT_A_STATEMENT);
+    throw ParseError(EXC_PARSE_NOT_A_STATEMENT, t);
   }
   catch (ParseError& pe)
   {
+    if (!pe.token)
+      pe.token = t;
     DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
     if (s) delete s;
     throw;
@@ -201,9 +203,9 @@ Statement * ParseStatement::beyond_statement(Statement * s)
 {
   TokenPtr t = p.pop();
   if (t->code == ')')
-    throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+    throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
   if (t->code != Parser::Separator)
-    throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
+    throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str(), t);
   return s;
 }
 

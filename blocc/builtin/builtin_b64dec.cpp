@@ -70,11 +70,11 @@ B64DECExpression * B64DECExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_B64DEC]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_B64DEC], t);
     args.push_back(ParseExpression::expression(p, ctx));
     const Type& type = args.back()->type(ctx);
     if (type.level() > 0)
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_B64DEC]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_B64DEC], t);
     switch (type.major())
     {
     case Type::NO_TYPE:
@@ -82,7 +82,7 @@ B64DECExpression * B64DECExpression::parse(Parser& p, Context& ctx)
     case Type::TABCHAR:
       break;
     default:
-      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_B64DEC]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_B64DEC], t);
     }
     assertClosedFunction(p, ctx, FUNC_B64DEC);
     return new B64DECExpression(std::move(args));

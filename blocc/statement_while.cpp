@@ -98,7 +98,7 @@ Executable * WHILEStatement::parse_clause(Parser& p, Context& ctx, Statement * i
     }
     /* requires at least one statement, even NOP */
     if (statements.empty())
-      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     p.push(t);
   }
   catch (ParseError& pe)
@@ -119,21 +119,21 @@ WHILEStatement * WHILEStatement::parse(Parser& p, Context& ctx)
   {
     s->exp = ParseExpression::expression(p, ctx);
     if (s->exp->type(ctx) != Type::BOOLEAN)
-      throw ParseError(EXC_PARSE_OTHER_S, "Boolean expression required for WHILE.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Boolean expression required for WHILE.", p.front());
     TokenPtr t = p.pop();
     if (t->code == ')')
-      throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+      throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_LOOP])
-      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in WHILE statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Missing LOOP keyword in WHILE statement.", t);
     s->_exec = parse_clause(p, ctx, s);
     t = p.pop();
     if (t->text != KEYWORDS[STMT_END])
-      throw ParseError(EXC_PARSE_OTHER_S, "Endless WHILE LOOP statement.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Endless WHILE LOOP statement.", t);
     /* parse statement END */
     s->_exec->statements().push_back(ENDStatement::parse(p, ctx, STMT_ENDLOOP));
     t = p.pop();
     if (t->code != Parser::Separator)
-      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_STATEMENT_END_S, t->text.c_str(), t);
     return s;
   }
   catch (ParseError& pe)

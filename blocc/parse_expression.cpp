@@ -95,7 +95,7 @@ Expression * ParseExpression::assertType(Expression * exp, const Type& type, Par
     return exp;
   DBG(DBG_DEBUG, "%s : %s != %s\n", exp->unparse(ctx).c_str(), exp->typeName(ctx).c_str(), type.typeName().c_str());
   if (deleteOnFailure) delete exp;
-  throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str());
+  throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str(), p.front());
   return nullptr;
 }
 
@@ -108,7 +108,7 @@ Expression * ParseExpression::assertTypeUniform(Expression * exp, const Type& ty
     return exp;
   DBG(DBG_DEBUG, "%s : %s != %s\n", exp->unparse(ctx).c_str(), exp->typeName(ctx).c_str(), type.typeName().c_str());
   if (deleteOnFailure) delete exp;
-  throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str());
+  throw ParseError(EXC_PARSE_TYPE_MISMATCH_S, type.typeName().c_str(), p.front());
 }
 
 /**
@@ -163,16 +163,16 @@ Expression * ParseExpression::element()
     {
     case TOKEN_INTEGER:
       try { return new IntegerExpression(Value::parseInteger(t->text)); }
-      catch (std::out_of_range& e) { throw ParseError(EXC_PARSE_OUT_OF_RANGE); }
+      catch (std::out_of_range& e) { throw ParseError(EXC_PARSE_OUT_OF_RANGE, t); }
       break;
     case TOKEN_HEXANUM:
       try { return new IntegerExpression(Value::parseInteger(t->text, 16)); }
-      catch (std::out_of_range& e) { throw ParseError(EXC_PARSE_OUT_OF_RANGE); }
+      catch (std::out_of_range& e) { throw ParseError(EXC_PARSE_OUT_OF_RANGE, t); }
       break;
     case TOKEN_DOUBLE:
     case TOKEN_FLOAT:
       try { return new NumericExpression(Value::parseNumeric(t->text)); }
-      catch (std::out_of_range& e) { throw ParseError(EXC_PARSE_OUT_OF_RANGE); }
+      catch (std::out_of_range& e) { throw ParseError(EXC_PARSE_OUT_OF_RANGE, t); }
       break;
     case TOKEN_LITERALSTR:
       result = new LiteralExpression(Value::parseLiteral(t->text));
@@ -198,19 +198,19 @@ Expression * ParseExpression::element()
         /* all names are declared in upper case, so now transform the keyword */
         std::transform(t->text.begin(), t->text.end(), t->text.begin(), ::toupper);
         if (p.front()->code == '(' && ctx.functorManager().exists(t->text))
-          result = FunctorExpression::parse(p, ctx, t->text);
+          result = FunctorExpression::parse(p, ctx, t);
         else
-          result = VariableExpression::parse(p, ctx, t->text);
+          result = VariableExpression::parse(p, ctx, t);
         return member(result);
       }
     case '(':
       result = expression(p, ctx);
       t = p.pop();
       if (t->code != ')')
-        throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+        throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
       return member(result);
     default:
-      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     }
     p.push(t);
   }

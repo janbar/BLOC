@@ -62,7 +62,7 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
   {
     TokenPtr t = p.pop();
     if (t->code != '(')
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP]);
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_TUP], t);
     if (p.front()->code != ')')
     {
       for (;;)
@@ -70,7 +70,7 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
         args.push_back(ParseExpression::expression(p, ctx));
         const Type& arg_type = args.back()->type(ctx);
         if (arg_type.level() > 0)
-          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
+          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP], t);
         switch (arg_type.major())
         {
         case Type::NO_TYPE: /* opaque */
@@ -83,7 +83,7 @@ TUPExpression * TUPExpression::parse(Parser& p, Context& ctx)
         case Type::TABCHAR:
           break;
         default:
-          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP]);
+          throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_TUP], t);
         }
         t = p.pop();
         if (t->code == Parser::Chain)

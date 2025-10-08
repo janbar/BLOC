@@ -22,6 +22,7 @@
 #include "expression.h"
 #include "complex.h"
 #include "functor_manager.h"
+#include "token.h"
 
 #include <vector>
 
@@ -61,7 +62,7 @@ public:
     return "functor";
   }
 
-  static FunctorExpression * parse(Parser& p, Context& ctx, const std::string& name);
+  static FunctorExpression * parse(Parser& p, Context& ctx, TokenPtr& token);
 
 };
 

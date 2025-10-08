@@ -83,7 +83,7 @@ void MemberExpression::assertClosedMember(Parser& p, Context& ctx, const char * 
   TokenPtr t = p.pop();
   /* check for enclosure */
   if (t->code != ')')
-    throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, member);
+    throw ParseError(EXC_PARSE_MEMB_ARG_NUM_S, member, t);
 }
 
 MemberExpression * MemberExpression::parse(Parser& p, Context& ctx, Expression * exp)
@@ -104,7 +104,7 @@ MemberExpression * MemberExpression::parse(Parser& p, Context& ctx, Expression *
       case Type::NO_TYPE: /* opaque */
         return parse_builtin(p, ctx, exp);
       default:
-        throw ParseError(EXC_PARSE_INV_EXPRESSION);
+        throw ParseError(EXC_PARSE_INV_EXPRESSION, p.front());
       }
     }
     else
@@ -127,7 +127,7 @@ MemberExpression * MemberExpression::parse_builtin(Parser& p, Context& ctx, Expr
   /* check all types of keywords */
   BTMETHOD mc = (BTMETHOD)findBuiltinKeyword(t->text);
   if (mc == unknown)
-    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, t->text.c_str());
+    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, t->text.c_str(), t);
 
   switch (mc)
   {
@@ -146,7 +146,7 @@ MemberExpression * MemberExpression::parse_builtin(Parser& p, Context& ctx, Expr
   case BTM_SET:
     return MemberSETExpression::parse(p, ctx, exp);
   default:
-    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[mc]);
+    throw ParseError(EXC_PARSE_MEMB_NOT_IMPL_S, KEYWORDS[mc], t);
   }
   return nullptr;
 }

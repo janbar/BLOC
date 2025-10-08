@@ -106,7 +106,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     FunctorPtr fct(new Functor());
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
-      throw ParseError(EXC_PARSE_OTHER_S, "name required for FUNCTION.");
+      throw ParseError(EXC_PARSE_OTHER_S, "name required for FUNCTION.", t);
     fct->name = t->text;
     std::transform(fct->name.begin(), fct->name.end(), fct->name.begin(), ::toupper);
 
@@ -127,7 +127,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
         {
           t = p.pop();
           if (t->code != TOKEN_KEYWORD)
-            throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+            throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
           std::string param_name = t->text;
           std::transform(param_name.begin(), param_name.end(), param_name.begin(), ::toupper);
           t = p.pop();
@@ -136,7 +136,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
           {
             t = p.pop();
             if (t->code != TOKEN_KEYWORD)
-              throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+              throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
             if (t->text == "table")
               /* register type table opaque */
               fct->params.push_back(fct->ctx->registerSymbol(param_name, Type(Type::NO_TYPE).levelUp()));
@@ -152,7 +152,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
                 if (t->text == Type::typeName(tmp.major()))
                   fct->params.push_back(fct->ctx->registerSymbol(param_name, tmp));
                 else
-                  throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str());
+                  throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str(), t);
               }
             }
             t = p.pop();
@@ -164,17 +164,17 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
           }
         } while (t->code == Parser::Chain);
         if (t->code != ')')
-          throw ParseError(EXC_PARSE_MM_PARENTHESIS);
+          throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
       }
       t = p.pop();
     }
 
     /* returns */
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_RETURN])
-      throw ParseError(EXC_PARSE_OTHER_S, "Keyword RETURN required for FUNCTION.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword RETURN required for FUNCTION.", t);
     t = p.pop();
     if (t->code != TOKEN_KEYWORD)
-      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str());
+      throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     if (t->text == "table")
     {
       /* opaque table */
@@ -192,17 +192,17 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
         if (t->text == Type::typeName(tmp.major()))
           fct->returns = tmp;
         else
-          throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str());
+          throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, t->text.c_str(), t);
       }
     }
 
     /* is */
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IS])
-      throw ParseError(EXC_PARSE_OTHER_S, "Keyword IS required for FUNCTION.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword IS required for FUNCTION.", t);
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_BEGIN])
-      throw ParseError(EXC_PARSE_OTHER_S, "Keyword BEGIN required for FUNCTION.");
+      throw ParseError(EXC_PARSE_OTHER_S, "Keyword BEGIN required for FUNCTION.", t);
 
     /* before parsing the body, declare itself to allow recursion.
      * the previous declaration is backed up, and should be restored when
