@@ -53,6 +53,7 @@ const char * ParseError::PARSE_ERROR[] =
   "Missing keyword %s.",
   "Keyword '%s' cannot be used as variable name.",
   "Import module '%s' failed.",
+  "Failed to include source '%s'.",
   "The OPAQUE expression must be stored in a variable before calling a method or accessing an item.",
   "%s", /* EXC_PARSE_MESSAGE_S */
 };

@@ -126,12 +126,14 @@ void INCLUDEStatement::loadSource(Parser& p, Context& ctx)
   catch (ParseError& pe)
   {
     DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
+    if (pe.token)
+      fprintf(ctx.ctxerr(), "Error (%d,%d): %s\n", pe.token->line, pe.token->column, pe.what());
     if (np)
       delete np;
     for (auto s : statements)
       delete s;
     ::fclose(progfile);
-    throw;
+    throw ParseError(EXC_PARSE_INCLUDE_FAILED_S, val.literal()->c_str());
   }
 
   if (np)
