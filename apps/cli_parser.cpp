@@ -52,6 +52,7 @@ static char * rl_line = nullptr;
 #define PRINT(a) fputs(a, STDOUT)
 #define PRINT1(a,b) fprintf(STDOUT, a, b)
 #define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
+#define PRINT3(a,b,c,d) fprintf(STDOUT, a, b, c, d)
 #include "winstub.h"
 #include <io.h>
 #else
@@ -60,6 +61,7 @@ static char * rl_line = nullptr;
 #define PRINT(a) fputs(a, STDOUT)
 #define PRINT1(a,b) fprintf(STDOUT, a, b)
 #define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
+#define PRINT3(a,b,c,d) fprintf(STDOUT, a, b, c, d)
 #include "signalhandler.h"
 #include <unistd.h>
 #endif
@@ -176,20 +178,30 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
     if (cli > 0)
       continue;
 
-    try { s = p->parseStatement(); }
+    try
+    {
+      s = p->parseStatement();
+    }
     catch (bloc::ParseError& pe)
     {
       if (pe.no == bloc::EXC_PARSE_EOF)
       {
         /* broken input issued by CTRL+D */
-        set_color(fgRED); PRINT1("%s\n", pe.what()); reset_color();
+        set_color(fgRED);
+        PRINT1("Error: %s\n", pe.what());
+        reset_color();
         ::clearerr(stdin);
         delete p;
         p = bloc::Parser::createInteractiveParser(ctx, input);
       }
       else
       {
-        set_color(fgRED); PRINT1("Error: %s\n", pe.what()); reset_color();
+        set_color(fgRED);
+        if (pe.token)
+          PRINT3("Error (%d,%d): %s\n", pe.token->line, pe.token->column, pe.what());
+        else
+          PRINT1("Error: %s\n", pe.what());
+        reset_color();
         p->clear();
       }
     }
@@ -897,7 +909,12 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     }
     catch (bloc::ParseError& pe)
     {
-      set_color(fgRED); PRINT1("Error: %s\n", pe.what()); reset_color();
+      set_color(fgRED);
+      if (pe.token)
+        PRINT3("Error (%d,%d): %s\n", pe.token->line, pe.token->column, pe.what());
+      else
+        PRINT1("Error: %s\n", pe.what());
+      reset_color();
     }
     ::fclose(progfile);
     if (!exec)
