@@ -81,9 +81,13 @@ std::string VariableExpression::typeName(Context& ctx) const
 
 VariableExpression * VariableExpression::parse(Parser& p, Context& ctx, TokenPtr& token)
 {
-  const Symbol * symbol = ctx.findSymbol(token->text);
+  /* all names are declared in upper case, so now transform the keyword */
+  std::string symbol_name(token->text);
+  std::transform(symbol_name.begin(), symbol_name.end(), symbol_name.begin(), ::toupper);
+
+  const Symbol * symbol = ctx.findSymbol(symbol_name);
   if (!symbol)
-    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, token->text.c_str(), token);
+    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, symbol_name.c_str(), token);
   return new VariableExpression(*symbol);
 }
 

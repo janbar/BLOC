@@ -66,6 +66,9 @@ std::string FunctorExpression::unparse(Context& ctx) const
 FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, TokenPtr& token)
 {
   std::vector<Expression*> args;
+  /* all names are declared in upper case, so now transform the keyword */
+  std::string name(token->text);
+  std::transform(name.begin(), name.end(), name.begin(), ::toupper);
 
   try
   {
@@ -91,12 +94,12 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, TokenPtr& 
       }
     }
 
-    const FunctorManager::entry fe = ctx.functorManager().findDeclaration(token->text, args.size());
+    const FunctorManager::entry fe = ctx.functorManager().findDeclaration(name, args.size());
     if (fe != ctx.functorManager().npos())
       return new FunctorExpression(fe, std::move(args));
-    if (ctx.functorManager().exists(token->text))
-      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, token->text.c_str(), token);
-    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, token->text.c_str(), token);
+    if (ctx.functorManager().exists(name))
+      throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, name.c_str(), token);
+    throw ParseError(EXC_PARSE_UNDEFINED_SYMBOL_S, name.c_str(), token);
   }
   catch (ParseError& pe)
   {
