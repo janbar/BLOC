@@ -121,7 +121,7 @@ Parser * Parser::createInteractiveParser(Context& ctx, StreamReader& reader)
 
 Statement * Parser::parseStatement()
 {
-  _position = { 1, 0 };
+  _position = { 1, 1 };
   TokenPtr t;
   state(Begin);
   while ((t = front()))
@@ -255,7 +255,7 @@ bool Parser::next_token(TokenPtr& token) {
         state(Begin);
         /* reset position */
         _position.lno += 1;
-        _position.pno = 0;
+        _position.pno = 1;
       }
       else
       {
@@ -270,28 +270,15 @@ bool Parser::next_token(TokenPtr& token) {
       /* until new statement, let the caller handling NL  */
       if (state() != Parsing)
         t = new Token(tc, ts, _position.lno, _position.pno);
-      /* reset position */
-      _position.lno += 1;
-      _position.pno = 0;
       break;
     case TOKEN_SPACE:
       break;
     case TOKEN_LITERALBEG:
       _string_buffer.clear();
       _string_buffer.append(ts);
-      if (*ts == NewLine)
-      {
-        _position.lno += 1;
-        _position.pno = 0;
-      }
       break;
     case TOKEN_LITERALSTR:
       _string_buffer.append(ts);
-      if (*ts == NewLine)
-      {
-        _position.lno += 1;
-        _position.pno = 0;
-      }
       break;
     case TOKEN_LITERALEND:
       _string_buffer.append(ts);
@@ -300,28 +287,18 @@ bool Parser::next_token(TokenPtr& token) {
     case TOKEN_COMMENTBEG:
       _string_buffer.clear();
       _string_buffer.append(ts);
-      if (*ts == NewLine)
-      {
-        _position.lno += 1;
-        _position.pno = 0;
-      }
       break;
     case TOKEN_COMMENTSTR:
       _string_buffer.append(ts);
-      if (*ts == NewLine)
-      {
-        _position.lno += 1;
-        _position.pno = 0;
-      }
       break;
     case TOKEN_COMMENTEND:
       _string_buffer.append(ts);
       // comment is discarded
-      break;
+    break;
     case TOKEN_COMMENT:
     case TOKEN_DIRECTIVE:
       //t = new Token(TOKEN_COMMENT, ts);
-      break;
+    break;
     case TOKEN_INTEGER:
     case TOKEN_DOUBLE:
     case TOKEN_FLOAT:
@@ -340,7 +317,13 @@ bool Parser::next_token(TokenPtr& token) {
       break;
     }
 
-    _position.pno += strlen(ts);
+    if (*ts == NewLine)
+    {
+      _position.lno += 1;
+      _position.pno = 1;
+    }
+    else
+      _position.pno += strlen(ts);
 
     /* forward token string to trace */
     if (_trace)
