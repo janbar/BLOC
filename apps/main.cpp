@@ -194,7 +194,7 @@ int main(int argc, char **argv) {
     catch (bloc::ParseError& pe)
     {
       if (pe.token)
-        fprintf(STDERR, "Error (%d,%d): %s\n", pe.token->line, pe.token->column, pe.what());
+        fprintf(STDERR, "Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
       else
         fprintf(STDERR, "Error: %s\n", pe.what());
     }

@@ -127,7 +127,7 @@ void INCLUDEStatement::loadSource(Parser& p, Context& ctx)
   {
     DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
     if (pe.token)
-      fprintf(ctx.ctxerr(), "Error (%d,%d): %s\n", pe.token->line, pe.token->column, pe.what());
+      fprintf(ctx.ctxerr(), "Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
     if (np)
       delete np;
     for (auto s : statements)

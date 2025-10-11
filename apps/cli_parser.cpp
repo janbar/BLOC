@@ -198,7 +198,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
       {
         set_color(fgRED);
         if (pe.token)
-          PRINT3("Error (%d,%d): %s\n", pe.token->line, pe.token->column, pe.what());
+          PRINT3("Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
         else
           PRINT1("Error: %s\n", pe.what());
         reset_color();
@@ -911,7 +911,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       set_color(fgRED);
       if (pe.token)
-        PRINT3("Error (%d,%d): %s\n", pe.token->line, pe.token->column, pe.what());
+        PRINT3("Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
       else
         PRINT1("Error: %s\n", pe.what());
       reset_color();
