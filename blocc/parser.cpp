@@ -161,7 +161,7 @@ Statement * Parser::parseStatement()
 
 Expression * Parser::parseExpression()
 {
-  _position = { 1, 0 };
+  _position = { 1, 1 };
   try
   {
     _ctx.parsingBegin();
