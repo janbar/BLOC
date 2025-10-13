@@ -26,7 +26,7 @@ if(NOT SKIP_INSTALL_ALL)
     include(GNUInstallDirs)
     install(TARGETS bloc_csv LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
   else()
-    install(TARGETS bloc_csv CONFIGURATIONS Debug Release MinSizeRel
+    install(TARGETS bloc_csv CONFIGURATIONS Debug Release MinSizeRel RelWithDebInfo
       RUNTIME DESTINATION bin)
   endif()
 

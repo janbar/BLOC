@@ -45,7 +45,7 @@ if(NOT SKIP_INSTALL_ALL)
     include(GNUInstallDirs)
     install(TARGETS bloc RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
   else()
-    install(TARGETS bloc CONFIGURATIONS Debug Release MinSizeRel
+    install(TARGETS bloc CONFIGURATIONS Debug Release MinSizeRel RelWithDebInfo
       RUNTIME DESTINATION bin)
     install(FILES ${PROJECT_SOURCE_DIR}/LICENSE
       DESTINATION bin)

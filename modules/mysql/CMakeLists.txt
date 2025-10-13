@@ -35,7 +35,7 @@ if(NOT SKIP_INSTALL_ALL AND MYSQL_FOUND)
     include(GNUInstallDirs)
     install(TARGETS bloc_mysql LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
   else()
-    install(TARGETS bloc_mysql CONFIGURATIONS Debug Release MinSizeRel
+    install(TARGETS bloc_mysql CONFIGURATIONS Debug Release MinSizeRel RelWithDebInfo
       RUNTIME DESTINATION bin)
   endif()
 

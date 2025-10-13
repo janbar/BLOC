@@ -32,7 +32,7 @@ if(NOT SKIP_INSTALL_ALL AND PLplot_FOUND)
     include(GNUInstallDirs)
     install(TARGETS bloc_plplot LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
   else()
-    install(TARGETS bloc_plplot CONFIGURATIONS Debug Release MinSizeRel
+    install(TARGETS bloc_plplot CONFIGURATIONS Debug Release MinSizeRel RelWithDebInfo
       RUNTIME DESTINATION bin)
   endif()
 

@@ -220,7 +220,7 @@ if(NOT SKIP_INSTALL_ALL)
     install(EXPORT bloccTargets
       DESTINATION ${INSTALL_CMAKE_DIR} COMPONENT dev)
   else()
-    install(TARGETS blocc CONFIGURATIONS Debug Release MinSizeRel
+    install(TARGETS blocc CONFIGURATIONS Debug Release MinSizeRel RelWithDebInfo
       RUNTIME DESTINATION bin
       ARCHIVE DESTINATION bin
       LIBRARY DESTINATION bin)
