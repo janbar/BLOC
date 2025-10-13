@@ -852,7 +852,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       if (exp)
         delete exp;
-      if (t->code != bloc::Parser::NewLine)
+      if (p.front()->code != bloc::Parser::NewLine)
         p.clear();
       set_color(fgRED); PRINT1("Error: %s\n", ee.what()); reset_color();
     }
