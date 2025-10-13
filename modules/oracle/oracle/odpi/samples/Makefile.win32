@@ -1,0 +1,95 @@
+#------------------------------------------------------------------------------
+# Copyright (c) 2017, 2022, Oracle and/or its affiliates.
+#
+# This software is dual-licensed to you under the Universal Permissive License
+# (UPL) 1.0 as shown at https://oss.oracle.com/licenses/upl and Apache License
+# 2.0 as shown at http://www.apache.org/licenses/LICENSE-2.0. You may choose
+# either license.
+#
+# If you elect to accept the software under the Apache License, Version 2.0,
+# the following applies:
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    https://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+#------------------------------------------------------------------------------
+#
+# Sample nmake Makefile for building the ODPI-C samples on Windows.
+#
+# This file is expected to be processed by nmake as in the following:
+#     nmake /f Makefile.win32
+#
+# Look at README.md for information on how to build and run the samples.
+#
+#------------------------------------------------------------------------------
+
+BUILD_DIR = build
+INCLUDE_DIR = ..\include
+LIB_DIR = ..\lib
+
+LIBS = $(LIB_DIR)\odpic.lib
+COMMON_OBJS = $(BUILD_DIR)\SampleLib.obj
+
+EXES = $(BUILD_DIR)\DemoBLOB.exe \
+       $(BUILD_DIR)\DemoCLOB.exe \
+       $(BUILD_DIR)\DemoFetch.exe \
+       $(BUILD_DIR)\DemoInsert.exe \
+       $(BUILD_DIR)\DemoInsertAsArray.exe \
+       $(BUILD_DIR)\DemoCallProc.exe \
+       $(BUILD_DIR)\DemoRefCursors.exe \
+       $(BUILD_DIR)\DemoImplicitResults.exe \
+       $(BUILD_DIR)\DemoFetchObjects.exe \
+       $(BUILD_DIR)\DemoBindObjects.exe \
+       $(BUILD_DIR)\DemoFetchDates.exe \
+       $(BUILD_DIR)\DemoBindArrays.exe \
+       $(BUILD_DIR)\DemoBFILE.exe \
+       $(BUILD_DIR)\DemoAppContext.exe \
+       $(BUILD_DIR)\DemoDistribTrans.exe \
+       $(BUILD_DIR)\DemoObjectAQ.exe \
+       $(BUILD_DIR)\DemoRawAQ.exe \
+       $(BUILD_DIR)\DemoBulkAQ.exe \
+       $(BUILD_DIR)\DemoCQN.exe \
+       $(BUILD_DIR)\DemoLongs.exe \
+       $(BUILD_DIR)\DemoLongRaws.exe \
+       $(BUILD_DIR)\DemoDMLReturning.exe \
+       $(BUILD_DIR)\DemoInOutTempLobs.exe \
+       $(BUILD_DIR)\DemoConvertNumbers.exe \
+       $(BUILD_DIR)\DemoCreateSodaColl.exe \
+       $(BUILD_DIR)\DemoIterSodaColls.exe \
+       $(BUILD_DIR)\DemoDropSodaColl.exe \
+       $(BUILD_DIR)\DemoInsertSodaColl.exe \
+       $(BUILD_DIR)\DemoGetSodaDoc.exe \
+       $(BUILD_DIR)\DemoRemoveSodaDoc.exe \
+       $(BUILD_DIR)\DemoReplaceSodaDoc.exe \
+       $(BUILD_DIR)\DemoGetAllSodaDocs.exe \
+       $(BUILD_DIR)\DemoGetSodaCollNames.exe \
+       $(BUILD_DIR)\DemoInsertManySodaColl.exe
+       $(BUILD_DIR)\DemoInsertManySodaColl.exe \
+       $(BUILD_DIR)\DemoShardingNumberKey.exe \
+       $(BUILD_DIR)\DemoFetchJSON.exe \
+       $(BUILD_DIR)\DemoBindJSON.exe
+
+all: $(EXES) $(BUILD_DIR)
+
+$(EXES): $(BUILD_DIR) $(COMMON_OBJS) $*.obj
+
+clean:
+	@if exist $(BUILD_DIR) rmdir /S /Q $(BUILD_DIR)
+
+$(BUILD_DIR):
+	@if not exist $(BUILD_DIR) mkdir $(BUILD_DIR)
+
+{.}.c{$(BUILD_DIR)}.obj ::
+	cl /nologo /c /Fo$(BUILD_DIR)\ /I$(INCLUDE_DIR) $<
+
+{$(BUILD_DIR)}.obj{$(BUILD_DIR)}.exe:
+	link /nologo /out:$@ $< $(COMMON_OBJS) $(LIBS)
