@@ -161,11 +161,7 @@ struct Handle {
 
   ~Handle()
   {
-    if (_stmt)
-      mysql_stmt_close(_stmt);
-    if (_db) {
-      mysql_close(_db);
-    }
+    close();
   }
   Handle() { }
   int open(const std::string& host,
@@ -209,7 +205,6 @@ struct Handle {
 
   Bindings _stmt_rs;
   bloc::TupleDecl::Decl _stmt_decl;
-
 
   static void bind_args(Bindings& bindings, bloc::Tuple& args);
   static void unbind_args(Bindings& bindings);
