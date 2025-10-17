@@ -14,7 +14,7 @@ casting.
 
 a = int(3.14), b = num(10), c = str(), d = raw();
 
-$$$ames$$
+$$Names$$
 A variable can have a short name (like x and y) or a more descriptive name.
 Rules for BLOC variables are:
     Names must start with a letter, the underscore character, or $$$$$
