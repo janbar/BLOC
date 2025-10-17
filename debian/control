@@ -40,3 +40,8 @@ Package: bloc-module-mariadb
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
 Description: Module mariadb for BLOC.
+
+Package: bloc-module-oracle
+Architecture: any
+Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
+Description: Module oracle for BLOC.
