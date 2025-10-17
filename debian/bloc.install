@@ -6,4 +6,3 @@ usr/lib/*/libbloc_date.so*
 usr/lib/*/libbloc_file.so*
 usr/lib/*/libbloc_sys.so*
 usr/lib/*/libbloc_utf8.so*
-usr/lib/*/libbloc_oracle.so*
