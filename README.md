@@ -13,7 +13,7 @@ Internally, BLOC supports scalar data types like boolean, integer, decimal, stri
 For now, it processes twice as fast as Python and Lua, and twenty as fast than Perl.
 
 It is my common scripting language, running secure, fast, and as same on all platforms (MS-Windows, Linux, BSD, MacOS, Illumos, SunOS).
-By using the modules SQLite3 or MariaDB, it interoperates natively with a database.
+By using the modules SQLite3, MariaDB, or Oracle, it interoperates natively with a database.
 And by using the modules sys, file, date, it makes it a powerful scripting language for everyday processing.
 Finally, it is my powerful calculator, and my replacement for the farmer *bc* or *expr*.
 
