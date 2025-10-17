@@ -121,7 +121,6 @@ Parser * Parser::createInteractiveParser(Context& ctx, StreamReader& reader)
 
 Statement * Parser::parseStatement()
 {
-  _position = { 1, 1 };
   TokenPtr t;
   state(Begin);
   while ((t = front()))
@@ -161,7 +160,6 @@ Statement * Parser::parseStatement()
 
 Expression * Parser::parseExpression()
 {
-  _position = { 1, 1 };
   try
   {
     _ctx.parsingBegin();

@@ -309,7 +309,9 @@ int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
   /* get a new line */
   if (p->state() == bloc::Parser::Parsing)
     rl_line = readline("... ");
-  else {
+  else
+  {
+    p->resetPosition();
     rl_line = readline(">>> ");
   }
   /* if the line has any text in it */
@@ -349,7 +351,10 @@ int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
   if (p->state() == bloc::Parser::Parsing)
     PRINT("... ");
   else
+  {
+    p->resetPosition();
     PRINT(">>> ");
+  }
   FLUSHOUT;
   return bloc_readstdin(buf, max_size);
 #endif

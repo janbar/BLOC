@@ -131,6 +131,8 @@ public:
 
   int nesting() const { return _nesting; }
 
+  void resetPosition() { _position = { 1, 1 }; }
+
 private:
   /* TOKEN_READER */
   static void token_read(void * hdl, char * buf, int * len, int max_size);
