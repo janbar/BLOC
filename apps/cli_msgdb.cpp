@@ -22,6 +22,7 @@
 #include <string>
 #include <cstdlib>
 #include <cstring>
+#include <vector>
 
 #if defined(LIBBLOC_MSWIN)
 #include "win32/dlfcn.h"
@@ -61,6 +62,21 @@ struct MsgDB::Interface
   DLSYM_msgdb_get_text get_text;
 };
 
+std::string MsgDB::getModuleDir()
+{
+#ifndef _AIX
+  std::string dir;
+  Dl_info info;
+  if (dladdr((void*)(&getModuleDir), &info) != 0)
+  {
+    const char * e = strrchr(info.dli_fname, FILE_SEPARATOR);
+    if (e)
+      dir.assign(info.dli_fname, e - info.dli_fname + 1);
+  }
+  return dir;
+#endif
+}
+
 MsgDB::~MsgDB()
 {
   if (_msgdb)
@@ -76,10 +92,22 @@ bool MsgDB::initialize()
   if (_msgdb)
     return true;
 
+  std::string libname;
+  libname.assign(LIBPREFIX).append("msgdb").append(LIBSUFFIX);
+
+  std::vector<std::string> libs;
+  libs.push_back(libname);
+  std::string tmp = getModuleDir();
+  if (!tmp.empty())
+    libs.push_back(tmp.append(libname));
+
   void* dlhandle = nullptr;
-  std::string libs;
-  libs.assign(LIBPREFIX).append("msgdb").append(LIBSUFFIX);
-  dlhandle = dlopen(libs.c_str(), RTLD_LAZY);
+  for (std::string& lib : libs)
+  {
+    dlhandle = dlopen(lib.c_str(), RTLD_LAZY);
+    if (dlhandle)
+      break;
+  }
 
   if (!dlhandle)
     return false;

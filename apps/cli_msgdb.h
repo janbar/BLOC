@@ -26,6 +26,9 @@ class MsgDB
   struct Interface;
   Interface * _msgdb = nullptr;
 
+  /* attempts to get the directory of the module */
+  static std::string getModuleDir();
+
 public:
   typedef struct {
     const char              *keyword;
