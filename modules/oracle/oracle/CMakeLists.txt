@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8.2)
+cmake_minimum_required(VERSION 3.8.2...3.20)
 set(CMAKE_LEGACY_CYGWIN_WIN32 0)
 project (odpi CXX C)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
