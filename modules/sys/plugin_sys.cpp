@@ -29,7 +29,7 @@
 #include <thread>
 
 /*
- * Create the module CSVImport
+ * Create the module SYS
  */
 PLUGINCREATOR(SYSPlugin)
 
@@ -48,8 +48,9 @@ enum Method
 {
   Exec0     = 0,
   Exec1     = 1,
-  Setenv    = 2,
-  Sleep     = 3,
+  CmdStatus = 2,
+  Setenv    = 3,
+  Sleep     = 4,
 };
 
 /**********************************************************************/
@@ -86,6 +87,8 @@ static PLUGIN_METHOD methods[] =
   { Exec1,        "exec",             { "B", 0 },     3, exec1_args,
           "Execute a system command or a block of commands, and tail the output into"
           "\nthe specified variable as a byte array with the given max size." },
+  { CmdStatus,    "status",           { "I", 0 },     0, nullptr,
+          "Read the return status of the last system command." },
   { Setenv,       "setenv",           { "L", 0 },     2, setenv_args,
           "Sets the environment variable to the given value and returns the old value."
           "\nPassing a null value will unset the variable." },
@@ -98,6 +101,7 @@ static PLUGIN_METHOD methods[] =
  */
 struct Handle
 {
+  int _status = 0;
   ~Handle() { }
   Handle() { }
   bool exec(const std::string& cmd);
@@ -121,24 +125,24 @@ void SYSPlugin::declareInterface(PLUGIN_INTERFACE * interface)
 
 void * SYSPlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
 {
-  sys::Handle * sys = nullptr;
+  sys::Handle * h = nullptr;
   try
   {
-    sys = new sys::Handle();
+    h = new sys::Handle();
   }
   catch (...)
   {
-    if (sys)
-      delete sys;
+    if (h)
+      delete h;
     throw;
   }
-  return sys;
+  return h;
 }
 
 void SYSPlugin::destroyObject(void * object)
 {
-  sys::Handle * sys = static_cast<sys::Handle*>(object);
-  delete sys;
+  sys::Handle * h = static_cast<sys::Handle*>(object);
+  delete h;
 }
 
 bloc::Value * SYSPlugin::executeMethod(
@@ -148,15 +152,15 @@ bloc::Value * SYSPlugin::executeMethod(
           const std::vector<bloc::Expression*>& args
           )
 {
-  sys::Handle * sys = static_cast<sys::Handle*>(object_this.instance());
+  sys::Handle * h = static_cast<sys::Handle*>(object_this.instance());
   switch (method_id)
   {
   case sys::Exec0:
   {
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
-      return new bloc::Value(bloc::Value::type_integer);
-    return new bloc::Value(bloc::Bool(sys->exec(*a0.literal())));
+      return new bloc::Value(bloc::Value::type_boolean);
+    return new bloc::Value(bloc::Bool(h->exec(*a0.literal())));
   }
 
   case sys::Exec1:
@@ -165,13 +169,18 @@ bloc::Value * SYSPlugin::executeMethod(
     bloc::Value& a1 = args[1]->value(ctx);
     bloc::Value& a2 = args[2]->value(ctx);
     if (a0.isNull() || a2.isNull())
-      return new bloc::Value(bloc::Value::type_integer);
+      return new bloc::Value(bloc::Value::type_boolean);
     if (args[1]->symbol() == nullptr)
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Value out(new bloc::TabChar());
-    bool success = bloc::Bool(sys->execout(*a0.literal(), *out.tabchar(), *a2.integer()));
+    bool success = bloc::Bool(h->execout(*a0.literal(), *out.tabchar(), *a2.integer()));
     ctx.storeVariable(*args[1]->symbol(), std::move(out));
     return new bloc::Value(success);
+  }
+
+  case sys::CmdStatus:
+  {
+    return new bloc::Value(bloc::Integer(h->_status));
   }
 
   case sys::Setenv:
@@ -181,13 +190,13 @@ bloc::Value * SYSPlugin::executeMethod(
     if (a0.isNull())
       return new bloc::Value(bloc::Value::type_literal);
     bloc::Value old;
-    const char * buf = sys->getvar(*a0.literal());
+    const char * buf = h->getvar(*a0.literal());
     if (buf != nullptr)
       old.swap(bloc::Value(new bloc::Literal(buf)));
     if (a1.isNull())
-      sys->unsetvar(*a0.literal());
+      h->unsetvar(*a0.literal());
     else
-      sys->setvar(*a0.literal(), *a1.literal());
+      h->setvar(*a0.literal(), *a1.literal());
     return new bloc::Value(std::move(old));
   }
 
@@ -202,7 +211,7 @@ bloc::Value * SYSPlugin::executeMethod(
       while (!ctx.stopCondition() && cur < brk)
       {
         // yield for 500 ms
-        sys->delayms(500);
+        h->delayms(500);
         // resync the clock every 1 minutes
         if (++tick == 120)
         {
@@ -231,20 +240,18 @@ bool sys::Handle::exec(const std::string& cmd)
   // always prefer to use standard call: i.e system(),
   // it implements posix_spawn() on unix as possible,
   // it works on windows, and provides the same signature
-  int r = ::system(cmd.c_str());
-  return (r == 0);
+  _status = ::system(cmd.c_str());
+  return (_status == 0);
 }
 
 bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t maxsize)
 {
   static const size_t chunk = 4096;
-  int err = 0;
   std::list<char*> buf;
   buf.push_back(new char[chunk]);
   size_t len = chunk;   /* total allocated size of the buffer */
   size_t head = 0;      /* head cut */
   size_t tail = chunk;  /* tail cut */
-
 #if defined(LIBBLOC_MSWIN)
   FILE * pout = _popen(cmd.c_str(), "r");
 #else
@@ -254,6 +261,7 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
   {
     char * bin = nullptr;
     char * tmp = new char[chunk];
+    _status = 0;
     while (!::feof(pout))
     {
       size_t n = ::fread(tmp, 1, sizeof(chunk), pout);
@@ -308,7 +316,7 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
         if (e)
         {
           bloc::DBG(DBG_ERROR, "broken pipe (%d)\n", e);
-          err = e;
+          _status = e;
           break;
         }
       }
@@ -324,8 +332,8 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
 #else
     int r = pclose(pout);
 #endif
-    if (!err && r)
-      err = r; /* push error */
+    if (r && _status == 0)
+      _status = r; /* push error */
 
     /* fill output buffer */
     out.clear();
@@ -360,8 +368,10 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
       buf.pop_front();
     }
     assert(buf.size() == 0);
+    return (_status == 0);
   }
-  return (err == 0);
+  _status = -1;
+  return false;
 }
 
 const char * sys::Handle::getvar(const std::string& name)
@@ -400,5 +410,5 @@ void sys::Handle::delayms(unsigned millisec)
   std::this_thread::sleep_for(std::chrono::milliseconds(millisec));
 }
 
-} /* namespace import */
+} /* namespace plugin */
 } /* namespace bloc */
