@@ -23,10 +23,11 @@
 #include <cassert>
 #include <cstring>
 #include <cstdio>
-
 #include <list>
 #include <chrono>
 #include <thread>
+
+#include <signal.h>
 
 /*
  * Create the module SYS
@@ -237,10 +238,21 @@ bloc::Value * SYSPlugin::executeMethod(
 
 bool sys::Handle::exec(const std::string& cmd)
 {
+#if defined(LIBBLOC_MSWIN)
+#else
+  void (*_handler)(int) = signal(SIGCHLD, SIG_DFL);
+#endif
+
   // always prefer to use standard call: i.e system(),
   // it implements posix_spawn() on unix as possible,
   // it works on windows, and provides the same signature
   _status = ::system(cmd.c_str());
+
+#if defined(LIBBLOC_MSWIN)
+#else
+  if (_handler != SIG_ERR)
+    signal(SIGCHLD, _handler);
+#endif
   return (_status == 0);
 }
 
@@ -255,6 +267,7 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
 #if defined(LIBBLOC_MSWIN)
   FILE * pout = _popen(cmd.c_str(), "r");
 #else
+  void (*_handler)(int) = signal(SIGCHLD, SIG_DFL);
   FILE * pout = ::popen(cmd.c_str(), "r");
 #endif
   if (pout)
@@ -331,6 +344,8 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
     int r = _pclose(pout);
 #else
     int r = pclose(pout);
+    if (_handler != SIG_ERR)
+      signal(SIGCHLD, _handler);
 #endif
     if (r && _status == 0)
       _status = r; /* push error */
