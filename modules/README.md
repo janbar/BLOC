@@ -12,6 +12,7 @@ Then the user has to grant the permission for each module, in example using the 
 | file | **unsafe** | Create or modify local files |
 | mariadb | safe | None |
 | mysql | safe | None |
+| oracle | safe | None |
 | plplot | **unsafe** | Create or modify local files for plot output |
 | sqlite3 | **unsafe** | Create or modify local files (DB) |
 | sys | **unsafe** | Execute local system command |
