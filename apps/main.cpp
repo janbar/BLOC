@@ -42,15 +42,13 @@
 #define STDERR stderr
 #define FLUSHOUT fflush(STDOUT)
 #define PRINT(a) fputs(a, STDOUT)
-#define PRINT1(a,b) fprintf(STDOUT, a, b)
-#define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
+#define PRINTF(a, ...) fprintf(STDOUT, a, __VA_ARGS__)
 #else
 #define STDOUT stdout
 #define STDERR stderr
 #define FLUSHOUT fflush(STDOUT)
 #define PRINT(a) fputs(a, STDOUT)
-#define PRINT1(a,b) fprintf(STDOUT, a, b)
-#define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
+#define PRINTF(a, ...) fprintf(STDOUT, a, __VA_ARGS__)
 #endif
 
 static bool output(bloc::Context& ctx);
@@ -99,7 +97,7 @@ int main(int argc, char **argv) {
     if (tmp == "-h" || tmp == "--help")
       fwrite(usage_txt, 1, usage_txt_len, STDOUT);
     else
-      PRINT1("Unknown command option: %s\n", bad);
+      PRINTF("Unknown command option: %s\n", bad);
     return EXIT_FAILURE;
   }
 
@@ -155,7 +153,7 @@ int main(int argc, char **argv) {
       outfile = ::fopen(options.file_sout.c_str(), "w");
       if (!outfile)
       {
-        PRINT1("Failed to open file '%s' for write.", options.file_sout.c_str());
+        PRINTF("Failed to open file '%s' for write.", options.file_sout.c_str());
         return EXIT_FAILURE;
       }
       open_files.push_front(AutoFILEClose(outfile));
@@ -168,7 +166,7 @@ int main(int argc, char **argv) {
       progfile = ::fopen(prog[0].literal()->c_str(), "r");
       if (!progfile)
       {
-        PRINT1("Failed to open file '%s' for read.", prog[0].literal()->c_str());
+        PRINTF("Failed to open file '%s' for read.", prog[0].literal()->c_str());
         return EXIT_FAILURE;
       }
       open_files.push_front(AutoFILEClose(progfile));
@@ -263,7 +261,7 @@ static bool output(bloc::Context& ctx)
     catch(bloc::RuntimeError& re)
     {
       ret = false;
-      PRINT1("Error: %s\n", re.what());
+      PRINTF("Error: %s\n", re.what());
     }
     delete val;
     ctx.purgeWorkingMemory();

@@ -50,18 +50,14 @@ static char * rl_line = nullptr;
 #define STDOUT_FILENO _fileno(stdout)
 #define FLUSHOUT fflush(STDOUT)
 #define PRINT(a) fputs(a, STDOUT)
-#define PRINT1(a,b) fprintf(STDOUT, a, b)
-#define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
-#define PRINT3(a,b,c,d) fprintf(STDOUT, a, b, c, d)
+#define PRINTF(a, ...) fprintf(STDOUT, a, __VA_ARGS__)
 #include "winstub.h"
 #include <io.h>
 #else
 #define STDOUT stdout
 #define FLUSHOUT fflush(STDOUT)
 #define PRINT(a) fputs(a, STDOUT)
-#define PRINT1(a,b) fprintf(STDOUT, a, b)
-#define PRINT2(a,b,c) fprintf(STDOUT, a, b, c)
-#define PRINT3(a,b,c,d) fprintf(STDOUT, a, b, c, d)
+#define PRINTF(a, ...) fprintf(STDOUT, a, __VA_ARGS__)
 #include "signalhandler.h"
 #include <unistd.h>
 #endif
@@ -188,7 +184,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
       {
         /* broken input issued by CTRL+D */
         set_color(fgRED);
-        PRINT1("Error: %s\n", pe.what());
+        PRINTF("Error: %s\n", pe.what());
         reset_color();
         ::clearerr(stdin);
         delete p;
@@ -198,9 +194,9 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
       {
         set_color(fgRED);
         if (pe.token)
-          PRINT3("Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
+          PRINTF("Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
         else
-          PRINT1("Error: %s\n", pe.what());
+          PRINTF("Error: %s\n", pe.what());
         reset_color();
         p->clear();
       }
@@ -217,7 +213,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
         try { r = r->execute(ctx); }
         catch (bloc::RuntimeError& re)
         {
-          set_color(fgRED); PRINT1("Error: %s", re.what()); reset_color();
+          set_color(fgRED); PRINTF("Error: %s", re.what()); reset_color();
           ctx.purgeWorkingMemory();
           break;
         }
@@ -233,7 +229,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
       {
         g_breaker.state = true;
         set_color(fgBLUE);
-        PRINT1("\nElapsed: %f\n", d);
+        PRINTF("\nElapsed: %f\n", d);
         reset_color();
       }
 
@@ -246,7 +242,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
         try { output_cli(ctx); }
         catch (bloc::RuntimeError& re)
         {
-          set_color(fgRED); PRINT1("Error: %s", re.what()); reset_color();
+          set_color(fgRED); PRINTF("Error: %s", re.what()); reset_color();
         }
       }
 
@@ -382,7 +378,7 @@ static CMD find_cmd(const std::string& c)
 static void set_color(enum FG c)
 {
   if (g_has_color)
-    PRINT1("\033[%d;1m", c);
+    PRINTF("\033[%d;1m", c);
 }
 
 static void reset_color(void)
@@ -459,7 +455,7 @@ static void output_cli(bloc::Context& ctx)
     }
     catch(bloc::RuntimeError& re)
     {
-      set_color(fgRED); PRINT1("Error: %s\n", re.what());
+      set_color(fgRED); PRINTF("Error: %s\n", re.what());
     }
     delete val;
     ctx.purgeWorkingMemory();
@@ -482,7 +478,7 @@ static void print_table(const std::set<std::string>& list, int colw, int coln)
   while (idx != list.cend())
   {
     for (int i = 0; i < coln && idx != list.cend(); ++i, ++idx)
-      PRINT2("%*s", colw, idx->c_str());
+      PRINTF("%*s", colw, idx->c_str());
     PRINT("\n\n");
   }
 }
@@ -575,7 +571,7 @@ static void describe_module(unsigned type_id)
     }
     PRINT(")\n");
     if (plug.interface.ctors[i].brief)
-      PRINT1("%s\n", plug.interface.ctors[i].brief);
+      PRINTF("%s\n", plug.interface.ctors[i].brief);
     PRINT("\n");
   }
   print_btml("\n$$METHODS$$\n\n", UINT16_MAX);
@@ -592,7 +588,7 @@ static void describe_module(unsigned type_id)
       if (t.major() == bloc::Type::ROWTYPE)
       {
         bloc::TupleDecl::Decl decl = bloc::plugin::make_decl(plug.interface.methods[i].args[j].type.decl, type_id);
-        PRINT1("%s", t.typeName(decl.tupleName()).c_str());
+        PRINTF("%s", t.typeName(decl.tupleName()).c_str());
       }
       else
       {
@@ -623,7 +619,7 @@ static void describe_module(unsigned type_id)
     }
     PRINT("\n");
     if (plug.interface.methods[i].brief)
-      PRINT1("%s\n", plug.interface.methods[i].brief);
+      PRINTF("%s\n", plug.interface.methods[i].brief);
     PRINT("\n");
   }
 }
@@ -711,7 +707,7 @@ static void print_help(const std::string& what)
       if (ps)
         PRINT("Unknown keyword.\n");
       else
-        PRINT1("Section '%s' not found.\n", ws.c_str());
+        PRINTF("Section '%s' not found.\n", ws.c_str());
       reset_color();
     }
   }
@@ -749,7 +745,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     }
     catch(bloc::RuntimeError& re)
     {
-      set_color(fgRED); PRINT1("Error: %s\n", re.what()); reset_color();
+      set_color(fgRED); PRINTF("Error: %s\n", re.what()); reset_color();
     }
     d = ctx.elapsed(d);
     if (g_breaker.state)
@@ -762,7 +758,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       g_breaker.state = true;
       set_color(fgBLUE);
-      PRINT1("\nElapsed: %f\n", d);
+      PRINTF("\nElapsed: %f\n", d);
       reset_color();
     }
     p.clear();
@@ -859,7 +855,7 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
         delete exp;
       if (p.front()->code != bloc::Parser::NewLine)
         p.clear();
-      set_color(fgRED); PRINT1("Error: %s\n", ee.what()); reset_color();
+      set_color(fgRED); PRINTF("Error: %s\n", ee.what()); reset_color();
     }
     return 1;
   }
@@ -916,9 +912,9 @@ static int cli_cmd(bloc::Parser& p, bloc::Context& ctx, std::list<const bloc::St
     {
       set_color(fgRED);
       if (pe.token)
-        PRINT3("Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
+        PRINTF("Error (%d:%d): %s\n", pe.token->line, pe.token->column, pe.what());
       else
-        PRINT1("Error: %s\n", pe.what());
+        PRINTF("Error: %s\n", pe.what());
       reset_color();
     }
     ::fclose(progfile);
