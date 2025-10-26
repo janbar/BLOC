@@ -42,14 +42,14 @@ void b64encode(const void * data, size_t len, Literal& b64)
   size_t b64len = (len + 2) / 3 * 4;
   b64.assign(b64len, '=');
 
-  char * p = (char*) data;
+  unsigned char * p = (unsigned char*) data;
   size_t j = 0, pad = len % 3;
   const size_t last = len - pad;
 
   for (size_t i = 0; i < last; i += 3)
   {
     int n = int(p[i]) << 16 | int(p[i + 1]) << 8 | p[i + 2];
-    b64[j++] = B64chars[n >> 18];
+    b64[j++] = B64chars[n >> 18 & 0x3F];
     b64[j++] = B64chars[n >> 12 & 0x3F];
     b64[j++] = B64chars[n >> 6 & 0x3F];
     b64[j++] = B64chars[n & 0x3F];
@@ -57,7 +57,7 @@ void b64encode(const void * data, size_t len, Literal& b64)
   if (pad)  /// set padding
   {
     int n = --pad ? int(p[last]) << 8 | p[last + 1] : p[last];
-    b64[j++] = B64chars[pad ? n >> 10 & 0x3F : n >> 2];
+    b64[j++] = B64chars[pad ? n >> 10 & 0x3F : n >> 2 & 0x3F];
     b64[j++] = B64chars[pad ? n >> 4 & 0x03F : n << 4 & 0x3F];
     b64[j++] = pad ? B64chars[n << 2 & 0x3F] : '=';
   }
@@ -79,14 +79,14 @@ void b64decode(const void * b64, size_t len, TabChar& data)
   for (size_t i = 0; i < last; i += 4)
   {
     int n = B64index[p[i]] << 18 | B64index[p[i + 1]] << 12 | B64index[p[i + 2]] << 6 | B64index[p[i + 3]];
-    data[j++] = n >> 16;
+    data[j++] = n >> 16 & 0xFF;
     data[j++] = n >> 8 & 0xFF;
     data[j++] = n & 0xFF;
   }
   if (pad1)
   {
     int n = B64index[p[last]] << 18 | B64index[p[last + 1]] << 12;
-    data[j++] = n >> 16;
+    data[j++] = n >> 16 & 0xFF;
     if (pad2)
     {
       n |= B64index[p[last + 2]] << 6;
