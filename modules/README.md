@@ -7,6 +7,7 @@ Then the user has to grant the permission for each module, in example using the 
 
 | Module  | Status | Security issues |
 |---------|:------:|:----------------|
+| crypto | safe | None |
 | csv | safe | None |
 | date | safe | None |
 | file | **unsafe** | Create or modify local files |
