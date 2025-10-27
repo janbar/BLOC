@@ -81,7 +81,7 @@ Value& MemberATExpression::value(Context& ctx) const
     Literal * rv = val.literal();
     Integer p = *a0.integer();
     if (p >= 0 && p < rv->size())
-      return ctx.allocate(Value(Integer(rv->at((unsigned) p))));
+      return ctx.allocate(Value(Integer((unsigned char)rv->at((unsigned) p))));
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   }
   case Type::TABCHAR:
@@ -89,7 +89,7 @@ Value& MemberATExpression::value(Context& ctx) const
     TabChar * rv = val.tabchar();
     Integer p = *a0.integer();
     if (p >= 0 && p < rv->size())
-      return ctx.allocate(Value(Integer(rv->at((unsigned) p))));
+      return ctx.allocate(Value(Integer((unsigned char)rv->at((unsigned) p))));
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   }
   default:
