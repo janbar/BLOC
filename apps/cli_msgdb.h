@@ -46,8 +46,10 @@ public:
     const msgdb_section      *section_table;
   } msgdb_lang;
 
-  MsgDB() { }
+  MsgDB() = default;
   ~MsgDB();
+  MsgDB(const MsgDB&) = delete;
+  MsgDB& operator=(const MsgDB&) = delete;
   bool initialize();
   void setup(const std::string& lang);
   const msgdb_keyword * getText(const std::string& section, const std::string& keyword) const;
