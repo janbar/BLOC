@@ -42,7 +42,7 @@ void b64encode(const void * data, size_t len, Literal& b64)
   size_t b64len = (len + 2) / 3 * 4;
   b64.assign(b64len, '=');
 
-  unsigned char * p = (unsigned char*) data;
+  const unsigned char * p = (const unsigned char*) data;
   size_t j = 0, pad = len % 3;
   const size_t last = len - pad;
 
@@ -68,7 +68,7 @@ void b64decode(const void * b64, size_t len, TabChar& data)
   if (len == 0)
     return;
 
-  unsigned char *p = (unsigned char*) b64;
+  const unsigned char *p = (const unsigned char*) b64;
   size_t j = 0,
       pad1 = len % 4 || p[len - 1] == '=',
       pad2 = pad1 && (len % 4 > 2 || p[len - 2] != '=');
