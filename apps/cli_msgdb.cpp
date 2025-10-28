@@ -102,7 +102,7 @@ bool MsgDB::initialize()
     libs.push_back(tmp.append(libname));
 
   void* dlhandle = nullptr;
-  for (std::string& lib : libs)
+  for (const std::string& lib : libs)
   {
     dlhandle = dlopen(lib.c_str(), RTLD_LAZY);
     if (dlhandle)
@@ -137,21 +137,21 @@ void MsgDB::setup(const std::string& lang)
     _msgdb->setup(lang.c_str());
 }
 
-const MsgDB::msgdb_keyword * MsgDB::getText(const std::string& section, const std::string& keyword)
+const MsgDB::msgdb_keyword * MsgDB::getText(const std::string& section, const std::string& keyword) const
 {
   if (_msgdb)
     return _msgdb->get_text(section.c_str(), keyword.c_str());
   return nullptr;
 }
 
-const MsgDB::msgdb_section * MsgDB::getSection(const std::string& section)
+const MsgDB::msgdb_section * MsgDB::getSection(const std::string& section) const
 {
   if (_msgdb)
     return _msgdb->get_section(section.c_str());
   return nullptr;
 }
 
-const MsgDB::msgdb_lang * MsgDB::getLang(const std::string& lang)
+const MsgDB::msgdb_lang * MsgDB::getLang(const std::string& lang) const
 {
   if (_msgdb)
     return _msgdb->get_lang(lang.c_str());

@@ -50,9 +50,9 @@ public:
   ~MsgDB();
   bool initialize();
   void setup(const std::string& lang);
-  const msgdb_keyword * getText(const std::string& section, const std::string& keyword);
-  const msgdb_section * getSection(const std::string& section);
-  const msgdb_lang * getLang(const std::string& lang);
+  const msgdb_keyword * getText(const std::string& section, const std::string& keyword) const;
+  const msgdb_section * getSection(const std::string& section) const;
+  const msgdb_lang * getLang(const std::string& lang) const;
 };
 
 #endif /* CLI_MSGDB_H */
