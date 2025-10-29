@@ -307,6 +307,9 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
       throw ParseError(EXC_PARSE_OTHER_S, "Symbol of iterator required for FORALL.", t);
+    /* check if keyword is reserved */
+    if (Parser::reservedKeyword(t->text))
+      throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
     t = p.pop();
