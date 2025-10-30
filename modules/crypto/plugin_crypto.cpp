@@ -526,7 +526,7 @@ bool crypto::Handle::ECB_decrypt(bloc::TabChar& data)
 {
   size_t len = data.size();
   size_t padding = AES_BLOCKLEN - (len % AES_BLOCKLEN);
-  if ( padding < AES_BLOCKLEN)
+  if (len == 0 || padding < AES_BLOCKLEN)
     return false;
   size_t p = 0;
   uint8_t * buf = reinterpret_cast<uint8_t*>(data.data());
@@ -557,7 +557,7 @@ bool crypto::Handle::CBC_decrypt(bloc::TabChar& data)
 {
   size_t len = data.size();
   size_t padding = AES_BLOCKLEN - (len % AES_BLOCKLEN);
-  if ( padding < AES_BLOCKLEN)
+  if (len == 0 || padding < AES_BLOCKLEN)
     return false;
   uint8_t * buf = reinterpret_cast<uint8_t*>(data.data());
   AES_CBC_decrypt_buffer(&_ctx, buf, len);
@@ -633,13 +633,12 @@ bool crypto::Handle::CBC_end_decrypt(bloc::TabChar& data)
 {
   _chunk.insert(_chunk.end(), data.begin(), data.end());
   size_t len = _chunk.size();
-  size_t padding = AES_BLOCKLEN - (len % AES_BLOCKLEN);
-  if ( padding < AES_BLOCKLEN)
+  if (len == 0)
     return false;
   uint8_t * buf = reinterpret_cast<uint8_t*>(_chunk.data());
   AES_CBC_decrypt_buffer(&_ctx, buf, len);
-  padding = _chunk[len - 1];
-  if (padding > AES_BLOCKLEN)
+  size_t padding = _chunk[len - 1];
+  if (padding > len || padding > AES_BLOCKLEN)
     return false;
   data.swap(_chunk);
   data.resize(len - padding);
