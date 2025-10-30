@@ -43,7 +43,7 @@ namespace crypto
 {
 
 /* forward declaration */
-static void MD5Transform (uint32_t *buf, uint32_t *in);
+static void MD5Transform (uint32_t *buf, const uint32_t *in);
 
 static const unsigned char MD5_PADDING[64] = {
   0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -191,7 +191,7 @@ void MD5Final (MD5_CTX *mdContext)
   requires \initialized(in+(0..15));
   assigns buf[0..3] \from indirect:in, in[0..15];
 */
-static void MD5Transform (uint32_t *buf, uint32_t *in)
+static void MD5Transform (uint32_t *buf, const uint32_t *in)
 {
   uint32_t a = buf[0], b = buf[1], c = buf[2], d = buf[3];
 
