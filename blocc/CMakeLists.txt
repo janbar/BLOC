@@ -159,8 +159,9 @@ set_target_properties(blocc PROPERTIES
 
 # Support building as a subproject of a larger cmake project
 file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/blocc)
-file(COPY ${blocc_PUBLIC_HEADERS}
-  DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/include/blocc)
+foreach(file ${blocc_PUBLIC_HEADERS})
+  configure_file(${file} ./include/blocc/ COPYONLY)
+endforeach()
 
 target_include_directories(blocc
   PRIVATE
