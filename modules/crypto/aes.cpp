@@ -86,8 +86,7 @@ static const uint8_t Rcon[11] = {
  */
 static void KeyExpansion(const AES_params* params, uint8_t* RoundKey, const uint8_t* Key)
 {
-  unsigned i, j, k;
-  uint8_t tempa[4]; // Used for the column/row operations
+  unsigned i;
 
   // The first round key is the key itself.
   for (i = 0; i < params->nk; ++i)
@@ -101,39 +100,34 @@ static void KeyExpansion(const AES_params* params, uint8_t* RoundKey, const uint
   // All other round keys are found from the previous round keys.
   for (i = params->nk; i < params->nb * (params->nr + 1); ++i)
   {
-    {
-      k = (i - 1) * 4;
-      tempa[0]=RoundKey[k + 0];
-      tempa[1]=RoundKey[k + 1];
-      tempa[2]=RoundKey[k + 2];
-      tempa[3]=RoundKey[k + 3];
-
-    }
+    unsigned j, k;
+    uint8_t tempa[4]; // Used for the column/row operations
+    k = (i - 1) * 4;
+    tempa[0] = RoundKey[k + 0];
+    tempa[1] = RoundKey[k + 1];
+    tempa[2] = RoundKey[k + 2];
+    tempa[3] = RoundKey[k + 3];
 
     if (i % params->nk == 0)
     {
+      // Function RotWord()
       // This function shifts the 4 bytes in a word to the left once.
       // [a0,a1,a2,a3] becomes [a1,a2,a3,a0]
-
-      // Function RotWord()
-      {
-        const uint8_t u8tmp = tempa[0];
-        tempa[0] = tempa[1];
-        tempa[1] = tempa[2];
-        tempa[2] = tempa[3];
-        tempa[3] = u8tmp;
-      }
-
-      // SubWord() is a function that takes a four-byte input word and
-      // applies the S-box to each of the four bytes to produce an output word.
+      const uint8_t u8tmp = tempa[0];
+      tempa[0] = tempa[1];
+      tempa[1] = tempa[2];
+      tempa[2] = tempa[3];
+      tempa[3] = u8tmp;
+      // End RotWord()
 
       // Function Subword()
-      {
-        tempa[0] = getSBoxValue(tempa[0]);
-        tempa[1] = getSBoxValue(tempa[1]);
-        tempa[2] = getSBoxValue(tempa[2]);
-        tempa[3] = getSBoxValue(tempa[3]);
-      }
+      // This function that takes a four-byte input word and
+      // applies the S-box to each of the four bytes to produce an output word.
+      tempa[0] = getSBoxValue(tempa[0]);
+      tempa[1] = getSBoxValue(tempa[1]);
+      tempa[2] = getSBoxValue(tempa[2]);
+      tempa[3] = getSBoxValue(tempa[3]);
+      // End Subword()
 
       tempa[0] = tempa[0] ^ Rcon[i / params->nk];
     }
@@ -141,16 +135,18 @@ static void KeyExpansion(const AES_params* params, uint8_t* RoundKey, const uint
     if (params->nk >= 8)
     {
       if (i % params->nk == 4)
-      // Function Subword()
       {
+        // Function Subword()
         tempa[0] = getSBoxValue(tempa[0]);
         tempa[1] = getSBoxValue(tempa[1]);
         tempa[2] = getSBoxValue(tempa[2]);
         tempa[3] = getSBoxValue(tempa[3]);
+        // End Subword()
       }
     }
 
-    j = i * 4; k=(i - params->nk) * 4;
+    j = i * 4;
+    k = (i - params->nk) * 4;
     RoundKey[j + 0] = RoundKey[k + 0] ^ tempa[0];
     RoundKey[j + 1] = RoundKey[k + 1] ^ tempa[1];
     RoundKey[j + 2] = RoundKey[k + 2] ^ tempa[2];
@@ -164,9 +160,10 @@ static void KeyExpansion(const AES_params* params, uint8_t* RoundKey, const uint
  */
 static void AddRoundKey(const AES_params* params, uint8_t round, state_t* state, const uint8_t* RoundKey)
 {
-  uint8_t i,j;
+  uint8_t i;
   for (i = 0; i < 4; ++i)
   {
+    uint8_t j;
     for (j = 0; j < 4; ++j)
     {
       (*state)[i][j] ^= RoundKey[(round * params->nb * 4) + (i * params->nb) + j];
@@ -180,9 +177,10 @@ static void AddRoundKey(const AES_params* params, uint8_t round, state_t* state,
  */
 static void SubBytes(state_t* state)
 {
-  uint8_t i, j;
+  uint8_t i;
   for (i = 0; i < 4; ++i)
   {
+    uint8_t j;
     for (j = 0; j < 4; ++j)
     {
       (*state)[j][i] = getSBoxValue((*state)[j][i]);
@@ -234,9 +232,9 @@ static uint8_t xtime(uint8_t x)
 static void MixColumns(state_t* state)
 {
   uint8_t i;
-  uint8_t Tmp, Tm, t;
   for (i = 0; i < 4; ++i)
   {
+    uint8_t Tmp, Tm, t;
     t   = (*state)[i][0];
     Tmp = (*state)[i][0] ^ (*state)[i][1] ^ (*state)[i][2] ^ (*state)[i][3] ;
     Tm  = (*state)[i][0] ^ (*state)[i][1] ; Tm = xtime(Tm);  (*state)[i][0] ^= Tm ^ Tmp ;
@@ -265,9 +263,9 @@ static uint8_t Multiply(uint8_t x, uint8_t y)
 static void InvMixColumns(state_t* state)
 {
   int i;
-  uint8_t a, b, c, d;
   for (i = 0; i < 4; ++i)
   {
+    uint8_t a, b, c, d;
     a = (*state)[i][0];
     b = (*state)[i][1];
     c = (*state)[i][2];
@@ -282,9 +280,10 @@ static void InvMixColumns(state_t* state)
 
 static void InvSubBytes(state_t* state)
 {
-  uint8_t i, j;
+  uint8_t i;
   for (i = 0; i < 4; ++i)
   {
+    uint8_t j;
     for (j = 0; j < 4; ++j)
     {
       (*state)[j][i] = getSBoxInvert((*state)[j][i]);
@@ -403,7 +402,7 @@ void AES_ctx_set_key(AES_ctx* ctx, const uint8_t* key)
  */
 void AES_ctx_set_iv(AES_ctx* ctx, const uint8_t* iv)
 {
-  memcpy (ctx->iv, iv, AES_BLOCKLEN);
+  memcpy(ctx->iv, iv, AES_BLOCKLEN);
 }
 
 void AES_ECB_encrypt(const AES_ctx* ctx, uint8_t* buf)
