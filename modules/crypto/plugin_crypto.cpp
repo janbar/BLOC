@@ -140,7 +140,7 @@ struct Handle
   AES_ctx _ctx;
   bool _hasKey = false;
 
-  ~Handle() { }
+  ~Handle();
   explicit Handle(AES_config config);
   explicit Handle(const Handle& other);
 
@@ -430,6 +430,11 @@ bloc::Value * CRYPTOPlugin::executeMethod(
     break;
   }
   return nullptr;
+}
+
+crypto::Handle::~Handle()
+{
+  memset(&_ctx, '\0', sizeof(_ctx));
 }
 
 crypto::Handle::Handle(AES_config config)
