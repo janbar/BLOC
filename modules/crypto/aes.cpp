@@ -11,6 +11,7 @@ namespace crypto
 {
 
 static const AES_params AES_CONFIG_PARAMS[] = {
+  /* key_size, nb, nk, nr */
   { 16, 4,  4,  10 }, // AES128
   { 24, 4,  6,  12 }, // AES192
   { 32, 4,  8,  14 }, // AES256
@@ -137,7 +138,7 @@ static void KeyExpansion(const AES_params* params, uint8_t* RoundKey, const uint
       tempa[0] = tempa[0] ^ Rcon[i / params->nk];
     }
 
-    if (params->key_size == 32)
+    if (params->nk >= 8)
     {
       if (i % params->nk == 4)
       // Function Subword()
