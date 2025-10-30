@@ -146,17 +146,17 @@ struct Handle
 
   void MD5_hash(bloc::TabChar& hash, const char * data, unsigned len);
   void generateIV(bloc::TabChar& iv, double random);
-  bool keyFromString(bloc::TabChar& buf, const char * data, unsigned len);
+  void keyFromString(bloc::TabChar& buf, const char * data, unsigned len);
   bool setKey(const bloc::TabChar& key);
-  bool ECB_encrypt(bloc::TabChar& data);
+  void ECB_encrypt(bloc::TabChar& data);
   bool ECB_decrypt(bloc::TabChar& data);
-  bool CBC_encrypt(bloc::TabChar& data);
+  void CBC_encrypt(bloc::TabChar& data);
   bool CBC_decrypt(bloc::TabChar& data);
 
   bool CBC_start(bloc::TabChar& iv);
-  bool CBC_encrypt_chunk(bloc::TabChar& data);
-  bool CBC_end_encrypt(bloc::TabChar& data);
-  bool CBC_decrypt_chunk(bloc::TabChar& data);
+  void CBC_encrypt_chunk(bloc::TabChar& data);
+  void CBC_end_encrypt(bloc::TabChar& data);
+  void CBC_decrypt_chunk(bloc::TabChar& data);
   bool CBC_end_decrypt(bloc::TabChar& data);
 
   bloc::TabChar _chunk;
@@ -257,8 +257,8 @@ bloc::Value * CRYPTOPlugin::executeMethod(
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::TabChar * tmp = new bloc::TabChar();
-    if (h->keyFromString(*tmp, a0.literal()->c_str(), a0.literal()->size()) &&
-      h->setKey(*tmp))
+    h->keyFromString(*tmp, a0.literal()->c_str(), a0.literal()->size());
+    if (h->setKey(*tmp))
       return new bloc::Value(tmp);
     delete tmp;
     throw RuntimeError(EXC_RT_OTHER_S, "The given value is not acceptable for"
@@ -302,8 +302,9 @@ bloc::Value * CRYPTOPlugin::executeMethod(
     h->generateIV(*tmp, ctx.random(1.0));
     // plain data
     bloc::TabChar buf(a0.literal()->begin(), a0.literal()->end());
-    if (h->CBC_start(*tmp) && h->CBC_encrypt(buf))
+    if (h->CBC_start(*tmp))
     {
+      h->CBC_encrypt(buf);
       tmp->insert(tmp->end(), buf.begin(), buf.end());
       return new bloc::Value(tmp);
     }
@@ -321,8 +322,9 @@ bloc::Value * CRYPTOPlugin::executeMethod(
     h->generateIV(*tmp, ctx.random(1.0));
     // plain data
     bloc::TabChar buf(*a0.tabchar());
-    if (h->CBC_start(*tmp) && h->CBC_encrypt(buf))
+    if (h->CBC_start(*tmp))
     {
+      h->CBC_encrypt(buf);
       tmp->insert(tmp->end(), buf.begin(), buf.end());
       return new bloc::Value(tmp);
     }
@@ -364,10 +366,8 @@ bloc::Value * CRYPTOPlugin::executeMethod(
     if (a0.isNull())
       return new bloc::Value(bloc::Value::type_tabchar);
     bloc::TabChar * buf = new bloc::TabChar(a0.literal()->begin(), a0.literal()->end());
-    if (h->CBC_encrypt_chunk(*buf))
-      return new bloc::Value(buf);
-    delete buf;
-    break;
+    h->CBC_encrypt_chunk(*buf);
+    return new bloc::Value(buf);
   }
 
   case crypto::CBCEnc2:
@@ -376,10 +376,8 @@ bloc::Value * CRYPTOPlugin::executeMethod(
     if (a0.isNull())
       return new bloc::Value(bloc::Value::type_tabchar);
     bloc::TabChar * buf = new bloc::TabChar(*a0.tabchar());
-    if (h->CBC_encrypt_chunk(*buf))
-      return new bloc::Value(buf);
-    delete buf;
-    break;
+    h->CBC_encrypt_chunk(*buf);
+    return new bloc::Value(buf);
   }
 
   case crypto::CBCEndEnc1:
@@ -390,10 +388,8 @@ bloc::Value * CRYPTOPlugin::executeMethod(
       buf = new bloc::TabChar();
     else
       buf = new bloc::TabChar(a0.literal()->begin(), a0.literal()->end());
-    if (h->CBC_end_encrypt(*buf))
-      return new bloc::Value(buf);
-    delete buf;
-    break;
+    h->CBC_end_encrypt(*buf);
+    return new bloc::Value(buf);
   }
 
   case crypto::CBCEndEnc2:
@@ -404,10 +400,8 @@ bloc::Value * CRYPTOPlugin::executeMethod(
       buf = new bloc::TabChar();
     else
       buf = new bloc::TabChar(*a0.tabchar());
-    if (h->CBC_end_encrypt(*buf))
-      return new bloc::Value(buf);
-    delete buf;
-    break;
+    h->CBC_end_encrypt(*buf);
+    return new bloc::Value(buf);
   }
 
   case crypto::CBCDec1:
@@ -416,10 +410,8 @@ bloc::Value * CRYPTOPlugin::executeMethod(
     if (a0.isNull())
       return new bloc::Value(bloc::Value::type_tabchar);
     bloc::TabChar * buf = new bloc::TabChar(*a0.tabchar());
-    if (h->CBC_decrypt_chunk(*buf))
-      return new bloc::Value(buf);
-    delete buf;
-    break;
+    h->CBC_decrypt_chunk(*buf);
+    return new bloc::Value(buf);
   }
 
   case crypto::CBCEndDec:
@@ -466,7 +458,7 @@ void crypto::Handle::generateIV(bloc::TabChar& iv, double random)
   MD5_hash(iv, reinterpret_cast<char*>(&seed), sizeof(double));
 }
 
-bool crypto::Handle::keyFromString(bloc::TabChar& buf, const char * data, unsigned len)
+void crypto::Handle::keyFromString(bloc::TabChar& buf, const char * data, unsigned len)
 {
   unsigned key_size = _ctx.params->key_size;
   bloc::TabChar k1;
@@ -493,7 +485,6 @@ bool crypto::Handle::keyFromString(bloc::TabChar& buf, const char * data, unsign
       buf.insert(buf.end(), k2.begin(), k2.end());
     }
   }
-  return true;
 }
 
 bool crypto::Handle::setKey(const bloc::TabChar& key)
@@ -506,7 +497,7 @@ bool crypto::Handle::setKey(const bloc::TabChar& key)
   return true;
 }
 
-bool crypto::Handle::ECB_encrypt(bloc::TabChar& data)
+void crypto::Handle::ECB_encrypt(bloc::TabChar& data)
 {
   size_t len = data.size();
   size_t padding = AES_BLOCKLEN - (len % AES_BLOCKLEN);
@@ -519,7 +510,6 @@ bool crypto::Handle::ECB_encrypt(bloc::TabChar& data)
     AES_ECB_encrypt(&_ctx, buf + p);
     p += AES_BLOCKLEN;
   }
-  return true;
 }
 
 bool crypto::Handle::ECB_decrypt(bloc::TabChar& data)
@@ -542,7 +532,7 @@ bool crypto::Handle::ECB_decrypt(bloc::TabChar& data)
   return true;
 }
 
-bool crypto::Handle::CBC_encrypt(bloc::TabChar& data)
+void crypto::Handle::CBC_encrypt(bloc::TabChar& data)
 {
   size_t len = data.size();
   size_t padding = AES_BLOCKLEN - (len % AES_BLOCKLEN);
@@ -550,7 +540,6 @@ bool crypto::Handle::CBC_encrypt(bloc::TabChar& data)
   data.resize(len, static_cast<char>(padding & 0xff));
   uint8_t * buf = reinterpret_cast<uint8_t*>(data.data());
   AES_CBC_encrypt_buffer(&_ctx, buf, len);
-  return true;
 }
 
 bool crypto::Handle::CBC_decrypt(bloc::TabChar& data)
@@ -577,7 +566,7 @@ bool crypto::Handle::CBC_start(bloc::TabChar& iv)
   return true;
 }
 
-bool crypto::Handle::CBC_encrypt_chunk(bloc::TabChar& data)
+void crypto::Handle::CBC_encrypt_chunk(bloc::TabChar& data)
 {
   _chunk.insert(_chunk.end(), data.begin(), data.end());
   size_t len = (_chunk.size() / AES_BLOCKLEN) * AES_BLOCKLEN;
@@ -593,10 +582,9 @@ bool crypto::Handle::CBC_encrypt_chunk(bloc::TabChar& data)
   {
     data.clear();
   }
-  return true;
 }
 
-bool crypto::Handle::CBC_end_encrypt(bloc::TabChar& data)
+void crypto::Handle::CBC_end_encrypt(bloc::TabChar& data)
 {
   _chunk.insert(_chunk.end(), data.begin(), data.end());
   size_t len = _chunk.size();
@@ -607,10 +595,9 @@ bool crypto::Handle::CBC_end_encrypt(bloc::TabChar& data)
   AES_CBC_encrypt_buffer(&_ctx, buf, len);
   data.swap(_chunk);
   _chunk.clear();
-  return true;
 }
 
-bool crypto::Handle::CBC_decrypt_chunk(bloc::TabChar& data)
+void crypto::Handle::CBC_decrypt_chunk(bloc::TabChar& data)
 {
   _chunk.insert(_chunk.end(), data.begin(), data.end());
   size_t len = (_chunk.size() / AES_BLOCKLEN) * AES_BLOCKLEN;
@@ -626,7 +613,6 @@ bool crypto::Handle::CBC_decrypt_chunk(bloc::TabChar& data)
   {
     data.clear();
   }
-  return true;
 }
 
 bool crypto::Handle::CBC_end_decrypt(bloc::TabChar& data)
