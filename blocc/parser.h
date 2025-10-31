@@ -27,6 +27,7 @@
 #include "exception_parse.h"
 
 #include <list>
+#include <unordered_set>
 
 namespace bloc
 {
@@ -57,8 +58,6 @@ public:
   };
 
   ~Parser();
-
-  static bool reservedKeyword(const std::string& text);
 
   /**
    * Make an executable from a source stream. On failure it throws exception
@@ -117,6 +116,11 @@ public:
   void clear();
 
   /**
+   * Return true if the given string is a reserved word
+   */
+  bool reservedKeyword(const std::string& text);
+
+  /**
    * Pop a token directly from the stream buffer including end of line marker.
    */
   bool popAny(TokenPtr& token);
@@ -152,9 +156,10 @@ private:
   bool next_token(TokenPtr& token);
 
   bool _trace = false;      ///< forward token string to stderr
+  int _nesting = 0;         ///< rank of parser nesting (include)
   typedef struct { int lno; int pno; } PARSING_POSITION;
   PARSING_POSITION _position = { 1, 1 }; ///< position in the source stream
-  int _nesting = 0;
+  std::unordered_set<std::string> _cache_keywords;
 };
 
 }

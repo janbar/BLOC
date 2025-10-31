@@ -74,6 +74,29 @@ void Parser::clear() {
   state(Cleared);
 }
 
+bool Parser::reservedKeyword(const std::string& text)
+{
+  // fill the cache on first call
+  if (_cache_keywords.empty())
+  {
+    auto s = Statement::keywordSet();
+    _cache_keywords.insert(s.begin(), s.end());
+    auto b = BuiltinExpression::keywordSet();
+    _cache_keywords.insert(b.begin(), b.end());
+  }
+
+  if (_cache_keywords.find(text) != _cache_keywords.end())
+    return true;
+  if (PluginManager::instance().findModuleTypeId(text) != 0)
+  {
+    // don't pin it in the cache, firstly because the found module could be
+    // unloaded later, and secondly because this call will almost certainly
+    // be followed by a branch ending with an error
+    return true;
+  }
+  return false;
+}
+
 bool Parser::popAny(TokenPtr& token) {
   int tc = 0;
   const char * ts;
@@ -172,15 +195,6 @@ Expression * Parser::parseExpression()
     _ctx.parsingEnd();
     throw;
   }
-}
-
-bool Parser::reservedKeyword(const std::string& text)
-{
-  return (
-          Statement::findKeyword(text) != Statement::unknown ||
-          BuiltinExpression::findKeyword(text) != BuiltinExpression::unknown ||
-          PluginManager::instance().findModuleTypeId(text) != 0
-          );
 }
 
 Executable * Parser::parse(Context& ctx, StreamReader& reader, bool trace /*= false*/)

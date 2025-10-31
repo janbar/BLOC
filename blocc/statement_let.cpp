@@ -77,7 +77,7 @@ LETStatement * LETStatement::parse(Parser& p, Context& ctx)
     if (t->code == TOKEN_KEYWORD)
     {
       /* check if keyword is reserved */
-      if (Parser::reservedKeyword(t->text))
+      if (p.reservedKeyword(t->text))
         throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
       std::string name = t->text;
       std::transform(name.begin(), name.end(), name.begin(), ::toupper);

@@ -108,7 +108,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     if (t->code != TOKEN_KEYWORD)
       throw ParseError(EXC_PARSE_OTHER_S, "name required for FUNCTION.", t);
     /* check if keyword is reserved */
-    if (Parser::reservedKeyword(t->text))
+    if (p.reservedKeyword(t->text))
       throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
     fct->name = t->text;
     std::transform(fct->name.begin(), fct->name.end(), fct->name.begin(), ::toupper);

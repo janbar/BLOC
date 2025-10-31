@@ -53,7 +53,7 @@ RAISEStatement * RAISEStatement::parse(Parser& p, Context& ctx)
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
       throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
-    if (Parser::reservedKeyword(t->text))
+    if (p.reservedKeyword(t->text))
       throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
     std::string name = t->text;
     std::transform(name.begin(), name.end(), name.begin(), ::toupper);
