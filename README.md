@@ -50,12 +50,15 @@ You could type inline expression as shown below.
 ```
 Or run a sample script as follow.
 ```
-for i in 1 to 1000 loop
-    b=true;
-    for j in 2 to i/2 asc loop
-        if i%j == 0 then b=false; break; end if;
+for I in 2 to 100000 loop
+    for J in 2 to int(sqrt(I) + 1) loop
+        if (I % J) == 0 then
+            break;
+        end if;
     end loop;
-    if b then print i; end if;
+    if J > sqrt(I) then
+        print I;
+    end if;
 end loop;
 ```
 And create your customized function.
