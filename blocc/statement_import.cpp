@@ -80,7 +80,7 @@ IMPORTStatement * IMPORTStatement::parse(Parser& p, Context& ctx)
       s = new IMPORTStatement(p.front()->text);
       p.pop();
     }
-    else
+    else if (ctx.trusted())
     {
       Expression * e = ParseExpression::expression(p, ctx);
       if (e->type(ctx) != Type::LITERAL)
@@ -89,6 +89,11 @@ IMPORTStatement * IMPORTStatement::parse(Parser& p, Context& ctx)
         throw ParseError(EXC_PARSE_NOT_LITERAL, t);
       }
       s = new IMPORTStatement(e);
+    }
+    else
+    {
+      throw ParseError(EXC_PARSE_OTHER_S,
+              "Importing a module from a path is not allowed in an untrusted context.", t);
     }
     return s;
   }
