@@ -278,7 +278,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
     case Type::INTEGER:
     {
       Integer c = *a0.integer();
-      if (c < 1 || c > 255)
+      if (c < 0 || c > 255)
         throw RuntimeError(EXC_RT_OUT_OF_RANGE);
       if (_exp->isConst())
       {

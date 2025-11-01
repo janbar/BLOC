@@ -140,7 +140,7 @@ Value& MemberPUTExpression::value(Context& ctx) const
     if (a1.isNull())
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, val.typeName().c_str());
     Integer c = *a1.integer();
-    if (c < 1 || c > 255)
+    if (c < 0 || c > 255)
       throw RuntimeError(EXC_RT_OUT_OF_RANGE);
     if (_exp->isConst())
     {
