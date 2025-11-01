@@ -1,8 +1,8 @@
 
 $$TABLE$$
 
-In BLOC, tables are n-dimensional uniform array with n < 255, of any type. The
-constructor function is the $$tab()$$ function.
+In BLOC, tables are n-dimensional uniform arrays with n < 255, of any type.
+The constructor function is the $$tab()$$ function.
 
 tab(0, str())          >>> empty table of string
 tab(5, str())          >>> table[5] initialized with empty string
