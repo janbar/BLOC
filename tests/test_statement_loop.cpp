@@ -39,6 +39,26 @@ TEST_CASE("for loop")
   REQUIRE( *(ctx.loadVariable("T")->integer()) == 55 );
 
   ctx.reset(
+    "i=null, t=0;\n"
+    "for i in 10 to 1 step 2 loop t=t+i; end loop;\n"
+  );
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+  REQUIRE( *(ctx.loadVariable("I")->integer()) == 2 );
+  REQUIRE( *(ctx.loadVariable("T")->integer()) == 30 );
+
+  ctx.reset(
+    "i=null, t=0;\n"
+    "for i in 1 to 10 step 2 loop t=t+i; end loop;\n"
+  );
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+  REQUIRE( *(ctx.loadVariable("I")->integer()) == 9 );
+  REQUIRE( *(ctx.loadVariable("T")->integer()) == 25 );
+
+  ctx.reset(
     "for i in 10 to 1 desc loop break; end loop;\n"
   );
   e = ctx.parse();

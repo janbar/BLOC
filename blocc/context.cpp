@@ -38,7 +38,7 @@
 #include <unistd.h>
 #endif
 
-#define COMPATIBLE  12
+#define COMPATIBLE  0x020700
 #ifndef LIBVERSION
 #define LIBVERSION  "[undefined]"
 #endif

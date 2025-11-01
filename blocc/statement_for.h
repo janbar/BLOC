@@ -50,6 +50,7 @@ private:
   VariableExpression * _var = nullptr;
   Expression * _expBeg = nullptr;
   Expression * _expEnd = nullptr;
+  Expression * _expStp = nullptr;
   Executable * _exec = nullptr;
   enum { AUTO = 0, ASC, DESC } _order = AUTO;
 

@@ -34,7 +34,7 @@ const char * Statement::KEYWORDS[] = {
   "begin",    "break",    "continue", "end",      "end if",
   "end loop", "print",    "put",      "do",       "exception",
   "when",     "raise",    "asc",      "desc",     "is",
-  "forall",   "include",
+  "forall",   "include",  "step",
 };
 
 Statement::~Statement()

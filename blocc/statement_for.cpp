@@ -38,6 +38,8 @@ FORStatement::~FORStatement()
     delete _expBeg;
   if (_expEnd)
     delete _expEnd;
+  if (_expStp)
+    delete _expStp;
   if (_exec)
     delete _exec;
   if (_var)
@@ -48,12 +50,20 @@ const Statement * FORStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
+    Integer s = 1;
     Value& vb = _expBeg->value(ctx);
     if (vb.isNull())
       return _next;
     Value& ve = _expEnd->value(ctx);
     if (ve.isNull())
       return _next;
+    if (_expStp)
+    {
+      Value& vs = _expStp->value(ctx);
+      if (vs.isNull())
+        return _next;
+      s = *vs.integer();
+    }
     Integer b = *vb.integer();
     Integer e = *ve.integer();
     if (e > b)
@@ -62,7 +72,7 @@ const Statement * FORStatement::doit(Context& ctx) const
         return _next;
       _data.min = b;
       _data.max = e;
-      _data.step = 1;
+      _data.step = s;
     }
     else
     {
@@ -70,7 +80,7 @@ const Statement * FORStatement::doit(Context& ctx) const
         return _next;
       _data.min = e;
       _data.max = b;
-      _data.step = -1;
+      _data.step = -s;
     }
     _data.iterator = &(_var->store(ctx, std::move(vb)));
     /* value is type safe in the loop body */
@@ -80,17 +90,17 @@ const Statement * FORStatement::doit(Context& ctx) const
   }
   else
   {
-    Integer * itr = _data.iterator->integer();
-    /* var is type safe, so it can be read without care */
-    if ((_data.step > 0 && *itr >= _data.max) ||
-        (_data.step < 0 && *itr <= _data.min))
+    /* var is type safe, so it can be read/write without care */
+    Integer nxt = *_data.iterator->integer() + _data.step;
+    if ((_data.step > 0 && nxt > _data.max) ||
+        (_data.step < 0 && nxt < _data.min))
     {
       /* restore the safety state of the variable */
       _var->symbol()->safety(_data.safety_bak);
       ctx.unstackControl();
       return _next;
     }
-    *itr += _data.step;
+    *_data.iterator->integer() = nxt;
   }
   try
   {
@@ -131,6 +141,13 @@ void FORStatement::unparse(Context& ctx, FILE * out) const
   fputc(' ', out);
   fputs(_expEnd->unparse(ctx).c_str(), out);
   fputc(' ', out);
+  if (_expStp)
+  {
+    fputs(KEYWORDS[STMT_STEP], out);
+    fputc(' ', out);
+    fputs(_expStp->unparse(ctx).c_str(), out);
+    fputc(' ', out);
+  }
   switch(_order)
   {
   case AUTO:
@@ -223,6 +240,15 @@ FORStatement * FORStatement::parse(Parser& p, Context& ctx)
     if (!ParseExpression::typeChecking(s->_expEnd, Type::NUMERIC, p, ctx))
       throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for FOR.", t);
     t = p.pop();
+    if (t->code == ')')
+      throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
+    if (t->code == TOKEN_KEYWORD && t->text  == KEYWORDS[STMT_STEP])
+    {
+      s->_expStp = ParseExpression::expression(p, ctx);
+      if (!ParseExpression::typeChecking(s->_expStp, Type::NUMERIC, p, ctx))
+        throw ParseError(EXC_PARSE_OTHER_S, "Numeric or Integer expression required for STEP.", t);
+      t = p.pop();
+    }
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
     if (t->code == TOKEN_KEYWORD)
