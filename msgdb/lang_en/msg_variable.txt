@@ -9,10 +9,11 @@ immutable type.
 a = 1.23; ... a = "hello";       >>> OK
 $a = "hello"; ... $a = 10;       >>> ERROR: Type of $A is immutable
 
-If you want to specify the data type of a variable, this can be done with
-casting.
+If you wish to specify the data type of a variable, you can do so using a
+type conversion or one of the built-in initializers.
 
-a = int(3.14), b = num(10), c = str(), d = raw();
+i = int(3.14), n = num(10), s = str(), r = raw(), b = bool(), t = tup(),
+a = tab()
 
 $$Names$$
 A variable can have a short name (like x and y) or a more descriptive name.
