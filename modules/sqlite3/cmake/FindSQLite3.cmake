@@ -12,14 +12,12 @@ find_path(SQLite3_INCLUDE_DIR NAMES sqlite3.h
   HINTS
     ${PC_SQLite3_INCLUDE_DIRS}
 )
-mark_as_advanced(SQLite3_INCLUDE_DIR)
 
 # Look for the necessary library
 find_library(SQLite3_LIBRARY NAMES sqlite3 sqlite
   HINTS
     ${PC_SQLite3_LIBRARY_DIRS}
 )
-mark_as_advanced(SQLite3_LIBRARY)
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(SQLite3
@@ -36,3 +34,11 @@ if(SQLite3_FOUND)
             INTERFACE_INCLUDE_DIRECTORIES "${SQLite3_INCLUDE_DIR}")
     endif()
 endif()
+
+mark_as_advanced(
+  SQLite3_FOUND
+  SQLite3_INCLUDE_DIR
+  SQLite3_LIBRARY
+  SQLite3_INCLUDE_DIRS
+  SQLite3_LIBRARIES
+)

@@ -4,11 +4,13 @@ if(NOT BLOC_LIB_SOVERSION)
   message(FATAL_ERROR "Core library version not set")
 endif()
 
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 # build module "plplot"
 file(GLOB bloc_plplot_SOURCES plugin_plplot.cpp)
 file(GLOB bloc_plplot_HEADERS plugin_plplot.h)
 
-include(FindPLplot.cmake)
+include(FindPLplot)
 if(PLplot_FOUND)
   include_directories(${PLplot_INCLUDE_DIR}/..)
   add_library (bloc_plplot SHARED ${bloc_plplot_SOURCES})
