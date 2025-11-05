@@ -3,7 +3,8 @@ that is initialized to an initial value. Then block of statements after the
 LOOP keyword will be executed while the specified limit isn't reached. The
 control value is incremented or decremented after each iteration. By default
 the sequence order is automatic else a constraint could be specified with the
-keywords ASC or DESC.
+keywords ASC or DESC. The absolute step size (default 1) can be changed to an
+integer greater than 0, otherwise an out-of-range error is raised.
 
 for {var} in {integer expression} to {integer expression}
              [step {integer expression}] [asc|desc] loop

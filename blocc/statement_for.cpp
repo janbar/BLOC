@@ -63,6 +63,8 @@ const Statement * FORStatement::doit(Context& ctx) const
       if (vs.isNull())
         return _next;
       s = *vs.integer();
+      if (s < 1)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
     }
     Integer b = *vb.integer();
     Integer e = *ve.integer();
