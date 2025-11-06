@@ -150,6 +150,8 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
 
     return *sym;
   }
+  if (s->locked())
+    throw ParseError(EXC_PARSE_CONST_VIOLATION_S, s->name().c_str());
   if (type == *s)
     return *s;
   if (s->safety())
@@ -188,6 +190,8 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
 
     return *sym;
   }
+  if (s->locked())
+    throw ParseError(EXC_PARSE_CONST_VIOLATION_S, s->name().c_str());
   Type type = decl.make_type(level);
   if (type == *s)
     return *s;
@@ -214,6 +218,8 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
 Value& Context::storeVariable(const Symbol& symbol, Value&& e)
 {
   MemorySlot& slot = _storage_pool[symbol.id()];
+  if (slot.symbol->locked())
+    throw RuntimeError(EXC_RT_CONST_VIOLATION_S, slot.symbol->name().c_str());
   if (slot.value.type() == e.type())
   {
     /* move new as lvalue */

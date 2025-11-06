@@ -49,6 +49,7 @@ public:
   , _id(s._id)
   , _name(std::move(s._name))
   , _safety(s._safety)
+  , _locked(s._locked)
   { }
 
   Symbol& operator=(Symbol&& s) noexcept
@@ -62,6 +63,7 @@ public:
     _id = s._id;
     _name = std::move(s._name);
     _safety = s._safety;
+    _locked = s._locked;
     return *this;
   }
 
@@ -92,9 +94,13 @@ public:
    */
   SafetyCheck check_safety(const Type& type) const noexcept;
 
+  void locked(bool b) const { _locked = b; }
+  bool locked() const { return _locked; }
+
 private:
   Decl _decl;
   mutable bool _safety = false;
+  mutable bool _locked = false;
 };
 
 }

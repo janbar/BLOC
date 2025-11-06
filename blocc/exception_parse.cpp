@@ -55,6 +55,7 @@ const char * ParseError::PARSE_ERROR[] =
   "Import module '%s' failed.",
   "Failed to include source '%s'.",
   "The OPAQUE expression must be stored in a variable before calling a method or accessing an item.",
+  "Variable '%s' should not be modified.",
   "%s", /* EXC_PARSE_MESSAGE_S */
 };
 

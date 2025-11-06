@@ -57,6 +57,7 @@ const char * RuntimeError::RUNTIME_ERROR[] =
   "No value returned.",
   "The recursion limit has been reached.",
   "All items of table must be uniform.",
+  "Variable '%s' cannot be modified.",
 };
 
 RuntimeError::THROWABLE RuntimeError::THROWABLES[] =
