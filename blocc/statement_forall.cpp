@@ -312,6 +312,14 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
     std::string vname = t->text;
     std::transform(vname.begin(), vname.end(), vname.begin(), ::toupper);
+    {
+      /* the variable, which will point to the fetched value, cannot already be
+       * used by a running iteration i.e in parent loop; typically a protected
+       * symbol can mean such a case */
+      const Symbol * s = ctx.findSymbol(vname);
+      if (s && s->safety())
+        throw ParseError(EXC_PARSE_OTHER_S, "Cannot use a protected symbol as iterator variable.", t);
+    }
     t = p.pop();
     if (t->code != TOKEN_KEYWORD || t->text != KEYWORDS[STMT_IN])
       throw ParseError(EXC_PARSE_OTHER_S, "Keyword IN required for FORALL.", t);
@@ -343,10 +351,6 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
         /* register symbol of intrinsic type */
         s->_var = new VariableExpression(ctx.registerSymbol(vname, exp_type.levelDown()));
     }
-    /* a progressing iterator cannot be reused in the body loop; also its type
-     * must be safe; therefore enable the safety flag for the symbol */
-    if (s->_var->symbol()->safety())
-      throw ParseError(EXC_PARSE_OTHER_S, "Cannot use a protected symbol as iterator variable.", t);
     if (t->code == TOKEN_KEYWORD)
     {
       if (t->text == KEYWORDS[STMT_ASC])
