@@ -45,8 +45,11 @@ const Statement * LETStatement::doit(Context& ctx) const
     return _next;
   }
   else
-  /* update reference */
   {
+    /* The pointed-to value will be updated directly,
+       so integrity checks must be performed here */
+    if (_var.symbol()->locked())
+      throw RuntimeError(EXC_RT_CONST_VIOLATION_S, _var.symbol()->name().c_str());
     Value& ptd = ctx.loadVariable(*_var.symbol()).deref_value();
     Value& val = _exp->value(ctx); /* execute expression */
     /* values MUST be of the same type */

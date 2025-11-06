@@ -40,8 +40,11 @@ const Statement * LETNStatement::doit(Context& ctx) const
     return _next;
   }
   else
-  /* update reference */
   {
+    /* The pointed-to value will be updated directly,
+       so integrity checks must be performed here */
+    if (_var.symbol()->locked())
+      throw RuntimeError(EXC_RT_CONST_VIOLATION_S, _var.symbol()->name().c_str());
     Value& ptd = ctx.loadVariable(*_var.symbol()).deref_value();
     /* values MUST be of the same type */
     if (_typ != ptd.type())

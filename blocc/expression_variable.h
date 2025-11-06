@@ -51,6 +51,7 @@ public:
   Value& value(Context& ctx) const override
   {
     Value& val = ctx.loadVariable(_symbol);
+    /* a pointer must be dereferenced */
     if (val.type() != Type::POINTER)
       return val;
     return val.deref_value();

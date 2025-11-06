@@ -35,6 +35,7 @@ const Type& VariableExpression::type(Context& ctx) const
 
   /* return the type of the stored expression */
   Value& val = ctx.loadVariable(_symbol);
+  /* a pointer must be dereferenced */
   if (val.type() != Type::POINTER)
     return val.type();
   return val.deref_value().type();
@@ -57,6 +58,7 @@ const TupleDecl::Decl& VariableExpression::tuple_decl(Context& ctx) const
         return z.collection()->table_decl();
       return z.tuple()->tuple_decl();
     }
+    /* for a pointer, first fetch the value it points to */
     if (z.value()->isNull())
       return TupleDecl::no_decl;
     if (z.value()->type().level() > 0)
