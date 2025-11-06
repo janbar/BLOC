@@ -71,8 +71,33 @@ public:
 
   const std::string& name() const { return _name; }
 
+  /**
+   * Enable immutable type constraint.
+   * When this constraint is enabled, the major type cannot be modified.
+   * @param b true to enable else false
+   */
   void safety(bool b) const { _safety = b; }
-  bool safety() const { return _safety; }
+
+  /**
+   * Enable constness constraint.
+   * When this constraint is enabled, neither the payload nor the type
+   * can be modified.
+   * @param b true to enable else false
+   */
+  void locked(bool b) const { _locked = b; }
+
+  /**
+   * Test type is immutable.
+   * Constness also reinforces the constraint.
+   * @return true or false
+   */
+  bool safety() const { return _safety || _locked; }
+
+  /**
+   * Test constness constraint.
+   * @return true or false
+   */
+  bool locked() const { return _locked; }
 
   void upgrade(const Type& to_type);
 
@@ -93,9 +118,6 @@ public:
    * and during parsing stage.
    */
   SafetyCheck check_safety(const Type& type) const noexcept;
-
-  void locked(bool b) const { _locked = b; }
-  bool locked() const { return _locked; }
 
 private:
   Decl _decl;
