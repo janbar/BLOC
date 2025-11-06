@@ -71,9 +71,9 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     {
       /* target is sustainable and accessible by a symbol, so point to it */
       _data.target = &val;
-      /* the symbol must be type safe in the body loop */
-      _data.ex_safety_bak = _expSymbol->safety();
-      _expSymbol->safety(true);
+      /* the symbol must be protected in the body loop */
+      _data.ex_locked_bak = _expSymbol->locked();
+      _expSymbol->locked(true);
     }
     else
     {
@@ -110,8 +110,8 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       _var->symbol()->safety(_data.it_safety_bak);
       if (_expSymbol)
       {
-        /* restore the safety state of the target symbol */
-        _expSymbol->safety(_data.ex_safety_bak);
+        /* restore the state of the target symbol */
+        _expSymbol->locked(_data.ex_locked_bak);
       }
       else
       {
@@ -144,8 +144,8 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     _var->symbol()->safety(_data.it_safety_bak);
     if (_expSymbol)
     {
-      /* restore the safety state of the symbol */
-      _expSymbol->safety(_data.ex_safety_bak);
+      /* restore the state of the symbol */
+      _expSymbol->locked(_data.ex_locked_bak);
     }
     else
     {
@@ -169,8 +169,8 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   _var->symbol()->safety(_data.it_safety_bak);
   if (_expSymbol)
   {
-    /* restore the safety state of the symbol */
-    _expSymbol->safety(_data.ex_safety_bak);
+    /* restore the state of the symbol */
+    _expSymbol->locked(_data.ex_locked_bak);
   }
   else
   {
@@ -253,12 +253,12 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
   bool safety_vt_bak = vt.safety();
   vt.safety(true);
-  // fetched expression must be protected against type change
-  bool safety_ex_bak = false;
+  // fetched expression must be protected against change
+  bool locked_ex_bak = false;
   if (rof->_expSymbol)
   {
-    safety_ex_bak = rof->_expSymbol->safety();
-    rof->_expSymbol->safety(true);
+    locked_ex_bak = rof->_expSymbol->locked();
+    rof->_expSymbol->locked(true);
   }
   try
   {
@@ -285,7 +285,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   {
     // cleanup
     if (rof->_expSymbol)
-      rof->_expSymbol->safety(safety_ex_bak);
+      rof->_expSymbol->locked(locked_ex_bak);
     vt.safety(safety_vt_bak);
     ctx.execEnd();
     for (auto ss : statements)
@@ -293,7 +293,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
     throw;
   }
   if (rof->_expSymbol)
-    rof->_expSymbol->safety(safety_ex_bak);
+    rof->_expSymbol->locked(locked_ex_bak);
   vt.safety(safety_vt_bak);
   ctx.execEnd();
   return new Executable(ctx, statements);
