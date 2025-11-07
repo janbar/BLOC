@@ -77,8 +77,8 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     }
     else if (!val.lvalue())
     {
-      /* target must be preserved during the duration of the loop;
-       * the temporary storage will be free at end */
+      /* the target value is temporary and it must be preserved during the
+       * loop execution, so move it in private stack */
       _data.target = new Value(std::move(val.to_lvalue(true)));
     }
     else
@@ -119,7 +119,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       }
       else
       {
-        /* delete temporary storage */
+        /* free the temporary value, which is stacked here */
         delete _data.target;
       }
       ctx.unstackControl();
