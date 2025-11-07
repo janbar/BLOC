@@ -102,10 +102,10 @@ P.minmax2dgrid(Z, XPTS, YPTS, zmax, zmin);
 
 /* create color levels */
 NLEVEL = 10;
-step = ((zmax - zmin) / (NLEVEL + 1));
+STEP = ((zmax - zmin) / (NLEVEL + 1));
 CLEVEL = tab(0, num());
 for I in 0 to (NLEVEL - 1) loop
-    CLEVEL.concat(((zmin + step) + (step * I)));
+    CLEVEL.concat(((zmin + STEP) + (STEP * I)));
 end loop;
 
 /* set cmap1 colors */
@@ -280,7 +280,7 @@ begin
   dy = 2.0 / ( $YPTS - 1 );
   zmin = num();
   zmax = num();
-  step = num();
+  STEP = num();
   clevel = tab($LEVELS, num());
   nlevel = $LEVELS;
 
@@ -334,10 +334,10 @@ begin
   end loop;
 
   plot.minmax2dgrid( z, $XPTS, $YPTS, zmax, zmin );
-  step = ( zmax - zmin ) / ( nlevel + 1 );
+  STEP = ( zmax - zmin ) / ( nlevel + 1 );
 
   for i in 0 to nlevel-1 loop
-    clevel.put(i, zmin + step + step * i);
+    clevel.put(i, zmin + STEP + STEP * i);
   end loop;
 
   plot.lightsource( 1.0, 1.0, 1.0 );
