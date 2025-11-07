@@ -174,8 +174,9 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
 {
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
-  // iterator must be protected against type change
+  /* get symbol non-const */
   Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
+  /* iterator must be protected against type change */
   bool safety_bak = vt.safety();
   vt.safety(true);
   try

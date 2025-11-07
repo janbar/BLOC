@@ -218,8 +218,9 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
 {
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
-  /* iterator must be protected against type change */
+  /* get symbol non-const */
   Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
+  /* iterator must be protected against type change */
   bool safety_vt_bak = vt.safety();
   bool locked_vt_bak = vt.locked();
   vt.safety(true);
