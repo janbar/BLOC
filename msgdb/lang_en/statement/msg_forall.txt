@@ -7,4 +7,5 @@ forall {var} in {table expression} [asc|desc] loop
     [statement ...]
 end loop;
 
-Inside the loop, the target table can be modified without care.
+Inside the loop, the value pointed to by the iterator can be modified. But not
+the source table, which remains constant.

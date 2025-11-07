@@ -1,5 +1,6 @@
 
 $$tokenize$$ splits the values in the string x, using the string y as separator.
 If the boolean z is true, then null values will be trimmed.
+The result is returned as table.
 
 tokenize( x , y [, z] )
