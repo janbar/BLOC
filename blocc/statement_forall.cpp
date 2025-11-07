@@ -91,10 +91,9 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     _data.it_locked_bak = _var->symbol()->locked();
     _data.it_type_bak = ctx.loadVariable(*_var->symbol()).type();
 
-    /* fetch first item: exchange the value payload with a pointer to the
-     * storage */
-    swapValue(_data.target->collection(), _data.index,
-              &ctx.loadVariable(*_var->symbol()))->to_lvalue(true);
+    /* fetch first item: make a pointer to the element value */
+    make_pointer(_data.target->collection(), _data.index,
+              ctx.loadVariable(*_var->symbol())).to_lvalue(true);
     _var->symbol()->safety(true);
     /* iterator inherits constness of the target */
     _var->symbol()->locked(_data.ex_locked_bak);
@@ -102,9 +101,6 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   }
   else
   {
-    /* restore the value payload into the target if it still exists */
-    restoreValue(_data.target->collection(), _data.index,
-                 &ctx.loadVariable(*_var->symbol()));
     _data.index += _data.step;
     if (_data.index < 0 || _data.index >= _data.target->collection()->size())
     {
@@ -127,10 +123,9 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     }
     else
     {
-      /* fetch current item: exchange the value payload with a pointer to the
-       * storage */
-      swapValue(_data.target->collection(), _data.index,
-                &ctx.loadVariable(*_var->symbol()))->to_lvalue(true);
+      /* fetch current item: make a pointer to the element value */
+      make_pointer(_data.target->collection(), _data.index,
+                ctx.loadVariable(*_var->symbol())).to_lvalue(true);
     }
   }
   try
@@ -140,9 +135,6 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   }
   catch (...)
   {
-    /* restore the value payload into the target if it still exists */
-    restoreValue(_data.target->collection(), _data.index,
-                 &ctx.loadVariable(*_var->symbol()));
     /* restore the state of the iterator variable */
     ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
     _var->symbol()->safety(_data.it_safety_bak);
@@ -166,9 +158,6 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     ctx.continueCondition(false);
     return this;
   }
-  /* restore the value payload into the target if it still exists */
-  restoreValue(_data.target->collection(), _data.index,
-               &ctx.loadVariable(*_var->symbol()));
   /* restore the state of the iterator variable */
   ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
   _var->symbol()->safety(_data.it_safety_bak);
@@ -218,37 +207,11 @@ void FORALLStatement::unparse(Context& ctx, FILE * out) const
   ctx.execEnd();
 }
 
-Value * FORALLStatement::swapValue(Collection * tgt, unsigned i, Value * itr) noexcept
+Value& FORALLStatement::make_pointer(Collection * tgt, unsigned i, Value& itr) noexcept
 {
-  /* make a pointer to iterator value i.e self: dangerous */
-  *itr = Value(itr);
-  /* exchange target value and iterator value (pointer) */
-  tgt->at(i).swap(*itr);
+  /* make a pointer to index value */
+  itr = Value(&(tgt->at(i).to_lvalue(true)));
   return itr;
-}
-
-void FORALLStatement::restoreValue(Collection * tgt, unsigned i, Value * itr) noexcept
-{
-  /* search the pointer to itr at the advised index */
-  if (i < tgt->size())
-  {
-    Value& v = tgt->at(i);
-    if (v.type() == Type::POINTER && v.get().p == itr)
-    {
-      v.swap(*itr);
-      return;
-    }
-  }
-  /* finally scan the whole table to find it, in case the item is moved */
-  for (Value& v : *tgt)
-  {
-    if (v.type() == Type::POINTER && v.get().p == itr)
-    {
-      v.swap(*itr);
-      return;
-    }
-  }
-  /* item has been deleted from target */
 }
 
 Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatement * rof)

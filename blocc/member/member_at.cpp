@@ -67,10 +67,8 @@ Value& MemberATExpression::value(Context& ctx) const
   {
     Collection * rv = val.collection();
     Integer p = *a0.integer();
-    /* I have to deref the value, as it can be a pointer when this is running
-     * in the body of FORALL loop */
     if (p >= 0 && p < rv->size())
-      return rv->at((unsigned)p).deref_value().to_lvalue(val.lvalue());
+      return rv->at((unsigned)p).to_lvalue(val.lvalue());
     throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
   }
 

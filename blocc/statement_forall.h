@@ -63,8 +63,7 @@ private:
     bool ex_locked_bak = false;
   } _data;
 
-  static Value * swapValue(Collection * tgt, unsigned i, Value * itr) noexcept;
-  static void restoreValue(Collection * tgt, unsigned i, Value * itr) noexcept;
+  static Value& make_pointer(Collection * tgt, unsigned i, Value& itr) noexcept;
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORALLStatement * rof);
 
