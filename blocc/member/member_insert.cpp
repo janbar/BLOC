@@ -253,6 +253,11 @@ MemberINSERTExpression * MemberINSERTExpression::parse(Parser& p, Context& ctx, 
 {
   std::vector<Expression*> args;
   TokenPtr t = p.pop();
+  {
+    const Symbol * s = exp->symbol();
+    if (s && s->locked())
+      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, s->name().c_str(), t);
+  }
 
   if (t->code != '(')
     throw ParseError(EXC_PARSE_BAD_MEMB_CALL_S, KEYWORDS[BTM_INSERT], t);
