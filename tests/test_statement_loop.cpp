@@ -147,3 +147,83 @@ TEST_CASE("Safety reset on broken forall loop")
   }
   catch(Error& er) { delete e; FAIL(er.what()); }
 }
+
+TEST_CASE("Table constness in forall loop")
+{
+  ctx.purge();
+  Executable * e;
+  ctx.reset("a=tab(10, tab(5, tup(pi,\"abcde\",false)));");
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  delete e;
+
+  ctx.reset(
+    "forall i in a loop a=tab(); end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) { SUCCEED(er.what()); }
+
+  ctx.reset(
+    "forall i in a loop forall j in i loop\n"
+    "i.delete(0);\n"
+    "end loop; end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) { SUCCEED(er.what()); }
+
+  ctx.reset(
+    "forall i in a loop forall j in i loop\n"
+    "i.concat(tup(0.0,\"nil\",true));\n"
+    "end loop; end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) { SUCCEED(er.what()); }
+
+  ctx.reset(
+    "forall i in a loop forall j in i loop\n"
+    "i.insert(0,tup(0.0,\"nil\",true));\n"
+    "end loop; end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) { SUCCEED(er.what()); }
+
+  ctx.reset(
+    "forall i in a loop forall j in i loop\n"
+    "i.put(0,tup(0.0,\"nil\",true));\n"
+    "end loop; end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) { SUCCEED(er.what()); }
+
+  ctx.reset(
+    "forall i in a loop forall j in i loop\n"
+    "i.at(0).set@1(0.0);\n"
+    "end loop; end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) { SUCCEED(er.what()); }
+}
