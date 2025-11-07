@@ -332,7 +332,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
   case SQLITE3::Fetch:
   {
     /* INOUT */
-    if (!args[0]->symbol())
+    if (!args[0]->isVarName())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Tuple * t = nullptr;
     int r = h->fetch(&t);

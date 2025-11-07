@@ -174,9 +174,9 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
             break;
           case PLUGIN_INOUT:
           {
-            /* must be variable expression with same type */
-            const Symbol * symbol = args[a]->symbol();
-            if (symbol == nullptr || !ParseExpression::typeChecking(args[a], m_arg_type, p, ctx))
+            /* must be symbolic variable, not read-only, and with same type */
+            if (!args[a]->isVarName() || args[a]->symbol()->locked() ||
+                    !ParseExpression::typeChecking(args[a], m_arg_type, p, ctx))
               found = false;
             else
             {

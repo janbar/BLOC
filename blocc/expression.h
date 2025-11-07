@@ -68,8 +68,13 @@ public:
   virtual bool isConst() const { return false; }
 
   /**
-   * Returns the possible symbol allowing access to the value pointed to by
-   * an expression of the variable type. Defaut none.
+   * Returns true if the expression is a symbolic variable or its accessor.
+   */
+  virtual bool isVarName() const { return false; }
+
+  /**
+   * Returns the source symbol allowing access to the value pointed to by
+   * an expression. Defaut none.
    */
   virtual const Symbol * symbol() const { return nullptr; }
 

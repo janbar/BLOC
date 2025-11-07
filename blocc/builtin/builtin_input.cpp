@@ -33,8 +33,11 @@ namespace bloc
 
 Value& INPUTExpression::value(Context & ctx) const
 {
-  if (_args[0]->symbol() == nullptr)
+  if (!_args[0]->isVarName())
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  /* check constness */
+  //if (_args[0]->symbol()->locked())
+  //  throw RuntimeError(EXC_RT_CONST_VIOLATION_S, _args[0]->symbol()->name().c_str());
   Value& a0 = _args[0]->value(ctx);
 
   if (_args.size() > 1)
@@ -67,9 +70,11 @@ INPUTExpression * INPUTExpression::parse(Parser& p, Context& ctx)
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_INPUT], t);
     args.push_back(ParseExpression::expression(p, ctx));
-    VariableExpression * var = dynamic_cast<VariableExpression*>(args.back());
-    if (var == nullptr || !ParseExpression::typeChecking(var, Type::LITERAL, p, ctx))
+    if (!args.back()->isVarName() ||
+            !ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INPUT], t);
+    if (args.back()->symbol()->locked())
+      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, args.back()->symbol()->name().c_str(), t);
     if (p.front()->code == Parser::Chain)
     {
       t = p.pop();

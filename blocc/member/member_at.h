@@ -42,7 +42,7 @@ public:
 
   Value& value(Context& ctx) const override;
 
-  /* it is a mutator method */
+  /* it could relate an accessor */
   const Symbol * symbol() const override { return _exp->symbol(); }
 
   const TupleDecl::Decl& tuple_decl(Context& ctx) const override;

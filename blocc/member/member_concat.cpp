@@ -49,7 +49,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         if (a0.isNull())
           return val;
         /* a symbol must be upgraded */
-        if (_exp->symbol())
+        if (_exp->isVarName())
         {
           if (a0.lvalue())
             ctx.storeVariable(*_exp->symbol(), a0.clone());
@@ -85,7 +85,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       else
         rv->push_back(std::move(a0));
       /* a symbol must be upgraded */
-      if (_exp->symbol())
+      if (_exp->isVarName())
         ctx.storeVariable(*_exp->symbol(), Value(rv));
       else
         val.swap(Value(rv).to_lvalue(val.lvalue()));
@@ -225,7 +225,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       else
         val.swap(a0.to_lvalue(val.lvalue()));
       /* a symbol must be upgraded */
-      if (_exp->symbol())
+      if (_exp->isVarName())
         ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
       return val;
     case Type::INTEGER:
@@ -237,13 +237,13 @@ Value& MemberCONCATExpression::value(Context& ctx) const
       {
         val.swap(Value(new TabChar(1, (char)c)).to_lvalue(val.lvalue()));
         /* a symbol must be upgraded */
-        if (_exp->symbol())
+        if (_exp->isVarName())
           ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
         return val;
       }
       val.swap(Value(new Literal(1, (char)c)).to_lvalue(val.lvalue()));
       /* a symbol must be upgraded */
-      if (_exp->symbol())
+      if (_exp->isVarName())
         ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
       return val;
     }

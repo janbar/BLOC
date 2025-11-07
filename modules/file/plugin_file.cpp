@@ -403,7 +403,7 @@ bloc::Value * FilePlugin::executeMethod(
     if (!file->_r)
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
     bloc::Value& a1 = args[1]->value(ctx);
-    if (args[0]->symbol() == nullptr || a1.isNull())
+    if (!args[0]->isVarName() || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
 
     bloc::Literal * str = new bloc::Literal();
@@ -433,7 +433,7 @@ bloc::Value * FilePlugin::executeMethod(
   {
     if (!file->_r)
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
-    if (args[0]->symbol() == nullptr)
+    if (!args[0]->isVarName())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
 
     char buf[BLOC_FILE_BUFSZ]; /* max length */
@@ -522,7 +522,7 @@ bloc::Value * FilePlugin::executeMethod(
     if (!file->_r)
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened for read operation.");
     bloc::Value& a1 = args[1]->value(ctx);
-    if (args[0]->symbol() == nullptr || a1.isNull())
+    if (!args[0]->isVarName() || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
 
     bloc::TabChar * raw = new bloc::TabChar();

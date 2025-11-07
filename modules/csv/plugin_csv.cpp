@@ -328,7 +328,7 @@ bloc::Value * CSVPlugin::executeMethod(
   {
     bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
-    if (a0.isNull() || args[1]->symbol() == nullptr)
+    if (a0.isNull() || !args[1]->isVarName())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     /* processing data */
     std::vector<std::string> data;
@@ -346,7 +346,7 @@ bloc::Value * CSVPlugin::executeMethod(
   {
     bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
-    if (a0.isNull() || args[1]->symbol() == nullptr || a1.isNull())
+    if (a0.isNull() || !args[1]->isVarName() || a1.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Collection& c = *a1.collection();
     std::vector<std::string> data;

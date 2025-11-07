@@ -171,7 +171,7 @@ bloc::Value * SYSPlugin::executeMethod(
     bloc::Value& a2 = args[2]->value(ctx);
     if (a0.isNull() || a2.isNull())
       return new bloc::Value(bloc::Value::type_boolean);
-    if (args[1]->symbol() == nullptr)
+    if (!args[1]->isVarName())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Value out(new bloc::TabChar());
     bool success = bloc::Bool(h->execout(*a0.literal(), *out.tabchar(), *a2.integer()));

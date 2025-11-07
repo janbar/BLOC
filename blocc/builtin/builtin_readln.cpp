@@ -33,8 +33,11 @@ namespace bloc
 
 Value& READLNExpression::value(Context & ctx) const
 {
-  if (_args[0]->symbol() == nullptr)
+  if (!_args[0]->isVarName())
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
+  /* check constness */
+  //if (_args[0]->symbol()->locked())
+  //  throw RuntimeError(EXC_RT_CONST_VIOLATION_S, _args[0]->symbol()->name().c_str());
   Value& a0 = _args[0]->value(ctx);
 
   char buf[1024];
@@ -54,9 +57,12 @@ READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_READLN], t);
     args.push_back(ParseExpression::expression(p, ctx));
-    VariableExpression * var = dynamic_cast<VariableExpression*>(args.back());
-    if (var == nullptr || !ParseExpression::typeChecking(var, Type::LITERAL, p, ctx))
+    if (!args.back()->isVarName() ||
+            !ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN], t);
+    /* check constness */
+    if (args.back()->symbol()->locked())
+      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, args.back()->symbol()->name().c_str(), t);
     assertClosedFunction(p, ctx, FUNC_READLN);
     return new READLNExpression(std::move(args));
   }

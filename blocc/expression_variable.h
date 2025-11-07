@@ -57,6 +57,8 @@ public:
     return val.deref_value();
   }
 
+  bool isVarName() const override { return true; }
+
   const Symbol * symbol() const override { return &_symbol; }
 
   std::string unparse(Context& ctx) const override

@@ -1287,7 +1287,7 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     bloc::Value& a1 = args[1]->value(ctx);
     bloc::Value& a2 = args[2]->value(ctx);
     if (a0.isNull() || a1.isNull() || a2.isNull()
-            || args[3]->symbol() == nullptr || args[4]->symbol() == nullptr)
+            || !args[3]->isVarName() || !args[4]->isVarName())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
 
     bloc::Collection& z = *a0.collection();
