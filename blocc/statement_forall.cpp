@@ -75,19 +75,20 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       _data.ex_locked_bak = _expSymbol->locked();
       _expSymbol->locked(true);
     }
-    else
+    else if (!val.lvalue())
     {
       /* target must be preserved during the duration of the loop;
        * the temporary storage will be free at end */
-      if (val.lvalue())
-        /* unfortunately I have to copy it */
-        _data.target = new Value(std::move(val.clone().to_lvalue(true)));
-      else
-        _data.target = new Value(std::move(val.to_lvalue(true)));
+      _data.target = new Value(std::move(val.to_lvalue(true)));
+    }
+    else
+    {
+      throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
     }
     /* backup the state of the variable used as iterator; it will be restored
      * at end */
     _data.it_safety_bak = _var->symbol()->safety();
+    _data.it_locked_bak = _var->symbol()->locked();
     _data.it_type_bak = ctx.loadVariable(*_var->symbol()).type();
 
     /* fetch first item: exchange the value payload with a pointer to the
@@ -95,6 +96,8 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     swapValue(_data.target->collection(), _data.index,
               &ctx.loadVariable(*_var->symbol()))->to_lvalue(true);
     _var->symbol()->safety(true);
+    /* iterator inherits constness of the target */
+    _var->symbol()->locked(_data.ex_locked_bak);
     ctx.stackControl(this);
   }
   else
@@ -108,6 +111,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       /* restore the state of the iterator variable; the value is cleared */
       ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
       _var->symbol()->safety(_data.it_safety_bak);
+      _var->symbol()->locked(_data.it_locked_bak);
       if (_expSymbol)
       {
         /* restore the state of the target symbol */
@@ -142,6 +146,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     /* restore the state of the iterator variable */
     ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
     _var->symbol()->safety(_data.it_safety_bak);
+    _var->symbol()->locked(_data.it_locked_bak);
     if (_expSymbol)
     {
       /* restore the state of the symbol */
@@ -167,6 +172,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   /* restore the state of the iterator variable */
   ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
   _var->symbol()->safety(_data.it_safety_bak);
+  _var->symbol()->locked(_data.it_locked_bak);
   if (_expSymbol)
   {
     /* restore the state of the symbol */
@@ -249,16 +255,19 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
 {
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
-  // iterator must be protected against type change
+  /* iterator must be protected against type change */
   Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
   bool safety_vt_bak = vt.safety();
+  bool locked_vt_bak = vt.locked();
   vt.safety(true);
-  // fetched expression must be protected against change
+  /* fetched expression must be protected against change */
   bool locked_ex_bak = false;
   if (rof->_expSymbol)
   {
     locked_ex_bak = rof->_expSymbol->locked();
     rof->_expSymbol->locked(true);
+    /* iterator inherits constness of the target */
+    vt.locked(locked_ex_bak);
   }
   try
   {
@@ -287,6 +296,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
     if (rof->_expSymbol)
       rof->_expSymbol->locked(locked_ex_bak);
     vt.safety(safety_vt_bak);
+    vt.locked(locked_vt_bak);
     ctx.execEnd();
     for (auto ss : statements)
       delete ss;
@@ -295,6 +305,7 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   if (rof->_expSymbol)
     rof->_expSymbol->locked(locked_ex_bak);
   vt.safety(safety_vt_bak);
+  vt.locked(locked_vt_bak);
   ctx.execEnd();
   return new Executable(ctx, statements);
 }

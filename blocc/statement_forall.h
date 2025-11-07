@@ -59,6 +59,7 @@ private:
     Integer step = 1;
     Type it_type_bak = Type();
     bool it_safety_bak = false;
+    bool it_locked_bak = false;
     bool ex_locked_bak = false;
   } _data;
 
