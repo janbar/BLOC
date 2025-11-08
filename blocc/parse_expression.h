@@ -74,7 +74,7 @@ private:
 
   Parser& p;
   Context& ctx;
-  
+
   ~ParseExpression() = default;
   ParseExpression(Parser& p, Context& ctx) : p(p), ctx(ctx) { }
 
@@ -82,9 +82,9 @@ private:
 
   Expression * element();
 
-  Expression * primary();
-
   Expression * factor();
+
+  Expression * primary();
 
   Expression * term();
 

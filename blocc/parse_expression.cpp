@@ -222,46 +222,7 @@ Expression * ParseExpression::element()
 }
 
 /**
- * Primary operator: The precedence (2)
- * The primary operator could be recursive. It starts an unary expression.
- * The associativity is right->left.
- */
-Expression * ParseExpression::primary()
-{
-  TokenPtr t;
-
-  try
-  {
-    t = p.pop();
-    switch (t->code)
-    {
-    case TOKEN_KEYWORD:
-      if (t->text == "not")
-        return new OpBNOTExpression(assertType(primary(), Type::BOOLEAN, p, ctx));
-      break;
-    case '!':
-      return new OpBNOTExpression(assertType(primary(), Type::BOOLEAN, p, ctx));
-    case '~':
-      return new OpNOTExpression(assertType(primary(), Type::NUMERIC, p, ctx));
-    case '-':
-      return new OpNEGExpression(assertType(primary(), Type::NUMERIC, p, ctx));
-    case '+':
-      return new OpPOSExpression(assertType(primary(), Type::NUMERIC, p, ctx));
-    default:
-      break;
-    }
-    p.push(t);
-  }
-  catch (ParseError& pe)
-  {
-    DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
-    throw;
-  }
-  return element();
-}
-
-/**
- * Factor operator: The precedence (3)
+ * Factor operator: The precedence (2)
  * The factor operator could be recursive, and it has the biggest priority over
  * all binary operators and itself.
  * The associativity is right->left
@@ -273,7 +234,7 @@ Expression * ParseExpression::factor()
 
   try
   {
-    result = primary();
+    result = element();
     t = p.pop();
     switch (t->code)
     {
@@ -298,6 +259,45 @@ Expression * ParseExpression::factor()
 }
 
 /**
+ * Primary operator: The precedence (3)
+ * The primary operator could be recursive. It starts an unary expression.
+ * The associativity is right->left.
+ */
+Expression * ParseExpression::primary()
+{
+  TokenPtr t;
+
+  try
+  {
+    t = p.pop();
+    switch (t->code)
+    {
+    case TOKEN_KEYWORD:
+      if (t->text == "not")
+        return new OpBNOTExpression(assertType(factor(), Type::BOOLEAN, p, ctx));
+      break;
+    case '!':
+      return new OpBNOTExpression(assertType(factor(), Type::BOOLEAN, p, ctx));
+    case '~':
+      return new OpNOTExpression(assertType(factor(), Type::NUMERIC, p, ctx));
+    case '-':
+      return new OpNEGExpression(assertType(factor(), Type::NUMERIC, p, ctx));
+    case '+':
+      return new OpPOSExpression(assertType(factor(), Type::NUMERIC, p, ctx));
+    default:
+      break;
+    }
+    p.push(t);
+  }
+  catch (ParseError& pe)
+  {
+    DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
+    throw;
+  }
+  return factor();
+}
+
+/**
  * Term operator: The precedence (4)
  * The term operator could be recursive.
  * The associativity is left->right
@@ -309,7 +309,7 @@ Expression * ParseExpression::term()
 
   try
   {
-    result = factor();
+    result = primary();
     bool done = false;
     while (!done)
     {
@@ -317,13 +317,13 @@ Expression * ParseExpression::term()
       switch (t->code)
       {
       case '*':
-        result = new OpMULExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(factor(), Type::NUMERIC, p, ctx));
+        result = new OpMULExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx));
         break;
       case '/':
-        result = new OpDIVExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(factor(), Type::NUMERIC, p, ctx));
+        result = new OpDIVExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx));
         break;
       case '%':
-        result = new OpMODExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(factor(), Type::NUMERIC, p, ctx));
+        result = new OpMODExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx));
         break;
       default:
         done = true;
