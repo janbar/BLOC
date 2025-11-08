@@ -152,11 +152,15 @@ TEST_CASE("Table constness in forall loop")
 {
   ctx.purge();
   Executable * e;
-  ctx.reset("a=tab(10, tab(5, tup(pi,\"abcde\",false)));");
+  ctx.reset(
+    "a=tab(10, tab(5, tup(pi,\"abcde\",false)));\n"
+    "b=tab(10, tab(5, \"Hello\"));\n"
+  );
   e = ctx.parse();
   REQUIRE( e->run() == 0 );
   delete e;
 
+  std::cout << "Erase target table:" << std::endl;
   ctx.reset(
     "forall i in a loop a=tab(); end loop;\n"
   );
@@ -165,8 +169,12 @@ TEST_CASE("Table constness in forall loop")
     delete e;
     FAIL("Compilation should fail.");
   }
-  catch(Error& er) { SUCCEED(er.what()); }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
 
+  std::cout << "Remove element from target table:" << std::endl;
   ctx.reset(
     "forall i in a loop forall j in i loop\n"
     "i.delete(0);\n"
@@ -177,8 +185,12 @@ TEST_CASE("Table constness in forall loop")
     delete e;
     FAIL("Compilation should fail.");
   }
-  catch(Error& er) { SUCCEED(er.what()); }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
 
+  std::cout << "Add element to target table:" << std::endl;
   ctx.reset(
     "forall i in a loop forall j in i loop\n"
     "i.concat(tup(0.0,\"nil\",true));\n"
@@ -189,8 +201,12 @@ TEST_CASE("Table constness in forall loop")
     delete e;
     FAIL("Compilation should fail.");
   }
-  catch(Error& er) { SUCCEED(er.what()); }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
 
+  std::cout << "Insert element in target table:" << std::endl;
   ctx.reset(
     "forall i in a loop forall j in i loop\n"
     "i.insert(0,tup(0.0,\"nil\",true));\n"
@@ -201,8 +217,12 @@ TEST_CASE("Table constness in forall loop")
     delete e;
     FAIL("Compilation should fail.");
   }
-  catch(Error& er) { SUCCEED(er.what()); }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
 
+  std::cout << "Replace element of target table:" << std::endl;
   ctx.reset(
     "forall i in a loop forall j in i loop\n"
     "i.put(0,tup(0.0,\"nil\",true));\n"
@@ -213,8 +233,28 @@ TEST_CASE("Table constness in forall loop")
     delete e;
     FAIL("Compilation should fail.");
   }
-  catch(Error& er) { SUCCEED(er.what()); }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
 
+  std::cout << "Update/Mute element of target table:" << std::endl;
+  ctx.reset(
+    "forall i in b loop forall j in i loop\n"
+    "i.at(0).concat(\"World\");\n"
+    "end loop; end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
+
+  std::cout << "Replace element item of target table:" << std::endl;
   ctx.reset(
     "forall i in a loop forall j in i loop\n"
     "i.at(0).set@1(0.0);\n"
@@ -225,5 +265,24 @@ TEST_CASE("Table constness in forall loop")
     delete e;
     FAIL("Compilation should fail.");
   }
-  catch(Error& er) { SUCCEED(er.what()); }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
+
+  std::cout << "Update/Mute element item of target table:" << std::endl;
+  ctx.reset(
+    "forall i in a loop forall j in i loop\n"
+    "i.at(0)@2.concat(\"fghij\");\n"
+    "end loop; end loop;\n"
+  );
+  try {
+    e = ctx.parse();
+    delete e;
+    FAIL("Compilation should fail.");
+  }
+  catch(Error& er) {
+    std::cout << "\t=> " << er.what() << std::endl;
+    SUCCEED(er.what());
+  }
 }
