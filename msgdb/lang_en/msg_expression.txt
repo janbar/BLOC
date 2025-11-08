@@ -12,14 +12,15 @@ will be converted into a real one and the result will be a $$decimal$$ type.
 $$Precedence$$
 The expression precedence is as follows: (lowest to highest)
 
-  1.  || operator, left associative
-  2.  && operator, left associative
-  3.  ! operator, nonassociative
-  4.  Relational operators, left associative
+  1.  &&, || and xor operators, left associative
+  2.  Relational operators, left associative
+  3.  bitwise operators, left associative
+  4.  shift bit operators, left associative
   5.  + and - operators, left associative
   6.  *, / and % operators, left associative
-  7.  ** operator, right associative
-  8.  unary - and ~ operators, nonassociative
+  7.  unary +/- and ~ operators, nonassociative
+      ! operator, nonassociative
+  8.  ** operator, right associative
   9.  member . operator, left associative
 
 Type "help operator" for more information on operator.
