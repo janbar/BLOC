@@ -51,6 +51,9 @@ public:
 
   Value& value(Context& ctx) const override;
 
+  /* it could relate an accessor */
+  const Symbol * symbol() const override { return _exp->symbol(); }
+
   std::string toString(Context& ctx) const override
   {
     return std::string(_exp->typeName(ctx))
