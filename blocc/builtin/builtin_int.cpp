@@ -75,14 +75,24 @@ Value& INTExpression::value(Context & ctx) const
       }
       break;
     case Type::NUMERIC:
-      v = Value(Integer(*val.numeric()));
+    {
+      Numeric d = *val.numeric();
+      if (d < INT64_MIN || d > INT64_MAX)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      v = Value(Integer(d));
       break;
+    }
     case Type::INTEGER:
       v = Value(*val.integer());
       break;
     case Type::IMAGINARY:
-      v = Value(Integer(val.imaginary()->a));
+    {
+      Numeric d = val.imaginary()->a;
+      if (d < INT64_MIN || d > INT64_MAX)
+        throw RuntimeError(EXC_RT_OUT_OF_RANGE);
+      v = Value(Integer(d));
       break;
+    }
     case Type::BOOLEAN:
       v = Value(Integer(*val.boolean() ? 1 : 0));
       break;
