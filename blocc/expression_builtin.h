@@ -124,6 +124,7 @@ public:
     FUNC_TKNIZE = 67, // tokenize(x,y,z)
     FUNC_B64ENC = 68, // b64enc(x)
     FUNC_B64DEC = 69, // b64dec(x)
+    FUNC_TYPEOF = 70, // typeof(x)
   };
 
   std::string unparse(Context& ctx) const override;

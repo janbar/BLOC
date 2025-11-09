@@ -85,6 +85,7 @@
 #include "builtin/builtin_hex.h"
 #include "builtin/builtin_b64enc.h"
 #include "builtin/builtin_b64dec.h"
+#include "builtin/builtin_typeof.h"
 
 #include "exception_parse.h"
 #include "context.h"
@@ -110,6 +111,7 @@ const char * BuiltinExpression::KEYWORDS[] = {
     "ltrim",      "rtrim",      "trim",       "upper",      "lower",
     "strpos",     "replace",    "subraw",     "hash",       "imag",
     "iphase",     "iconj",      "tokenize",   "b64enc",     "b64dec",
+    "typeof",
 };
 
 BuiltinExpression::~BuiltinExpression()
@@ -314,6 +316,8 @@ BuiltinExpression * BuiltinExpression::parse(Parser& p, Context& ctx)
     return B64ENCExpression::parse(p, ctx);
   case FUNC_B64DEC:
     return B64DECExpression::parse(p, ctx);
+  case FUNC_TYPEOF:
+    return TYPEOFExpression::parse(p, ctx);
 
   default:
     throw ParseError(EXC_PARSE_NOT_A_FUNCTION, t);

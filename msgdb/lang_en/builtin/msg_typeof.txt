@@ -1,0 +1,6 @@
+
+$$typeof$$ returns the value type in literal form:
+'undefined', 'boolean', 'integer', 'decimal', 'string', 'bytes', 'complex',
+'tuple', 'table'.
+
+typeof( x )
