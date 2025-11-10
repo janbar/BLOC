@@ -24,7 +24,7 @@ set(VERSION_MAJOR "2")
 set(VERSION_MINOR "7")
 set(VERSION_PATCH "0")
 set (BLOC_LIB_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
-set (BLOC_LIB_SOVERSION "${VERSION_MAJOR}")
+set (BLOC_LIB_SOVERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 
 add_subdirectory (blocc)
 add_subdirectory (apps)
