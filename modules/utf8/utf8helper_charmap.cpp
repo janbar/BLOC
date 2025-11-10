@@ -2262,20 +2262,20 @@ const character* pagemap_24_e2[64] = {
 };
 
 const character charmap_e2_80[64] = {
-  { 0xe28080 , 0xe28080 , 0xe28080 , None , "\xe2\x80\x80" },
-  { 0xe28081 , 0xe28081 , 0xe28081 , None , "\xe2\x80\x81" },
-  { 0xe28082 , 0xe28082 , 0xe28082 , None , "\xe2\x80\x82" },
-  { 0xe28083 , 0xe28083 , 0xe28083 , None , "\xe2\x80\x83" },
-  { 0xe28084 , 0xe28084 , 0xe28084 , None , "\xe2\x80\x84" },
-  { 0xe28085 , 0xe28085 , 0xe28085 , None , "\xe2\x80\x85" },
-  { 0xe28086 , 0xe28086 , 0xe28086 , None , "\xe2\x80\x86" },
-  { 0xe28087 , 0xe28087 , 0xe28087 , IsSpace | IsBreaker , "\xe2\x80\x87" }, /* Figure Space */
-  { 0xe28088 , 0xe28088 , 0xe28088 , None , "\xe2\x80\x88" },
-  { 0xe28089 , 0xe28089 , 0xe28089 , None , "\xe2\x80\x89" },
-  { 0xe2808a , 0xe2808a , 0xe2808a , None , "\xe2\x80\x8a" },
-  { 0xe2808b , 0xe2808b , 0xe2808b , None , "\xe2\x80\x8b" },
-  { 0xe2808c , 0xe2808c , 0xe2808c , None , "\xe2\x80\x8c" },
-  { 0xe2808d , 0xe2808d , 0xe2808d , None , "\xe2\x80\x8d" },
+  { 0xe28080 , 0xe28080 , 0xe28080 , IsSpace , " " },
+  { 0xe28081 , 0xe28081 , 0xe28081 , IsSpace , " " },
+  { 0xe28082 , 0xe28082 , 0xe28082 , IsSpace , " " },
+  { 0xe28083 , 0xe28083 , 0xe28083 , IsSpace , " " },
+  { 0xe28084 , 0xe28084 , 0xe28084 , IsSpace , " " },
+  { 0xe28085 , 0xe28085 , 0xe28085 , IsSpace , " " },
+  { 0xe28086 , 0xe28086 , 0xe28086 , IsSpace , " " },
+  { 0xe28087 , 0xe28087 , 0xe28087 , IsSpace | IsBreaker , " " }, /* Figure Space */
+  { 0xe28088 , 0xe28088 , 0xe28088 , IsSpace , " " },
+  { 0xe28089 , 0xe28089 , 0xe28089 , IsSpace , " " },
+  { 0xe2808a , 0xe2808a , 0xe2808a , IsSpace , " " },
+  { 0xe2808b , 0xe2808b , 0xe2808b , IsSpace , "" }, /* Zero Width Space (ZWSP) */
+  { 0xe2808c , 0xe2808c , 0xe2808c , None , "" }, /* hidden */
+  { 0xe2808d , 0xe2808d , 0xe2808d , None , "" }, /* hidden */
   { 0xe2808e , 0xe2808e , 0xe2808e , None , "\xe2\x80\x8e" },
   { 0xe2808f , 0xe2808f , 0xe2808f , None , "\xe2\x80\x8f" },
   { 0xe28090 , 0xe28090 , 0xe28090 , IsPunctuation , "-" }, /* ‐ : up=‐ : lo=‐ */
@@ -2302,14 +2302,14 @@ const character charmap_e2_80[64] = {
   { 0xe280a5 , 0xe280a5 , 0xe280a5 , IsPunctuation , ".." }, /* ‥ : up=‥ : lo=‥ */
   { 0xe280a6 , 0xe280a6 , 0xe280a6 , IsPunctuation , "..." }, /* … : up=… : lo=… */
   { 0xe280a7 , 0xe280a7 , 0xe280a7 , IsPunctuation , "\xe2\x80\xa7" }, /* ‧ : up=‧ : lo=‧ */
-  { 0xe280a8 , 0xe280a8 , 0xe280a8 , None , "\xe2\x80\xa8" },
-  { 0xe280a9 , 0xe280a9 , 0xe280a9 , None , "\xe2\x80\xa9" },
+  { 0xe280a8 , 0xe280a8 , 0xe280a8 , IsBreaker , "" }, /* hidden */
+  { 0xe280a9 , 0xe280a9 , 0xe280a9 , IsBreaker , "" }, /* hidden */
   { 0xe280aa , 0xe280aa , 0xe280aa , None , "\xe2\x80\xaa" },
   { 0xe280ab , 0xe280ab , 0xe280ab , None , "\xe2\x80\xab" },
   { 0xe280ac , 0xe280ac , 0xe280ac , None , "\xe2\x80\xac" },
   { 0xe280ad , 0xe280ad , 0xe280ad , None , "\xe2\x80\xad" },
   { 0xe280ae , 0xe280ae , 0xe280ae , None , "\xe2\x80\xae" },
-  { 0xe280af , 0xe280af , 0xe280af , IsSpace , "\xe2\x80\xaf" }, /* Narrow No-Break Space (NNBSP) */
+  { 0xe280af , 0xe280af , 0xe280af , IsSpace , " " }, /* Narrow No-Break Space (NNBSP) */
   { 0xe280b0 , 0xe280b0 , 0xe280b0 , None , "\xe2\x80\xb0" }, /* ‰ : up=‰ : lo=‰ */
   { 0xe280b1 , 0xe280b1 , 0xe280b1 , None , "\xe2\x80\xb1" }, /* ‱ : up=‱ : lo=‱ */
   { 0xe280b2 , 0xe280b2 , 0xe280b2 , None , "\xe2\x80\xb2" }, /* ′ : up=′ : lo=′ */
@@ -2366,7 +2366,7 @@ const character charmap_e2_81[64] = {
   { 0xe281a2 , 0xe281a2 , 0xe281a2 , None , "" }, /* hidden */
   { 0xe281a3 , 0xe281a3 , 0xe281a3 , None , "" }, /* hidden */
   { 0xe281a4 , 0xe281a4 , 0xe281a4 , None , "" }, /* hidden */
-  { 0xe281a5 , 0xe281a5 , 0xe281a5 , None , "\xe2\x81\xa5" },
+  { 0xe281a5 , 0xe281a5 , 0xe281a5 , None , "" }, /* hidden */
   { 0xe281a6 , 0xe281a6 , 0xe281a6 , None , "\xe2\x81\xa6" },
   { 0xe281a7 , 0xe281a7 , 0xe281a7 , None , "\xe2\x81\xa7" },
   { 0xe281a8 , 0xe281a8 , 0xe281a8 , None , "\xe2\x81\xa8" },
