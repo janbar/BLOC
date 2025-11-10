@@ -116,6 +116,8 @@ The type **tuple** represents records. Tuples contain elements of any non-compos
 
 The type **table** implements n-dimensional uniform arrays. The tables can contain elements of all types, but they cannot be heterogeneous; in other words, they cannot contain values of different types. An element is accessed by index, starting from **0**.
 
+---
+
 ### 2.2 - Contexts and the Global environment
 
 As we will see in more detail in sections [3.2](#32---variables) and [3.3.2](#332---assignment), any reference to a free variable is syntactically associated with a context. Furthermore, each code block is compiled within the scope of a context. Therefore, free names in BLOC code refer to entries in the current context and are thus also called context variables.
@@ -133,11 +135,15 @@ BLOC keeps a global environment. Common structures and values are initialized he
 
 External modules can be loaded in advance, either programmatically or via a BLOC code.
 
+---
+
 ### 2.3 - Error Handling
 
 Several operations in BLOC can raise an error. An error interrupts the normal flow of the program, which can continue by catching the error. BLOC code can explicitly raise an error by calling the *raise* statement. BLOC code can intercept explicit error, zero-divide and out-of-range. For other runtime errors, the program stops and control returns to the host. To catch errors in BLOC, you can do a protected block, using *begin ... exception ... end* (see [3.3.1](#331---blocks)). Any error while running inside the block stops its execution, and control returns immediately to the exception-handling routine. When an otherwise unprotected error occurs during the compilation or execution of a BLOC code, control returns to the host, which can take appropriate measures, such as printing an error message. Whenever there is an error, an error object is propagated with information about the error. BLOC generates errors whose values are a string and an identifier.
 
 The error handler is called only for regular compilation or runtime errors. It is not called for memory-allocation errors nor for errors while running finalizers.
+
+---
 
 ### 2.4 - Type Methods
 
@@ -174,6 +180,8 @@ The tuple item mutator:
 
 Note that *{rank}* is not an expression, but a coded value. It is evaluated at compile time. This constraint is imposed to the programmer, because conceptually a *tuple* has a fixed structure. 
 
+---
+
 ### 2.5 - Garbage Collection
 
 BLOC performs automatic memory management. This means that you do not have to worry about allocating memory for new objects or freeing it when the objects are no longer needed.
@@ -187,8 +195,6 @@ Memory is therefore freed cyclically, by bulk, and  triggered after each stateme
 ## 3 - The language
 
 This section describes the lexis, the syntax, and the semantics of BLOC. In other words, this section describes which tokens are valid, how they can be combined, and what their combinations mean.
-
----
 
 ### 3.1 - Lexical Conventions
 
@@ -297,6 +303,8 @@ The at sign (`@`) is used to point to an element of tuple by its rank:
 km = tup("A place", 389.0, "N-NW")@2;  // km is decimal 389.0
 ```
 
+---
+
 ### 3.2 - Variables
 
 Variables are places that store values. Before the first assignment to a variable, the name is not a valid syntactic identifier.
@@ -309,6 +317,8 @@ Any variable name is assumed to be visible in the current context. Outside a fun
 
 Assigning new value to a variable, will free the memory allocated by old value; therefore assigning *null* will free the old, without new allocation.
 
+---
+
 ### 3.3 - Statements
 
 BLOC supports an almost conventional set of statements, similar to those in other PASCALIAN languages. This set includes blocks, assignments, control structures, function calls, standard IO.
@@ -320,7 +330,7 @@ A block is a list of statements, which are executed sequentially. Blocks can be 
 The interceptable errors are limited to the following:
 
 - User Named error 
-  - Raised using statement **raise** {name}
+  - Raised using statement **raise** (See [3.3.12](#3312---raise-statement))
 - **divide_by_zero**
   - Attempt to divide by zero
 - **out_of_range**
@@ -422,10 +432,6 @@ while true loop
 end loop;
 ```
 
-The **return** statement is used to return a value from a function or the program. It can be written anywhere; all enclosing loops will be terminated. The syntax for the return statement is:
-
-**stat ::= return [ expr ] ;**
-
 ### 3.3.4 - For Statement
 
 The **for** statement is numerical for loop.
@@ -479,6 +485,78 @@ Function calls can be executed as statements:
 **stat ::= functioncall**
 
 In this case, all returned values are thrown away. Function calls are explained in section [3.4.13](#3413---function-calls).
+
+### 3.3.7 - Import Statement
+
+The **import** statement is the directive to load an external module. External module provides new **object** type with features. Loading is performed immediately, so the new type can be used now.
+
+**stat ::= import module ;**
+
+The statement try to load the library *libbloc_{module}.so* on UNIX, or *libbloc_{module}.dylib* on OSX, or *bloc_{module}.dll* on WINDOWS.
+
+Alternatively you can load a module using the library path.
+
+**stat ::= import "path" ;**
+
+### 3.3.8 - Include Statement
+
+The **include** statement is the directive to embed another source. You can have up to three levels of nesting.
+
+**stat ::= include "path" ;**
+
+### 3.3.9 - Nop Statement
+
+The **nop** statement does nothing.
+
+**stat ::= nop ;**
+
+### 3.3.10 - Print Statement
+
+The **print** statement writes out the string representation of expression(s), terminated by a newline. Expressions are chained by spaces.
+
+**stat ::= print [expr {expr}] ;**
+
+The printed values are human readable text, depending of expression type.
+
+### 3.3.11 - Put Statement
+
+The **put** statement writes out the string value of expression(s). Expressions are chained by spaces.
+
+**stat ::= put [expr {expr}] ;**
+
+Only *boolean*, *integer*, *decimal*, and *string* expression can be written out. All other types must be converted first, i.e using built-in function **str**.
+
+### 3.3.12 - Raise Statement
+
+The **raise** statement throws a user named exception, or throwable error.
+
+**stat ::= raise Name ;**
+
+The following exception names are predefined in BLOC:
+
+- DIVIDE_BY_ZERO
+
+- OUT_OF_RANGE
+
+Raised exception can be intercepted (See [3.3.1](#331---blocks)).
+
+### 3.3.13 - Return Statement
+
+The **return** statement is used to return a value from a function or the program. It can be written anywhere; all enclosing loops will be terminated. The syntax for the return statement is:
+
+**stat ::= return [ expr ] ;**
+
+Return from the program, value type should be among boolean, integer, decimal, or string.  Any other value will be ignored.
+
+### 3.3.14 - Trace Statement
+
+The **trace** statement enable or disable trace verbosity.
+
+**stat ::= trace expr:boolean ;**
+
+Trace mode is intended for use only when absolutely necessary, typically for debugging a program. Performance are severely degraded due to the error output being jammed.
+
+---
 
 ## 3.4 - Expressions
 
@@ -772,6 +850,8 @@ Argument values are passed by copy. Note that an object value is a reference; th
 
 Argument values are passed by reference.
 
+---
+
 ## 3.5 - Null value handling and Type Introspection
 
 A null should not be confused with a value of 0. A null indicates a lack of a value, which is not the same as a zero value. In BLOC, **null is a marker, not a value**. This usage is quite different from most programming languages, where a null value of a reference means it is not pointing to any object.
@@ -820,6 +900,8 @@ A function parameter is a variable name to which the passed value is bound withi
 
 The parameter can be followed by a type declaration. Otherwise, it remains opaque. The type declaration imposes no constraints; it is intended to aid the programmer, and no validation is performed at runtime. Similarly, the return type declared imposes no constraints at runtime.
 
+The **return** statement ends function execution and specifies a value to be returned to the caller (See [3.3.13](#3313---return-statement)).
+
 Example 1: An opaque function
 
 ```
@@ -835,11 +917,15 @@ Example 2:
 ```
 function reciproque( a ) return decimal is
 begin
-  return 1 / num(a);
+  if isnum(a) then
+    return 1 / num(a);
+  end if;
+  raise INVALID_VALUE;
 end;
 
 print reciproque("3.14");
 print reciproque(pi);
+print reciproque("Not a Number");
 ```
 
 Example 3: Passing object (by reference)
@@ -847,7 +933,7 @@ Example 3: Passing object (by reference)
 ```
 import date;
 
-function next_year( Now : date ) return integer is
+function next_year( Now:date ) return integer is
 begin
   return date(Now).add(12, "month").year();
 end;
