@@ -77,7 +77,7 @@ Value& INTExpression::value(Context & ctx) const
     case Type::NUMERIC:
     {
       Numeric d = *val.numeric();
-      if (d < INT64_MIN || d > INT64_MAX)
+      if (d < Numeric(INT64_MIN) || d > Numeric(INT64_MAX))
         throw RuntimeError(EXC_RT_OUT_OF_RANGE);
       v = Value(Integer(d));
       break;
@@ -88,7 +88,7 @@ Value& INTExpression::value(Context & ctx) const
     case Type::IMAGINARY:
     {
       Numeric d = val.imaginary()->a;
-      if (d < INT64_MIN || d > INT64_MAX)
+      if (d < Numeric(INT64_MIN) || d > Numeric(INT64_MAX))
         throw RuntimeError(EXC_RT_OUT_OF_RANGE);
       v = Value(Integer(d));
       break;
