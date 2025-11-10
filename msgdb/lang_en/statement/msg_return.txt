@@ -1,5 +1,8 @@
-The $$RETURN$$ statement exit from program returning a payload value or not.
+The $$RETURN$$ statement is used to return a value from a function or
+the program. It can be written anywhere; all enclosing loops will be
+terminated.
 
 return [{expression}];
 
-Only boolean, integer, numeric, and literal expression can be returned.
+Returning from the program, the type of value should be a boolean,
+integer, decimal, or string. Any other value will be ignored.
