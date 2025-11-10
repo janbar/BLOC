@@ -81,9 +81,6 @@ codepoint TransformCapitalize(const character* ch, int context) {
 
 codepoint TransformTransliterate(const character* ch, int context) {
   codepoint c = NullCodepoint;
-  if (IsSpace & context & ch->category) {
-    return c;
-  }
   for (const char* b = ch->translate; *b; ++b) {
     c <<= 8;
     c |= static_cast<byte>(*b);
