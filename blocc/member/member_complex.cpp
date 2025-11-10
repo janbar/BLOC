@@ -65,9 +65,14 @@ Value& MemberMETHODExpression::value(Context& ctx) const
     throw RuntimeError(EXC_RT_MEMB_FAILED_S, _method->name);
   if (ret->lvalue())
   {
-    Value& v = ctx.allocate(ret->clone());
+    return *ret;
+  }
+  else if (ret->type() == Type::COMPLEX && !ret->isNull() &&
+          ret->complex()->operator==(*val.complex()))
+  {
+    /* do not allocate for a copy */
     delete ret;
-    return v;
+    return val;
   }
   else
   {
