@@ -7,9 +7,9 @@ A modular interpreter based on PL syntax.
 
 BLOC can be used as is or embedded in a C/C++ program to perform dynamic processing. The language is of the PASCALIAN type, therefore easy to learn. You can extend functionality by dynamically importing modules (object). Samples of module are "file", "date", "utf8", "sqlite3", or "plplot" that allows to operate others types. See [modules](./modules/).
 
-The language is strongly typed and the syntax is extremely readable, which avoids misunderstandings and design ambiguities.
+The syntax of the language is extremely readable, which avoids misunderstandings and design ambiguities.
 The declaration and execution of functions are confined in their own context.
-Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table.
+Internally, BLOC supports scalar data types like boolean, integer, decimal, string, byte array, and compound types like complex, tuple and table. See the [Reference Manual](./docs/BLOC-Reference-Manual.md) for concepts and details.
 For now, it processes twice as fast as Python and Lua, and twenty as fast than Perl.
 
 It is my common scripting language, running secure, fast, and as same on all platforms (MS-Windows, Linux, BSD, MacOS, Illumos, SunOS).
