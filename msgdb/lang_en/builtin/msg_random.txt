@@ -2,4 +2,4 @@
 $$random$$ returns pseudo-random number that's greater than or equal to 0 and less
 than 1 or optionally x.
 
-random( [x] )
+random( [ x ] )

@@ -2,4 +2,4 @@
 $$hex$$ returns a hexadecimal-encoded string based on the number x, and optionally
 with the number y of leading zeros.
 
-hex( x , [ y ] )
+hex( x [, y] )
