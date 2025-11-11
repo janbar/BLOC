@@ -31,19 +31,22 @@ class Parser;
 class OpBNOTExpression : public Expression
 {
   Expression * arg1 = nullptr;
+  bool enc = false;
 
 public:
 
   virtual ~OpBNOTExpression();
 
-  OpBNOTExpression(Expression * a)
-  : arg1(a) { }
+  OpBNOTExpression(Expression * a, bool enc)
+  : arg1(a), enc(enc) { }
 
   const Type& type(Context& ctx) const override { return Value::type_boolean; }
 
   Value& value(Context& ctx) const override;
 
   std::string unparse(Context& ctx) const override;
+
+  bool enclosed() const override { return enc; }
 
   std::string toString(Context& ctx) const override
   {

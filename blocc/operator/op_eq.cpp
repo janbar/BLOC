@@ -193,12 +193,16 @@ Value& OpEQExpression::value(Context& ctx) const
 std::string OpEQExpression::unparse(Context&ctx) const
 {
   std::string str;
+  if (enc)
+    str.push_back('(');
   if (arg2 == nullptr)
     str.append(Operator::OPVALS[Operator::OP_EQ]).append(arg1->unparse(ctx));
   else
-    str.append("(").append(arg1->unparse(ctx)).append(" ")
+    str.append(arg1->unparse(ctx)).append(" ")
             .append(Operator::OPVALS[Operator::OP_EQ]).append(" ")
-            .append(arg2->unparse(ctx)).append(")");
+            .append(arg2->unparse(ctx));
+  if (enc)
+    str.push_back(')');
   return str;
 }
 

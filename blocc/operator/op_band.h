@@ -32,19 +32,22 @@ class OpBANDExpression : public Expression
 {
   Expression * arg1 = nullptr;
   Expression * arg2 = nullptr;
+  bool enc = false;
 
 public:
 
   virtual ~OpBANDExpression();
 
-  OpBANDExpression(Expression * a, Expression * b)
-  : arg1(a), arg2(b) { }
+  OpBANDExpression(Expression * a, Expression * b, bool enc)
+  : arg1(a), arg2(b), enc(enc) { }
 
   const Type& type(Context& ctx) const override { return Value::type_boolean; }
 
   Value& value(Context& ctx) const override;
 
   std::string unparse(Context& ctx) const override;
+
+  bool enclosed() const override { return enc; }
 
   std::string toString(Context& ctx) const override
   {

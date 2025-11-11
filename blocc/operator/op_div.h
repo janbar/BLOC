@@ -32,19 +32,22 @@ class OpDIVExpression : public Expression
 {
   Expression * arg1 = nullptr;
   Expression * arg2 = nullptr;
+  bool enc = false;
 
 public:
 
   virtual ~OpDIVExpression();
 
-  OpDIVExpression(Expression * a, Expression * b)
-  : arg1(a), arg2(b) { }
+  OpDIVExpression(Expression * a, Expression * b, bool enc)
+  : arg1(a), arg2(b), enc(enc) { }
 
   const Type& type(Context& ctx) const override;
 
   Value& value(Context& ctx) const override;
 
   std::string unparse(Context& ctx) const override;
+
+  bool enclosed() const override { return enc; }
 
   std::string toString(Context& ctx) const override
   {

@@ -32,19 +32,22 @@ class OpANDExpression : public Expression
 {
   Expression * arg1 = nullptr;
   Expression * arg2 = nullptr;
+  bool enc = false;
 
 public:
 
   virtual ~OpANDExpression();
 
-  OpANDExpression(Expression * a, Expression * b)
-  : arg1(a), arg2(b) { }
+  OpANDExpression(Expression * a, Expression * b, bool enc)
+  : arg1(a), arg2(b), enc(enc) { }
 
   const Type& type(Context& ctx) const override { return Value::type_integer; }
 
   Value& value(Context& ctx) const override;
 
   std::string unparse(Context& ctx) const override;
+
+  bool enclosed() const override { return enc; }
 
   std::string toString(Context& ctx) const override
   {

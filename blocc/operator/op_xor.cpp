@@ -92,12 +92,16 @@ Value& OpXORExpression::value(Context& ctx) const
 std::string OpXORExpression::unparse(Context&ctx) const
 {
   std::string str;
+  if (enc)
+    str.push_back('(');
   if (arg2 == nullptr)
     str.append(Operator::OPVALS[Operator::OP_XOR]).append(arg1->unparse(ctx));
   else
-    str.append("(").append(arg1->unparse(ctx)).append(" ")
+    str.append(arg1->unparse(ctx)).append(" ")
             .append(Operator::OPVALS[Operator::OP_XOR]).append(" ")
-            .append(arg2->unparse(ctx)).append(")");
+            .append(arg2->unparse(ctx));
+  if (enc)
+    str.push_back(')');
   return str;
 }
 

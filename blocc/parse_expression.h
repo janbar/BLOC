@@ -74,9 +74,11 @@ private:
 
   Parser& p;
   Context& ctx;
+  bool enclosed = false;
 
   ~ParseExpression() = default;
-  ParseExpression(Parser& p, Context& ctx) : p(p), ctx(ctx) { }
+  ParseExpression(Parser& p, Context& ctx, bool enclosed)
+  : p(p), ctx(ctx), enclosed(enclosed) { }
 
   Expression * member(Expression * exp);
 

@@ -53,6 +53,7 @@ public:
   Expression() { }
 
   virtual std::string unparse(Context& ctx) const = 0;
+  virtual bool enclosed() const { return true; }
 
   /**
    * Returns the reference to the expression type

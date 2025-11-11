@@ -17,6 +17,7 @@
  */
 
 #include "op_pos.h"
+#include "blocc/expression.h"
 #include <blocc/exception_parse.h>
 #include <blocc/complex.h>
 #include <blocc/collection.h>
@@ -73,7 +74,16 @@ Value& OpPOSExpression::value(Context& ctx) const
 std::string OpPOSExpression::unparse(Context&ctx) const
 {
   std::string str;
-  str.append(Operator::OPVALS[Operator::OP_POS]).append(arg1->unparse(ctx));
+  if (enc)
+    str.push_back('(');
+  str.append(Operator::OPVALS[Operator::OP_POS]);
+  if (!arg1->enclosed())
+    str.push_back('(');
+  str.append(arg1->unparse(ctx));
+  if (!arg1->enclosed())
+    str.push_back(')');
+  if (enc)
+    str.push_back(')');
   return str;
 }
 

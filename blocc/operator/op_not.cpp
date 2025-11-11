@@ -69,7 +69,16 @@ Value& OpNOTExpression::value(Context& ctx) const
 std::string OpNOTExpression::unparse(Context&ctx) const
 {
   std::string str;
-  str.append(Operator::OPVALS[Operator::OP_NOT]).append(arg1->unparse(ctx));
+  if (enc)
+    str.push_back('(');
+  str.append(Operator::OPVALS[Operator::OP_NOT]);
+  if (!arg1->enclosed())
+    str.push_back('(');
+  str.append(arg1->unparse(ctx));
+  if (!arg1->enclosed())
+    str.push_back(')');
+  if (enc)
+    str.push_back(')');
   return str;
 }
 

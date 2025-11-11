@@ -82,7 +82,16 @@ Value& OpNEGExpression::value(Context& ctx) const
 std::string OpNEGExpression::unparse(Context&ctx) const
 {
   std::string str;
-  str.append(Operator::OPVALS[Operator::OP_NEG]).append(arg1->unparse(ctx));
+  if (enc)
+    str.push_back('(');
+  str.append(Operator::OPVALS[Operator::OP_NEG]);
+  if (!arg1->enclosed())
+    str.push_back('(');
+  str.append(arg1->unparse(ctx));
+  if (!arg1->enclosed())
+    str.push_back(')');
+  if (enc)
+    str.push_back(')');
   return str;
 }
 
