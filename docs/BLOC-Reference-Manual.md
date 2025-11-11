@@ -267,7 +267,7 @@ Examples of valid decimal constants are
 
 **\* Comments**
 
-A line begining with a sharp (`#`) outside a string, is interpreted as comment line. That is to be compatible with UNIX script Sha-Bang.
+A line beginning with a sharp (`#`) outside a string, is interpreted as comment line. That is to be compatible with UNIX script Sha-Bang.
 
 ```
 #!/usr/bin/bloc
@@ -326,9 +326,9 @@ The interceptable errors are limited to the following:
 
 - User Named error 
   - Raised using statement **raise** (See [Raise Statement](#raise-statement))
-- **divide_by_zero**
+- **DIVIDE_BY_ZERO**
   - Attempt to divide by zero
-- **out_of_range**
+- **OUT_OF_RANGE**
   - Number value does not fit in character or byte range (8 bits)
   - Integer constant or its string representation does not fit in BLOC integer value
   - Decimal constant or its string representation does not fit in BLOC decimal value
@@ -711,8 +711,8 @@ BLOC defines several useful mathematical and boolean constants.
 | **null**  | The null value, with undefined type                   |
 | **true**  | The boolean expression TRUE                           |
 | **on**    | The boolean expression TRUE                           |
-| **false** | The booelan expression FALSE                          |
-| **off**   | The booelan expression FALSE                          |
+| **false** | The boolean expression FALSE                          |
+| **off**   | The boolean expression FALSE                          |
 | **ii**    | The imaginary number                                  |
 | **pi**    | The ratio of a circle's circumference to its diameter |
 | **ee**    | The Euler's number                                    |
@@ -1306,7 +1306,7 @@ substr( x , begin [, count] )
 tab( [ x , y ] )
 
 Nested element can be any type, or tuple. Nesting level is supported up
-to 254 dimmensions. Table has the methods *at*, *put*, *insert*, *delete*, *count*, and *concat( table | element )*.
+to 254 dimensions. Table has the methods *at*, *put*, *insert*, *delete*, *count*, and *concat( table | element )*.
 
 ## Tan Function
 
@@ -1339,8 +1339,8 @@ trim( x )
 tup( [ x [, ...] ] )
 
 Item can be boolean, integer, decimal, complex, string, object, or bytes. Nesting and table are not allowed. Tuple is unchangeable, meaning that we cannot change type, add or remove items after the tuple has been created.
-The operator '@#' accesses the item at position # [1..n], as shown below. Expression {tuple}@1 returns the value of item at position 1.
-Tuple has the method *set@#(x)* to assign the value x to the item of rank #. Item type must be qualified. Therefore to assign null you have to use one of built-in function providing the null type qualified, i.e *bool()*, *int()*, *num()*, *str()* or *raw()*.
+The operator '@'{rank} accesses the item at position [1..n], as shown below. Expression {tuple}@1 returns the value of item at position 1.
+Tuple has the method *set@{rank}(x)* to assign the value x to the item of rank #. Item type must be qualified. Therefore to assign null you have to use one of built-in function providing the null type qualified, i.e *bool()*, *int()*, *num()*, *str()* or *raw()*.
 
 ## Typeof Function
 
