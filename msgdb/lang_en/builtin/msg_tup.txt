@@ -3,7 +3,7 @@ $$tup$$ returns a new tuple of items, or the null tuple.
 
 tup( [ x [, ...] ] )
 
-Item can be boolean, integer, decimal, string, object, or bytes array.
+Item can be boolean, integer, decimal, complex, string, object, or bytes.
 Nesting and table are not allowed. Tuple is unchangeable, meaning that we
 cannot change type, add or remove items after the tuple has been created.
 The operator '@#' accesses the item at position # [1..n], as shown below.
