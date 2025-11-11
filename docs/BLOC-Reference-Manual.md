@@ -1,42 +1,36 @@
-# BLOC 2.7 Reference Manual
+BLOC 2.7 Reference Manual
+=========================
 
 2025-11
 
-## Table of contents
+# Table of contents
 
-[1 - Introduction](#1---introduction)
+* [Introduction](#introduction)
 
-[2 - Basic Concepts](#2---basic-concepts)
+* [Basic Concepts](#basic-concepts)
+  + [Values and Types](#values-and-types)
+  + [Contexts and the Global environment](#contexts-and-the-global-environment)
+  + [Error Handling](#error-handling)
+  + [Type methods](#type-methods)
+  + [Garbage Collection](#garbage-collection)
 
-- [2.1 - Values and Types](#21---values-and-types)
+* [The language](#the-language)
+  + [Lexical Conventions](#lexical-conventions)
+  + [Variables](#variables)
+  + [Statements](#statements)
+  + [Expressions](#expressions)
+  + [Null value handling and Type Introspection](#null-value-handling-and-type-introspection)
+  + [Function Definitions](#function-definitions)
+  + [Built-in Functions](#built-in-functions)
 
-- [2.2 - Contexts and the Global environment](#22---contexts-and-the-global-environment)
-
-- [2.3 - Error Handling](#23---error-handling)
-
-- [2.4 - Type methods](#24---type-methods)
-
-- [2.5 - Garbage Collection](#25---garbage-collection)
-
-[3 - The language](#3---the-language)
-
-- [3.1 - Lexical Conventions](#31---lexical-conventions)
-
-- [3.2 - Variables](#32---variables)
-
-- [3.3 - Statements](#33---statements)
-
-- [3.4 - Expressions](#34---expressions)
-
-- [3.5 - Null value handling and Type Introspection](#35---null-value-handling-and-type-introspection)
-
-- [3.6 - Function Definitions](#36---function-definitions)
-
-- [3.7 - Built-in Functions](#37---built-in-functions)
+* [Index](#index)
+  + [Statement index](#statement-index)
+  + [Function index](#function-index)
+  + [Constant index](#constant-index)
 
 ---
 
-## 1 - Introduction
+# Introduction
 
 BLOC is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming. BLOC is dynamically typed, runs in virtual context, and has automatic memory management with a cycle garbage collection, making it ideal for scripting, and rapid prototyping.
 
@@ -46,11 +40,11 @@ BLOC is free software, and is provided as usual with no guarantees, as stated in
 
 ---
 
-## 2 - Basic Concepts
+# Basic Concepts
 
 This section describes the basic concepts of the language.
 
-### 2.1 - Values and Types
+## Values and Types
 
 BLOC is a dynamically typed language. This means that normal variables do not have a predefined type; only values do. Each value has its own type. A particular class of variable ($NAME) has a type immutability constraint, and consequently, the type of the stored value cannot change.
 
@@ -68,9 +62,9 @@ The **boolean** type has two values: false and true. The values null and false m
 | null == null  | null             | the condition is false |
 | null != null  | null             | the condition is false |
 
-See [3.5](#35---null-value-handling-and-type-introspection) for more details on handling null values.
+See [Null Handling](#null-value-handling-and-type-introspection) for more details on handling null values.
 
-**Integer** and **decimal** types are sub-types of number and can generally be combined in expressions. BLOC uses 64-bit integers and double-precision (64-bit) floats, on all platforms (64 or 32 bits). Unless stated otherwise, any overflow when manipulating integer values wrap around, according to the usual rules of two-complement arithmetic. (In other words, the actual result is the unique representable integer that is equal modulo 2 power of n to the mathematical result, where n is the number of bits of the integer type.) BLOC has explicit rules about when each sub-type is used,  but it also converts between them automatically as needed (see [3.4.3](#343---coercions-and-conversions)). To avoid pitfalls, the programmer should assume complete control over the representation of each number.
+**Integer** and **decimal** types are sub-types of number and can generally be combined in expressions. BLOC uses 64-bit integers and double-precision (64-bit) floats, on all platforms (64 or 32 bits). Unless stated otherwise, any overflow when manipulating integer values wrap around, according to the usual rules of two-complement arithmetic. (In other words, the actual result is the unique representable integer that is equal modulo 2 power of n to the mathematical result, where n is the number of bits of the integer type.) BLOC has explicit rules about when each sub-type is used,  but it also converts between them automatically as needed (see [Conversions](#coercions-and-conversions)). To avoid pitfalls, the programmer should assume complete control over the representation of each number.
 
 The type **string** represents sequences of characters. BLOC is 8-bit clean: strings can contain any 8-bit value, including embedded zeros. BLOC is also encoding-agnostic; it makes no assumptions about the contents of a string. The length of any string in BLOC must fit in a BLOC integer.
 
@@ -118,9 +112,9 @@ The type **table** implements n-dimensional uniform arrays. The tables can conta
 
 ---
 
-### 2.2 - Contexts and the Global environment
+## Contexts and the Global environment
 
-As we will see in more detail in sections [3.2](#32---variables) and [3.3.2](#332---assignment), any reference to a free variable is syntactically associated with a context. Furthermore, each code block is compiled within the scope of a context. Therefore, free names in BLOC code refer to entries in the current context and are thus also called context variables.
+As we will see in more detail in sections [Variables](#variables) and [Assignment](#assignment), any reference to a free variable is syntactically associated with a context. Furthermore, each code block is compiled within the scope of a context. Therefore, free names in BLOC code refer to entries in the current context and are thus also called context variables.
 
 The code block of function, on the other hand, is compiled in a self-contained child context. Variables are therefore local by nature; and access to values from another context is only possible by the parameters.
 
@@ -137,15 +131,15 @@ External modules can be loaded in advance, either programmatically or via a BLOC
 
 ---
 
-### 2.3 - Error Handling
+## Error Handling
 
-Several operations in BLOC can raise an error. An error interrupts the normal flow of the program, which can continue by catching the error. BLOC code can explicitly raise an error by calling the *raise* statement. BLOC code can intercept explicit error, zero-divide and out-of-range. For other runtime errors, the program stops and control returns to the host. To catch errors in BLOC, you can do a protected block, using *begin ... exception ... end* (see [3.3.1](#331---blocks)). Any error while running inside the block stops its execution, and control returns immediately to the exception-handling routine. When an otherwise unprotected error occurs during the compilation or execution of a BLOC code, control returns to the host, which can take appropriate measures, such as printing an error message. Whenever there is an error, an error object is propagated with information about the error. BLOC generates errors whose values are a string and an identifier.
+Several operations in BLOC can raise an error. An error interrupts the normal flow of the program, which can continue by catching the error. BLOC code can explicitly raise an error by calling the *raise* statement. BLOC code can intercept explicit error, zero-divide and out-of-range. For other runtime errors, the program stops and control returns to the host. To catch errors in BLOC, you can do a protected block, using *begin ... exception ... end* (see [Blocks](#blocks)). Any error while running inside the block stops its execution, and control returns immediately to the exception-handling routine. When an otherwise unprotected error occurs during the compilation or execution of a BLOC code, control returns to the host, which can take appropriate measures, such as printing an error message. Whenever there is an error, an error object is propagated with information about the error. BLOC generates errors whose values are a string and an identifier.
 
 The error handler is called only for regular compilation or runtime errors. It is not called for memory-allocation errors nor for errors while running finalizers.
 
 ---
 
-### 2.4 - Type Methods
+## Type Methods
 
 Some types have methods to manipulate values in place. They help improve code readability, or even efficiency.
 
@@ -166,7 +160,7 @@ These methods can all be called using syntactic sugar, i.e :
 
 Most methods return the resulting value after manipulation allowing calls to be chained, otherwise a property or an element.
 
-##### Tuple accessor and mutator
+**\* Tuple Accessor and Mutator**
 
 To manipulate the elements of a tuple, a specific syntax is used in BLOC to distinguish it from that used for the table type, which could be confused. Accessing an element of the tuple is written as *{tuple}* **@** *{rank}*. Modifying an element of the tuple is done by calling the method *{tuple}*.**set@** *{rank}* ( *{new value}* ). The *set* method returns the tuple itself, allowing calls to be chained within the same statement.
 
@@ -182,25 +176,26 @@ Note that *{rank}* is not an expression, but a coded value. It is evaluated at c
 
 ---
 
-### 2.5 - Garbage Collection
+## Garbage Collection
 
 BLOC performs automatic memory management. This means that you do not have to worry about allocating memory for new objects or freeing it when the objects are no longer needed.
 
-BLOC does not use a traditional collector to manage memory release. Memory allocations for values are registered in pools of pointer. One contains pointers of stored values bound to variables; and second contains pointers of temporary values, that is the working area. Assigning a new value to variable, their pointers are swapped between the pools; this operation is very fast. At the end of statement, all memory allocations pointed by the temporary pool are freed. If an error occurs during processing, BLOC retains the temporary pool for analysis. It will be purged at the end of next statement, or programmatically, or in context finalizer.
-
-Memory is therefore freed cyclically, by bulk, and  triggered after each statement.
+BLOC maintains two stacks of pre-allocated values. In BLOC, a value is a message that can contain either a number or a pointer to a memory allocation. One stack contains stored values, and the other contains temporary values. The latter acts as a kind of sandbox.
+All new values are allocated on the temporary stack. During assignment the pointer to the content of a temporary value is swapped with that of the stored value. The sandbox values only contain releasable payload. At the end of each statement, the counter of the temporary stack is zeroed, making all temporary values releasable. Memory is freed during a new allocation request on the temporary stack. The value pointed to by the stack counter is then purged and reloaded with an empty payload. A value of type number, boolean, or null has no destructor. Purging a value will execute the destructor of its payload. Therefore, the cost of a purge is insignificant for numerical or empty values.
+If an error occurs during processing, BLOC retains the state of the temporary stack for analysis. The counter will be zeroed at the end of next statement.
+Finally the temporary stack can be massively purged programmatically, or in context finalizer.
 
 ---
 
-## 3 - The language
+# The Language
 
 This section describes the lexis, the syntax, and the semantics of BLOC. In other words, this section describes which tokens are valid, how they can be combined, and what their combinations mean.
 
-### 3.1 - Lexical Conventions
+## Lexical Conventions
 
 BLOC is a free-form language. It ignores spaces and comments between lexical elements (tokens), except as delimiters between two tokens. In source code, BLOC recognizes as spaces the standard ASCII white-space characters space, newline, carriage return, horizontal tab. Every executable statement in BLOC must end with a semicolon (`;`).
 
-##### Names
+**\* Names**
 
 Names (also called identifiers) in BLOC can be any string of Latin letters, Arabic-Indic digits, dollars and underscores, not beginning with a digit and not being a reserved word. Identifiers are used to name variables, and are not case-sensitive. The following keywords are reserved and cannot be used as names:
 
@@ -248,11 +243,11 @@ The following strings denote other tokens:
 )    :    ;    ,    .     @    #    //   /*   */
 ```
 
-##### Literal strings
+**\* Literal strings**
 
 A literal string can be delimited by matching double quotes, and can contain the following limited C-like escape sequences: `\a` (bell), `\b` (backspace), `\f` (form feed), `\n` (newline), `\r` (carriage return), `\t` (horizontal tab), `\\` (backslash). If a literal string requires to embed double quotes as part of a string then it must be duplicated (double-double quotes).
 
-##### Numeral constants
+**\* Numeral constants**
 
 A numeric constant can be written with an fractional part and an decimal exponent, marked by a letter 'e' or 'E'. BLOC also accepts hexadecimal constants, which start with `0x` or `0X`.
 
@@ -270,7 +265,7 @@ Examples of valid decimal constants are
 3.0    3.1416    314.16e-2    0.31416E1    34e1    .314
 ```
 
-##### Comments
+**\* Comments**
 
 A line begining with a sharp (`#`) outside a string, is interpreted as comment line. That is to be compatible with UNIX script Sha-Bang.
 
@@ -295,7 +290,7 @@ A long or enclosed comment starts with `/*` and ends with `*/`.
 print "PI=" /*3.1415*/ pi;
 ```
 
-##### At sign
+**\* At sign**
 
 The at sign (`@`) is used to point to an element of tuple by its rank:
 
@@ -305,7 +300,7 @@ km = tup("A place", 389.0, "N-NW")@2;  // km is decimal 389.0
 
 ---
 
-### 3.2 - Variables
+## Variables
 
 Variables are places that store values. Before the first assignment to a variable, the name is not a valid syntactic identifier.
 
@@ -319,18 +314,18 @@ Assigning new value to a variable, will free the memory allocated by old value; 
 
 ---
 
-### 3.3 - Statements
+## Statements
 
 BLOC supports an almost conventional set of statements, similar to those in other PASCALIAN languages. This set includes blocks, assignments, control structures, function calls, standard IO.
 
-#### 3.3.1 - Blocks
+## Blocks
 
 A block is a list of statements, which are executed sequentially. Blocks can be protected by an exception clause; on error control returns to the exception-routine, else to the parent block.
 
 The interceptable errors are limited to the following:
 
 - User Named error 
-  - Raised using statement **raise** (See [3.3.12](#3312---raise-statement))
+  - Raised using statement **raise** (See [Raise Statement](#raise-statement))
 - **divide_by_zero**
   - Attempt to divide by zero
 - **out_of_range**
@@ -356,7 +351,7 @@ when others then
 end;
 ```
 
-#### 3.3.2 - Assignment
+## Assignment
 
 Variable assignment is done with the **let** statement. However, the keyword is implicit.
 
@@ -407,7 +402,7 @@ Examples:
 a = pi, b = 2 * a, c = (a + b)/4, print "c = " c;
 ```
 
-### 3.3.3 - Control Structures
+## Control Structures
 
 The control structures *if*, *while* have the usual meaning and familiar syntax:
 
@@ -415,7 +410,7 @@ The control structures *if*, *while* have the usual meaning and familiar syntax:
 
 **stat ::= while expr loop {stat} end loop ;**
 
-BLOC also has a for statement, in two flavors (see [3.3.4](#334---for-statement), [3.3.5](#335---forall-statement)).
+BLOC also has a for statement, in two flavors (see [For Statement](#for-statement), [Forall Statement](#forall-statement)).
 
 The condition expression of a control structure should return boolean value. Both false and null test false.
 
@@ -432,7 +427,7 @@ while true loop
 end loop;
 ```
 
-### 3.3.4 - For Statement
+## For Statement
 
 The **for** statement is numerical for loop.
 
@@ -448,7 +443,7 @@ The control variable can never wraps around, but the initial value or the limit 
 
 You can change the value of the control variable during the loop; Inside the loop the variable has the immutable type constraint. After exiting the loop, the constraint is deactivated.
 
-### 3.3.5 - Forall Statement
+## Forall Statement
 
 The **forall** statement works over tables; It is a control flow statement for traversing items in a table. On each iteration, the iterator variable point to the next item, stopping when no item can be fetched. It has the following syntax:
 
@@ -478,15 +473,17 @@ end loop;
 forall e in t.at(0) loop print e; end loop;
 ```
 
-### 3.3.6 - Function Calls as Statements
+## Function Calls as Statements
 
-Function calls can be executed as statements:
+Function calls can be executed as statements.
 
-**stat ::= functioncall**
+**stat ::= [do] functioncall**
 
-In this case, all returned values are thrown away. Function calls are explained in section [3.4.13](#3413---function-calls).
+The keyword *do* is implicit, and therefore optional. 
 
-### 3.3.7 - Import Statement
+In this case, all returned values are thrown away. Function calls are explained in section [Function Calls](#function-calls).
+
+## Import Statement
 
 The **import** statement is the directive to load an external module. External module provides new **object** type with features. Loading is performed immediately, so the new type can be used now.
 
@@ -498,19 +495,19 @@ Alternatively you can load a module using the library path.
 
 **stat ::= import "path" ;**
 
-### 3.3.8 - Include Statement
+## Include Statement
 
 The **include** statement is the directive to embed another source. You can have up to three levels of nesting.
 
 **stat ::= include "path" ;**
 
-### 3.3.9 - Nop Statement
+## Nop Statement
 
 The **nop** statement does nothing.
 
 **stat ::= nop ;**
 
-### 3.3.10 - Print Statement
+## Print Statement
 
 The **print** statement writes out the string representation of expression(s), terminated by a newline. Expressions are chained by spaces.
 
@@ -518,7 +515,7 @@ The **print** statement writes out the string representation of expression(s), t
 
 The printed values are human readable text, depending of expression type.
 
-### 3.3.11 - Put Statement
+## Put Statement
 
 The **put** statement writes out the string value of expression(s). Expressions are chained by spaces.
 
@@ -526,7 +523,7 @@ The **put** statement writes out the string value of expression(s). Expressions 
 
 Only *boolean*, *integer*, *decimal*, and *string* expression can be written out. All other types must be converted first, i.e using built-in function **str**.
 
-### 3.3.12 - Raise Statement
+## Raise Statement
 
 The **raise** statement throws a user named exception, or throwable error.
 
@@ -538,9 +535,9 @@ The following exception names are predefined in BLOC:
 
 - OUT_OF_RANGE
 
-Raised exception can be intercepted (See [3.3.1](#331---blocks)).
+Raised exception can be intercepted (See [Blocks](#blocks)).
 
-### 3.3.13 - Return Statement
+## Return Statement
 
 The **return** statement is used to return a value from a function or the program. It can be written anywhere; all enclosing loops will be terminated. The syntax for the return statement is:
 
@@ -548,7 +545,7 @@ The **return** statement is used to return a value from a function or the progra
 
 Return from the program, value type should be among boolean, integer, decimal, or string.  Any other value will be ignored.
 
-### 3.3.14 - Trace Statement
+## Trace Statement
 
 The **trace** statement enable or disable trace verbosity.
 
@@ -558,7 +555,7 @@ Trace mode is intended for use only when absolutely necessary, typically for deb
 
 ---
 
-## 3.4 - Expressions
+# Expressions
 
 The basic expressions in BLOC are the following:
 
@@ -572,11 +569,11 @@ The basic expressions in BLOC are the following:
 
 **expr ::= var | builtin | functioncall | '(' expr ')'**
 
-Numeral and literal strings are explained in [3.1](#31---lexical-conventions); variables are explained in [3.2](#32---variables); function calls are explained in [3.4.13](#3413---function-calls).
+Numeral and literal strings are explained in [Lexical Conventions](#lexical-conventions); variables are explained in [Variables](#variables); function calls are explained in [Function Calls](#function-calls).
 
-Binary operators comprise arithmetic operators (see [3.4.1](#341---arithmetic-operators)), bitwise operators (see [3.4.2](#342---bitwise-operators)), relational operators (see [3.4.4](#344---relational-operators)), logical operators (see [3.4.5](#345---logical-operators)), unary operators comprise the unary minus (see [3.4.1](#341---arithmetic-operators)), the unary bitwise not (see [3.4.2](#342---bitwise-operators)), the unary logical not (see [3.4.5](#345---logical-operators)).
+Binary operators comprise [Arithmetic Operators](#arithmetic-operators), [Bitwise Operators](#bitwise-operators), [Relational Operators](#relational-operators), [Logical Operators](#logical-operators), unary operators comprise the unary minus (see [Arithmetic Operator](#arithmetic-operators)), the unary bitwise not (see [Bitwise Operators](#bitwise-operators)), the unary logical not (see [Logical Operators](#logical-operators)).
 
-### 3.4.1 - Arithmetic Operators
+## Arithmetic Operators
 
 BLOC supports the following arithmetic operators:
 
@@ -596,7 +593,7 @@ Modulo is defined as the remainder of a division.
 
 In case of overflows in integer arithmetic, all operations wrap around.
 
-### 3.4.2 - Bitwise Operators
+## Bitwise Operators
 
 BLOC supports the following bitwise operators:
 
@@ -612,7 +609,7 @@ BLOC supports the following bitwise operators:
 All bitwise operations are applicable only with integers, operate on all bits of those integers, and result in an integer.
 Both right and left shifts fill the vacant bits with zeros. Negative displacements shift to the other direction; displacements with absolute values equal to or higher than the number of bits in an integer result in zero (as all bits are shifted out).
 
-### 3.4.3 - Coercions and Conversions
+## Coercions and Conversions
 
 BLOC provides some automatic conversions between some types and representations at run time.
 
@@ -640,7 +637,7 @@ In a conversion from integer to float, if the integer value has an exact represe
 
 The explicit conversion from float to integer (built-in function *int*) checks the float is in the range of integer representation. If it does, that representation is the result. Otherwise, the conversion fails with error out-of-range.
 
-### 3.4.4 - Relational Operators
+## Relational Operators
 
 BLOC supports the following relational operators:
 
@@ -660,7 +657,7 @@ Ordering operators work as follows: if both arguments are numbers, they are comp
 
 The *matches* operator is applicable only with string operands.
 
-### 3.4.5 - Logical Operators
+## Logical Operators
 
 BLOC supports the following logical operators:
 
@@ -675,13 +672,13 @@ BLOC supports the following logical operators:
 
 Apart from these cases, these operators result in false, true or null if one of the operands is null.
 
-### 3.4.6 - Concatenation
+## Concatenation
 
-The type method **concat** (see [2.4](#24---type-methods)) performs concatenation in place. It is usable with all type of sequences: string, bytes and table. The argument can be of the same type or of the sequenced subtype. For string and bytes, the subtype is a 8bits integer.
+The type method **concat** (see [Type Methods](#type-methods)) performs concatenation in place. It is usable with all type of sequences: string, bytes and table. The argument can be of the same type or of the sequenced subtype. For string and bytes, the subtype is a 8bits integer.
 
 Furthermore, for convenience, BLOC allows string concatenation with the operator `+`. In this case, both operands must be strings.
 
-### 3.4.7 - Precedence
+## Precedence
 
 Operator precedence in BLOC follows the table below, from lower to higher priority:
 
@@ -705,29 +702,34 @@ Operator precedence in BLOC follows the table below, from lower to higher priori
 
 As usual, you can use parentheses to change the precedences of an expression. The exponentiation (`**`) and member (`.`) operators are right associative. All other binary operators are left associative.
 
-### 3.4.8 - Built-in Constants
+## Built-in Constants
 
 BLOC defines several useful mathematical and boolean constants.
 
-**null** is the null value, with undefined type.
+| Keyword   | Description                                           |
+|:----------|:------------------------------------------------------|
+| **null**  | The null value, with undefined type                   |
+| **true**  | The boolean expression TRUE                           |
+| **on**    | The boolean expression TRUE                           |
+| **false** | The booelan expression FALSE                          |
+| **off**   | The booelan expression FALSE                          |
+| **ii**    | The imaginary number                                  |
+| **pi**    | The ratio of a circle's circumference to its diameter |
+| **ee**    | The Euler's number                                    |
+| **phi**   | The golden ratio                                      |
 
-**true** or **on** is the boolean expression TRUE.
+The following constants are useful to intercept a functional error at runtime.
 
-**false** or **off** is the booelan expression FALSE.
+| Keyword            | Description                          |
+|:-------------------|:-------------------------------------|
+| **DIVIDE_BY_ZERO** | Attempting to divide by zero         |
+| **OUT_OF_RANGE**   | Number is out of the range of values |
 
-**ii** is the imaginary number.
-
-**pi** is the ratio of a circle's circumference to its diameter.
-
-**ee** is the Euler's number.
-
-**phi** is the golden ratio.
-
-### 3.4.9 - Basic Constructors and Converters
+## Basic Constructors and Converters
 
 BLOC provides some constructors for basic types. They are useful for initializing a typed null value or for performing a conversion from another type.
 
-#### boolean
+**\* boolean**
 
 **bool()** returns the null boolean.
 
@@ -735,7 +737,7 @@ BLOC provides some constructors for basic types. They are useful for initializin
 
 **bool( expr:decimal )** converts the float representation of boolean to boolean; it never fails. Any value other than 0 is converted to *true*.
 
-#### string
+**\* string**
 
 **str()** returns the null string. The character count is null.
 
@@ -747,7 +749,7 @@ BLOC provides some constructors for basic types. They are useful for initializin
 
 **chr( expr:integer )** returns the string (one character) of byte, or fails with out-of-range error.
 
-#### integer
+**\* integer**
 
 **int()** returns the null integer.
 
@@ -757,7 +759,7 @@ BLOC provides some constructors for basic types. They are useful for initializin
 
 **int( expr:bytes )** converts the string (bytes) representation of an integer into an integer, or fails. Use the built-in function *isnum()* to test beforehand that the conversion is possible.
 
-#### decimal
+**\* decimal**
 
 **num()** returns the null decimal.
 
@@ -767,7 +769,7 @@ BLOC provides some constructors for basic types. They are useful for initializin
 
 **num( expr:bytes )** converts the string (bytes) representation of a float to a float, or fails. Use the built-in function *isnum()* to test beforehand that the conversion is possible.
 
-### 3.4.10 - Bytes Constructor
+## Bytes Constructor
 
 Bytes constructor is the built-in function **raw** that create byte array. Every time a constructor is evaluated, a new bytes is created. The constructor can be used to create a null bytes or to create a bytes and initialize a sequence. The general syntax for constructors is the function call syntax.
 
@@ -787,9 +789,9 @@ b=raw(4, 0xff);                // bytes size 4, filled with 255
 b=raw("Hello World!");         // bytes filled with string
 ```
 
-Finally the bytes can be updated using the type methods (see [2.4](#24---type-methods)).
+Finally the bytes can be updated using the type methods (see [Type Methods](#type-methods)).
 
-### 3.4.11 - Tuple Constructor
+## Tuple Constructor
 
 Tuple constructor is the built-in function **tuple** that create tuples. Every time a constructor is evaluated, a new tuple is created. The constructor can be used to create a null tuple or to create a tuple and initialize its elements. The general syntax for constructors is the function call syntax.
 
@@ -805,9 +807,9 @@ r=tup();                           // null tuple
 r=tup(1, "file 1", file());        // not null tuple
 ```
 
-Finally the tuple can be updated using the type methods (see [2.4](#24---type-methods)).
+Finally the tuple can be updated using the type methods (see [Type Methods](#type-methods)).
 
-### 3.4.12 - Table Constructor
+## Table Constructor
 
 Table constructor is the built-in function **tab** that create tables. Every time a constructor is evaluated, a new table is created. The constructor can be used to create an empty table or to create a table and initialize some of its elements. The general syntax for constructors is the function call syntax.
 
@@ -828,9 +830,9 @@ t=tab(10, "");                         // table of 10 strings
 t=tab(10, 0);                          // table of 10 integers
 ```
 
-Finally the table can be updated using the type methods (see [2.4](#24---type-methods), [3.4.6](#346---concatenation)).
+Finally the table can be updated using the type methods (see [Type Methods](#type-methods), [Concatenation](#concatenation)).
 
-### 3.4.13 - Function Calls
+## Function Calls
 
 A function call in BLOC has the following syntax:
 
@@ -842,17 +844,17 @@ Arguments have the following syntax:
 
 All argument expressions are evaluated before the call.
 
-#### User functions
+**\* User functions**
 
 Argument values are passed by copy. Note that an object value is a reference; therefore, the object itself is not copied.
 
-#### Built-in functions and Object methods
+**\* Built-in functions and Object methods**
 
 Argument values are passed by reference.
 
 ---
 
-## 3.5 - Null value handling and Type Introspection
+# Null value handling and Type Introspection
 
 A null should not be confused with a value of 0. A null indicates a lack of a value, which is not the same as a zero value. In BLOC, **null is a marker, not a value**. This usage is quite different from most programming languages, where a null value of a reference means it is not pointing to any object.
 
@@ -876,7 +878,9 @@ else raise unexpected_type_for_a;
 end if;
 ```
 
-## 3.6 - Function Definitions
+---
+
+# Function Definitions
 
 Function declarations are statements used to define functions with a free name, parameters, and body. The function declarations can only appear at the root context.
 
@@ -900,7 +904,7 @@ A function parameter is a variable name to which the passed value is bound withi
 
 The parameter can be followed by a type declaration. Otherwise, it remains opaque. The type declaration imposes no constraints; it is intended to aid the programmer, and no validation is performed at runtime. Similarly, the return type declared imposes no constraints at runtime.
 
-The **return** statement ends function execution and specifies a value to be returned to the caller (See [3.3.13](#3313---return-statement)).
+The **return** statement ends function execution and specifies a value to be returned to the caller (See [Return Statement](#return-statement)).
 
 Example 1: An opaque function
 
@@ -941,6 +945,603 @@ end;
 print next_year(date());
 ```
 
-## 3.7 - Built-in Functions
+---
 
-BLOC provides a set of built-in functions. Built-in functions interact with internal types. They provide basic functionality, such as conversions, string manipulation, mathematical operations, standard input/output, and more advanced features. See section [3.4.13](#3413---function-calls) for the call syntax.
+# Built-in Functions
+
+BLOC provides a set of built-in functions. Built-in functions interact with internal types. They provide basic functionality, such as conversions, string manipulation, mathematical operations, standard input, and more advanced features. See section [Function Calls](#function-calls) for the call syntax.
+
+## Abs Function
+
+'**abs**' returns the absolute value of x.
+
+abs( x )
+
+## Acos Function
+
+'**acos**' returns the arc cosine of x in radians.
+
+acos( x )
+
+## Asin Function
+
+'**asin**' returns the arc sine of x in radians.
+
+asin( x )
+
+## Atan2 Function
+
+'**atan2**' returns the angle in radians for the quadrant y , x.
+
+atan2( y , x )
+
+
+## Atan Function
+
+'**atan**' returns the arc tangent of x in radians.
+
+atan( x )
+
+## B64dec Function
+
+'**b64dec**' returns a bytes array that contains the base64-decoded version of the source x as a string or bytes array type.
+
+b64dec( x )
+
+## B64enc Function
+
+'**b64enc**' returns a string that contains the base64-encoded version of source x as a string or bytes array type.
+
+b64enc( x )
+
+## Bool Function
+
+'**bool**' returns the boolean representation of numeric x, or the null boolean.
+
+bool( [ x ] )
+
+When x is 0 the boolean false is returned, else true.
+
+## Ceil Function
+
+'**ceil**' returns the smallest integer value greater than or equal to x.
+
+ceil( x )
+
+## Chr Function
+
+'**chr**' returns a character from the specified ASCII value x.
+
+chr( x )
+
+## Clamp Function
+
+'**clamp**' restricts the given value x between the lower bound y and upper bound z. In this way, it acts like a combination of the min() and max() functions.
+
+clamp( x , y , z )
+
+## Cos Function
+
+'**cos**' returns the cosine of a radian angle x.
+
+cos( x )
+
+## Cosh Function
+
+'**cosh**' returns the hyperbolic cos of x.
+
+cosh( x )
+
+## Exp Function
+
+'**exp**' returns the value of e raised to the x^th^ power.
+
+exp( x )
+
+## Floor Function
+
+'**floor**' returns the largest integer value less than or equal to x.
+
+floor( x )
+
+## Getenv Function
+
+'**getenv**' returns the corresponding value string of the environment variable x.
+
+getenv( x )
+
+## Getsys Function
+
+'**getsys**' returns the corresponding value of context environment variable x.
+
+getsys( x )
+
+Where x could be any string of the following values.
+
+| String        | Description                               |
+|:--------------|:------------------------------------------|
+| `compatible`  | Language compatibility level              |
+| `language`    | Lang code from locale                     |
+| `country`     | Country code from locale                  |
+| `integer_max` | Maximum value of integer                  |
+| `integer_min` | Minimum value of integer                  |
+| `system`      | The system type `UNIX` or `MSWIN`         |
+| `endianess`   | The system bit order `BE` or `LE`         |
+| `clock`       | Seconds elapsed since context incarnation |
+
+The type of returned value depends of the selected variable.
+
+## Hash Function
+
+'**hash**' returns the DJB Hash value (32 bits) of string or bytes array. Optionally the number of buckets is specified by y [1..n].
+
+hash( x [, y] )
+
+## Hex Function
+
+'**hex**' returns a hexadecimal-encoded string based on the number x, and optionally with the number y of leading zeros.
+
+hex( x , [ y ] )
+
+## Iconj Function
+
+'**iconj**' returns the complex as the conjugate of the given complex.
+
+iconj( x )
+
+## Imag Function
+
+'**imag**' returns the modulus or magnitude of the given complex.
+
+imag( x )
+
+## Input Function
+
+'**input**' returns true when new data has been read from the input.
+The read value without newline terminator, is stored into var. The *string* variable var must be initialized first. Optionally y contains the desired prompt.
+
+input( var [, y] )
+
+## Int Function
+
+'**int**' returns the integer value of x else throw error, or the null integer.
+
+int( [ x ] )
+
+## Iphase Function
+
+'**iphase**' returns theta or the phase of the given complex.
+
+iphase( x )
+
+## Isnull Function
+
+'**isnull**' returns true if x is null.
+
+isnull( x )
+
+## Isnum Function
+
+'**isnum**' returns true if x can be converted to number.
+
+isnum( x )
+
+## Log10 Function
+
+'**log10**' returns the common logarithm (base-10 logarithm) of x.
+
+log10( x )
+
+## Log Function
+
+'**log**' returns the natural logarithm (base-e logarithm) of x.
+
+log( x )
+
+## Lower Function
+
+'**lower**' convert any uppercase letters in string x to lowercase letters.
+
+lower( x )
+
+## Lsubstr Function
+
+'**lsubstr**' returns left part of string x.
+
+lsubstr( x , count )
+
+## Ltrim Function
+
+'**ltrim**' removes whitespace from the left side of string x.
+
+ltrim( x )
+
+## Max Function
+
+'**max**' returns the largest value among numbers x and y.
+
+max( x , y )
+
+## Min Function
+
+'**min**' returns the smallest value among numbers x and y.
+
+min( x , y )
+
+## Mod Function
+
+'**mod**' returns the remainder of x divided by y.
+
+mod( x , y )
+
+See [Arithmetic Operators](#arithmetic-operators).
+
+## Num Function
+
+'**num**' returns the decimal value of x else throw error, or the null decimal.
+
+num( [ x ] )
+
+## Pow Function
+
+'**pow**' returns x raised to the power of y.
+
+pow( x , y )
+
+See [Arithmetic Operators](#arithmetic-operators).
+
+## Random Function
+
+'**random**' returns pseudo-random number that's greater than or equal to 0 and less than 1 or optionally x.
+
+random( [x] )
+
+## Raw Function
+
+'**raw**' returns a new bytes array filled with string x, or filled with x byte y, or the null bytes array.
+
+raw( [ x [, y] ] )
+
+Bytes array has the method *at*, *put*, *insert*, *delete*, *count*, and *concat( bytes | integer )*.
+
+## Readln Function
+
+'**readln**' returns true when new line has been read from the input. The read value ended with LF or limited to the size of the internal buffer, is stored into var. The *string* variable var must be initialized first.
+
+readln( var )
+
+## Read Function
+
+'**read**' returns the count of characters read from the input. The read value, including newline terminator, is stored into var with a maximum of y characters. The *string* variable var must be initialized first.
+
+read( var [, y] )
+
+## Replace Function
+
+'**replace**' returns a string from x with all occurrences of y replaced by z.
+
+replace( x , y , z)
+
+## Round Function
+
+'**round**' returns a value to the nearest integer, or round to the decimal place y.
+
+round( x [, y] )
+
+## Rsubstr Function
+
+'**rsubstr**' returns right part of string x.
+
+rsubstr( x , count )
+
+## Rtrim Function
+
+'**rtrim**' Remove whitespace from the right side of string x.
+
+rtrim( x )
+
+## Sign Function
+
+'**sign**' returns the signed unity of x, i.e the number +1 or -1.
+
+sign( x )
+
+## Sin Function
+
+'**sin**' returns the sine of a radian angle x.
+
+sin( x )
+
+## Sinh Function
+
+'**sinh**' returns the hyperbolic sine of x.
+
+sinh( x )
+
+## Sqrt Function
+
+'**sqrt**' returns the square root of x.
+
+sqrt( x )
+
+## Strlen Function
+
+'**strlen**' returns the size of string x.
+
+strlen( x )
+
+See *count* in section [Type Methods](#type-methods) for type *string*.
+
+## Strpos Function
+
+'**strpos**' finds the position of the first occurrence of the string y starting at position z, inside the string x. If none then null is returned.
+
+strpos( x , y [, z] )
+
+## Str Function
+
+'**str**' returns the string representation of x, or the null string.
+
+str( [ x ] )
+
+String has the method *at*, *put*, *insert*, *delete*, *count*,
+and *concat( string | integer )*.
+
+## Subraw Function
+
+'**subraw**' returns a part of bytes array x.
+
+subraw( x , begin [, count] )
+
+## Substr Function
+
+'**substr**' returns a part of string x.
+
+substr( x , begin [, count] )
+
+## Tab Function
+
+'**tab**' returns a new uniform table filled with x element(s) y, or the null table.
+
+tab( [ x , y ] )
+
+Nested element can be any type, or tuple. Nesting level is supported up
+to 254 dimmensions. Table has the methods *at*, *put*, *insert*, *delete*, *count*, and *concat( table | element )*.
+
+## Tan Function
+
+'**tan**' returns the tangent of a radian angle x.
+
+tan( x )
+
+## Tanh Function
+
+'**tanh**' returns the hyperbolic tangent of x.
+
+tanh( x )
+
+## Tokenize Function
+
+'**tokenize**' splits the values in the string x, using the string y as separator. If the boolean z is true, then null values will be trimmed. The result is returned as table.
+
+tokenize( x , y [, z] )
+
+## Trim Function
+
+'**trim**' Remove whitespace from the left and right side of string x.
+
+trim( x )
+
+## Tup Function
+
+'**tup**' returns a new tuple of items, or the null tuple.
+
+tup( [ x [, ...] ] )
+
+Item can be boolean, integer, decimal, complex, string, object, or bytes. Nesting and table are not allowed. Tuple is unchangeable, meaning that we cannot change type, add or remove items after the tuple has been created.
+The operator '@#' accesses the item at position # [1..n], as shown below. Expression {tuple}@1 returns the value of item at position 1.
+Tuple has the method *set@#(x)* to assign the value x to the item of rank #. Item type must be qualified. Therefore to assign null you have to use one of built-in function providing the null type qualified, i.e *bool()*, *int()*, *num()*, *str()* or *raw()*.
+
+## Typeof Function
+
+'**typeof**' returns the value type in literal form:
+`undefined`, `boolean`, `integer`, `decimal`, `string`, `bytes`, `complex`, `tuple`, `table`.
+
+typeof( x )
+
+## Upper Function
+
+'**upper**' converts any lowercase letters in string x to uppercase letters.
+
+upper( x )
+
+---
+# Index
+
+## Statement Index
+
+[begin](#blocks)
+
+[break](#control-structures)
+
+[continue](#control-structures)
+
+[do](#function-calls-as-statements)
+
+[exception](#blocks)
+
+[for](#for-statement) 
+
+[forall](#forall-statement)
+
+[function](#function-definitions)
+
+[if](#control-structures)
+
+[import](#import-statement)
+
+[include](#include-statement)
+
+[let](#assignment)
+
+[nop](#nop-statement)
+
+[print](#print-statement)
+
+[put](#put-statement)
+
+[raise](#raise-statement)
+
+[return](#return-statement)
+
+[trace](#trace-statement)
+
+[while](#control-structures)
+
+## Function Index
+
+[abs](#abs-function)
+
+[acos](#acos-function)
+
+[asin](#asin-function)
+
+[atan](#atan-function)
+
+[atan2](#atan2-function)
+
+[b64dec](#b64dec-function)
+
+[b64enc](#b64enc-function)
+
+[bool](#bool-function)
+
+[ceil](#ceil-function)
+
+[chr](#chr-function)
+
+[clamp](#clamp-function)
+
+[cos](#cos-function)
+
+[cosh](#cosh-function)
+
+[exp](#exp-function)
+
+[floor](#floor-function)
+
+[getenv](#getenv-function)
+
+[getsys](#getsys-function)
+
+[hash](#hash-function)
+
+[hex](#hex-function)
+
+[iconj](#iconj-function)
+
+[imag](#imag-function)
+
+[input](#input-function)
+
+[int](#int-function)
+
+[iphase](#iphase-function)
+
+[isnull](#isnull-function)
+
+[isnum](#isnum-function)
+
+[log](#log-function)
+
+[log10](#log10-function)
+
+[lower](#lower-function)
+
+[lsubstr](#lsubstr-function)
+
+[ltrim](#ltrim-function)
+
+[max](#max-function)
+
+[min](#min-function)
+
+[mod](#mod-function)
+
+[num](#num-function)
+
+[pow](#pow-function)
+
+[random](#random-function)
+
+[raw](#raw-function)
+
+[read](#read-function)
+
+[readln](#readln-function)
+
+[replace](#replace-function)
+
+[round](#round-function)
+
+[rsubstr](#rsubstr-function)
+
+[rtrim](#rtrim-function)
+
+[sign](#sign-function)
+
+[sin](#sin-function)
+
+[sinh](#sinh-function)
+
+[sqrt](#sqrt-function)
+
+[str](#str-function)
+
+[strlen](#strlen-function)
+
+[strpos](#strpos-function)
+
+[subraw](#subraw-function)
+
+[substr](#substr-function)
+
+[tab](#tab-function)
+
+[tan](#tan-function)
+
+[tanh](#tanh-function)
+
+[tokenize](#tokenize-function)
+
+[trim](#trim-function)
+
+[tup](#tup-function)
+
+[typeof](#typeof-function)
+
+[upper](#upper-function)
+
+## Constant Index
+
+[ee](#built-in-constants)
+
+[false](#built-in-constants)
+
+[ii](#built-in-constants)
+
+[null](#built-in-constants)
+
+[off](#built-in-constants)
+
+[on](#built-in-constants)
+
+[phi](#built-in-constants)
+
+[pi](#built-in-constants)
+
+[true](#built-in-constants)
+
+[DIVIDE_BY_ZERO](#built-in-constants)
+
+[OUT_OF_RANGE](#built-in-constants)
