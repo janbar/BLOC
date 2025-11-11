@@ -8,6 +8,7 @@ BLOC 2.7 Reference Manual
 * [Introduction](#introduction)
 
 * [Basic Concepts](#basic-concepts)
+  
   + [Values and Types](#values-and-types)
   + [Contexts and the Global environment](#contexts-and-the-global-environment)
   + [Error Handling](#error-handling)
@@ -15,6 +16,7 @@ BLOC 2.7 Reference Manual
   + [Garbage Collection](#garbage-collection)
 
 * [The language](#the-language)
+  
   + [Lexical Conventions](#lexical-conventions)
   + [Variables](#variables)
   + [Statements](#statements)
@@ -24,6 +26,7 @@ BLOC 2.7 Reference Manual
   + [Built-in Functions](#built-in-functions)
 
 * [Index](#index)
+  
   + [Statement index](#statement-index)
   + [Function index](#function-index)
   + [Constant index](#constant-index)
@@ -32,7 +35,7 @@ BLOC 2.7 Reference Manual
 
 # Introduction
 
-BLOC is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming. BLOC is dynamically typed, runs in virtual context, and has automatic memory management with a cycle garbage collection, making it ideal for scripting, and rapid prototyping.
+BLOC is a powerful, efficient, lightweight, embeddable scripting language. It supports procedural programming. BLOC is dynamically typed, runs in virtual context, and has automatic memory management, making it ideal for scripting, and rapid prototyping.
 
 BLOC is implemented as a library, written in clean C, the common subset of standard C and C++. The BLOC distribution includes a host program called "bloc", which uses the BLOC core library to offer a complete, standalone BLOC interpreter, for interactive or batch use. BLOC is intended to be used both as a powerful, lightweight, embeddable scripting language for any program that needs one, and as a powerful but lightweight and efficient stand-alone language. As an extension language, BLOC has no notion of a "main" program: it works embedded in a host client, called the embedding program or simply the host. (Frequently, this host is the stand-alone "bloc" program.) The host program can invoke functions to execute a piece of BLOC code, can write and read BLOC variables. BLOC is extensible with dynamically imported modules. A module provides a new object-oriented type, with specialized features. Through the use of modules, BLOC can be augmented to cope with a wide range of different domains.
 
@@ -707,7 +710,7 @@ As usual, you can use parentheses to change the precedences of an expression. Th
 BLOC defines several useful mathematical and boolean constants.
 
 | Keyword   | Description                                           |
-|:----------|:------------------------------------------------------|
+|:--------- |:----------------------------------------------------- |
 | **null**  | The null value, with undefined type                   |
 | **true**  | The boolean expression TRUE                           |
 | **on**    | The boolean expression TRUE                           |
@@ -721,7 +724,7 @@ BLOC defines several useful mathematical and boolean constants.
 The following constants are useful to intercept a functional error at runtime.
 
 | Keyword            | Description                          |
-|:-------------------|:-------------------------------------|
+|:------------------ |:------------------------------------ |
 | **DIVIDE_BY_ZERO** | Attempting to divide by zero         |
 | **OUT_OF_RANGE**   | Number is out of the range of values |
 
@@ -975,7 +978,6 @@ asin( x )
 
 atan2( y , x )
 
-
 ## Atan Function
 
 '**atan**' returns the arc tangent of x in radians.
@@ -1059,7 +1061,7 @@ getsys( x )
 Where x could be any string of the following values.
 
 | String        | Description                               |
-|:--------------|:------------------------------------------|
+|:------------- |:----------------------------------------- |
 | `compatible`  | Language compatibility level              |
 | `language`    | Lang code from locale                     |
 | `country`     | Country code from locale                  |
@@ -1081,7 +1083,7 @@ hash( x [, y] )
 
 '**hex**' returns a hexadecimal-encoded string based on the number x, and optionally with the number y of leading zeros.
 
-hex( x , [ y ] )
+hex( x [, y] )
 
 ## Iconj Function
 
@@ -1194,7 +1196,7 @@ See [Arithmetic Operators](#arithmetic-operators).
 
 '**random**' returns pseudo-random number that's greater than or equal to 0 and less than 1 or optionally x.
 
-random( [x] )
+random( [ x ] )
 
 ## Raw Function
 
@@ -1356,6 +1358,7 @@ typeof( x )
 upper( x )
 
 ---
+
 # Index
 
 ## Statement Index
