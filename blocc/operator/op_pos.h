@@ -37,8 +37,8 @@ public:
 
   virtual ~OpPOSExpression();
 
-  OpPOSExpression(Expression * a, bool enc)
-  : arg1(a), enc(enc) { }
+  OpPOSExpression(Expression * a)
+  : arg1(a) { }
 
   const Type& type(Context& ctx) const override;
 
@@ -47,6 +47,7 @@ public:
   std::string unparse(Context& ctx) const override;
 
   bool enclosed() const override { return enc; }
+  void enclosed(bool yesno) override { enc = yesno; }
 
   std::string toString(Context& ctx) const override
   {

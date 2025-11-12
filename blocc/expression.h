@@ -54,6 +54,7 @@ public:
 
   virtual std::string unparse(Context& ctx) const = 0;
   virtual bool enclosed() const { return true; }
+  virtual void enclosed(bool) { }
 
   /**
    * Returns the reference to the expression type

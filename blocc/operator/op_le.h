@@ -38,8 +38,8 @@ public:
 
   virtual ~OpLEExpression();
 
-  OpLEExpression(Expression * a, Expression * b, bool enc)
-  : arg1(a), arg2(b), enc(enc) { }
+  OpLEExpression(Expression * a, Expression * b)
+  : arg1(a), arg2(b) { }
 
   const Type& type(Context& ctx) const override { return Value::type_boolean; }
 
@@ -48,6 +48,7 @@ public:
   std::string unparse(Context& ctx) const override;
 
   bool enclosed() const override { return enc; }
+  void enclosed(bool yesno) override { enc = yesno; }
 
   std::string toString(Context& ctx) const override
   {

@@ -68,7 +68,7 @@ namespace bloc
 
 Expression * ParseExpression::expression(Parser& p, Context& ctx)
 {
-  ParseExpression pe(p, ctx, false);
+  ParseExpression pe(p, ctx);
   /* begin the parse by the precedence with the lowest priority */
   return pe.logic();
 }
@@ -203,11 +203,12 @@ Expression * ParseExpression::element()
       }
     case '(':
     {
-      ParseExpression pe(p, ctx, true);
+      ParseExpression pe(p, ctx);
       result = pe.logic();
       t = p.pop();
       if (t->code != ')')
         throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
+      result->enclosed(true);
       return member(result);
     }
     default:
@@ -243,10 +244,10 @@ Expression * ParseExpression::factor()
     {
     case TOKEN_KEYWORD:
       if (t->text == Operator::OPVALS[Operator::OP_EXP])
-        return new OpEXPExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(factor(), Type::NUMERIC, p, ctx), enclosed);
+        return new OpEXPExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(factor(), Type::NUMERIC, p, ctx));
       break;
     case TOKEN_POWER:
-      return new OpEXPExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(factor(), Type::NUMERIC, p, ctx), enclosed);
+      return new OpEXPExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(factor(), Type::NUMERIC, p, ctx));
     default:
       break;
     }
@@ -277,16 +278,16 @@ Expression * ParseExpression::primary()
     {
     case TOKEN_KEYWORD:
       if (t->text == "not")
-        return new OpBNOTExpression(assertType(factor(), Type::BOOLEAN, p, ctx), enclosed);
+        return new OpBNOTExpression(assertType(factor(), Type::BOOLEAN, p, ctx));
       break;
     case '!':
-      return new OpBNOTExpression(assertType(factor(), Type::BOOLEAN, p, ctx), enclosed);
+      return new OpBNOTExpression(assertType(factor(), Type::BOOLEAN, p, ctx));
     case '~':
-      return new OpNOTExpression(assertType(factor(), Type::NUMERIC, p, ctx), enclosed);
+      return new OpNOTExpression(assertType(factor(), Type::NUMERIC, p, ctx));
     case '-':
-      return new OpNEGExpression(assertType(factor(), Type::NUMERIC, p, ctx), enclosed);
+      return new OpNEGExpression(assertType(factor(), Type::NUMERIC, p, ctx));
     case '+':
-      return new OpPOSExpression(assertType(factor(), Type::NUMERIC, p, ctx), enclosed);
+      return new OpPOSExpression(assertType(factor(), Type::NUMERIC, p, ctx));
     default:
       break;
     }
@@ -320,13 +321,13 @@ Expression * ParseExpression::term()
       switch (t->code)
       {
       case '*':
-        result = new OpMULExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx), enclosed);
+        result = new OpMULExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx));
         break;
       case '/':
-        result = new OpDIVExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx), enclosed);
+        result = new OpDIVExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx));
         break;
       case '%':
-        result = new OpMODExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx), enclosed);
+        result = new OpMODExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(primary(), Type::NUMERIC, p, ctx));
         break;
       default:
         done = true;
@@ -364,10 +365,10 @@ Expression * ParseExpression::sum()
       switch (t->code)
       {
       case '+':
-        result = new OpADDExpression(result, assertType(term(), result->type(ctx), p, ctx), enclosed);
+        result = new OpADDExpression(result, assertType(term(), result->type(ctx), p, ctx));
         break;
       case '-':
-        result = new OpSUBExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(term(), Type::NUMERIC, p, ctx), enclosed);
+        result = new OpSUBExpression(assertType(result, Type::NUMERIC, p, ctx, false), assertType(term(), Type::NUMERIC, p, ctx));
         break;
       default:
         done = true;
@@ -405,10 +406,10 @@ Expression * ParseExpression::bitshift()
       switch (t->code)
       {
       case TOKEN_POPLEFT:
-        result =  new OpPOPExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(sum(), Type::INTEGER, p, ctx), enclosed);
+        result =  new OpPOPExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(sum(), Type::INTEGER, p, ctx));
         break;
       case TOKEN_PUSHRIGHT:
-        result = new OpPUSExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(sum(), Type::INTEGER, p, ctx), enclosed);
+        result = new OpPUSExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(sum(), Type::INTEGER, p, ctx));
         break;
       default:
         done = true;
@@ -446,13 +447,13 @@ Expression * ParseExpression::bitlogic()
       switch (t->code)
       {
       case '&':
-        result = new OpANDExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(bitshift(), Type::INTEGER, p, ctx), enclosed);
+        result = new OpANDExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(bitshift(), Type::INTEGER, p, ctx));
         break;
       case '|':
-        result = new OpIORExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(bitshift(), Type::INTEGER, p, ctx), enclosed);
+        result = new OpIORExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(bitshift(), Type::INTEGER, p, ctx));
         break;
       case '^':
-        result = new OpXORExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(bitshift(), Type::INTEGER, p, ctx), enclosed);
+        result = new OpXORExpression(assertTypeUniform(result, Type::INTEGER, p, ctx, false), assertTypeUniform(bitshift(), Type::INTEGER, p, ctx));
         break;
       default:
         done = true;
@@ -486,20 +487,20 @@ Expression * ParseExpression::relation()
     switch (t->code)
     {
     case TOKEN_ISNOTEQ:
-      return new OpNEExpression(result, bitlogic(), enclosed);
+      return new OpNEExpression(result, bitlogic());
     case TOKEN_ISEQUAL:
-      return new OpEQExpression(result, bitlogic(), enclosed);
+      return new OpEQExpression(result, bitlogic());
     case TOKEN_ISEQLESS:
-      return new OpLEExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx), enclosed);
+      return new OpLEExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx));
     case '<':
-      return new OpLTExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx), enclosed);
+      return new OpLTExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx));
     case TOKEN_ISEQMORE:
-      return new OpGEExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx), enclosed);
+      return new OpGEExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx));
     case '>':
-      return new OpGTExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx), enclosed);
+      return new OpGTExpression(result, assertType(bitlogic(), result->type(ctx), p, ctx));
     case TOKEN_KEYWORD:
       if (t->text == Operator::OPVALS[Operator::OP_MATCH])
-        return new OpMATCHExpression(assertType(result, Type::LITERAL, p, ctx, false), assertType(bitlogic(), Type::LITERAL, p, ctx), enclosed);
+        return new OpMATCHExpression(assertType(result, Type::LITERAL, p, ctx, false), assertType(bitlogic(), Type::LITERAL, p, ctx));
       break;
     default:
       break;
@@ -536,19 +537,19 @@ Expression * ParseExpression::logic()
       {
       case TOKEN_KEYWORD:
         if (t->text == Operator::OPVALS[Operator::OP_BAND])
-          result = new OpBANDExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx), enclosed);
+          result = new OpBANDExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx));
         else if (t->text == Operator::OPVALS[Operator::OP_BIOR])
-          result = new OpBIORExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx), enclosed);
+          result = new OpBIORExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx));
         else if (t->text == Operator::OPVALS[Operator::OP_BXOR])
-          result = new OpBXORExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx), enclosed);
+          result = new OpBXORExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx));
         else
           done = true;
         break;
       case TOKEN_AND:
-        result = new OpBANDExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx), enclosed);
+        result = new OpBANDExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx));
         break;
       case TOKEN_OR:
-        result = new OpBIORExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx), enclosed);
+        result = new OpBIORExpression(assertType(result, Type::BOOLEAN, p, ctx, false), assertType(relation(), Type::BOOLEAN, p, ctx));
         break;
       default:
         done = true;

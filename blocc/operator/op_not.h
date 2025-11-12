@@ -37,8 +37,8 @@ public:
 
   virtual ~OpNOTExpression();
 
-  OpNOTExpression(Expression * a, bool enc)
-  : arg1(a), enc(enc) { }
+  OpNOTExpression(Expression * a)
+  : arg1(a) { }
 
   const Type& type(Context& ctx) const override { return Value::type_integer; }
 
@@ -47,6 +47,7 @@ public:
   std::string unparse(Context& ctx) const override;
 
   bool enclosed() const override { return enc; }
+  void enclosed(bool yesno) override { enc = yesno; }
 
   std::string toString(Context& ctx) const override
   {
