@@ -67,7 +67,7 @@ The **boolean** type has two values: false and true. The values null and false m
 
 See [Null Handling](#null-value-handling-and-type-introspection) for more details on handling null values.
 
-**Integer** and **decimal** types are sub-types of number and can generally be combined in expressions. BLOC uses 64-bit integers and double-precision (64-bit) floats, on all platforms (64 or 32 bits). Unless stated otherwise, any overflow when manipulating integer values wrap around, according to the usual rules of two-complement arithmetic. (In other words, the actual result is the unique representable integer that is equal modulo 2 power of n to the mathematical result, where n is the number of bits of the integer type.) BLOC has explicit rules about when each sub-type is used,  but it also converts between them automatically as needed (see [Conversions](#coercions-and-conversions)). To avoid pitfalls, the programmer should assume complete control over the representation of each number.
+**Integer** and **decimal** types are sub-types of number and can generally be combined in expressions. BLOC uses 64-bit integers and double-precision (64-bit) floats, on all platforms (64 or 32 bits). Unless stated otherwise, any overflow when manipulating integer values wrap around, according to the usual rules of two-complement arithmetic. (In other words, the actual result is the unique representable integer that is equal modulo 2 power of n to the mathematical result, where n is the number of bits of the integer type. BLOC has explicit rules about when each sub-type is used,  but it also converts between them automatically as needed (see [Conversions](#coercions-and-conversions)). To avoid pitfalls, the programmer should assume complete control over the representation of each number.
 
 The type **string** represents sequences of characters. BLOC is 8-bit clean: strings can contain any 8-bit value, including embedded zeros. BLOC is also encoding-agnostic; it makes no assumptions about the contents of a string. The length of any string in BLOC must fit in a BLOC integer.
 
@@ -165,17 +165,17 @@ Most methods return the resulting value after manipulation allowing calls to be 
 
 **\* Tuple Accessor and Mutator**
 
-To manipulate the elements of a tuple, a specific syntax is used in BLOC to distinguish it from that used for the table type, which could be confused. Accessing an element of the tuple is written as *{tuple}* **@** *{rank}*. Modifying an element of the tuple is done by calling the method *{tuple}*.**set@** *{rank}* ( *{new value}* ). The *set* method returns the tuple itself, allowing calls to be chained within the same statement.
+To manipulate the elements of a tuple, a specific syntax is used in BLOC to distinguish it from that used for the table type, which could be confused. Accessing an element of the tuple is written as *{tuple}*  **\@** *{rank}*. Modifying an element of the tuple is done by calling the method *{tuple}* . **set@** *{rank}* ( *{new value}* ). The *set* method returns the tuple itself, allowing calls to be chained within the same statement.
 
-The tuple item accessor:
+Syntax of the tuple item accessor:
 
 **expr ::= expr:tuple '@' rank**
 
-The tuple item mutator:
+Syntax of the tuple item mutator:
 
-**expr:tuple ::= expr:tuple '.' method:set@ rank '(' expr ')'**
+**expr:tuple ::= expr:tuple '.' method:set @ rank '(' expr ')'**
 
-Note that *{rank}* is not an expression, but a coded value. It is evaluated at compile time. This constraint is imposed to the programmer, because conceptually a *tuple* has a fixed structure. 
+Note that *rank* is not an expression, but a coded value. It is evaluated at compile time. This constraint is imposed to the programmer, because conceptually a *tuple* has a fixed structure. 
 
 ---
 
@@ -319,7 +319,7 @@ Assigning new value to a variable, will free the memory allocated by old value; 
 
 ## Statements
 
-BLOC supports an almost conventional set of statements, similar to those in other PASCALIAN languages. This set includes blocks, assignments, control structures, function calls, standard IO.
+BLOC supports an almost conventional set of statements, similar to those in other PASCALIAN languages. This set includes blocks, assignments, control structures, function calls, standard output.
 
 ## Blocks
 
@@ -338,7 +338,7 @@ The interceptable errors are limited to the following:
 
 Exception clause can only be used in explicit block, starting with **begin**, ending by **end**.
 
-**stat ::= begin {stat} [ exception {when expr then {stat}} ] end;**
+**stat ::= begin {stat} [ exception {when Name then {stat}} ] end;**
 
 Example:
 
@@ -353,6 +353,8 @@ when others then
     print error@1;
 end;
 ```
+
+The keyword **others** will match to any interceptable error. Logically, it should only be used in the last **when** clause.
 
 ## Assignment
 
