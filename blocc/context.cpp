@@ -389,7 +389,10 @@ void Context::saveReturned(Value& ret)
   if (ret.lvalue())
     _returned = new Value(ret.clone());
   else
-    _returned = new Value(std::move(ret));
+  {
+    _returned = new Value();
+    _returned->swap(ret);
+  }
 }
 
 Value * Context::dropReturned()
