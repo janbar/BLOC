@@ -17,7 +17,7 @@
  */
 
 #include "plugin_oracle.h"
-#include "oracle/odpi/include/dpi.h"
+#include <dpi.h>
 #include <blocc/exception_runtime.h>
 #include <blocc/collection.h>
 #include <blocc/tuple.h>
