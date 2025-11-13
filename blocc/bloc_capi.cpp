@@ -234,7 +234,8 @@ bloc_create_numeric(double v)
 bloc_value*
 bloc_create_literal(const char *v)
 {
-  return reinterpret_cast<bloc_value*>(new bloc::Value(new bloc::Literal(v)));
+  bloc::Literal * lv = new bloc::Literal(v);
+  return reinterpret_cast<bloc_value*>(new bloc::Value(lv));
 }
 
 
