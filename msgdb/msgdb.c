@@ -30,9 +30,15 @@ msgdb_setup(const char * lang)
 {
   const MSGDB_LANG_ROW * rl = msgdb_get_lang(lang);
   if (rl != NULL)
+  {
     strncpy(msgdb_current_lang, rl->lang, sizeof(msgdb_current_lang));
+    msgdb_current_lang[3] = '\0';
+  }
   else
+  {
     strncpy(msgdb_current_lang, msgdb_default_lang, sizeof(msgdb_current_lang));
+    msgdb_current_lang[3] = '\0';
+  }
   if (lang && strcmp(lang, msgdb_current_lang) == 0)
     return lang;
   return msgdb_current_lang;
