@@ -327,15 +327,15 @@ private:
   /* memory slots */
   struct MemorySlot
   {
-    Symbol * symbol;
     Value value;
+    Symbol * symbol;
     ~MemorySlot() { delete symbol; }
-    explicit MemorySlot(const Symbol& s) : symbol(new Symbol(s)), value(s) { }
-    explicit MemorySlot(Symbol&& s) : symbol(new Symbol(std::move(s))), value(s) { }
+    explicit MemorySlot(const Symbol& s) : value(s), symbol(new Symbol(s)) { }
+    explicit MemorySlot(Symbol&& s) : value(s), symbol(new Symbol(std::move(s))) { }
     MemorySlot(const MemorySlot& m) = delete;
     MemorySlot& operator=(MemorySlot& m) = delete;
     MemorySlot(MemorySlot&& m) noexcept
-    : symbol(m.symbol), value(std::move(m.value)) { m.symbol = nullptr; }
+    : value(std::move(m.value)), symbol(m.symbol) { m.symbol = nullptr; }
     MemorySlot& operator=(MemorySlot&& m) noexcept
     {
       if (this == &m)
