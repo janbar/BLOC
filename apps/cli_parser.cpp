@@ -162,19 +162,23 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
     const bloc::Statement * s = nullptr;
     bloc::TokenPtr t;
 
-    try { t = p->front(); }
+    try
+    {
+      /* check for new CLI command */
+      int cli = cli_cmd(*p, ctx, statements);
+      if (cli < 0)
+        /* stop requested */
+        break;
+      if (cli > 0)
+        /* command processed, wait for the next one */
+        continue;
+      /* not a CLI command, so start parsing */
+    }
     catch (bloc::ParseError& ee)
     {
-      /* silence EOF */
+      /* stop on EOF or CTRL+D */
       break;
     }
-
-    /* check for new CLI command, else begin parse */
-    int cli = cli_cmd(*p, ctx, statements);
-    if (cli < 0)
-      break;
-    if (cli > 0)
-      continue;
 
     try
     {
