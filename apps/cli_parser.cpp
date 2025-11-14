@@ -91,7 +91,7 @@ enum FG
 static bool g_has_color = false;
 static MsgDB * g_msgdb = nullptr;
 
-static void load_args(bloc::Context& ctx, const std::vector<std::string>& args);
+static bool load_args(bloc::Context& ctx, const std::vector<std::string>& args);
 static CMD find_cmd(const std::string& c);
 static void set_color(enum FG c);
 static void reset_color(void);
@@ -113,7 +113,6 @@ public:
 
 void cli_parser(const MainOptions& options, const std::vector<std::string>& args)
 {
-  g_msgdb = new MsgDB();
   /* first check for virtual terminal and colored output */
   if (options.color)
     g_has_color = true;
@@ -130,6 +129,9 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   PRINT("\nType \"help\" , \"copyright\" or \"license\" for more information.\n");
 
   bloc::Context ctx;
+  if (!load_args(ctx, args))
+    return;
+
   /* set context as trusted to allow use of restricted plugins */
   ctx.trusted(true);
   /* setup breaking state */
@@ -152,9 +154,9 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   if (!p)
     return;
 
-  load_args(ctx, args);
-  std::list<const bloc::Statement*> statements;
+  g_msgdb = new MsgDB();
 
+  std::list<const bloc::Statement*> statements;
   while (p->state() != bloc::Parser::Aborted)
   {
     const bloc::Statement * s = nullptr;
@@ -252,6 +254,7 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
     }
   }
   for (auto s : statements) delete s;
+  delete g_msgdb;
   delete p;
 #ifdef LIBBLOC_MSWIN
   stop_ctrl_handler();
@@ -264,7 +267,6 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
     free(rl_line);
   clear_history();
 #endif
-  delete g_msgdb;
 }
 
 int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
@@ -356,14 +358,24 @@ int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
 #endif
 }
 
-static void load_args(bloc::Context& ctx, const std::vector<std::string>& args)
+static bool load_args(bloc::Context& ctx, const std::vector<std::string>& args)
 {
   /* load arguments into the context, as table named $ARG */
   bloc::Collection * c = new bloc::Collection(bloc::Value::type_literal.levelUp());
   for (const std::string& arg : args)
     c->push_back(bloc::Value(new bloc::Literal(arg)));
-  const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$ARG"), c->table_type());
-  ctx.storeVariable(symbol, bloc::Value(c));
+  try
+  {
+    const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$ARG"), c->table_type());
+    ctx.storeVariable(symbol, bloc::Value(c));
+  }
+  catch (bloc::Error& ee)
+  {
+    fprintf(ctx.ctxerr(), "Error: %s\n", ee.what());
+    fflush(ctx.ctxerr());
+    return false;
+  }
+  return true;
 }
 
 static CMD find_cmd(const std::string& c)
