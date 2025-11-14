@@ -214,7 +214,6 @@ Expression * ParseExpression::element()
     default:
       throw ParseError(EXC_PARSE_UNEXPECTED_LEX_S, t->text.c_str(), t);
     }
-    p.push(t);
   }
   catch (ParseError& pe)
   {
