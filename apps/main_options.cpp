@@ -33,7 +33,7 @@ bool cmdOption(const char * str, const std::string& option, std::string * value)
   return false;
 }
 
-const char * getCmd(char **begin, char **end, MainOptions& options, std::vector<bloc::Value>& prog)
+const char * getCmd(char **begin, char **end, MainOptions& options, std::vector<std::string>& prog)
 {
   prog.clear();
   bool cmd = false;
@@ -42,7 +42,7 @@ const char * getCmd(char **begin, char **end, MainOptions& options, std::vector<
     if (cmd || **it != '-' || ::strlen(*it) == 1)
     {
       cmd = true;
-      prog.push_back(bloc::Value(new bloc::Literal(*it)));
+      prog.emplace_back(std::string(*it));
     }
     else
     {

@@ -91,7 +91,7 @@ enum FG
 static bool g_has_color = false;
 static MsgDB * g_msgdb = nullptr;
 
-static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args);
+static void load_args(bloc::Context& ctx, const std::vector<std::string>& args);
 static CMD find_cmd(const std::string& c);
 static void set_color(enum FG c);
 static void reset_color(void);
@@ -111,7 +111,7 @@ public:
   int read(bloc::Parser * p, char * buf, int max_size) override;
 };
 
-void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
+void cli_parser(const MainOptions& options, const std::vector<std::string>& args)
 {
   g_msgdb = new MsgDB();
   /* first check for virtual terminal and colored output */
@@ -152,7 +152,7 @@ void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args)
   if (!p)
     return;
 
-  load_args(ctx, std::move(args));
+  load_args(ctx, args);
   std::list<const bloc::Statement*> statements;
 
   while (p->state() != bloc::Parser::Aborted)
@@ -356,11 +356,12 @@ int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
 #endif
 }
 
-static void load_args(bloc::Context& ctx, std::vector<bloc::Value>&& args)
+static void load_args(bloc::Context& ctx, const std::vector<std::string>& args)
 {
   /* load arguments into the context, as table named $ARG */
-  bloc::Collection * c = new bloc::Collection(
-          bloc::Value::type_literal.levelUp(), std::move(args));
+  bloc::Collection * c = new bloc::Collection(bloc::Value::type_literal.levelUp());
+  for (const std::string& arg : args)
+    c->push_back(bloc::Value(new bloc::Literal(arg)));
   const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$ARG"), c->table_type());
   ctx.storeVariable(symbol, bloc::Value(c));
 }

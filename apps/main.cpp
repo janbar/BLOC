@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   FILE * outfile = STDOUT;
 
   MainOptions options;
-  std::vector<bloc::Value> prog;
+  std::vector<std::string> prog;
   const char * bad = getCmd(argv + 1, argv + argc, options, prog);
   if (bad != nullptr)
   {
@@ -109,14 +109,14 @@ int main(int argc, char **argv) {
   /* run command-line */
   if (options.docli || prog.empty())
   {
-    cli_parser(options, std::move(prog));
+    cli_parser(options, prog);
   }
   /* processing expression */
   else if (options.doexp)
   {
     bloc::StringReader reader;
-    for (bloc::Value& arg : prog)
-      reader.append(*arg.literal()).append(" ");
+    for (std::string& arg : prog)
+      reader.append(arg).append(" ");
     /* mark the end of expression: could be semi-colon or nl */
     reader.append(";");
     bloc::Context ctx(::fileno(STDOUT), ::fileno(STDERR));
@@ -156,14 +156,14 @@ int main(int argc, char **argv) {
       openFiles.push(outfile);
     }
     /* setup prog stream */
-    if (*prog[0].literal() == "-")
+    if (prog[0] == "-")
       progfile = stdin;
     else
     {
-      progfile = ::fopen(prog[0].literal()->c_str(), "r");
+      progfile = ::fopen(prog[0].c_str(), "r");
       if (!progfile)
       {
-        PRINTF("Failed to open file '%s' for read.", prog[0].literal()->c_str());
+        PRINTF("Failed to open file '%s' for read.", prog[0].c_str());
         return EXIT_FAILURE;
       }
       openFiles.push(progfile);
@@ -176,7 +176,7 @@ int main(int argc, char **argv) {
     /* load arguments 1..n into the context, as table named $ARG */
     bloc::Collection * c_arg = new bloc::Collection(bloc::Value::type_literal.levelUp());
     for (auto it = ++prog.begin(); it != prog.end(); ++it)
-      c_arg->push_back(std::move(*it));
+      c_arg->push_back(bloc::Value(new bloc::Literal(std::move(*it))));
     const bloc::Symbol& c_sym = ctx.registerSymbol(std::string("$ARG"), c_arg->table_type());
     ctx.storeVariable(c_sym, bloc::Value(c_arg));
 

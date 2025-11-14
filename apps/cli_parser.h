@@ -24,7 +24,7 @@
 #include <string>
 #include <vector>
 
-extern void cli_parser(const MainOptions& options, std::vector<bloc::Value>&& args);
+extern void cli_parser(const MainOptions& options, const std::vector<std::string>& args);
 
 #endif /* CLI_PARSER_H */
 

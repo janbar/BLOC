@@ -36,7 +36,7 @@ struct MainOptions
 
 extern bool cmdOption(const char * str, const std::string& option, std::string * value);
 
-extern const char * getCmd(char **begin, char **end, MainOptions& options, std::vector<bloc::Value>& prog);
+extern const char * getCmd(char **begin, char **end, MainOptions& options, std::vector<std::string>& prog);
 
 #endif /* MAIN_OPTIONS_H */
 
