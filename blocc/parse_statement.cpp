@@ -140,10 +140,11 @@ Statement * ParseStatement::parse()
 
         case Statement::STMT_IMPORT:
         {
-          s = IMPORTStatement::parse(p, ctx);
+          IMPORTStatement * _s = IMPORTStatement::parse(p, ctx);
+          (void) beyond_statement(_s);
           /* perform loading now */
-          dynamic_cast<IMPORTStatement*>(beyond_statement(s))->loadModule(ctx);
-          return s;
+          _s->loadModule(ctx);
+          return _s;
         }
 
         case Statement::STMT_INCLUDE:
