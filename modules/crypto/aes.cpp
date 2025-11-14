@@ -427,7 +427,8 @@ void AES_CBC_encrypt_buffer(AES_ctx* ctx, uint8_t* buf, size_t length)
     buf += AES_BLOCKLEN;
   }
   /* store IV in ctx for next chunk */
-  memcpy(ctx->iv, iv, AES_BLOCKLEN);
+  if (iv != ctx->iv)
+    memcpy(ctx->iv, iv, AES_BLOCKLEN);
 }
 
 void AES_CBC_decrypt_buffer(AES_ctx* ctx, uint8_t* buf, size_t length)
