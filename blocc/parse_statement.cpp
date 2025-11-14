@@ -189,7 +189,7 @@ Statement * ParseStatement::parse()
   catch (ParseError& pe)
   {
     if (!pe.token)
-      pe.token = t;
+      pe.token.swap(t);
     DBG(DBG_DEBUG, "exception %p at %s line %d\n", &pe, __PRETTY_FUNCTION__, __LINE__);
     if (s) delete s;
     throw;
