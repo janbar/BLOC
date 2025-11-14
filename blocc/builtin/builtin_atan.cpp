@@ -56,6 +56,7 @@ Value& ATANExpression::value(Context & ctx) const
     {
       auto z = std::atan(IMAGINARY_TO_COMPLEX(*val.imaginary()));
       v = Value(new Imaginary{z.real(), z.imag()});
+      break;
     }
   default:
     throw RuntimeError(EXC_RT_FUNC_ARG_TYPE_S, KEYWORDS[oper]);
