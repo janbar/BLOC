@@ -78,8 +78,8 @@ public:
   bool operator==(const Value& v) const { return (this->_value.p == v._value.p); }
   bool operator!=(const Value& v) const { return !(*this == v); }
 
-  Value() : _type(Type::NO_TYPE) { }
-  explicit Value(const Type& type) : _type(type) { }
+  Value() : _type(Type::NO_TYPE) { _value.p = nullptr; }
+  explicit Value(const Type& type) : _type(type) { _value.p = nullptr; }
   explicit Value(Bool v)    : _type(Type::BOOLEAN), _flags(NOTNULL) { _value.b = v; }
   explicit Value(Integer v) : _type(Type::INTEGER), _flags(NOTNULL) { _value.i = v; }
   explicit Value(Numeric v) : _type(Type::NUMERIC), _flags(NOTNULL) { _value.d = v; }
