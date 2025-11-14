@@ -42,16 +42,8 @@ class Context
 public:
   virtual ~Context();
   Context();
-  explicit Context(const Context&) = delete;
   Context& operator=(const Context&) = delete;
   Context(int fd_out, int fd_err);
-
-  /**
-   * Make a shallow clone
-   * @param ctx context
-   * @param recursion level of recursion
-   */
-  Context(const Context& ctx, uint8_t recursion);
 
   /**
    * Purge the context including all symbols and storage pool.
@@ -421,6 +413,9 @@ private:
   uint8_t _flags = 0;
 
   uint8_t _recursion = 0;
+  friend class Functor;
+  explicit Context(const Context& ctx);
+  Context(const Context& ctx, uint8_t recursion);
 };
 
 }

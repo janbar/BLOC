@@ -77,17 +77,23 @@ void Statement::unparse_next(Context& ctx, FILE * out) const
 
 void Statement::trace_pre(Context& ctx) const
 {
-  fprintf(ctx.ctxerr(), "%012.6f: %s\n", ctx.timestamp(), KEYWORDS[_keyword]);
-  fflush(ctx.ctxerr());
+  if (ctx.ctxerr())
+  {
+    fprintf(ctx.ctxerr(), "%012.6f: %s\n", ctx.timestamp(), KEYWORDS[_keyword]);
+    fflush(ctx.ctxerr());
+  }
 }
 
 void Statement::trace_post(Context& ctx) const
 {
-  size_t count = ctx.allocationCount();
-  fprintf(ctx.ctxerr(), "%012.6f: %s : alloc=%u bcr=%d%d%d\n",
-          ctx.timestamp(), KEYWORDS[_keyword], (unsigned)count,
-          ctx.breakCondition(), ctx.continueCondition(), ctx.returnCondition());
-  fflush(ctx.ctxerr());
+  if (ctx.ctxerr())
+  {
+    size_t count = ctx.allocationCount();
+    fprintf(ctx.ctxerr(), "%012.6f: %s : alloc=%u bcr=%d%d%d\n",
+            ctx.timestamp(), KEYWORDS[_keyword], (unsigned)count,
+            ctx.breakCondition(), ctx.continueCondition(), ctx.returnCondition());
+    fflush(ctx.ctxerr());
+  }
 }
 
 int Statement::findKeyword(const std::string& s)

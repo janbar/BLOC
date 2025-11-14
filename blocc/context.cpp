@@ -51,45 +51,44 @@ Context::Context()
 : _root(this)
 , _ts_init(std::chrono::system_clock::now())
 {
-  _sout = ::fdopen(::dup(STDOUT_FILENO), "w");
-  _serr = _sout;
+  int d = ::dup(STDOUT_FILENO);
+  if (d >= 0)
+  {
+    _sout = ::fdopen(d, "w");
+    _serr = _sout;
+  }
 }
 
 Context::Context(int fd_out, int fd_err)
 : _root(this)
 , _ts_init(std::chrono::system_clock::now())
 {
-  _sout = ::fdopen(::dup(fd_out), "w");
+  int d = ::dup(fd_out);
+  if (d >= 0)
+    _sout = ::fdopen(d, "w");
   if (fd_err == fd_out)
     _serr = _sout;
   else
-    _serr = ::fdopen(::dup(fd_err), "w");
+  {
+    d = ::dup(fd_err);
+    if (d >= 0)
+      _serr = ::fdopen(d, "w");
+  }
 }
 
 Context::~Context()
 {
   purge();
-  if (_serr != _sout)
-    ::fclose(_serr);
-  ::fclose(_sout);
-}
 
-Context::Context(const Context& ctx, uint8_t recursion)
-: _root(ctx._root)
-, _ts_init(ctx._ts_init)
-, _flags(ctx._flags)
-, _recursion(recursion)
-{
-  /* duplicate file descriptors */
-  _sout = ::fdopen(::dup(::fileno(ctx._sout)), "w");
-  if (ctx._serr == ctx._sout)
-    _serr = _sout;
-  else
-    _serr = ::fdopen(::dup(::fileno(ctx._serr)), "w");
-  /* copy table of symbols with new empty values */
-  _storage_pool.reserve(ctx._storage_pool.size());
-  for (const MemorySlot& e : ctx._storage_pool)
-    _storage_pool.push_back(MemorySlot(*(e.symbol)));
+  /* only the root context own file descriptors,
+   * therefore a clone should not close any of them */
+  if (_root == this)
+  {
+    if (_serr && _serr != _sout)
+      ::fclose(_serr);
+    if (_sout)
+      ::fclose(_sout);
+  }
 }
 
 void Context::purge()
@@ -265,7 +264,7 @@ void Context::describeSymbol(const std::string& name)
   Symbol * s = findSymbol(_name);
   if (s != nullptr)
     describeSymbol(*s);
-  else
+  else if (_sout)
   {
     fprintf(_sout, "%s is undefined.\n", _name.c_str());
     fflush(_sout);
@@ -274,6 +273,8 @@ void Context::describeSymbol(const std::string& name)
 
 void Context::describeSymbol(const Symbol& symbol)
 {
+  if (!_sout)
+    return;
   Value& var = loadVariable(symbol);
 
   fprintf(_sout, "%04x: %s is ", symbol.id(), symbol.name().c_str());
@@ -327,54 +328,49 @@ FunctorManager& Context::functorManager()
 
 Context * Context::createChild()
 {
-  Context * child = new Context(::fileno(_sout), ::fileno(_serr));
-  child->_root = this->_root;
-  // child inherits flags
-  child->_flags = this->_flags;
-  return child;
+  return new Context(*this);
 }
 
 void Context::dumpFunctors()
 {
-  if (_fctm)
+  if (!_fctm || !_sout)
+    return;
+  for (const FunctorPtr& func : _fctm->reportDeclarations())
   {
-    for (const FunctorPtr& func : _fctm->reportDeclarations())
+    fprintf(_sout, "%s (", func->name.c_str());
+    bool n = false;
+    for (const bloc::Symbol& p : func->params)
     {
-      fprintf(_sout, "%s (", func->name.c_str());
-      bool n = false;
-      for (const bloc::Symbol& p : func->params)
+      if (n)
+        fputc(',', _sout);
+      fputs(p.name().c_str(), _sout);
+      /* type declaration */
+      if (p.level() > 0)
+        fputs(":table", _sout);
+      else if (p.major() == Type::COMPLEX && p.minor() != 0)
       {
-        if (n)
-          fputc(',', _sout);
-        fputs(p.name().c_str(), _sout);
-        /* type declaration */
-        if (p.level() > 0)
-          fputs(":table", _sout);
-        else if (p.major() == Type::COMPLEX && p.minor() != 0)
-        {
-          fputs(":", _sout);
-          fputs(PluginManager::instance().plugged(p.minor()).interface.name, _sout);
-        }
-        else if (p.major() != Type::NO_TYPE)
-        {
-          fputs(":", _sout);
-          fputs(p.typeName().c_str(), _sout);
-        }
-        n = true;
+        fputs(":", _sout);
+        fputs(PluginManager::instance().plugged(p.minor()).interface.name, _sout);
       }
-      fputs(") returns ", _sout);
-      if (func->returns.level() > 0)
-        fputs("table", _sout);
-      else
+      else if (p.major() != Type::NO_TYPE)
       {
-        if (func->returns.major() == Type::COMPLEX && func->returns.minor() != 0)
-          fputs(PluginManager::instance().plugged(func->returns.minor()).interface.name, _sout);
-        else
-          fputs(func->returns.typeName().c_str(), _sout);
+        fputs(":", _sout);
+        fputs(p.typeName().c_str(), _sout);
       }
-      fputc('\n', _sout);
-      fflush(_sout);
+      n = true;
     }
+    fputs(") returns ", _sout);
+    if (func->returns.level() > 0)
+      fputs("table", _sout);
+    else
+    {
+      if (func->returns.major() == Type::COMPLEX && func->returns.minor() != 0)
+        fputs(PluginManager::instance().plugged(func->returns.minor()).interface.name, _sout);
+      else
+        fputs(func->returns.typeName().c_str(), _sout);
+    }
+    fputc('\n', _sout);
+    fflush(_sout);
   }
 }
 
@@ -465,6 +461,42 @@ void Context::trusted(bool b)
     _flags |= FLAG_TRUSTED;
   else
     _flags &= ~(FLAG_TRUSTED);
+}
+
+/**
+ * Make a child clone.
+ * It is an empty shell of root context.
+ * @param ctx context
+ */
+Context::Context(const Context& ctx)
+: _root(ctx._root)
+, _ts_init(ctx._ts_init)
+, _sout(ctx._sout)
+, _serr(ctx._serr)
+, _flags(ctx._flags)
+{
+}
+
+/**
+ * Make a shallow clone.
+ * This is a lazy copy of child context, used only for runtime.
+ * The level of recursion starts from 1.
+ * @param ctx context
+ * @param recursion level of recursion
+ */
+Context::Context(const Context& ctx, uint8_t recursion)
+: _root(ctx._root)
+, _ts_init(ctx._ts_init)
+, _sout(ctx._sout)
+, _serr(ctx._serr)
+, _flags(ctx._flags)
+, _recursion(recursion)
+{
+  assert(recursion > 0);
+  /* copy table of symbols with new empty values */
+  _storage_pool.reserve(ctx._storage_pool.size());
+  for (const MemorySlot& e : ctx._storage_pool)
+    _storage_pool.push_back(MemorySlot(*(e.symbol)));
 }
 
 }

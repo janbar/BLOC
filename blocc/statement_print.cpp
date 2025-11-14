@@ -38,6 +38,8 @@ PRINTStatement::~PRINTStatement()
 
 const Statement * PRINTStatement::doit(Context& ctx) const
 {
+  if (!ctx.ctxout())
+    return _next;
   for (const Expression * exp : _args)
   {
     Value& val = exp->value(ctx);

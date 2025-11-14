@@ -221,7 +221,7 @@ static bool output(bloc::Context& ctx)
 {
   bool ret = true;
   bloc::Value * val = ctx.dropReturned();
-  if (val != nullptr)
+  if (val != nullptr && ctx.ctxout())
   {
     try
     {

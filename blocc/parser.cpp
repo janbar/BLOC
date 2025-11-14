@@ -227,7 +227,7 @@ Executable * Parser::parse(Context& ctx, StreamReader& reader, bool trace /*= fa
         statements.push_back(s);
     }
     ctx.parsingEnd();
-    if (trace)
+    if (trace && ctx.ctxerr())
       fflush(ctx.ctxerr());
     return new Executable(ctx, statements);
   }
@@ -237,7 +237,7 @@ Executable * Parser::parse(Context& ctx, StreamReader& reader, bool trace /*= fa
     for (auto s : statements)
       delete s;
     /* break current trace line */
-    if (trace)
+    if (trace && ctx.ctxerr())
     {
       fputc('\n', ctx.ctxerr());
       fflush(ctx.ctxerr());
@@ -338,7 +338,7 @@ bool Parser::next_token(TokenPtr& token) {
       _position.pno += strlen(ts);
 
     /* forward token string to trace */
-    if (_trace)
+    if (_trace && _ctx.ctxerr())
       fputs(ts, _ctx.ctxerr());
   }
 
