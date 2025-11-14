@@ -44,7 +44,7 @@ TokenPtr Parser::front()
     TokenPtr t;
     if(!next_token(t))
       throw ParseError();
-    _tokens.push_back(t);
+    _tokens.push_back(std::move(t));
   }
   return _tokens.front();
 }
