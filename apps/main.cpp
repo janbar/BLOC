@@ -53,18 +53,15 @@
 
 static bool output(bloc::Context& ctx);
 
-struct AutoFILEClose final
+class CloseableFiles
 {
-  FILE * file = nullptr;
-  ~AutoFILEClose() { if (file) ::fclose(file); }
-  AutoFILEClose(FILE * f) : file(f) { }
-  AutoFILEClose(const AutoFILEClose&) = delete;
-  AutoFILEClose& operator=(const AutoFILEClose&) = delete;
-  AutoFILEClose(AutoFILEClose&& o) noexcept
-  {
-    file = o.file;
-    o.file = nullptr;
-  }
+  std::forward_list<FILE*> files;
+public:
+  CloseableFiles() = default;
+  CloseableFiles(const CloseableFiles&) = delete;
+  CloseableFiles& operator=(const CloseableFiles&) = delete;
+  ~CloseableFiles() { for (FILE* file : files) ::fclose(file); }
+  void push(FILE* file) { if (file) files.push_front(file); }
 };
 
 #ifdef LIBBLOC_MSWIN
@@ -145,7 +142,7 @@ int main(int argc, char **argv) {
   /* running program */
   else
   {
-    std::forward_list<AutoFILEClose> open_files;
+    CloseableFiles openFiles;
     FILE * progfile;
     /* setup output stream */
     if (!options.file_sout.empty())
@@ -156,7 +153,7 @@ int main(int argc, char **argv) {
         PRINTF("Failed to open file '%s' for write.", options.file_sout.c_str());
         return EXIT_FAILURE;
       }
-      open_files.push_front(AutoFILEClose(outfile));
+      openFiles.push(outfile);
     }
     /* setup prog stream */
     if (*prog[0].literal() == "-")
@@ -169,7 +166,7 @@ int main(int argc, char **argv) {
         PRINTF("Failed to open file '%s' for read.", prog[0].literal()->c_str());
         return EXIT_FAILURE;
       }
-      open_files.push_front(AutoFILEClose(progfile));
+      openFiles.push(progfile);
     }
 
     bloc::Context ctx(::fileno(outfile), ::fileno(STDERR));
