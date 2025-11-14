@@ -177,8 +177,16 @@ int main(int argc, char **argv) {
     bloc::Collection * c_arg = new bloc::Collection(bloc::Value::type_literal.levelUp());
     for (auto it = ++prog.begin(); it != prog.end(); ++it)
       c_arg->push_back(bloc::Value(new bloc::Literal(std::move(*it))));
-    const bloc::Symbol& c_sym = ctx.registerSymbol(std::string("$ARG"), c_arg->table_type());
-    ctx.storeVariable(c_sym, bloc::Value(c_arg));
+    try
+    {
+      const bloc::Symbol& c_sym = ctx.registerSymbol(std::string("$ARG"), c_arg->table_type());
+      ctx.storeVariable(c_sym, bloc::Value(c_arg));
+    }
+    catch (bloc::Error& ee)
+    {
+      fprintf(STDERR, "Error: %s\n", ee.what());
+      return EXIT_FAILURE;
+    }
 
     bloc::Executable * exec = nullptr;
     try
