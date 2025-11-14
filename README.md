@@ -1,3 +1,4 @@
+[![coverity-scan status](https://scan.coverity.com/projects/32648/badge.svg)](https://scan.coverity.com/projects/janbar-bloc)
 [![build-ubuntu](https://github.com/janbar/BLOC/actions/workflows/build-ubuntu-latest.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-ubuntu-latest.yml)
 [![build-macos](https://github.com/janbar/BLOC/actions/workflows/build-macos.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-macos.yml)
 [![build-windows](https://github.com/janbar/BLOC/actions/workflows/build-windows.yml/badge.svg)](https://github.com/janbar/BLOC/actions/workflows/build-windows.yml)
