@@ -87,7 +87,8 @@ static PLUGIN_METHOD methods[] =
           "Execute a system command or a block of commands." },
   { Exec1,        "exec",             { "B", 0 },     3, exec1_args,
           "Execute a system command or a block of commands, and tail the output into"
-          "\nthe specified variable as a byte array with the given max size." },
+          "\nthe specified variable as a byte array with the given max size."
+          "\nNote that max size will be tuncated to 2GB."},
   { CmdStatus,    "status",           { "I", 0 },     0, nullptr,
           "Read the return status of the last system command." },
   { Setenv,       "setenv",           { "L", 0 },     2, setenv_args,
@@ -256,14 +257,27 @@ bool sys::Handle::exec(const std::string& cmd)
   return (_status == 0);
 }
 
+#define CHUNKLEN    4096
+#define MAXOUTLEN   INT32_MAX
+
 bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t maxsize)
 {
-  static const size_t chunk = 4096;
   std::list<char*> buf;
-  buf.push_back(new char[chunk]);
-  size_t len = chunk;   /* total allocated size of the buffer */
-  size_t head = 0;      /* head cut */
-  size_t tail = chunk;  /* tail cut */
+  /* cache the total size of the buffer */
+  size_t buflen = 0;
+  /* nb bytes to discard from head of the buffer */
+  size_t head = 0;
+  /* nb bytes to discard from end of the buffer */
+  size_t tail = 0;
+
+  /* notes:
+   * the dried size of data is: buflen - head - tail.
+   * head size will never grow above two CHUNK: at each loop the chunk in front
+   * is removed if necessary so that the head size remains less than CHUNKLEN.
+   * tail cannot grow above CHUNKLEN */
+
+  _status = 0; /* reset command status */
+
 #if defined(LIBBLOC_MSWIN)
   FILE * pout = _popen(cmd.c_str(), "r");
 #else
@@ -272,56 +286,69 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
 #endif
   if (pout)
   {
+    /* a recycle chunk */
     char * bin = nullptr;
-    char * tmp = new char[chunk];
-    _status = 0;
+    /* allocate the read buffer */
+    char * tmp = new char[CHUNKLEN];
+
+    /* buflen should not overflow, so the output must be truncated to
+     * a reasonable size */
+    if (maxsize > MAXOUTLEN)
+      maxsize = MAXOUTLEN;
+
+    /* initialize the buffer with 1 chunk */
+    buf.push_back(new char[CHUNKLEN]);
+    buflen = CHUNKLEN;
+    tail = CHUNKLEN;
+
     while (!::feof(pout))
     {
-      size_t n = ::fread(tmp, 1, sizeof(chunk), pout);
+      size_t n = ::fread(tmp, 1, CHUNKLEN, pout);
       if ( n > 0)
       {
-        /* free space */
         if (tail >= n)
         {
-          ::memcpy(buf.back() + chunk - tail, tmp, n);
+          /* the tail of last chunk is large enough to hold the read data */
+          ::memcpy(buf.back() + CHUNKLEN - tail, tmp, n);
           tail -= n;
         }
         else
         {
+          /* first, fill the tail of last chunk */
           if (tail)
           {
-            ::memcpy(buf.back() + chunk - tail, tmp, tail);
+            ::memcpy(buf.back() + CHUNKLEN - tail, tmp, tail);
             n -= tail;
           }
+          /* reuse the bin, or allocate a new chunk for the rest (n) */
           if (!bin)
-            buf.push_back(new char[chunk]);
+            buf.push_back(new char[CHUNKLEN]);
           else
           {
-            /* reuse the chunk in bin */
             buf.push_back(bin);
             bin = nullptr;
           }
-          len += chunk;
+          buflen += CHUNKLEN;
+          /* fill the new chunk with the rest (n) */
           ::memcpy(buf.back(), tmp + tail, n);
-          tail = chunk - n;
-        }
+          /* and reset tail of the last chunk */
+          tail = CHUNKLEN - n;
 
-       /* free space */
-        size_t sz = len - head - tail;
-        if (sz > maxsize)
-        {
-          head += sz - maxsize;
-          while (head >= chunk)
+          /* set head position */
+          if (buflen > (maxsize + tail))
           {
-            if (bin)
-              delete [] bin;
-            bin = buf.front();
-            buf.pop_front();
-            len -= chunk;
-            head -= chunk;
+            head = buflen - maxsize - tail;
+            /* detach the head of buffer which may be unnecessary */
+            if (head >= CHUNKLEN)
+            {
+              /* reuse head chunk as bin */
+              bin = buf.front();
+              buf.pop_front();
+              buflen -= CHUNKLEN;
+              head -= CHUNKLEN;
+            }
           }
         }
-        /* end free space */
       }
       else
       {
@@ -352,33 +379,33 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
 
     /* fill output buffer */
     out.clear();
-    out.reserve(len - head - tail);
-    /* if len is greater than chunk, then buffer contains linked chunks */
-    if (len > chunk)
+    out.reserve(buflen - head - tail);
+    /* if len is greater than CHUNKLEN, then buffer contains linked chunks */
+    if (buflen > CHUNKLEN)
     {
-      /* insert the first chunk from position at head */
-      out.insert(out.end(), buf.front() + head, buf.front() + chunk);
+      /* copy the first chunk from position at head */
+      out.insert(out.end(), buf.front() + head, buf.front() + CHUNKLEN);
       delete [] buf.front();
       buf.pop_front();
-      len -= chunk;
-      while (len > chunk)
+      buflen -= CHUNKLEN;
+      while (buflen > CHUNKLEN)
       {
-        /* insert next chunk */
-        out.insert(out.end(), buf.front(), buf.front() + chunk);
+        /* copy next chunk */
+        out.insert(out.end(), buf.front(), buf.front() + CHUNKLEN);
         delete [] buf.front();
         buf.pop_front();
-        len -= chunk;
+        buflen -= CHUNKLEN;
       }
-      /* insert the last chunk until tail */
-      out.insert(out.end(), buf.front(), buf.front() + chunk - tail);
+      /* copy the last chunk until tail front */
+      out.insert(out.end(), buf.front(), buf.front() + CHUNKLEN - tail);
       delete [] buf.front();
       buf.pop_front();
-      len -= chunk;
+      buflen -= CHUNKLEN;
     }
     else
     {
-      /* insert the chunk from position at head and until tail */
-      out.insert(out.end(), buf.front() + head, buf.front() + chunk - tail);
+      /* copy the chunk from position at head and until tail front */
+      out.insert(out.end(), buf.front() + head, buf.front() + CHUNKLEN - tail);
       delete [] buf.front();
       buf.pop_front();
     }
