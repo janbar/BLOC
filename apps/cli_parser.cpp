@@ -252,9 +252,17 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
         }
       }
 
-      /* drop newline beyond the statement */
-      if (p->front() && p->front()->code == bloc::Parser::NewLine)
-        p->pop();
+      try
+      {
+        /* drop newline beyond the statement */
+        if (p->front() && p->front()->code == bloc::Parser::NewLine)
+          p->pop();
+      }
+      catch (bloc::ParseError& ee)
+      {
+        /* stop on EOF */
+        break;
+      }
     }
   }
   for (auto s : statements) delete s;
