@@ -292,6 +292,7 @@ void Context::describeSymbol(const Symbol& symbol)
       case Type::LITERAL:
       {
         char buf[80];
+        // coverity[fun_call_w_exception]
         std::string tmp = var.literal()->substr(0, sizeof (buf));
         snprintf(buf, sizeof (buf) - 4, "%s",
                  Value::readableLiteral(tmp).c_str());
@@ -302,6 +303,7 @@ void Context::describeSymbol(const Symbol& symbol)
         break;
       }
       case Type::TABCHAR:
+        // coverity[fun_call_w_exception]
         Value::outputTabchar(*var.tabchar(), _sout, 1);
         break;
       default:

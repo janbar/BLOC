@@ -337,7 +337,8 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
           /* set head position */
           if (buflen > (maxsize + tail))
           {
-            head = buflen - maxsize - tail;
+            // coverity[overflow_const]
+            head = buflen - (maxsize + tail);
             /* detach the head of buffer which may be unnecessary */
             if (head >= CHUNKLEN)
             {
