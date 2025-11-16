@@ -181,12 +181,21 @@ Note that *rank* is not an expression, but a coded value. It is evaluated at com
 
 ## Garbage Collection
 
-BLOC performs automatic memory management. This means that you do not have to worry about allocating memory for new objects or freeing it when the objects are no longer needed.
+BLOC manages memory automatically, so you don't need to worry about manually allocating or freeing memory for objects.
 
-BLOC maintains two stacks of pre-allocated values. In BLOC, a value is a message that can contain either a number or a pointer to a memory allocation. One stack contains stored values, and the other contains temporary values. The latter acts as a kind of sandbox.
-All new values are allocated on the temporary stack. During assignment the pointer to the content of a temporary value is swapped with that of the stored value. The sandbox values only contain releasable payload. At the end of each statement, the counter of the temporary stack is zeroed, making all temporary values releasable. Memory is freed during a new allocation request on the temporary stack. The value pointed to by the stack counter is then purged and reloaded with an empty payload. A value of type number, boolean, or null has no destructor. Purging a value will execute the destructor of its payload. Therefore, the cost of a purge is insignificant for numerical or empty values.
-If an error occurs during processing, BLOC retains the state of the temporary stack for analysis. The counter will be zeroed at the end of next statement.
-Finally the temporary stack can be massively purged programmatically, or in context finalizer.
+It uses two pre-allocated stacks of values:
+
+- **The persistent stack**: contains values that are used throughout the execution.
+
+- **The temporary stack (or sandbox)**: handles temporary values created during execution.
+
+When a new value is created, it is allocated on the temporary stack. During assignment, a pointer swap occurs between the temporary value and the stored value. The temporary stack contains only releasable data, meaning data that can be freed when no longer needed.
+
+At the end of each statement or declaration, the temporary stack counter is reset to zero, which automatically releases all temporary values. The memory associated with these values is then freed during a new allocation on the temporary stack: the value pointed to by the counter is purged and then re-initialized with a new value.
+
+Values of types number, boolean, or null do not have a specific destructor, so purging these values is inexpensive, since it doesn't require complex memory release.
+
+In case of an error during execution, the state of the temporary stack is retained for analysis. The counter will be reset at the next instruction. It is also possible to manually purge the temporary stack programmatically or during context finalization.
 
 ---
 
