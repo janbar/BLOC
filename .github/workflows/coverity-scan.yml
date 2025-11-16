@@ -4,9 +4,6 @@ on:
   push:
     branches: [ "coverity_scan" ]
 
-env:
-  BUILD_TYPE: Release
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,7 +12,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
-    - name: Add more dependecies
+    - name: Add more dependencies
       run: |
         sudo apt install -y \
             libreadline-dev libplplot-dev libsqlite3-dev libmariadb-dev
