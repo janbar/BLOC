@@ -29,52 +29,59 @@ extern "C"
   typedef void* PLUGIN_HANDLE;
 
   /**
-   * The string declares the intrinsic type (1 letter) or a tuple as sequence
-   * of letter for each item. Note that R declares an opaque tuple, and cannot
-   * be used in the sequence of tuple declaration.
+   * The string declares the scalar type (one letter) or a tuple as a
+   * sequence of letters that represent the types of each element.
+   * Note that R declares an opaque tuple and cannot be used in a tuple
+   * declaration.
    *
    *    B   -->   Boolean
    *    I   -->   Integer
    *    N   -->   Numeric
-   *    C   -->   Complex
+   *    C   -->   Imaginary number
    *    L   -->   Literal (C-String)
-   *    O   -->   Object (this)
+   *    O   -->   Object (self or of the same type)
    *    X   -->   Bytes array
    *    R   -->   Opaque tuple
    *
+   * Examples: 'I' or 'R' or 'ILLNBB'
    */
   typedef const char * PLUGIN_DECL;
 
+  /**
+   * The modes of a parameter, indicating whether the parameter only
+   * transmits data or whether it also returns data.
+   */
   typedef enum
   {
     PLUGIN_IN    = 1,     /* read only */
-    PLUGIN_INOUT = 2,     /* read, write without copy */
+    PLUGIN_INOUT = 2,     /* read, write no copy */
   } PLUGIN_ARG_MODE;
 
   /**
-   * The definition of type (single or array)
+   * The value type, including the definition (decl) and the number of
+   * dimensions (ndim): 0 for a single value, or 1 or more for a table.
    */
   typedef struct
   {
-    PLUGIN_DECL     decl; /* type or tuple declaration */
-    unsigned char   ndim; /* 0 for type, n for n-dimensional array of type */
+    PLUGIN_DECL     decl; /* scalar type or tuple declaration */
+    unsigned char   ndim; /* 0 for single, or the table dimension */
   } PLUGIN_TYPE;
 
   /**
-   * The definition of ctor
+   * The description of CTOR.
    * A CTOR declares a list of input type
    */
   typedef struct
   {
     int id;
-    unsigned args_count;  /* arguments list count */
-    PLUGIN_TYPE * args;   /* arguments list */
-    const char * brief;
+    unsigned args_count;  /* argument count */
+    PLUGIN_TYPE * args;   /* list of argument type */
+    const char * brief;   /* documentation relating to the CTOR */
   } PLUGIN_CTOR;
 
   /**
-   * The definition of method argument
-   * A method argument has a mode (IN/OUT) and a type
+   * The declaration of method parameter.
+   * A method parameter has a mode (IN or INOUT) and a type.
    */
   typedef struct
   {
@@ -83,9 +90,9 @@ extern "C"
   } PLUGIN_ARG;
 
   /**
-   * The definition of method
-   * A method has a name, it declares a type returned,
-   * and a list of argument
+   * The description of method.
+   * A method has a name, declares a type returned, and a list
+   * of parameter.
    */
   typedef struct
   {
@@ -94,18 +101,19 @@ extern "C"
     PLUGIN_TYPE ret;      /* returned type */
     unsigned args_count;  /* arguments list count */
     PLUGIN_ARG * args;    /* arguments list */
-    const char * brief;
+    const char * brief;   /* documentation relating to the method */
   } PLUGIN_METHOD;
 
   /**
-   * The object interface
+   * The object interface definition.
+   * The object name, its methods and constructors.
    */
   typedef struct
   {
-    const char * name;            /* name this complex object */
+    const char * name;            /* name this object */
     unsigned method_count;        /* methods list count */
     PLUGIN_METHOD * methods;      /* methods list */
-    unsigned ctors_count;         /* ctor list count*/
+    unsigned ctors_count;         /* ctor list count */
     PLUGIN_CTOR * ctors;          /* ctor list */
   } PLUGIN_INTERFACE;
 

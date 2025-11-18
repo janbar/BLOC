@@ -35,19 +35,15 @@ namespace plugin
 {
 
 /**
- * Build tuple declaration from PLUGIN_DECL definition.
- * The tuple declaration (decl_t) is required to create a collection of tuple.
- * Use this function to build it, before calling the collection CTOR.
- * @param decl_def the tuple definition
+ * Helper function to build a tuple declaration from a PLUGIN_DECL.
+ * @param decl_def the declaration definition
  * @param type_id the identifier of the this module
  */
 TupleDecl::Decl
 make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id);
 
 /**
- * Build type from PLUGIN_TYPE definition.
- * The type (Type) is required to create a collection of intrinsic type. Use
- * this function to build it, before calling the collection CTOR.
+ * Helper function to build a type from a PLUGIN_TYPE.
  * @param type_def the type definition
  * @param type_id the identifier of the this module
  */
@@ -68,8 +64,8 @@ public:
   virtual void declareInterface(PLUGIN_INTERFACE * interface) = 0;
 
   /**
-   * Create and return a new object instance. On failure it could return the
-   * null pointer or throw a runtime exception.
+   * Create and return a new object instance. On failure it could return
+   * the null pointer or throw a runtime exception.
    * @param ctx           the bloc context
    * @param args          list of CTOR arguments
    * @return              pointer to new instance
@@ -84,20 +80,20 @@ public:
 
   /**
    * Execute the given method.
-   * It should return a pointer to new expression from type:
-   *    BooleanExpression, IntegerExpression, NumericExpression,
-   *    LiteralExpression, TabcharExpression, TupleExpression,
-   * or self by returning new ComplexExpression(object_this).
-   * The returned pointer will be freed by the caller after payload processing.
-   * Returning nullptr will throw RuntimeError(EXC_RT_MEMB_FAILED_S). Obviously
-   * it is preferable to throw RuntimeError with a more meaningful message.
+   * It should return a pointer to new expression or the expression of
+   * itself by returning new ComplexExpression(object_this). The returned
+   * pointer will be freed by the caller after payload processing.
+   * Returning nullptr will throw RuntimeError(EXC_RT_MEMB_FAILED_S).
+   * Obviously it is preferable to throw RuntimeError with a more meaningful
+   * message.
    *
-   * Read IN/OUT argument:
+   * Read IN/INOUT argument:
    * Arguments can be read from the Expression pointer without cast.
    *
-   * Write OUT argument:
-   * Expression pointer must be cast to VariableExpression pointer. Then value
-   * can be store calling the member store(ctx&, {Type}Expression&&(value)).
+   * Write INOUT argument:
+   * Expression pointer should be VariableExpression. Use method isVarName
+   * to test it. To pass the new value, you must cast the expression and
+   * use the method store.
    *
    * @param object_this   wrapper for the object
    * @param method_id     identifier of the method to execute
