@@ -339,6 +339,13 @@ bloc_assign_literal(bloc_value *val, const char *v);
 LIBBLOC_API bloc_bool
 bloc_assign_tabchar(bloc_value *val, const char *v, unsigned len);
 
+/**
+ * Assign null to the given value.
+ * @param val the value to be updated to null
+ */
+LIBBLOC_API void
+bloc_assign_null(bloc_value *val);
+
 /*
 Handling null value and type introspection
 */

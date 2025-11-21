@@ -301,6 +301,14 @@ bloc_assign_tabchar(bloc_value *val, const char *v, unsigned len)
   return bloc_false;
 }
 
+void
+bloc_assign_null(bloc_value *val)
+{
+  bloc::Value * mv = reinterpret_cast<bloc::Value*>(val);
+  if (!mv->isNull())
+    mv->swap(bloc::Value(mv->type()).to_lvalue(mv->lvalue()));
+}
+
 bloc_type
 bloc_value_type(bloc_value *v)
 {
