@@ -242,8 +242,7 @@ bloc_create_literal(const char *v)
 bloc_value*
 bloc_create_tabchar(const char *v, unsigned len)
 {
-  bloc::TabChar * tv = new bloc::TabChar(len);
-  tv->assign(v, v + len);
+  bloc::TabChar * tv = new bloc::TabChar(v, v + len);
   return reinterpret_cast<bloc_value*>(new bloc::Value(tv));
 }
 
@@ -254,6 +253,38 @@ bloc_create_imaginary(bloc_pair i)
   ii->a = i.a;
   ii->b = i.b;
   return reinterpret_cast<bloc_value*>(new bloc::Value(ii));
+}
+
+bloc_bool
+bloc_assign_literal(bloc_value *val, const char *v)
+{
+  bloc::Value * mv = reinterpret_cast<bloc::Value*>(val);
+  const bloc::Type& type = mv->type();
+  if (type.level())
+    return bloc_false;
+  if (type == bloc::Type::LITERAL || type == bloc::Type::NO_TYPE)
+  {
+    bloc::Literal * lv = new bloc::Literal(v);
+    mv->swap(bloc::Value(lv).to_lvalue(mv->lvalue()));
+    return bloc_true;
+  }
+  return bloc_false;
+}
+
+bloc_bool
+bloc_assign_tabchar(bloc_value *val, const char *v, unsigned len)
+{
+  bloc::Value * mv = reinterpret_cast<bloc::Value*>(val);
+  const bloc::Type& type = mv->type();
+  if (type.level())
+    return bloc_false;
+  if (type == bloc::Type::TABCHAR || type == bloc::Type::NO_TYPE)
+  {
+    bloc::TabChar * tv = new bloc::TabChar(v, v + len);
+    mv->swap(bloc::Value(tv).to_lvalue(mv->lvalue()));
+    return bloc_true;
+  }
+  return bloc_false;
 }
 
 bloc_type

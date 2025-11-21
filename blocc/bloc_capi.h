@@ -319,6 +319,26 @@ bloc_create_tabchar(const char *v, unsigned len);
 LIBBLOC_API bloc_value*
 bloc_create_imaginary(bloc_pair i);
 
+/**
+ * Assign new string to the given literal value.
+ * Assigning a null pointer will make the value null.
+ * @param val the value to update
+ * @param v the new string
+ * @return `bloc_true` on success, `bloc_false` on failure
+ */
+LIBBLOC_API bloc_bool
+bloc_assign_literal(bloc_value *val, const char *v);
+
+/**
+ * Assign new byte array to the given tabchar value.
+ * Assigning a null pointer will make the value null.
+ * @param val the value to update
+ * @param v the new byte array
+ * @return `bloc_true` on success, `bloc_false` on failure
+ */
+LIBBLOC_API bloc_bool
+bloc_assign_tabchar(bloc_value *val, const char *v, unsigned len);
+
 /*
 Handling null value and type introspection
 */
@@ -388,10 +408,13 @@ bloc_numeric(bloc_value *v, double **buf);
 /**
  * Bind literal (string) data from a value.
  * If the value type is literal this stores a pointer to the internal data
- * into `*buf`. If the value is null, `*buf` will be set to NULL.
+ * into `*buf`. If the value is null, `*buf` will be set to NULL. The bound
+ * data is const, therefore it cannot be modified. Use `bloc_assign_literal()`
+ * to modify the value's contents.
  * @param v the value to access
  * @param buf out parameter to receive pointer to a null-terminated string
  * @return `bloc_true` if the value type is literal, `bloc_false` otherwise
+ * @see `bloc_assign_literal()`
  */
 LIBBLOC_API bloc_bool
 bloc_literal(bloc_value *v, const char **buf);
@@ -399,11 +422,14 @@ bloc_literal(bloc_value *v, const char **buf);
 /**
  * Bind tabchar data from a value.
  * If the value type is tabchar this stores a pointer to the internal data
- * into `*buf`. If the value is null, `*buf` will be set to NULL.
+ * into `*buf`. If the value is null, `*buf` will be set to NULL. The bound
+ * data is const, therefore it cannot be modified. Use `bloc_assign_tabchar()`
+ * to modify the value's contents.
  * @param v the value to access
  * @param buf out parameter to receive pointer to data
  * @param len out parameter to receive the length of the data
  * @return `bloc_true` if the value type is tabchar, `bloc_false` otherwise
+ * @see `bloc_assign_tabchar()`
  */
 LIBBLOC_API bloc_bool
 bloc_tabchar(bloc_value *v, const char **buf, unsigned *len);
