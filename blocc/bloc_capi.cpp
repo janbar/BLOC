@@ -191,25 +191,25 @@ bloc_create_null(bloc_type_major type)
   switch(type)
   {
   case BOOLEAN:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::BOOLEAN)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_boolean));
   case INTEGER:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::INTEGER)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_integer));
   case NUMERIC:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::NUMERIC)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_numeric));
   case LITERAL:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::LITERAL)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_literal));
   case COMPLEX:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::COMPLEX)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_complex));
   case TABCHAR:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::TABCHAR)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_tabchar));
   case ROWTYPE:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::ROWTYPE)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_rowtype));
   case POINTER:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::POINTER)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_pointer));
   case IMAGINARY:
-    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::IMAGINARY)));
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_imaginary));
   default:
-   return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Type(bloc::Type::NO_TYPE)));
+   return reinterpret_cast<bloc_value*>(new bloc::Value());
   }
 }
 
@@ -234,6 +234,8 @@ bloc_create_numeric(double v)
 bloc_value*
 bloc_create_literal(const char *v)
 {
+  if (!v)
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_literal));
   bloc::Literal * lv = new bloc::Literal(v);
   return reinterpret_cast<bloc_value*>(new bloc::Value(lv));
 }
@@ -242,6 +244,8 @@ bloc_create_literal(const char *v)
 bloc_value*
 bloc_create_tabchar(const char *v, unsigned len)
 {
+  if (!v)
+    return reinterpret_cast<bloc_value*>(new bloc::Value(bloc::Value::type_tabchar));
   bloc::TabChar * tv = new bloc::TabChar(v, v + len);
   return reinterpret_cast<bloc_value*>(new bloc::Value(tv));
 }
@@ -264,8 +268,13 @@ bloc_assign_literal(bloc_value *val, const char *v)
     return bloc_false;
   if (type == bloc::Type::LITERAL || type == bloc::Type::NO_TYPE)
   {
-    bloc::Literal * lv = new bloc::Literal(v);
-    mv->swap(bloc::Value(lv).to_lvalue(mv->lvalue()));
+    if (!v)
+      mv->swap(bloc::Value(bloc::Value::type_literal).to_lvalue(mv->lvalue()));
+    else
+    {
+      bloc::Literal * lv = new bloc::Literal(v);
+      mv->swap(bloc::Value(lv).to_lvalue(mv->lvalue()));
+    }
     return bloc_true;
   }
   return bloc_false;
@@ -280,8 +289,13 @@ bloc_assign_tabchar(bloc_value *val, const char *v, unsigned len)
     return bloc_false;
   if (type == bloc::Type::TABCHAR || type == bloc::Type::NO_TYPE)
   {
-    bloc::TabChar * tv = new bloc::TabChar(v, v + len);
-    mv->swap(bloc::Value(tv).to_lvalue(mv->lvalue()));
+    if (!v)
+      mv->swap(bloc::Value(bloc::Value::type_tabchar).to_lvalue(mv->lvalue()));
+    else
+    {
+      bloc::TabChar * tv = new bloc::TabChar(v, v + len);
+      mv->swap(bloc::Value(tv).to_lvalue(mv->lvalue()));
+    }
     return bloc_true;
   }
   return bloc_false;
