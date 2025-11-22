@@ -176,6 +176,18 @@ All pointers returned by the API are owned by the caller unless the function doc
 
   Create an imaginary value.
 
+- **`bloc_bool bloc_assign_literal(bloc_value *val, const char *v);`**
+
+  Assign new string to the given literal value.
+
+- **`bloc_bool bloc_assign_tabchar(bloc_value *val, const char *v, unsigned len);`**
+
+  Assign new byte array to the given tabchar value.
+
+- **`void bloc_assign_null(bloc_value *val);`**
+
+  Assign null to the given value.
+
 ---
 
 ## Value inspection and binding
