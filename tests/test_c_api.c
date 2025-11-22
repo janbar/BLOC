@@ -20,7 +20,7 @@ int main(int argc, char** argv)
 
     bloc_bool  * val;
     if (bloc_boolean(sto_a, &val))
-      printf("B        = %u\n", *val);
+      printf("B        = %d\n", (int)(*val));
   }
 
   {
@@ -117,7 +117,7 @@ int main(int argc, char** argv)
     }
     else
     {
-      printf("expr     = %s\n", bloc_strerror());
+      printf("expr_err = %s\n", bloc_strerror());
     }
     bloc_free_expression(e);
   }
@@ -131,7 +131,7 @@ int main(int argc, char** argv)
 
     bloc_executable * x = bloc_parse_executable(ctx,
           "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
-          "for j in 2 to i/2 loop\nif i%j == 0 then b=false; break; end if;\n"
+          "for j in 2 to i/2+1 loop\nif i%j == 0 then b=false; break; end if;\n"
           "end loop;\nif b then put i \" \"; cnt=cnt+1; end if;\nend loop;\nreturn cnt;");
     if (x)
     {
@@ -166,11 +166,11 @@ int main(int argc, char** argv)
     bloc_ctx_purge(ctx);
     x = bloc_parse_executable(ctx,
           "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
-          "for j in 2 to i/2 loop\nif i%j == 0 then b=false; break; end if;\n"
+          "for j in 2 to i/2+1 loop\nif i%j == 0 then b=false; break; end if;\n"
           "end loop;\nif b then put i \" \"; cnt=cnt+1; end if;\nend loop;\nreturn cnt;");
     if (!x)
     {
-      printf("exec     = %s\n", bloc_strerror());
+      printf("exec_err = %s\n", bloc_strerror());
     }
     else
     {
@@ -183,7 +183,7 @@ int main(int argc, char** argv)
     {
       if (!bloc_execute(x))
       {
-        printf("exec     = %s\n", bloc_strerror());
+        printf("exec_err = %s\n", bloc_strerror());
       }
       else
       {
@@ -271,6 +271,51 @@ int main(int argc, char** argv)
     }
     else
       printf("ERROR: %s\n", bloc_strerror());
+  }
+
+  {
+    bloc_value * v = bloc_create_literal("ABC");
+    if (!bloc_assign_literal(v, "abcdefgh"))
+      printf("ERROR: Assign Literal failed\n");
+    else
+    {
+      const char * data = NULL;
+      bloc_literal(v, &data);
+      printf("LV       = %s\n", data);
+    }
+    bloc_free_value(v);
+  }
+
+  {
+    char raw[8] = { 65, 0, 67, 0, 69, 0, 71, 127 };
+    bloc_value * v = bloc_create_tabchar(raw+4, 3);
+    if (!bloc_assign_tabchar(v, raw, sizeof(raw)))
+      printf("ERROR: Assign Bytes failed\n");
+    else
+    {
+      const char * data = NULL;
+      unsigned len;
+      bloc_tabchar(v, &data, &len);
+      printf("XV       =");
+      for (unsigned i = 0; i < len; ++i)
+        printf(" %c", (data[i] == 0 ? '.' : data[i]));
+      printf("\n");
+    }
+    bloc_free_value(v);
+  }
+
+  {
+    bloc_value * v = bloc_create_numeric(1.23456);
+    bloc_assign_null(v);
+    if (!bloc_value_isnull(v))
+      printf("ERROR: Assigning a null value failed\n");
+    else
+    {
+      double * d = NULL;
+      bloc_numeric(v, &d);
+      printf("NV_null  = %p\n", d);
+    }
+    bloc_free_value(v);
   }
 
   bloc_free_context(ctx);
