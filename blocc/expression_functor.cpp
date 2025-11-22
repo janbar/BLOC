@@ -94,8 +94,8 @@ FunctorExpression * FunctorExpression::parse(Parser& p, Context& ctx, TokenPtr& 
       }
     }
 
-    const FunctorManager::entry fe = ctx.functorManager().findDeclaration(name, args.size());
-    if (fe != ctx.functorManager().npos())
+    FunctorManager::entry fe;
+    if (ctx.functorManager().findDeclaration(name, args.size(), fe))
       return new FunctorExpression(fe, std::move(args));
     if (ctx.functorManager().exists(name))
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, name.c_str(), token);

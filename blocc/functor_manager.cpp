@@ -42,9 +42,9 @@ Functor::~Functor()
   name.clear();
 }
 
-Functor::Env Functor::createEnv(Context& parent, const std::vector<Expression*>& pvals) const
+Functor::Env Functor::createEnv(Context& caller, const std::vector<Expression*>& pvals) const
 {
-  uint8_t r = parent.recursion();
+  uint8_t r = caller.recursion();
   if (r == RECURSION_LIMIT)
     throw RuntimeError(EXC_RT_RECURSION_LIMIT);
 
@@ -52,31 +52,34 @@ Functor::Env Functor::createEnv(Context& parent, const std::vector<Expression*>&
   if (ctx_cache.empty())
   {
     _ctx = new Context(*(ctx), r + 1);
-    _ctx->trace(parent.trace());
+    _ctx->trace(caller.trace());
   }
   else
   {
     _ctx = ctx_cache.front();
     ctx_cache.pop_front();
     _ctx->recursion(r + 1);
-    _ctx->trace(parent.trace());
+    _ctx->trace(caller.trace());
     _ctx->returnCondition(false);
   }
-  /* assign args with the given values */
+  /* bind parameter values ​​to variables for all symbols */
   for (int i = 0; i < params.size(); ++i)
-    VariableExpression(params[i]).store(*_ctx, parent, pvals[i]);
+    VariableExpression(params[i]).store(*_ctx, caller, pvals[i]);
 
   return Env(*this, _ctx);
 }
 
-const FunctorManager::entry FunctorManager::findDeclaration(const std::string& name, unsigned param_count)
+bool FunctorManager::findDeclaration(const std::string& name, unsigned param_count, entry& found_entry)
 {
   for (entry e = _declarations.begin(); e != _declarations.end(); ++e)
   {
     if ((*e)->name == name && (*e)->params.size() == param_count)
-      return e;
+    {
+      found_entry = e;
+      return true;
+    }
   }
-  return _declarations.end();
+  return false;
 }
 
 bool FunctorManager::exists(const std::string& name) const

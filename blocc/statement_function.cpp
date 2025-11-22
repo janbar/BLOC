@@ -40,8 +40,8 @@ FUNCTIONStatement::~FUNCTIONStatement()
 
 const Statement * FUNCTIONStatement::doit(Context& ctx) const
 {
-  FunctorManager::entry fe = ctx.functorManager().findDeclaration(_functor->name, _functor->params.size());
-  if (fe == ctx.functorManager().npos())
+  FunctorManager::entry fe;
+  if (!ctx.functorManager().findDeclaration(_functor->name, _functor->params.size(), fe))
     throw RuntimeError(EXC_RT_INTERNAL_ERROR_S, _functor->name.c_str());
   *fe = _functor;
   return _next;

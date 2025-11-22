@@ -47,6 +47,11 @@ struct Functor
   : name(name), params(params) { }
   ~Functor();
 
+  /* A runtime context is cached after use. It will be reused for the
+   * next call, thus avoiding a new cloning of the prestine context.
+   * The env factory reuses cached contexts or creates a new one.
+   * The env destructor returns its context to the cache.
+   */
   mutable std::forward_list<Context*> ctx_cache;
 
   class Env
@@ -66,7 +71,15 @@ struct Functor
     Context * ctx;
   };
 
-  Env createEnv(Context& parent, const std::vector<Expression*>& pvals) const;
+  /**
+   * Env/Context factory for body runtime.
+   * Note that size of `pvals` must be equal to the size of `params`.
+   * The recursion depth will be incremented in the returned Env/Context.
+   * @param caller the context in which the call is made
+   * @param pvals the list of expressions passed as parameters
+   * @return the `Env` for body runtime
+   */
+  Env createEnv(Context& caller, const std::vector<Expression*>& pvals) const;
 };
 
 typedef std::shared_ptr<Functor> FunctorPtr;
@@ -81,16 +94,14 @@ public:
   typedef std::forward_list<FunctorPtr> container;
   typedef container::iterator entry;
 
-  const entry npos() { return _declarations.end(); }
-
   /**
    * Find entry for the given declaration.
    * @param name The name of the declaration
    * @param param_count The parameters count of the declaration
-   * @return The found entry. If no such entry is found, past-the-end iterator
-   * is returned (see npos()).
+   * @param found_entry out parameter to receive the found entry
+   * @return true if entry is found, else false
    */
-  const entry findDeclaration(const std::string& name, unsigned param_count);
+  bool findDeclaration(const std::string& name, unsigned param_count, entry& found_entry);
 
   /**
    * Returns true if a declaration with the given name exists.
