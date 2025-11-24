@@ -38,13 +38,6 @@
 #include <algorithm> // std::find
 #include <set>
 
-#ifdef HAVE_READLINE
-#include <readline/readline.h>
-#include <readline/history.h>
-/* a static variable for holding the line */
-static char * rl_line = nullptr;
-#endif
-
 #ifdef LIBBLOC_MSWIN
 #define STDOUT stdout
 #define STDOUT_FILENO _fileno(stdout)
@@ -60,6 +53,19 @@ static char * rl_line = nullptr;
 #define PRINTF(a, ...) fprintf(STDOUT, a, __VA_ARGS__)
 #include "signalhandler.h"
 #include <unistd.h>
+#endif
+
+#ifdef ENABLE_READLINE
+#include <dlfcn.h>
+static void* dlsym_rl_handle = nullptr;
+static char *(*dlsym_rl_readline)(const char *);
+static void (*dlsym_rl_add_history)(const char *);
+static void (*dlsym_rl_clear_history)(void);
+static void (*dlsym_rl_stifle_history)(int);
+static void load_readline(bool debug);
+static void unload_readline();
+/* a static variable for holding the line */
+static char * rl_line = nullptr;
 #endif
 
 #define PRINTBUF(buf,len,sout) for(int ii=0; ii<len; ++ii) fputc(buf[ii], sout)
@@ -145,8 +151,10 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   sh.catchSignal(SIGINT);
 #endif
 
-#ifdef HAVE_READLINE
-  stifle_history(512);
+#ifdef ENABLE_READLINE
+  load_readline(options.debug);
+  if (dlsym_rl_handle)
+    dlsym_rl_stifle_history(512);
 #endif
 
   ReadInput input;
@@ -274,90 +282,171 @@ void cli_parser(const MainOptions& options, const std::vector<std::string>& args
   sh.omitSignal(SIGINT);
   sh.setCallback(nullptr, nullptr);
 #endif
-#ifdef HAVE_READLINE
-  if (rl_line)
-    free(rl_line);
-  clear_history();
+
+#ifdef ENABLE_READLINE
+  if (dlsym_rl_handle)
+  {
+    if (rl_line)
+      free(rl_line);
+    dlsym_rl_clear_history();
+    unload_readline();
+  }
 #endif
 }
 
-int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
+#ifdef ENABLE_READLINE
+void load_readline(bool debug)
 {
-#ifdef HAVE_READLINE
-  /* a static variable to store the read position */
-  static char * rl_pos = nullptr;
-  unsigned n = 0;
-  if (rl_pos)
+  bool failed = false;
+  void *handle;
+  const char *error;
+#ifdef __MACH__
+  handle = dlopen("libreadline.dylib", RTLD_LAZY);
+#else
+  handle = dlopen("libreadline.so", RTLD_LAZY);
+#endif
+  if (!handle)
   {
-    if (*rl_pos)
-    {
-      /* fill a chunk from previous read */
-      while (*rl_pos && n < max_size)
-      {
-        char c = *rl_pos;
-        buf[n] = c;
-        ++rl_pos;
-        ++n;
-        if (c == bloc::Parser::NewLine)
-        {
-          return n;
-        }
-      }
-      if (n >= max_size)
-      {
-        /* buffer is full */
-        return max_size;
-      }
-    }
-    /* free old buffer */
-    free(rl_line);
-    rl_line = rl_pos = nullptr;
-    buf[n++] = bloc::Parser::NewLine;
-    return n;
+    error = dlerror();
+    if (error && debug)
+      PRINT(dlerror());
+    dlsym_rl_handle = nullptr;
+    return;
+  }
+  /* bind readline */
+  *(void **) (&dlsym_rl_readline) = dlsym(handle, "readline");
+  error = dlerror();
+  if (error)
+  {
+    if (debug)
+      PRINT(error);
+    failed = true;
+  }
+  /* bind add_history */
+  *(void **) (&dlsym_rl_add_history) = dlsym(handle, "add_history");
+  error = dlerror();
+  if (error)
+  {
+    if (debug)
+      PRINT(error);
+    failed = true;
+  }
+  /* bind clear_history */
+  *(void **) (&dlsym_rl_clear_history) = dlsym(handle, "clear_history");
+  error = dlerror();
+  if (error)
+  {
+    if (debug)
+      PRINT(error);
+    failed = true;
+  }
+  /* bind stifle_history */
+  *(void **) (&dlsym_rl_stifle_history) = dlsym(handle, "stifle_history");
+  error = dlerror();
+  if (error)
+  {
+    if (debug)
+      PRINT(error);
+    failed = true;
   }
 
-  /* get a new line */
-  if (p->state() == bloc::Parser::Parsing)
-    rl_line = readline("... ");
+  if (!failed)
+    dlsym_rl_handle = handle;
   else
   {
-    p->resetPosition();
-    rl_line = readline(">>> ");
+    dlclose(handle);
+    dlsym_rl_handle = nullptr;
   }
-  /* if the line has any text in it */
-  if (rl_line)
+}
+
+void unload_readline()
+{
+  if (dlsym_rl_handle)
+    dlclose(dlsym_rl_handle);
+  dlsym_rl_handle = nullptr;
+}
+#endif
+
+int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
+{
+#ifdef ENABLE_READLINE
+  if (dlsym_rl_handle)
   {
-    if (*rl_line)
+    /* a static variable to store the read position */
+    static char * rl_pos = nullptr;
+    unsigned n = 0;
+    if (rl_pos)
     {
-      /* save it on the history */
-      add_history(rl_line);
-      rl_pos = rl_line;
-      while (*rl_pos && n < max_size)
+      if (*rl_pos)
       {
-        char c = *rl_pos;
-        buf[n] = c;
-        ++rl_pos;
-        ++n;
-        if (c == bloc::Parser::NewLine)
+        /* fill a chunk from previous read */
+        while (*rl_pos && n < max_size)
         {
-          return n;
+          char c = *rl_pos;
+          buf[n] = c;
+          ++rl_pos;
+          ++n;
+          if (c == bloc::Parser::NewLine)
+          {
+            return n;
+          }
+        }
+        if (n >= max_size)
+        {
+          /* buffer is full */
+          return max_size;
         }
       }
-      if (n >= max_size)
-      {
-        /* buffer is full */
-        return max_size;
-      }
+      /* free old buffer */
+      free(rl_line);
+      rl_line = rl_pos = nullptr;
+      buf[n++] = bloc::Parser::NewLine;
+      return n;
     }
-    /* free old buffer */
-    free(rl_line);
-    rl_line = rl_pos = nullptr;
-    buf[n++] = bloc::Parser::NewLine;
-    return n;
+
+    /* get a new line */
+    if (p->state() == bloc::Parser::Parsing)
+      rl_line = dlsym_rl_readline("... ");
+    else
+    {
+      p->resetPosition();
+      rl_line = dlsym_rl_readline(">>> ");
+    }
+    /* if the line has any text in it */
+    if (rl_line)
+    {
+      if (*rl_line)
+      {
+        /* save it on the history */
+        dlsym_rl_add_history(rl_line);
+        rl_pos = rl_line;
+        while (*rl_pos && n < max_size)
+        {
+          char c = *rl_pos;
+          buf[n] = c;
+          ++rl_pos;
+          ++n;
+          if (c == bloc::Parser::NewLine)
+          {
+            return n;
+          }
+        }
+        if (n >= max_size)
+        {
+          /* buffer is full */
+          return max_size;
+        }
+      }
+      /* free old buffer */
+      free(rl_line);
+      rl_line = rl_pos = nullptr;
+      buf[n++] = bloc::Parser::NewLine;
+      return n;
+    }
+    /* EOF */
+    return 0;
   }
-  /* EOF */
-  return 0;
-#else
+#endif
   if (p->state() == bloc::Parser::Parsing)
     PRINT("... ");
   else
@@ -367,7 +456,6 @@ int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
   }
   FLUSHOUT;
   return bloc_readstdin(buf, max_size);
-#endif
 }
 
 static bool load_args(bloc::Context& ctx, const std::vector<std::string>& args)
