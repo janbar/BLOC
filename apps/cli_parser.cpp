@@ -303,7 +303,22 @@ void load_readline(bool debug)
 #ifdef __MACH__
   handle = dlopen("libreadline.dylib", RTLD_LAZY);
 #else
-  handle = dlopen("libreadline.so", RTLD_LAZY);
+  static const char * names[] = {
+    "libreadline.so.8", "libreadline.so.7", "libreadline.so.6",
+    "libreadline.so.5", "libreadline.so" /*devel*/, nullptr
+  };
+  const char ** p = names;
+  while (*p != nullptr)
+  {
+    handle = dlopen(*p, RTLD_LAZY);
+    if (handle)
+    {
+      if (debug)
+        PRINTF("Loading %s\n", *p);
+      break;
+    }
+    ++p;
+  }
 #endif
   if (!handle)
   {
