@@ -36,15 +36,15 @@
 
 #if defined(__APPLE__)
 #define LIBPREFIX "libbloc_"
-#define LIBSUFFIX "." LIBVERSION ".dylib"
+#define LIBSUFFIX "." LIBSOVERSION ".dylib"
 
 #elif defined(__CYGWIN__)
 #define LIBPREFIX "cygbloc_"
-#define LIBSUFFIX "-" LIBVERSION ".dll"
+#define LIBSUFFIX "-" LIBSOVERSION ".dll"
 
 #else
 #define LIBPREFIX "libbloc_"
-#define LIBSUFFIX ".so." LIBVERSION
+#define LIBSUFFIX ".so." LIBSOVERSION
 #endif
 #endif
 

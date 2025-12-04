@@ -1,6 +1,6 @@
 
 add_definitions(
-  "-DLIBVERSION=\"${BLOC_LIB_VERSION}\""
+  "-DLIBSOVERSION=\"${BLOC_LIB_SOVERSION}\""
 )
 
 file(GLOB bloc_SOURCES
