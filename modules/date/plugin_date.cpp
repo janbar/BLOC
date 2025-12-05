@@ -357,7 +357,13 @@ bloc::Value * DatePlugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
-    double add = *a0.numeric();
+
+    double add;
+    if (a0.type() == bloc::Type::INTEGER)
+      add = (double) *a0.integer();
+    else
+      add = *a0.numeric();
+
     if (add > 86400.0 || add < -86400.0)
       throw RuntimeError(EXC_RT_OUT_OF_RANGE);
     int day = (int) add;
