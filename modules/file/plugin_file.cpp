@@ -20,6 +20,10 @@
 #include <blocc/collection.h>
 #include <blocc/tuple.h>
 
+#if defined(__APPLE__)
+#define OOO_POSIX_C_SOURCE
+#endif
+
 #include <cstdio>
 #include <cerrno>
 #if defined(LIBBLOC_MSWIN)
@@ -165,21 +169,21 @@ static PLUGIN_METHOD methods[] =
           "Returns the dirname of the file." },
   { FBasename,  "basename",  { "L", 0 },    0, nullptr,
           "Returns the basename of the file." },
-  { FStat,    "stat",       { "IIL", 0 },   0, nullptr,
+  { FStat,    "stat",       { "IILI", 0 },   0, nullptr,
           "Returns a tuple containing basic informations about the file:"
-          "\n{ Type, Size, Absolute Path }"
+          "\n{ Type, Size, Absolute Path, CTime }"
           "\nType: 0=Invalid, 1=Regular, 2=Directory, 3=Other"
           "\nSize: file size in byte" },
   //
   // global methods
   //
-  { Stat,     "stat",       { "IIL", 0 },   1, string1_args,
+  { Stat,     "stat",       { "IILI", 0 },   1, string1_args,
           "Returns a tuple containing basic informations about the given path:"
-          "\n{ Type, Size, Absolute Path }"
+          "\n{ Type, Size, Absolute Path, CTime }"
           "\nType: 0=Invalid, 1=Regular, 2=Directory, 3=Other"
           "\nSize: file size in byte" },
-  { Dir,      "dir",        { "IIL", 1 },    1, string1_args,
-          "Returns the entry list of a directory: [{ Type, Size, Name }]"
+  { Dir,      "dir",        { "IILI", 1 },    1, string1_args,
+          "Returns the entry list of a directory: [{ Type, Size, Name, CTime }]"
           "\nType: 1=Regular, 2=Directory, 3=Other"
           "\nSize: file size in byte" },
   { Separator, "separator", { "L", 0 },      0, nullptr,
@@ -217,7 +221,7 @@ struct Handle {
 /**
  * stat file
  */
-static int _stat(const std::string& path, int * fmode, size_t * fsize)
+static int _stat(const std::string& path, int * fmode, size_t * fsize, int64_t * ctime)
 {
   struct stat buf;
   int r = ::stat(path.c_str(), &buf);
@@ -227,16 +231,19 @@ static int _stat(const std::string& path, int * fmode, size_t * fsize)
     {
       *fmode = 1;
       *fsize = (size_t) buf.st_size;
+      *ctime = (int64_t) buf.st_ctime;
     }
     else if (S_ISDIR(buf.st_mode))
     {
       *fmode = 2;
       *fsize = 0;
+      *ctime = (int64_t) buf.st_ctime;
     }
     else
     {
       *fmode = 3;
       *fsize = 0;
+      *ctime = 0;
     }
     return 0;
   }
@@ -297,12 +304,14 @@ static int _dir(const std::string& path, bloc::Collection ** out)
   if ((dirp = ::opendir(path.c_str())) == nullptr)
     return (-1);
 
-  *out = new bloc::Collection(bloc::plugin::make_decl("IIL", 0), 1);
+  *out = new bloc::Collection(bloc::plugin::make_decl("IILI", 0), 1);
   while ((dp = ::readdir(dirp)) != nullptr)
   {
     int fmode = 0;
     size_t fsize = 0;
-    _stat(std::string(path).append(1, FILE_SEPARATOR).append(dp->d_name), &fmode, &fsize);
+    int64_t ctime = 0;
+    _stat(std::string(path).append(1, FILE_SEPARATOR).append(dp->d_name),
+          &fmode, &fsize, &ctime);
     /* create the row */
     bloc::Tuple::container_t row;
     row.push_back(bloc::Value(bloc::Integer(fmode)));
@@ -311,6 +320,10 @@ static int _dir(const std::string& path, bloc::Collection ** out)
     else
       row.push_back(bloc::Value(bloc::Value::type_integer));
     row.push_back(bloc::Value(new bloc::Literal(dp->d_name)));
+    if (fmode == 1 || fmode == 2)
+      row.push_back(bloc::Value(bloc::Integer(ctime)));
+    else
+      row.push_back(bloc::Value(bloc::Value::type_integer));
     /* fill collection with the new tuple */
     (*out)->push_back(Value(new bloc::Tuple(std::move(row))));
   }
@@ -554,17 +567,21 @@ bloc::Value * FilePlugin::executeMethod(
       throw bloc::RuntimeError(bloc::EXC_RT_OTHER_S, "file not opened.");
     int fmode = 0;
     size_t fsize = 0;
+    int64_t ctime = 0;
     /* initialize the row */
     bloc::Tuple::container_t row;
     row.push_back(bloc::Value(bloc::Value::type_integer));
     row.push_back(bloc::Value(bloc::Value::type_integer));
     row.push_back(bloc::Value(bloc::Value::type_literal));
-    if (file::_stat(file->_path, &fmode, &fsize) == 0)
+    row.push_back(bloc::Value(bloc::Value::type_integer));
+    if (file::_stat(file->_path, &fmode, &fsize, &ctime) == 0)
     {
       row[0].swap(bloc::Value(bloc::Integer(fmode)));
       if (fmode == 1)
         row[1].swap(bloc::Value(bloc::Integer(fsize)));
       row[2].swap(bloc::Value(new bloc::Literal(file::_absolutePath(file->_path))));
+      if (fmode == 1 || fmode == 2)
+        row[3].swap(bloc::Value(bloc::Integer(ctime)));
     }
     else
       row[0].swap(bloc::Value(bloc::Integer(0)));
@@ -578,18 +595,22 @@ bloc::Value * FilePlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     int fmode = 0;
     size_t fsize = 0;
+    int64_t ctime = 0;
     const std::string& path = *a0.literal();
     /* initialize the row */
     bloc::Tuple::container_t row;
     row.push_back(bloc::Value(bloc::Value::type_integer));
     row.push_back(bloc::Value(bloc::Value::type_integer));
     row.push_back(bloc::Value(bloc::Value::type_literal));
-    if (file::_stat(path, &fmode, &fsize) == 0)
+    row.push_back(bloc::Value(bloc::Value::type_integer));
+    if (file::_stat(path, &fmode, &fsize, &ctime) == 0)
     {
       row[0].swap(bloc::Value(bloc::Integer(fmode)));
       if (fmode == 1)
         row[1].swap(bloc::Value(bloc::Integer(fsize)));
       row[2].swap(bloc::Value(new bloc::Literal(file::_absolutePath(path))));
+      if (fmode == 1 || fmode == 2)
+        row[3].swap(bloc::Value(bloc::Integer(ctime)));
     }
     else
       row[0].swap(bloc::Value(bloc::Integer(0)));
