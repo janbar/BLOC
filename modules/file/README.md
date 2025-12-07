@@ -87,20 +87,20 @@ Returns the dirname of the file.
 basename() returns string
 Returns the basename of the file.
 
-stat() returns { integer, integer, string }
+stat() returns { integer, integer, string, integer }
 Returns a tuple containing basic informations about the file:
-{ Type, Size, Absolute Path }
+{ Type, Size, Absolute Path, CTime }
 Type: 0=Invalid, 1=Regular, 2=Directory, 3=Other
 Size: file size in byte
 
-stat(string IN) returns { integer, integer, string }
+stat(string IN) returns { integer, integer, string, integer }
 Returns a tuple containing basic informations about the given path:
-{ Type, Size, Absolute Path }
+{ Type, Size, Absolute Path, CTime }
 Type: 0=Invalid, 1=Regular, 2=Directory, 3=Other
 Size: file size in byte
 
-dir(string IN) returns [{ integer, integer, string }]
-Returns the entry list of a directory: [{ Type, Size, Name }]
+dir(string IN) returns [{ integer, integer, string, integer }]
+Returns the entry list of a directory: [{ Type, Size, Name, CTime }]
 Type: 1=Regular, 2=Directory, 3=Other
 Size: file size in byte
 
