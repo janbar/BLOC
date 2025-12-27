@@ -165,25 +165,28 @@ unsigned PluginManager::registerModule(void* dlhandle)
   if (!version)
   {
     DBG(DBG_ERROR, "%s: %s\n", __FUNCTION__, dlerror());
+    dlclose(dlhandle);
     return 0;
   }
   if (version() != PLUGIN_VERSION)
   {
     DBG(DBG_ERROR, "%s: version mismatch: found %d, requires %d\n", __FUNCTION__, version(), PLUGIN_VERSION);
+    dlclose(dlhandle);
     return 0;
   }
   DLSYM_CREATE create = (DLSYM_CREATE)dlsym(dlhandle, "PLUGIN_create");
   if (!create)
   {
     DBG(DBG_ERROR, "%s: %s\n", __FUNCTION__, dlerror());
+    dlclose(dlhandle);
     return 0;
   }
 
   bloc::plugin::PluginBase * instance = static_cast<bloc::plugin::PluginBase*>(create());
   if (!instance)
   {
-    dlclose(dlhandle);
     DBG(DBG_ERROR, "%s: registering import failed\n", __FUNCTION__);
+    dlclose(dlhandle);
     return 0;
   }
 
