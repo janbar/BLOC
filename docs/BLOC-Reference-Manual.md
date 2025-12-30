@@ -1,7 +1,7 @@
 BLOC 2.7 Reference Manual
 =========================
 
-2025-11
+2025-12
 
 # Table of contents
 
@@ -1219,13 +1219,13 @@ Bytes array has the method *at*, *put*, *insert*, *delete*, *count*, and *concat
 
 ## Readln Function
 
-'**readln**' returns true when new line has been read from the input. The read value ended with LF or limited to the size of the internal buffer, is stored into var. The *string* variable var must be initialized first.
+'**readln**' returns true when new line has been read from the input. The read data ended with LF or limited to the size of the internal buffer, is stored into var. The *string* or *bytes* variable var must be initialized first.
 
 readln( var )
 
 ## Read Function
 
-'**read**' returns the count of characters read from the input. The read value, including newline terminator, is stored into var with a maximum of y characters. The *string* variable var must be initialized first.
+'**read**' returns the count of characters or bytes read from the input. The read data are stored into var with a maximum of y bytes. The *string* or *bytes* variable var must be initialized first.
 
 read( var [, y] )
 
