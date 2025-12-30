@@ -42,8 +42,15 @@ Value& READLNExpression::value(Context & ctx) const
 
   char buf[1024];
   int n = bloc_readstdin(buf, sizeof(buf));
-  if (n > 0)
-    a0.swap(Value(new Literal(buf, n)).to_lvalue(a0.lvalue()));
+  if (n >= 0)
+  {
+    if (a0.type() == Type::TABCHAR)
+      a0.swap(Value(new TabChar(buf, buf + n)).to_lvalue(a0.lvalue()));
+    else if (a0.type() == Type::LITERAL)
+      a0.swap(Value(new Literal(buf, n)).to_lvalue(a0.lvalue()));
+    else
+      throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, Type::STR_LITERAL);
+  }
   return ctx.allocate(Value(Bool(n > 0 ? true : false)));
 }
 
@@ -57,9 +64,16 @@ READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_READLN], t);
     args.push_back(ParseExpression::expression(p, ctx));
-    if (!args.back()->isVarName() ||
-            !ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
+    switch (args.back()->type(ctx).major())
+    {
+    case Type::NO_TYPE:
+    case Type::LITERAL:
+    case Type::TABCHAR:
+      if (args.back()->isVarName())
+        break;
+    default:
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN], t);
+    }
     /* check constness */
     if (args.back()->symbol()->locked())
       throw ParseError(EXC_PARSE_CONST_VIOLATION_S, args.back()->symbol()->name().c_str(), t);

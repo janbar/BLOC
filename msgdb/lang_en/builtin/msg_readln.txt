@@ -1,6 +1,7 @@
 
 $$readln$$ returns true when new line has been read from the input.
-The read value ended with LF or limited to the size of the internal buffer,
-is stored into var. The 'string' variable var must be initialized first.
+The read data ended with LF or limited to the size of the internal buffer,
+is stored into var. The 'string' or 'bytes' variable var must be initialized
+first.
 
 readln( var )
