@@ -60,10 +60,8 @@ int bloc_readstdin(char *buf, size_t maxlen)
 #endif
     {
       int chr;
-      while ((chr = getchar()) != EOF)
+      while (len < maxlen && (chr = getchar()) != EOF)
       {
-        if (len == maxlen)
-          break;
         buf[len++] = (char) chr;
         if (chr == '\n')
           break;
