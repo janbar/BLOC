@@ -62,8 +62,13 @@ const Statement * PUTStatement::doit(Context& ctx) const
         case Type::NUMERIC:
           fputs(Value::readableNumeric(*val.numeric()).c_str(), ctx.ctxout());
           break;
-        case Type::COMPLEX:
         case Type::TABCHAR:
+        {
+          TabChar* v = val.tabchar();
+          fwrite(v->data(), 1, v->size(), ctx.ctxout());
+          break;
+        }
+        case Type::COMPLEX:
         case Type::ROWTYPE:
           break;
         default:
