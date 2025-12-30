@@ -1,7 +1,6 @@
 
-$$read$$ returns the count of characters read from the input.
-The read value, including newline terminator, is stored into var with
-a maximum of y characters. The 'string' variable var must be initialized
-first.
+$$read$$ returns the count of characters or bytes read from the input.
+The read data are stored into var with a maximum of y bytes. The 'string' or
+'bytes' variable var must be initialized first.
 
 read( var [, y] )

@@ -17,7 +17,7 @@
  */
 
 #include "builtin_read.h"
-#include "blocc/exception_runtime.h"
+#include <blocc/exception_runtime.h>
 #include <blocc/parse_expression.h>
 #include <blocc/exception_parse.h>
 #include <blocc/context.h>
@@ -49,19 +49,37 @@ Value& READExpression::value(Context & ctx) const
     n = *a1.integer();
   }
 
-  a0.swap(Value(new Literal()).to_lvalue(a0.lvalue()));
   if (n > 32)
   {
     char * buf = new char[n];
     n = bloc_readstdin(buf, n);
-    a0.literal()->assign(buf, n);
+    if (n >= 0)
+    {
+      if (a0.type() == Type::TABCHAR)
+        a0.swap(Value(new TabChar(buf, buf + n)).to_lvalue(a0.lvalue()));
+      else if (a0.type() == Type::LITERAL)
+        a0.swap(Value(new Literal(buf, n)).to_lvalue(a0.lvalue()));
+      else
+      {
+        delete [] buf;
+        throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, Type::STR_LITERAL);
+      }
+    }
     delete [] buf;
   }
   else
   {
     char buf[32];
     n = bloc_readstdin(buf, n);
-    a0.literal()->assign(buf, n);
+    if (n >= 0)
+    {
+      if (a0.type() == Type::TABCHAR)
+        a0.swap(Value(new TabChar(buf, buf + n)).to_lvalue(a0.lvalue()));
+      else if (a0.type() == Type::LITERAL)
+        a0.swap(Value(new Literal(buf, n)).to_lvalue(a0.lvalue()));
+      else
+        throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, Type::STR_LITERAL);
+    }
   }
   return ctx.allocate(Value(Integer(n)));
 }
@@ -76,9 +94,16 @@ READExpression * READExpression::parse(Parser& p, Context& ctx)
     if (t->code != '(')
       throw ParseError(EXC_PARSE_FUNC_ARG_NUM_S, KEYWORDS[FUNC_READ], t);
     args.push_back(ParseExpression::expression(p, ctx));
-    if (!args.back()->isVarName() ||
-            !ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
+    switch (args.back()->type(ctx).major())
+    {
+    case Type::NO_TYPE:
+    case Type::LITERAL:
+    case Type::TABCHAR:
+      if (args.back()->isVarName())
+        break;
+    default:
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READ], t);
+    }
     /* check constness */
     if (args.back()->symbol()->locked())
       throw ParseError(EXC_PARSE_CONST_VIOLATION_S, args.back()->symbol()->name().c_str(), t);
