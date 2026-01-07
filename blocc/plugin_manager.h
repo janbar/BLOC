@@ -56,7 +56,7 @@ public:
   }
 
   unsigned importModuleByName(const std::string& name);
-  unsigned importModuleByPath(const char * libpath);
+  unsigned importModuleByPath(const std::string& libpath);
 
   void clearPermissions() { _trustedPluginNames.clear(); }
   void unbanPlugin(const std::string& name);

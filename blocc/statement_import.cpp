@@ -61,7 +61,7 @@ void IMPORTStatement::loadModule(Context& ctx)
     Value& val = _exp->value(ctx);
     if (val.isNull())
       throw ParseError(EXC_PARSE_INV_EXPRESSION);
-    if ((type_id = PluginManager::instance().importModuleByPath(val.literal()->c_str())) == 0)
+    if ((type_id = PluginManager::instance().importModuleByPath(*val.literal())) == 0)
       throw ParseError(EXC_PARSE_IMPORT_FAILED_S, val.literal()->c_str());
   }
   const PLUGGED_MODULE& plug = PluginManager::instance().plugged(type_id);

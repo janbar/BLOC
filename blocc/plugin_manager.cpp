@@ -122,10 +122,10 @@ unsigned PluginManager::importModuleByName(const std::string & name)
   return registerModule(dlhandle);
 }
 
-unsigned PluginManager::importModuleByPath(const char * libpath)
+unsigned PluginManager::importModuleByPath(const std::string& libpath)
 {
   void* dlhandle = nullptr;
-  dlhandle = dlopen(libpath, RTLD_LAZY);
+  dlhandle = dlopen(libpath.c_str(), RTLD_LAZY);
   if (!dlhandle)
   {
     DBG(DBG_ERROR, "%s: %s\n", __FUNCTION__, dlerror());
