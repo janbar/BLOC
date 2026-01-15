@@ -22,8 +22,10 @@
  ***********************************************************************
  */
 
-#include <stdint.h>
-#include <stddef.h>
+#ifndef MD5_H
+#define MD5_H
+
+#include <cstdint>
 
 namespace bloc
 {
@@ -34,17 +36,19 @@ namespace crypto
 
 /* Data structure for MD5 (Message-Digest) computation */
 typedef struct {
-  uint32_t i[2];                /* number of _bits_ handled mod 2^64 */
-  uint32_t buf[4];                                 /* scratch buffer */
-  unsigned char in[64];                              /* input buffer */
-  unsigned char digest[16];     /* actual digest after MD5Final call */
+  uint32_t  i[2];               /* number of _bits_ handled mod 2^64 */
+  uint32_t  buf[4];             /* scratch buffer */
+  uint8_t   in[64];             /* input buffer */
+  uint8_t   digest[16];         /* actual digest after MD5Final call */
 } MD5_CTX;
 
-void MD5Init (MD5_CTX *mdContext);
-void MD5Update (MD5_CTX *, unsigned const char *, unsigned int);
+void MD5Init (MD5_CTX *);
+void MD5Update (MD5_CTX *, const uint8_t *inBuf, unsigned int inLen);
 void MD5Final (MD5_CTX *);
 
 } // namespace crypto
 } // namespace plugin
 } // namespace bloc
+
+#endif /* MD5_H */
 

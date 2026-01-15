@@ -108,7 +108,7 @@ void MD5Init (MD5_CTX *mdContext)
    account for the presence of each of the characters inBuf[0..inLen-1]
    in the message whose digest is being computed.
  */
-void MD5Update (MD5_CTX *mdContext, unsigned const char *inBuf, unsigned int inLen)
+void MD5Update (MD5_CTX *mdContext, const uint8_t *inBuf, unsigned int inLen)
 {
   uint32_t in[16];
   int mdi;
