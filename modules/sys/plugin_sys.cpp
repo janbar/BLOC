@@ -311,6 +311,12 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
           /* the tail of last chunk is large enough to hold the read data */
           ::memcpy(buf.back() + CHUNKLEN - tail, tmp, n);
           tail -= n;
+          /* set head position */
+          if (buflen > (maxsize + tail))
+          {
+            // coverity[overflow_const]
+            head = buflen - (maxsize + tail);
+          }
         }
         else
         {
