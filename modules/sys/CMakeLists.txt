@@ -5,8 +5,8 @@ if(NOT BLOC_LIB_SOVERSION)
 endif()
 
 # build module "sys"
-file(GLOB bloc_sys_SOURCES plugin_sys.cpp)
-file(GLOB bloc_sys_HEADERS plugin_sys.h)
+file(GLOB bloc_sys_SOURCES plugin_sys.cpp spawn_process.c)
+file(GLOB bloc_sys_HEADERS plugin_sys.h spawn_process.h)
 
 add_library (bloc_sys SHARED ${bloc_sys_SOURCES})
 add_dependencies(bloc_sys blocc)
