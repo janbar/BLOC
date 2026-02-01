@@ -45,13 +45,21 @@
 #define PIPE_WR 1
 #define TICK_MS 100
 
-int spawn_process1(char* argv[], char* envv[],
-                  void* cb_handle, spawn_send_callback cb_send,
+int spawn_callback(int out_RD, int in_WR,
+                   void* cb_handle,
+                   spawn_send_callback cb_send,
+                   spawn_recv_callback cb_recv);
+
+int spawn_process(char* argv[], char* envv[],
+                  void* cb_handle,
+                  spawn_send_callback cb_send,
+                  spawn_recv_callback cb_recv,
                   int* exit_code)
 {
   posix_spawn_file_actions_t action;
   pid_t pid;
   int ret;
+  int stdin_pipe[2];
   int stdout_pipe[2];
 
   if(pipe(stdout_pipe) != 0)
@@ -60,10 +68,21 @@ int spawn_process1(char* argv[], char* envv[],
     return (-1);
   }
 
+  if (pipe(stdin_pipe) != 0)
+  {
+    PERROR("pipe stdin failed!\n");
+    return (-1);
+  }
+
   // define actions to configure file io
   posix_spawn_file_actions_init(&action);
+  posix_spawn_file_actions_addclose(&action, stdin_pipe[PIPE_WR]);
   posix_spawn_file_actions_addclose(&action, stdout_pipe[PIPE_RD]);
+
+  posix_spawn_file_actions_adddup2(&action, stdin_pipe[PIPE_RD], STDIN_FILENO);
   posix_spawn_file_actions_adddup2(&action, stdout_pipe[PIPE_WR], STDOUT_FILENO);
+
+  posix_spawn_file_actions_addclose(&action, stdin_pipe[PIPE_RD]);
   posix_spawn_file_actions_addclose(&action, stdout_pipe[PIPE_WR]);
 
   if (posix_spawnp(&pid, argv[0], &action, NULL, argv, envv) != 0)
@@ -73,55 +92,12 @@ int spawn_process1(char* argv[], char* envv[],
   }
 
   // close unused
+  close(stdin_pipe[PIPE_RD]);
   close(stdout_pipe[PIPE_WR]);
 
-  {
-    struct pollfd pfds[1];
-    pfds[0].fd = stdout_pipe[PIPE_RD];
-    pfds[0].events = POLLIN;
-
-    while ((ret = poll(pfds, 1, TICK_MS)) >= 0)
-    {
-      if (ret == 0)
-        continue;
-      else if ((pfds[0].revents & (POLLERR | POLLNVAL)))
-        ret = SPAWN_ERROR;
-      else if ((pfds[0].revents & POLLHUP))
-      {
-        // flush output and finish
-        if (cb_send)
-        {
-          char c;
-          while (read(pfds[0].fd, &c, 1) > 0)
-            cb_send(cb_handle, &c, 1);
-        }
-        ret = SPAWN_SUCCESS;
-      }
-      else if ((pfds[0].revents & POLLIN))
-      {
-        char out[512];
-        int rl = (int)read(pfds[0].fd, out, sizeof(out));
-        if (rl == 0)
-          ret = SPAWN_SUCCESS;
-        else if (!cb_send)
-          continue;
-        else
-        {
-          int rs = cb_send(cb_handle, out, rl);
-          if (rs > 0)
-            continue;
-          else if (rs == 0)
-            ret = SPAWN_STOPPED; // stop requested
-          else
-            ret = SPAWN_ERROR; // abort requested
-        }
-      }
-
-      break;
-    }
-  }
-
-  close(stdout_pipe[PIPE_RD]);
+  // pipes will be closed on return
+  ret = spawn_callback(stdout_pipe[PIPE_RD], stdin_pipe[PIPE_WR],
+                       cb_handle, cb_send, cb_recv);
 
   if (ret == SPAWN_SUCCESS)
   {
@@ -147,6 +123,91 @@ int spawn_process1(char* argv[], char* envv[],
   return ret;
 }
 
+int spawn_callback(int out_RD, int in_WR,
+                   void* cb_handle,
+                   spawn_send_callback cb_send,
+                   spawn_recv_callback cb_recv)
+{
+  struct pollfd pfds[2];
+  int n;
+  int ret;
+  int in_rcv = 0;
+  char in_buf;
+
+  pfds[0].fd = out_RD;
+  pfds[0].events = POLLIN;
+  pfds[1].fd = in_WR;
+  pfds[1].events = POLLOUT;
+
+  n = 2;
+
+  while ((ret = poll(pfds, n, TICK_MS)) >= 0)
+  {
+    if (ret == 0)
+      continue;
+    else if ((pfds[0].revents & (POLLERR | POLLNVAL)))
+      ret = SPAWN_ERROR;
+    else if ((pfds[0].revents & POLLHUP))
+    {
+      // flush output and finish
+      if (cb_send)
+      {
+        char c;
+        while (read(pfds[0].fd, &c, 1) > 0)
+          cb_send(cb_handle, &c, 1);
+      }
+      ret = SPAWN_SUCCESS;
+    }
+    else if ((pfds[0].revents & POLLIN))
+    {
+      char out[512];
+      int rl = (int)read(pfds[0].fd, out, sizeof(out));
+      if (rl == 0)
+        ret = SPAWN_SUCCESS;
+      else if (!cb_send)
+        continue;
+      else
+      {
+        int rs = cb_send(cb_handle, out, rl);
+        if (rs > 0)
+          continue;
+        else if (rs == 0)
+          ret = SPAWN_STOPPED; // stop requested
+        else
+          ret = SPAWN_ERROR; // abort requested
+      }
+    }
+    else if ((pfds[1].revents & (POLLERR | POLLNVAL)))
+      ret = SPAWN_ERROR;
+    else if ((pfds[1].revents & POLLHUP))
+      ret = SPAWN_ERROR;
+    else if ((pfds[1].revents & POLLOUT))
+    {
+      if (in_rcv || (cb_recv && cb_recv(cb_handle, &in_buf) > 0))
+        in_rcv = (write(pfds[1].fd, &in_buf, 1) == 1 ? 0 : 1);
+      else
+      {
+        // stop polling
+        n = 1;
+        // flush input
+        if (close(pfds[1].fd))
+        {
+          ret = SPAWN_ERROR;
+          break;
+        }
+      }
+      continue;
+    }
+
+    break;
+  }
+
+  if (n > 1)
+    close(in_WR);
+  close(out_RD);
+  return ret;
+}
+
 #else
 /*****************************************************************************/
 /*                                 WINDOWS                                   */
@@ -155,12 +216,21 @@ int spawn_process1(char* argv[], char* envv[],
 
 #define TICK_MS 10
 
-int spawn_process1(char* argv[], char* envv[],
-                  void* cb_handle, spawn_send_callback cb_send,
+int spawn_callback(HANDLE out_rd, HANDLE in_wr,
+                   void* cb_handle,
+                   spawn_send_callback cb_send,
+                   spawn_recv_callback cb_recv);
+
+int spawn_process(char* argv[], char* envv[],
+                  void* cb_handle,
+                  spawn_send_callback cb_send,
+                  spawn_recv_callback cb_recv,
                   int* exit_code)
 {
   HANDLE childStd_OUT_Rd = NULL;
   HANDLE childStd_OUT_Wr = NULL;
+  HANDLE childStd_IN_Rd = NULL;
+  HANDLE childStd_IN_Wr = NULL;
   SECURITY_ATTRIBUTES sa;
   PROCESS_INFORMATION procInfo;
   STARTUPINFO startInfo;
@@ -248,6 +318,32 @@ int spawn_process1(char* argv[], char* envv[],
     return SPAWN_ERROR;
   }
 
+  // Create a pipe for the child process's STDIN
+  if (!CreatePipe(&childStd_IN_Rd, &childStd_IN_Wr, &sa, 0))
+  {
+    PERROR("CreatePipe stdin failed!\n");
+    // free handles
+    CloseHandle(childStd_OUT_Rd);
+    CloseHandle(childStd_OUT_Wr);
+    free(cmdLine);
+    free(envBlck);
+    return SPAWN_ERROR;
+  }
+
+  // Ensure the write handle to the pipe for STDIN is not inherited.
+  if (!SetHandleInformation(childStd_IN_Wr, HANDLE_FLAG_INHERIT, 0))
+  {
+    PERROR("SetHandleInformation stdin failed!\n");
+    // free handles
+    CloseHandle(childStd_IN_Rd);
+    CloseHandle(childStd_IN_Wr);
+    CloseHandle(childStd_OUT_Rd);
+    CloseHandle(childStd_OUT_Wr);
+    free(cmdLine);
+    free(envBlck);
+    return SPAWN_ERROR;
+  }
+
   // Set up members of the PROCESS_INFORMATION structure
   ZeroMemory(&procInfo, sizeof(PROCESS_INFORMATION));
 
@@ -256,7 +352,7 @@ int spawn_process1(char* argv[], char* envv[],
   startInfo.cb = sizeof(STARTUPINFO);
   startInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
   startInfo.hStdOutput = childStd_OUT_Wr;
-  startInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+  startInfo.hStdInput = childStd_IN_Rd;
   startInfo.dwFlags |= STARTF_USESTDHANDLES;
 
   // Create the child process.
@@ -273,6 +369,8 @@ int spawn_process1(char* argv[], char* envv[],
   {
     PERROR("CreateProcess failed!\n");
     // free handles
+    CloseHandle(childStd_IN_Rd);
+    CloseHandle(childStd_IN_Wr);
     CloseHandle(childStd_OUT_Rd);
     CloseHandle(childStd_OUT_Wr);
     free(envBlck);
@@ -282,67 +380,11 @@ int spawn_process1(char* argv[], char* envv[],
 
   // it should be closed now
   CloseHandle(childStd_OUT_Wr);
+  CloseHandle(childStd_IN_Rd);
 
-  ret = SPAWN_STOPPED;
-  {
-    for (;;)
-    {
-      // Read nowait avaialable data from the pipe that is standard output
-      // for a child process.
-      DWORD rc;
-      DWORD rl;
-      char out[512];
-
-      if (!PeekNamedPipe(childStd_OUT_Rd, NULL, 0, NULL, &rc, NULL))
-      {
-        DWORD err = GetLastError();
-        switch (err)
-        {
-          case ERROR_BROKEN_PIPE:
-          case ERROR_HANDLE_EOF:
-            ret = SPAWN_SUCCESS;
-            break;
-          default:
-            PERRORF("peek pipe failed (%d)!\n", err);
-            ret = SPAWN_ERROR;
-        }
-        break;
-      }
-
-      // has available data to read ?
-      if (rc <= 0)
-      {
-        Sleep(TICK_MS);
-        continue;
-      }
-
-      // read pipe
-      rl = (rc > sizeof(out) ? sizeof(out) : rc);
-      if (ReadFile(childStd_OUT_Rd, out, rl, &rc, NULL))
-      {
-        if (rc > 0 && cb_send)
-        {
-          int rs = cb_send(cb_handle, out, rc);
-          if (rs > 0)
-            continue;
-          else if (rs == 0)
-            ret = SPAWN_STOPPED; // stop requested
-          else
-            ret = SPAWN_ERROR; // abort requested
-          break;
-        }
-      }
-      else
-      {
-        DWORD err = GetLastError();
-        PERRORF("read pipe failed (%d)\n", err);
-        ret = SPAWN_ERROR;
-        break;
-      }
-    }
-  }
-
-  CloseHandle(childStd_OUT_Rd);
+  // pipes will be closed on return
+  ret = spawn_callback(childStd_OUT_Rd, childStd_IN_Wr,
+                       cb_handle, cb_send, cb_recv);
 
   if (ret == SPAWN_SUCCESS)
   {
@@ -372,6 +414,108 @@ int spawn_process1(char* argv[], char* envv[],
   free(envBlck);
   free(cmdLine);
 
+  return ret;
+}
+
+int spawn_callback(HANDLE out_rd, HANDLE in_wr,
+                   void* cb_handle,
+                   spawn_send_callback cb_send,
+                   spawn_recv_callback cb_recv)
+{
+  int ret;
+  BOOL in_data = TRUE;
+  BOOL in_rcv = FALSE;
+  char in_buf;
+
+  ret = SPAWN_STOPPED;
+  for (;;)
+  {
+    // Write to the pipe that is the standard input for a child process.
+    // Data is written to the pipe's buffers, so it is not necessary to
+    // wait until the child process is running before writing data.
+    while (in_data)
+    {
+      DWORD wc;
+      if (!in_rcv)
+      {
+        in_data = (cb_recv && cb_recv(cb_handle, &in_buf) > 0);
+        if (!in_data)
+        {
+          if (CloseHandle(in_wr))
+            break;
+          PERROR("close pipe failed!\n");
+          CloseHandle(out_rd);
+          return SPAWN_ERROR;
+        }
+      }
+      if (WriteFile(in_wr, &in_buf, 1, &wc, NULL) && wc == 1)
+      {
+        in_rcv = FALSE;
+        continue;
+      }
+      in_rcv = TRUE; // try writing again
+      break; // pipe buffer is full
+    }
+
+    // Read nowait avaialable data from the pipe that is standard output
+    // for a child process.
+    {
+      DWORD rc;
+      DWORD rl;
+      char out[512];
+
+      if (!PeekNamedPipe(out_rd, NULL, 0, NULL, &rc, NULL))
+      {
+        DWORD err = GetLastError();
+        switch (err)
+        {
+        case ERROR_BROKEN_PIPE:
+        case ERROR_HANDLE_EOF:
+          ret = SPAWN_SUCCESS;
+          break;
+        default:
+          PERRORF("peek pipe failed (%d)!\n", err);
+          ret = SPAWN_ERROR;
+        }
+        break;
+      }
+
+      // has available data to read ?
+      if (rc <= 0)
+      {
+        Sleep(TICK_MS);
+        continue;
+      }
+
+      // read pipe
+      rl = (rc > sizeof(out) ? sizeof(out) : rc);
+      if (ReadFile(out_rd, out, rl, &rc, NULL))
+      {
+        if (rc > 0 && cb_send)
+        {
+          int rs = cb_send(cb_handle, out, rc);
+          if (rs > 0)
+            continue;
+          else if (rs == 0)
+            ret = SPAWN_STOPPED; // stop requested
+          else
+            ret = SPAWN_ERROR; // abort requested
+          break;
+        }
+      }
+      else
+      {
+        DWORD err = GetLastError();
+        PERRORF("read pipe failed (%d)\n", err);
+        ret = SPAWN_ERROR;
+        break;
+      }
+    }
+  }
+
+  if (in_data)
+    CloseHandle(in_wr);
+  CloseHandle(out_rd);
   return ret;
 }
 #endif

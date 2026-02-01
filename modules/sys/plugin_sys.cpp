@@ -31,7 +31,7 @@
 
 #include <signal.h>
 #if defined(LIBBLOC_UNIX)
-#include <unistd.h>
+extern "C" { extern char **environ; }
 #endif
 
 /*
@@ -385,7 +385,7 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
   argv.push_back(strncpy(new char[cmd.size()+1], cmd.c_str(), cmd.size()+1));
   argv.push_back(nullptr);
 
-  int ret = spawn_process1(argv.data(), environ, &buf, writebuf, &exitcode);
+  int ret = spawn_process(argv.data(), environ, &buf, writebuf, nullptr, &exitcode);
 
 #if defined(LIBBLOC_UNIX)
   if (_handler != SIG_ERR)

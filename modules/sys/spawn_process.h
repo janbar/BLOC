@@ -30,9 +30,12 @@ extern "C"
 #define SPAWN_STOPPED 2
 
 typedef int (*spawn_send_callback)(void* handle, const char* data, int len);
+typedef int (*spawn_recv_callback)(void* handle, char* c);
 
-int spawn_process1(char* argv[], char* envv[],
-                  void* cb_handle, spawn_send_callback cb_send,
+int spawn_process(char* argv[], char* envv[],
+                  void* cb_handle,
+                  spawn_send_callback cb_send,
+                  spawn_recv_callback cb_recv,
                   int* exit_code);
 
 #ifdef __cplusplus
