@@ -54,9 +54,10 @@ enum Method
 {
   Exec0     = 0,
   Exec1     = 1,
-  CmdStatus = 2,
-  Setenv    = 3,
-  Sleep     = 4,
+  Exec2,
+  CmdStatus,
+  Setenv,
+  Sleep,
 };
 
 /**********************************************************************/
@@ -69,6 +70,13 @@ static PLUGIN_ARG exec0_args[]  = {
 
 static PLUGIN_ARG exec1_args[]  = {
   { PLUGIN_IN,    { "L", 0 } }, // command
+  { PLUGIN_INOUT, { "X", 0 } }, // output
+  { PLUGIN_IN,    { "I", 0 } }, // maxsize
+};
+
+static PLUGIN_ARG exec2_args[]  = {
+  { PLUGIN_IN,    { "L", 0 } }, // command
+  { PLUGIN_IN,    { "L", 0 } }, // input
   { PLUGIN_INOUT, { "X", 0 } }, // output
   { PLUGIN_IN,    { "I", 0 } }, // maxsize
 };
@@ -93,7 +101,11 @@ static PLUGIN_METHOD methods[] =
   { Exec1,        "exec",             { "B", 0 },     3, exec1_args,
           "Execute a system command or a block of commands, and tail the output into"
           "\nthe specified variable as a byte array with the given max size."
-          "\nNote that max size will be tuncated to 2GB."},
+          "\nNote that output size will be tuncated to 2GB."},
+  { Exec2,        "exec",             { "B", 0 },     4, exec2_args,
+          "Execute a system command, pipe input string, and tail the output into the"
+          "\nspecified variable as a byte array with the given max size."
+          "\nNote that output size will be tuncated to 2GB."},
   { CmdStatus,    "status",           { "I", 0 },     0, nullptr,
           "Read the return status of the last system command." },
   { Setenv,       "setenv",           { "L", 0 },     2, setenv_args,
@@ -111,8 +123,9 @@ struct Handle
   int _status = 0;
   ~Handle() { }
   Handle() { }
-  bool exec(const std::string& cmd);
-  bool execout(const std::string& cmd, bloc::TabChar& out, size_t maxsize);
+  bool exec(const std::string& cmd, FILE* out);
+  bool execinout(const std::string& cmd, const char * input,
+                 bloc::TabChar& out, size_t maxsize);
   const char * getvar(const std::string& name);
   void setvar(const std::string& name, const std::string& value);
   void unsetvar(const std::string& name);
@@ -127,9 +140,12 @@ struct ExecBuffer
   size_t tail     = 0; ///< nb bytes to discard from end of the buffer
   std::list<char*> chunks;    ///< data chunks
   char * _bin     = nullptr;  ///< old chunk
+  const char * in = nullptr;
 };
 
+static int writeout(void * out, const char * data, int len);
 static int writebuf(void * hdl, const char * data, int len);
+static int readchar(void * hdl, char * c);
 
 } /* namespace sys */
 
@@ -179,7 +195,7 @@ bloc::Value * SYSPlugin::executeMethod(
     bloc::Value& a0 = args[0]->value(ctx);
     if (a0.isNull())
       return new bloc::Value(bloc::Value::type_boolean);
-    return new bloc::Value(bloc::Bool(h->exec(*a0.literal())));
+    return new bloc::Value(bloc::Bool(h->exec(*a0.literal(), ctx.ctxout())));
   }
 
   case sys::Exec1:
@@ -192,8 +208,25 @@ bloc::Value * SYSPlugin::executeMethod(
     if (!args[1]->isVarName())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Value out(new bloc::TabChar());
-    bool success = bloc::Bool(h->execout(*a0.literal(), *out.tabchar(), *a2.integer()));
+    bool success = bloc::Bool(h->execinout(*a0.literal(), nullptr, *out.tabchar(), *a2.integer()));
     ctx.storeVariable(*args[1]->symbol(), std::move(out));
+    return new bloc::Value(success);
+  }
+
+  case sys::Exec2:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    bloc::Value& a1 = args[1]->value(ctx);
+    bloc::Value& a2 = args[2]->value(ctx);
+    bloc::Value& a3 = args[3]->value(ctx);
+    if (a0.isNull() || a3.isNull())
+      return new bloc::Value(bloc::Value::type_boolean);
+    if (!args[2]->isVarName())
+      throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
+    const char * input = (a1.isNull() ? nullptr : a1.literal()->c_str());
+    bloc::Value out(new bloc::TabChar());
+    bool success = bloc::Bool(h->execinout(*a0.literal(), input, *out.tabchar(), *a3.integer()));
+    ctx.storeVariable(*args[2]->symbol(), std::move(out));
     return new bloc::Value(success);
   }
 
@@ -254,24 +287,48 @@ bloc::Value * SYSPlugin::executeMethod(
   return nullptr;
 }
 
-bool sys::Handle::exec(const std::string& cmd)
+int sys::writeout(void* out, const char* data, int len)
 {
+  FILE* file = static_cast<FILE*>(out);
+  ::fwrite(data, 1, len, file);
+  return len;
+}
+
+bool sys::Handle::exec(const std::string& cmd, FILE* out)
+{
+  std::vector<char*> argv;
+  int exitcode = 0;
+  int ret;
+
 #if defined(LIBBLOC_MSWIN)
+  argv.push_back(strncpy(new char[8], "CMD.EXE", 8));
+  argv.push_back(strncpy(new char[3], "/C", 3));
 #else
   void (*_handler)(int) = signal(SIGCHLD, SIG_DFL);
+  argv.push_back(strncpy(new char[3], "sh", 3));
+  argv.push_back(strncpy(new char[3], "-c", 3));
 #endif
+  argv.push_back(strncpy(new char[cmd.size()+1], cmd.c_str(), cmd.size()+1));
+  argv.push_back(nullptr);
 
-  // always prefer to use standard call: i.e system(),
-  // it implements posix_spawn() on unix as possible,
-  // it works on windows, and provides the same signature
-  _status = ::system(cmd.c_str());
+  ret = spawn_process(argv.data(), environ, out, writeout, nullptr, &exitcode);
+  ::fflush(out);
 
-#if defined(LIBBLOC_MSWIN)
-#else
+#if defined(LIBBLOC_UNIX)
   if (_handler != SIG_ERR)
     signal(SIGCHLD, _handler);
 #endif
-  return (_status == 0);
+
+  for (char* v : argv) { if (v) delete [] v; }
+
+  /* push error */
+  if (ret == SPAWN_SUCCESS)
+  {
+    _status = exitcode;
+    return (exitcode == 0);
+  }
+  _status = -1;
+  return false;
 }
 
 #define CHUNKLEN    4096
@@ -356,10 +413,24 @@ int sys::writebuf(void* hdl, const char* data, int len)
   return len;
 }
 
-bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t maxsize)
+int sys::readchar(void * hdl, char * c)
+{
+  ExecBuffer* buf = static_cast<ExecBuffer*>(hdl);
+  if (buf->in == nullptr)
+    return 0;
+  *c = *(buf->in);
+  if (*c == '\0')
+    return 0;
+  buf->in += 1;
+  return 1;
+}
+
+bool sys::Handle::execinout(const std::string& cmd, const char * input,
+                            bloc::TabChar& out, size_t maxsize)
 {
   std::vector<char*> argv;
   int exitcode = 0;
+  int ret;
 
   ExecBuffer buf;
   /* buflen should not overflow, so the output must be truncated to
@@ -385,7 +456,13 @@ bool sys::Handle::execout(const std::string& cmd, bloc::TabChar& out, size_t max
   argv.push_back(strncpy(new char[cmd.size()+1], cmd.c_str(), cmd.size()+1));
   argv.push_back(nullptr);
 
-  int ret = spawn_process(argv.data(), environ, &buf, writebuf, nullptr, &exitcode);
+  if (!input)
+    ret = spawn_process(argv.data(), environ, &buf, writebuf, nullptr, &exitcode);
+  else
+  {
+    buf.in = input;
+    ret = spawn_process(argv.data(), environ, &buf, writebuf, readchar, &exitcode);
+  }
 
 #if defined(LIBBLOC_UNIX)
   if (_handler != SIG_ERR)
