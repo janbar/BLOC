@@ -291,6 +291,7 @@ int sys::writeout(void* out, const char* data, int len)
 {
   FILE* file = static_cast<FILE*>(out);
   ::fwrite(data, 1, len, file);
+  ::fflush(file);
   return len;
 }
 
@@ -312,7 +313,6 @@ bool sys::Handle::exec(const std::string& cmd, FILE* out)
   argv.push_back(nullptr);
 
   ret = spawn_process(argv.data(), environ, out, writeout, nullptr, &exitcode);
-  ::fflush(out);
 
 #if defined(LIBBLOC_UNIX)
   if (_handler != SIG_ERR)
