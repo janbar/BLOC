@@ -106,15 +106,14 @@ int spawn_process(char* argv[], char* envv[],
   else
   {
     if (ret == SPAWN_TIMEOUT)
-      PERROR("child timed out!\n");
+      PERROR("process timed out!\n");
     else if (ret == SPAWN_STOPPED)
-      PERROR("child stopped!\n");
-    else
-      PERROR("fetching child output failed!\n");
+      PERROR("process stopped!\n");
+
     if (kill(pid, SIGABRT) == 0)
-      PERROR("child aborted!\n");
+      PERROR("process aborted!\n");
     else
-      PERRORF("child abort failed (%d)!\n", errno);
+      PERRORF("process abort failed (%d)!\n", errno);
     *exit_code = (-1);
   }
 
@@ -396,15 +395,14 @@ int spawn_process(char* argv[], char* envv[],
   else
   {
     if (ret == SPAWN_TIMEOUT)
-      PERROR("child timed out!\n");
+      PERROR("process timed out!\n");
     else if (ret == SPAWN_STOPPED)
-      PERROR("child stopped!\n");
-    else
-      PERRORF("fetching child output failed (%d)!\n", ret);
+      PERROR("process stopped!\n");
+
     if (TerminateProcess(procInfo.hProcess, 1))
-      PERROR("child aborted!\n");
+      PERROR("process aborted!\n");
     else
-      PERROR("child abort failed!\n");
+      PERROR("process abort failed!\n");
     *exit_code = (-1);
   }
 
