@@ -101,11 +101,18 @@ static PLUGIN_METHOD methods[] =
   { Exec1,        "exec",             { "B", 0 },     3, exec1_args,
           "Execute a system command or a block of commands, and tail the output into"
           "\nthe specified variable as a byte array with the given max size."
-          "\nNote that output size will be tuncated to 2GB."},
+          "\nNote that output size will be tuncated to 2GB."
+          "\n1  : command"
+          "\n2  : variable to store output"
+          "\n3  : tail max size" },
   { Exec2,        "exec",             { "B", 0 },     4, exec2_args,
-          "Execute a system command, pipe input string, and tail the output into the"
-          "\nspecified variable as a byte array with the given max size."
-          "\nNote that output size will be tuncated to 2GB."},
+          "Execute a system command, send string as input, and tail the output into"
+          "\nthe specified variable as a byte array with the given max size."
+          "\nNote that output size will be tuncated to 2GB."
+          "\n1  : command"
+          "\n2  : string to send as input"
+          "\n3  : variable to store output"
+          "\n4  : tail max size" },
   { CmdStatus,    "status",           { "I", 0 },     0, nullptr,
           "Read the return status of the last system command." },
   { Setenv,       "setenv",           { "L", 0 },     2, setenv_args,
