@@ -29,6 +29,22 @@ Execute a system command or a block of commands.
 exec(string IN, bytes INOUT, integer IN) returns boolean
 Execute a system command or a block of commands, and tail the output into
 the specified variable as a byte array with the given max size.
+Note that output size will be tuncated to 2GB.
+1  : command
+2  : variable to store output
+3  : tail max size
+
+exec(string IN, string IN, bytes INOUT, integer IN) returns boolean
+Execute a system command, send string as input, and tail the output into
+the specified variable as a byte array with the given max size.
+Note that output size will be tuncated to 2GB.
+1  : command
+2  : string to send as input
+3  : variable to store output
+4  : tail max size
+
+status() returns integer
+Read the return status of the last system command.
 
 setenv(string IN, string IN) returns string
 Sets the environment variable to the given value and returns the old value.
