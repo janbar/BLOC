@@ -139,15 +139,37 @@ struct Handle
   void delayms(unsigned millisec);
 };
 
-struct ExecBuffer
+class ExecBuffer
 {
-  size_t maxsize  = 0;
-  size_t bufsize  = 0; ///< cache the total size of the buffer
-  size_t head     = 0; ///< nb bytes to discard from head of the buffer
-  size_t tail     = 0; ///< nb bytes to discard from end of the buffer
-  std::list<char*> chunks;    ///< data chunks
-  char * _bin     = nullptr;  ///< old chunk
-  const char * in = nullptr;
+  const size_t CHUNKLEN = 4096;
+  size_t _outsize;
+  size_t _bufsize   = 0;  ///< cache the total size of the buffer
+  size_t _head      = 0;  ///< nb bytes to discard from head of the buffer
+  size_t _tail      = 0;  ///< nb bytes to discard from end of the buffer
+  char * _spare     = nullptr;  ///< chunk for spare
+  std::list<char*> _chunks;     ///< data chunks
+  const char * _inputdata = nullptr;  ///< data for read
+public:
+  ExecBuffer(size_t outsize, const char * inputdata)
+  {
+    /* buflen should not overflow, so the output must be truncated to
+     * a reasonable size */
+    _outsize = (outsize > INT32_MAX ? INT32_MAX : outsize);
+    /* initialize the buffer with 1 chunk */
+    _chunks.push_back(new char[CHUNKLEN]);
+    _bufsize = CHUNKLEN;
+    _tail = CHUNKLEN;
+    /* set input for read */
+    _inputdata = inputdata;
+  }
+  ~ExecBuffer()
+  {
+    for (char* e : _chunks) { if (e) delete [] e; }
+    if (_spare) delete [] _spare;
+  }
+  int write(const char * data, int len);
+  int read(char * c);
+  void result(bloc::TabChar& out);
 };
 
 static int writeout(void * out, const char * data, int len);
@@ -338,18 +360,13 @@ bool sys::Handle::exec(const std::string& cmd, FILE* out)
   return false;
 }
 
-#define CHUNKLEN    4096
-#define MAXOUTLEN   INT32_MAX
-
-int sys::writebuf(void* hdl, const char* data, int len)
+int sys::ExecBuffer::write(const char * data, int len)
 {
   /* notes:
    * the dried size of data is: buflen - head - tail.
    * head size will never grow above two CHUNK: at each loop the chunk in front
    * is removed if necessary so that the head size remains less than CHUNKLEN.
    * tail cannot grow above CHUNKLEN */
-
-  ExecBuffer* buf = static_cast<ExecBuffer*>(hdl);
   int rest = len;
 
   while (rest > 0)
@@ -357,79 +374,110 @@ int sys::writebuf(void* hdl, const char* data, int len)
     int n = (rest > CHUNKLEN ? CHUNKLEN : rest);
     rest -= n;
 
-    if (buf->tail >= n)
+    if (_tail >= n)
     {
       /* the tail of last chunk is large enough to hold the read data */
-      ::memcpy(buf->chunks.back() + CHUNKLEN - buf->tail, data, n);
-      buf->tail -= n;
-      /* set head position */
-      if (buf->bufsize > (buf->maxsize + buf->tail))
-      {
-        // coverity[overflow_const]
-        buf->head = buf->bufsize - (buf->maxsize + buf->tail);
-        /* detach the head of buffer which may be unnecessary */
-        if (buf->head >= CHUNKLEN)
-        {
-          /* reuse head chunk as bin */
-          buf->_bin = buf->chunks.front();
-          buf->chunks.pop_front();
-          buf->bufsize -= CHUNKLEN;
-          buf->head -= CHUNKLEN;
-        }
-      }
+      ::memcpy(_chunks.back() + CHUNKLEN - _tail, data, n);
+      _tail -= n;
     }
     else
     {
       /* first, fill the tail of last chunk */
-      if (buf->tail)
+      if (_tail)
       {
-        ::memcpy(buf->chunks.back() + CHUNKLEN - buf->tail, data, buf->tail);
-        n -= buf->tail;
+        ::memcpy(_chunks.back() + CHUNKLEN - _tail, data, _tail);
+        n -= _tail;
       }
-      /* reuse the bin, or allocate a new chunk for the rest (n) */
-      if (!buf->_bin)
-        buf->chunks.push_back(new char[CHUNKLEN]);
+      /* reuse the spare, or allocate a new chunk for the rest (n) */
+      if (!_spare)
+        _chunks.push_back(new char[CHUNKLEN]);
       else
       {
-        buf->chunks.push_back(buf->_bin);
-        buf->_bin = nullptr;
+        _chunks.push_back(_spare);
+        _spare = nullptr;
       }
-      buf->bufsize += CHUNKLEN;
+      _bufsize += CHUNKLEN;
       /* fill the new chunk with the rest (n) */
-      ::memcpy(buf->chunks.back(), data + buf->tail, n);
+      ::memcpy(_chunks.back(), data + _tail, n);
       /* and reset tail of the last chunk */
-      buf->tail = CHUNKLEN - n;
+      _tail = CHUNKLEN - n;
+    }
 
-      /* set head position */
-      if (buf->bufsize > (buf->maxsize + buf->tail))
+    /* move head position */
+    if (_bufsize > (_outsize + _tail))
+    {
+      // coverity[overflow_const]
+      _head = _bufsize - (_outsize + _tail);
+      /* detach the head of buffer which may be unnecessary */
+      if (_head >= CHUNKLEN)
       {
-        // coverity[overflow_const]
-        buf->head = buf->bufsize - (buf->maxsize + buf->tail);
-        /* detach the head of buffer which may be unnecessary */
-        if (buf->head >= CHUNKLEN)
-        {
-          /* reuse head chunk as bin */
-          buf->_bin = buf->chunks.front();
-          buf->chunks.pop_front();
-          buf->bufsize -= CHUNKLEN;
-          buf->head -= CHUNKLEN;
-        }
+        /* reuse head chunk as spare */
+        _spare = _chunks.front();
+        _chunks.pop_front();
+        _bufsize -= CHUNKLEN;
+        _head -= CHUNKLEN;
       }
     }
   }
   return len;
 }
 
+int sys::ExecBuffer::read(char * c)
+{
+  if (_inputdata == nullptr || *_inputdata == '\0')
+    return 0;
+  *c = *_inputdata;
+  _inputdata += 1;
+  return 1;
+}
+
+void sys::ExecBuffer::result(bloc::TabChar& out)
+{
+  /* fill in the truncated output */
+  out.clear();
+  out.reserve(_bufsize - _head - _tail);
+  /* if len is greater than CHUNKLEN, then buffer contains linked chunks */
+  if (_bufsize > CHUNKLEN)
+  {
+    /* copy the first chunk from position at head */
+    out.insert(out.end(), _chunks.front() + _head, _chunks.front() + CHUNKLEN);
+    delete [] _chunks.front();
+    _chunks.pop_front();
+    _bufsize -= CHUNKLEN;
+    while (_bufsize > CHUNKLEN)
+    {
+      /* copy next chunk */
+      out.insert(out.end(), _chunks.front(), _chunks.front() + CHUNKLEN);
+      delete [] _chunks.front();
+      _chunks.pop_front();
+      _bufsize -= CHUNKLEN;
+    }
+    /* copy the last chunk until tail front */
+    out.insert(out.end(), _chunks.front(), _chunks.front() + CHUNKLEN - _tail);
+    delete [] _chunks.front();
+    _chunks.pop_front();
+    _bufsize -= CHUNKLEN;
+  }
+  else
+  {
+    /* copy the chunk from position at head and until tail front */
+    out.insert(out.end(), _chunks.front() + _head, _chunks.front() + CHUNKLEN - _tail);
+    delete [] _chunks.front();
+    _chunks.pop_front();
+  }
+  assert(_chunks.size() == 0);
+}
+
+int sys::writebuf(void* hdl, const char* data, int len)
+{
+  ExecBuffer* buf = reinterpret_cast<ExecBuffer*>(hdl);
+  return buf->write(data, len);
+}
+
 int sys::readchar(void * hdl, char * c)
 {
-  ExecBuffer* buf = static_cast<ExecBuffer*>(hdl);
-  if (buf->in == nullptr)
-    return 0;
-  *c = *(buf->in);
-  if (*c == '\0')
-    return 0;
-  buf->in += 1;
-  return 1;
+  ExecBuffer* buf = reinterpret_cast<ExecBuffer*>(hdl);
+  return buf->read(c);
 }
 
 bool sys::Handle::execinout(const std::string& cmd, const char * input,
@@ -439,18 +487,7 @@ bool sys::Handle::execinout(const std::string& cmd, const char * input,
   int exitcode = 0;
   int ret;
 
-  ExecBuffer buf;
-  /* buflen should not overflow, so the output must be truncated to
-   * a reasonable size */
-  if (maxsize > MAXOUTLEN)
-    buf.maxsize = MAXOUTLEN;
-  else
-    buf.maxsize = maxsize;
-
-  /* initialize the buffer with 1 chunk */
-  buf.chunks.push_back(new char[CHUNKLEN]);
-  buf.bufsize = CHUNKLEN;
-  buf.tail = CHUNKLEN;
+  ExecBuffer buf(maxsize, input);
 
 #if defined(LIBBLOC_MSWIN)
   argv.push_back(strncpy(new char[8], "CMD.EXE", 8));
@@ -466,54 +503,15 @@ bool sys::Handle::execinout(const std::string& cmd, const char * input,
   if (!input)
     ret = spawn_process(argv.data(), environ, &buf, writebuf, nullptr, &exitcode);
   else
-  {
-    buf.in = input;
     ret = spawn_process(argv.data(), environ, &buf, writebuf, readchar, &exitcode);
-  }
 
 #if defined(LIBBLOC_UNIX)
   if (_handler != SIG_ERR)
     signal(SIGCHLD, _handler);
 #endif
 
-  if (buf._bin)
-    delete [] buf._bin;
-
   for (char* v : argv) { if (v) delete [] v; }
-
-  /* fill output buffer */
-  out.clear();
-  out.reserve(buf.bufsize - buf.head - buf.tail);
-  /* if len is greater than CHUNKLEN, then buffer contains linked chunks */
-  if (buf.bufsize > CHUNKLEN)
-  {
-    /* copy the first chunk from position at head */
-    out.insert(out.end(), buf.chunks.front() + buf.head, buf.chunks.front() + CHUNKLEN);
-    delete [] buf.chunks.front();
-    buf.chunks.pop_front();
-    buf.bufsize -= CHUNKLEN;
-    while (buf.bufsize > CHUNKLEN)
-    {
-      /* copy next chunk */
-      out.insert(out.end(), buf.chunks.front(), buf.chunks.front() + CHUNKLEN);
-      delete [] buf.chunks.front();
-      buf.chunks.pop_front();
-      buf.bufsize -= CHUNKLEN;
-    }
-    /* copy the last chunk until tail front */
-    out.insert(out.end(), buf.chunks.front(), buf.chunks.front() + CHUNKLEN - buf.tail);
-    delete [] buf.chunks.front();
-    buf.chunks.pop_front();
-    buf.bufsize -= CHUNKLEN;
-  }
-  else
-  {
-    /* copy the chunk from position at head and until tail front */
-    out.insert(out.end(), buf.chunks.front() + buf.head, buf.chunks.front() + CHUNKLEN - buf.tail);
-    delete [] buf.chunks.front();
-    buf.chunks.pop_front();
-  }
-  assert(buf.chunks.size() == 0);
+  buf.result(out);
 
   /* push error */
   if (ret == SPAWN_SUCCESS)
