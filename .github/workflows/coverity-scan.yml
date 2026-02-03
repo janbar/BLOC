@@ -14,6 +14,7 @@ jobs:
 
     - name: Add more dependencies
       run: |
+        sudo apt-get update
         sudo apt install -y \
             libreadline-dev libplplot-dev libsqlite3-dev libmariadb-dev
 
