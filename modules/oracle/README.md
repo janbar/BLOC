@@ -102,3 +102,88 @@ Fetch next row.
 finalize() returns boolean
 Close the prepared statement.
 ```
+
+## Sample usage
+
+First I downloaded the basic instant client, and copied the libraries in the
+folder `/Users/foo/instantclient_19_8/lib`. So the environ ORACLE_HOME should
+be set with the path `/Users/foo/instantclient_19_8`.
+
+```
+import sys;
+import oracle;
+
+/* set environ ORACLE_HOME */
+sys().setenv("ORACLE_HOME", "/Users/foo/instantclient_19_8");
+
+db = oracle("192.168.2.3:1521/orcl", "system", "manager");
+
+/* is the db connection valid ? */
+if not db.isopen() then
+  raise FAILED_TO_CONNECT;
+end if;
+
+/* loop resultset of one-step query */
+r = db.query("select count(*),max(num_rows),max(last_analyzed)
+  from dba_tables");
+
+forall e in r loop print "# " e; end loop;
+
+# 6241, 100111553, "2026-02-25T21:02:00Z"
+
+/* loop resultset of one-step query with parameters */
+r = db.query("select table_name, tablespace_name from dba_tables
+  where owner = :1 and num_rows > :2" , tup("FOO", 1e6) );
+
+forall e in r loop print "# " e; end loop;
+
+# "MYTAB1", "DATA"
+# "MYTAB2", "DATA"
+
+/* fetch loop in resultset */
+db.prepare("select table_name, tablespace_name from dba_tables
+  where owner = :1 and num_rows > :2");
+
+db.execute(tup("FOO", 1e6));
+
+forall e in db.header() loop
+  print "# type of column " e@1 " is " e@2;
+end loop;
+
+# type of column TABLE_NAME is string
+# type of column TABLESPACE_NAME is string
+
+row = tup();
+
+while db.fetch(row) loop print "# " row; end loop;
+
+# "MYTAB1", "DATA"
+# "MYTAB2", "DATA"
+
+/* close and execute a new one */
+db.execute(tup("SYS", 1e3));
+
+while db.fetch(row) loop print "# " row; end loop;
+
+# "TAB$", "SYSTEM"
+# "IND$", "SYSTEM"
+# "ICOL$", "SYSTEM"
+# "COL$", "SYSTEM"
+# "LOB$", "SYSTEM"
+# ...
+
+/* close prepared statement */
+db.finalize();
+
+/* share the session for concurrent calls */
+db2 = oracle(db);
+
+/* close db connection... not really as long as a shared session exists */
+db.close();
+
+print "# " db2.isopen();
+
+# TRUE
+
+db2.close();
+```
