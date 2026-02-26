@@ -84,11 +84,11 @@ TEST_CASE("decimal")
 TEST_CASE("string")
 {
   Expression * e;
-  ctx.reset("\"/\\\\@$^~|_.+-=#012345679\"\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"\\a\\b\\f\\n\\r\\t\"");
+  ctx.reset("\"/\\\\@$^~|_.+-=#012345679\"\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\\\"\\a\\b\\f\\n\\r\\t\"");
   e = ctx.parseExpression();
   REQUIRE( *(e->value(ctx).literal()) ==
           "/\\@$^~|_.+-=#012345679\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\a\b\f\n\r\t" );
   REQUIRE( e->unparse(ctx) ==
-          "\"/\\\\@$^~|_.+-=#012345679\"\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\"\"\\a\\b\\f\\n\\r\\t\"" );
+          "\"/\\\\@$^~|_.+-=#012345679\\\"ABCDEFGHIJKLMNOPQRSTUVWXYZ\\\"\\a\\b\\f\\n\\r\\t\"" );
   delete e;
 }
