@@ -47,10 +47,8 @@ typedef int (*TOKEN_CALLBACK)(void * handle, int token, const char * text);
 typedef void (*TOKEN_READER)(void * handle, char * buf, int * len, int maxsize);
 
 /**
- * Initialize a new token scanner. After completed the scan the initialized
+ * Initialize a new token scanner.
  * @param handle    reference of the caller
- * @param callback  function called on each discovered token
- *                  to break the scanning it must return nonzero
  * @param reader    function called to fill the input buffer
  * @return handle
  */
@@ -67,6 +65,8 @@ extern void tokenizer_free(TOKEN_SCANNER scanner);
  * Start the scan reading data from reader and pushing discovered tokens to
  * callback.
  * @param scanner
+ * @param callback  function called on each discovered token
+ *                  to break the scanning it must return nonzero
  */
 extern void tokenizer_scan(TOKEN_SCANNER scanner, TOKEN_CALLBACK callback);
 
