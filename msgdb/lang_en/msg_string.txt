@@ -3,9 +3,9 @@ $$STRING$$
 
 In BLOC, string is a sequence of 8bits characters wrapped inside double quotes.
 It could include newline or control sequences. If a string literal requires to
-embed double quotes as part of a string then it must be duplicated.
+embed double quotes as part of a string then it must be escaped or duplicated.
 
-"Hello world !", "This is a ""string""", "please enter a value\b\n"
+"Hello world !", "This is a ""string\"", "please enter a value\b\n"
 
 Embed control sequences can be among \a, \b, \f, \n, \r, \t. The character '\'
 escape itself, e.g "\\".

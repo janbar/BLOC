@@ -78,7 +78,7 @@ SPACE     {WS}*
   yy_pop_state( yyscanner );
   return TOKEN_LITERALEND;
 }
-<LITERAL>.|\n|"\"\""            {
+<LITERAL>.|\n|"\\\\"|"\"\""|"\\\""     {
     return TOKEN_LITERALSTR;
 }
 

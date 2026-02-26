@@ -1,7 +1,7 @@
 BLOC 2.7 Reference Manual
 =========================
 
-2025-12
+2026-02
 
 # Table of contents
 
@@ -257,7 +257,7 @@ The following strings denote other tokens:
 
 **\* Literal strings**
 
-A literal string can be delimited by matching double quotes, and can contain the following limited C-like escape sequences: `\a` (bell), `\b` (backspace), `\f` (form feed), `\n` (newline), `\r` (carriage return), `\t` (horizontal tab), `\\` (backslash). If a literal string requires to embed double quotes as part of a string then it must be duplicated (double-double quotes).
+A literal string can be delimited by matching double quotes, and can contain the following limited C-like escape sequences: `\a` (bell), `\b` (backspace), `\f` (form feed), `\n` (newline), `\r` (carriage return), `\t` (horizontal tab), `\\` (backslash). If a literal string requires to embed double quotes as part of a string then it must be escaped (\") or duplicated (double-double quotes).
 
 **\* Numeral constants**
 

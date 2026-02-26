@@ -414,7 +414,7 @@ std::string Value::readableLiteral(Literal& s)
       buf.append("\\\\");
       break;
     case '"':
-      buf.append("\"\"");
+      buf.append("\\\"");
       break;
     default:
       buf.push_back(c);
@@ -552,6 +552,9 @@ Value Value::parseLiteral(const std::string& text)
         break;
       case '\\':
         v->push_back('\\');
+        break;
+      case '"':
+        v->push_back(c);
         break;
       default:
         pc = c;
