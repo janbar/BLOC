@@ -1,9 +1,9 @@
-BLOC 2.7 Reference Manual
+BLOC 2.8 Reference Manual
 =========================
 
 2026-02
 
-# Table of contents
+## Table of contents
 
 * [Introduction](#introduction)
 
@@ -13,7 +13,7 @@ BLOC 2.7 Reference Manual
   + [Contexts and the Global environment](#contexts-and-the-global-environment)
   + [Error Handling](#error-handling)
   + [Type methods](#type-methods)
-  + [Garbage Collection](#garbage-collection)
+  + [Memory management](#memory-management)
 
 * [The language](#the-language)
   
@@ -179,17 +179,17 @@ Note that *rank* is not an expression, but a coded value. It is evaluated at com
 
 ---
 
-## Garbage Collection
+## Memory management
 
 BLOC manages memory automatically, so you don't need to worry about manually allocating or freeing memory for objects.
 
-It uses two pre-allocated stacks of values:
+It uses one pre-allocated stack of values, that is defined during compile time. And one temporary stack.
 
 - **The persistent stack**: contains values that are used throughout the execution.
 
 - **The temporary stack (or sandbox)**: handles temporary values created during execution.
 
-When a new value is created, it is allocated on the temporary stack. During assignment, a pointer swap occurs between the temporary value and the stored value. The temporary stack contains only releasable data, meaning data that can be freed when no longer needed.
+When a new value is created, it is allocated on the temporary stack. During assignment, a pointer swap occurs between the temporary value and the persisted value. The temporary stack contains only releasable data, meaning data that can be freed when no longer needed.
 
 At the end of each statement or declaration, the temporary stack counter is reset to zero, which automatically releases all temporary values. The memory associated with these values is then freed during a new allocation on the temporary stack: the value pointed to by the counter is purged and then re-initialized with a new value.
 
@@ -257,7 +257,7 @@ The following strings denote other tokens:
 
 **\* Literal strings**
 
-A literal string can be delimited by matching double quotes, and can contain the following limited C-like escape sequences: `\a` (bell), `\b` (backspace), `\f` (form feed), `\n` (newline), `\r` (carriage return), `\t` (horizontal tab), `\\` (backslash). If a literal string requires to embed double quotes as part of a string then it must be escaped (\") or duplicated (double-double quotes).
+A literal string can be delimited by matching double quotes, and can contain the following limited C-like escape sequences: `\a` (bell), `\b` (backspace), `\f` (form feed), `\n` (newline), `\r` (carriage return), `\t` (horizontal tab), `\\` (backslash). If a literal string requires to embed double quotes as part of a string then it must be escaped (\\") or duplicated (double-double quotes).
 
 **\* Numeral constants**
 
