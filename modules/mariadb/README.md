@@ -2,6 +2,21 @@
 
 The "mariadb" module allows MariaDB database handling.
 
+### Build the module on Unix
+
+Install the development files for mariadb client.
+
+### Build the module on Windows
+
+You should configure the library and header locations for the CMake project.
+
+```
+-DMARIADB_INCLUDE_DIRS=C:/INSTALL_PATH/include/mysql
+-DMARIADB_LIBRARY=C:/INSTALL_PATH/lib/libmariadb.lib
+```
+
+Finally you should copy the DLL `libmariadb.dll` into the PATH of the BLOC binaries.
+
 ## Loading the module
 
 Like any other BLOC module, you have to load it with the statement `import`, before create objects from the type "mariadb".

@@ -2,6 +2,21 @@
 
 The "sqlite3" module allows SQLite3 database handling.
 
+### Build the module on Unix
+
+Install the development files for sqlite3.
+
+### Build the module on Windows
+
+You should configure the library and header locations for the CMake project.
+
+```
+-DSQLite3_INCLUDE_DIR=C:/INSTALL_PATH/sqlite3
+-DSQLite3_LIBRARY=C:/INSTALL_PATH/sqlite3/sqlite3.lib
+```
+
+Finally you should copy the DLL `sqlite3.dll` into the PATH of the BLOC binaries.
+
 ## Loading the module
 
 Like any other BLOC module, you have to load it with the statement `import`, before create objects from the type "sqlite3".
