@@ -18,6 +18,7 @@
 
 #include "plugin_manager.h"
 #include "debug.h"
+#include "blocc/debug.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -157,7 +158,7 @@ unsigned PluginManager::registerModule(void* dlhandle)
   {
     if (_modules[id].dlhandle == dlhandle)
     {
-      DBG(DBG_WARN, "%s: module '%s' already imported.\n", __FUNCTION__, _modules[id].interface.name);
+      DBG(DBG_DEBUG, "%s: module '%s' already imported.\n", __FUNCTION__, _modules[id].interface.name);
       return id;
     }
   }
