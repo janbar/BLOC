@@ -75,8 +75,8 @@ READLNExpression * READLNExpression::parse(Parser& p, Context& ctx)
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_READLN], t);
     }
     /* check constness */
-    if (args.back()->symbol()->locked())
-      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, args.back()->symbol()->name().c_str(), t);
+    if (ctx.getSymbol(args.back()->symbolId()).locked())
+      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, ctx.getSymbol(args.back()->symbolId()).name().c_str(), t);
     assertClosedFunction(p, ctx, FUNC_READLN);
     return new READLNExpression(std::move(args));
   }

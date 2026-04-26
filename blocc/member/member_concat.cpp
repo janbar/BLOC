@@ -52,9 +52,9 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         if (_exp->isVarName())
         {
           if (a0.lvalue())
-            ctx.storeVariable(*_exp->symbol(), a0.clone());
+            ctx.storeVariable(_exp->symbolId(), a0.clone());
           else
-            ctx.storeVariable(*_exp->symbol(), std::move(a0));
+            ctx.storeVariable(_exp->symbolId(), std::move(a0));
         }
         else
         {
@@ -86,7 +86,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         rv->push_back(std::move(a0));
       /* a symbol must be upgraded */
       if (_exp->isVarName())
-        ctx.storeVariable(*_exp->symbol(), Value(rv));
+        ctx.storeVariable(_exp->symbolId(), Value(rv));
       else
         val.swap(Value(rv).to_lvalue(val.lvalue()));
       return val;
@@ -226,7 +226,7 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         val.swap(a0.to_lvalue(val.lvalue()));
       /* a symbol must be upgraded */
       if (_exp->isVarName())
-        ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
+        ctx.getSymbol(_exp->symbolId()).upgrade(val.type());
       return val;
     case Type::INTEGER:
     {
@@ -238,13 +238,13 @@ Value& MemberCONCATExpression::value(Context& ctx) const
         val.swap(Value(new TabChar(1, (char)c)).to_lvalue(val.lvalue()));
         /* a symbol must be upgraded */
         if (_exp->isVarName())
-          ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
+          ctx.getSymbol(_exp->symbolId()).upgrade(val.type());
         return val;
       }
       val.swap(Value(new Literal(1, (char)c)).to_lvalue(val.lvalue()));
       /* a symbol must be upgraded */
       if (_exp->isVarName())
-        ctx.getSymbol(_exp->symbol()->id())->upgrade(val.type());
+        ctx.getSymbol(_exp->symbolId()).upgrade(val.type());
       return val;
     }
     default:
@@ -371,10 +371,11 @@ MemberCONCATExpression * MemberCONCATExpression::parse(Parser& p, Context& ctx, 
 {
   std::vector<Expression*> args;
   TokenPtr t = p.pop();
+  if (exp->symbolId() != Expression::nid)
   {
-    const Symbol * s = exp->symbol();
-    if (s && s->locked())
-      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, s->name().c_str(), t);
+    const Symbol& s = ctx.getSymbol(exp->symbolId());
+    if (s.locked())
+      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, s.name().c_str(), t);
   }
 
   if (t->code != '(')

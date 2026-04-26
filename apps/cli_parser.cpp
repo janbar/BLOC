@@ -482,7 +482,7 @@ static bool load_args(bloc::Context& ctx, const std::vector<std::string>& args)
   try
   {
     const bloc::Symbol& symbol = ctx.registerSymbol(std::string("$ARG"), c->table_type());
-    ctx.storeVariable(symbol, bloc::Value(c));
+    ctx.storeVariable(symbol.id(), bloc::Value(c));
   }
   catch (bloc::Error& ee)
   {

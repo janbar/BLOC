@@ -53,7 +53,8 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     /* the variable, which will point to the fetched value, cannot already be
      * used by a running iteration i.e in parent loop; typically a protected
      * symbol can mean such a case */
-    if (_var->symbol()->safety())
+    Symbol& vs = ctx.getSymbol(_var->symbolId());
+    if (vs.safety())
       throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
     /* setup fetching order */
     if (_order == DESC)
@@ -67,13 +68,14 @@ const Statement * FORALLStatement::doit(Context& ctx) const
       _data.index = 0;
     }
     /* setup fetched target */
-    if (_expSymbol)
+    if (_exp->symbolId() != Expression::nid)
     {
       /* target is sustainable and accessible by a symbol, so point to it */
       _data.target = &val;
       /* the symbol must be protected in the body loop */
-      _data.ex_locked_bak = _expSymbol->locked();
-      _expSymbol->locked(true);
+      Symbol& es = ctx.getSymbol(_exp->symbolId());
+      _data.ex_locked_bak = es.locked();
+      es.locked(true);
     }
     else if (!val.lvalue())
     {
@@ -87,16 +89,16 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     }
     /* backup the state of the variable used as iterator; it will be restored
      * at end */
-    _data.it_safety_bak = _var->symbol()->safety();
-    _data.it_locked_bak = _var->symbol()->locked();
-    _data.it_type_bak = ctx.loadVariable(*_var->symbol()).type();
+    _data.it_safety_bak = vs.safety();
+    _data.it_locked_bak = vs.locked();
+    _data.it_type_bak = ctx.loadVariable(vs.id()).type();
 
     /* fetch first item: make a pointer to the element value */
     make_pointer(_data.target->collection(), _data.index,
-              ctx.loadVariable(*_var->symbol())).to_lvalue(true);
-    _var->symbol()->safety(true);
+              ctx.loadVariable(vs.id())).to_lvalue(true);
+    vs.safety(true);
     /* iterator inherits constness of the target */
-    _var->symbol()->locked(_data.ex_locked_bak);
+    vs.locked(_data.ex_locked_bak);
     ctx.stackControl(this);
   }
   else
@@ -105,13 +107,14 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     if (_data.index < 0 || _data.index >= _data.target->collection()->size())
     {
       /* restore the state of the iterator variable; the value is cleared */
-      ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
-      _var->symbol()->safety(_data.it_safety_bak);
-      _var->symbol()->locked(_data.it_locked_bak);
-      if (_expSymbol)
+      Symbol& vs = ctx.getSymbol(_var->symbolId());
+      ctx.loadVariable(vs.id()).swap(Value(_data.it_type_bak).to_lvalue(true));
+      vs.safety(_data.it_safety_bak);
+      vs.locked(_data.it_locked_bak);
+      if (_exp->symbolId() != Expression::nid)
       {
         /* restore the state of the target symbol */
-        _expSymbol->locked(_data.ex_locked_bak);
+        ctx.getSymbol(_exp->symbolId()).locked(_data.ex_locked_bak);
       }
       else
       {
@@ -125,7 +128,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     {
       /* fetch current item: make a pointer to the element value */
       make_pointer(_data.target->collection(), _data.index,
-                ctx.loadVariable(*_var->symbol())).to_lvalue(true);
+                ctx.loadVariable(_var->symbolId())).to_lvalue(true);
     }
   }
   try
@@ -136,13 +139,14 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   catch (...)
   {
     /* restore the state of the iterator variable */
-    ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
-    _var->symbol()->safety(_data.it_safety_bak);
-    _var->symbol()->locked(_data.it_locked_bak);
-    if (_expSymbol)
+    Symbol& vs = ctx.getSymbol(_var->symbolId());
+    ctx.loadVariable(vs.id()).swap(Value(_data.it_type_bak).to_lvalue(true));
+    vs.safety(_data.it_safety_bak);
+    vs.locked(_data.it_locked_bak);
+    if (_exp->symbolId() != Expression::nid)
     {
       /* restore the state of the symbol */
-      _expSymbol->locked(_data.ex_locked_bak);
+      ctx.getSymbol(_exp->symbolId()).locked(_data.ex_locked_bak);
     }
     else
     {
@@ -159,13 +163,14 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     return this;
   }
   /* restore the state of the iterator variable */
-  ctx.loadVariable(*_var->symbol()).swap(Value(_data.it_type_bak).to_lvalue(true));
-  _var->symbol()->safety(_data.it_safety_bak);
-  _var->symbol()->locked(_data.it_locked_bak);
-  if (_expSymbol)
+  Symbol& vs = ctx.getSymbol(_var->symbolId());
+  ctx.loadVariable(vs.id()).swap(Value(_data.it_type_bak).to_lvalue(true));
+  vs.safety(_data.it_safety_bak);
+  vs.locked(_data.it_locked_bak);
+  if (_exp->symbolId() != Expression::nid)
   {
     /* restore the state of the symbol */
-    _expSymbol->locked(_data.ex_locked_bak);
+    ctx.getSymbol(_exp->symbolId()).locked(_data.ex_locked_bak);
   }
   else
   {
@@ -181,7 +186,7 @@ void FORALLStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
   fputc(' ', out);
-  fputs(_var->symbol()->name().c_str(), out);
+  fputs(ctx.getSymbol(_var->symbolId()).name().c_str(), out);
   fputc(' ', out);
   fputs(KEYWORDS[STMT_IN], out);
   fputc(' ', out);
@@ -219,17 +224,19 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
   /* get symbol non-const */
-  Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
+  Symbol& vt = ctx.getSymbol(rof->_var->symbolId());
   /* iterator must be protected against type change */
   bool safety_vt_bak = vt.safety();
   bool locked_vt_bak = vt.locked();
   vt.safety(true);
   /* fetched expression must be protected against change */
   bool locked_ex_bak = false;
-  if (rof->_expSymbol)
+  unsigned sid = rof->_exp->symbolId();
+  if (sid != Expression::nid)
   {
-    locked_ex_bak = rof->_expSymbol->locked();
-    rof->_expSymbol->locked(true);
+    Symbol& es = ctx.getSymbol(sid);
+    locked_ex_bak = es.locked();
+    es.locked(true);
     /* iterator inherits constness of the target */
     vt.locked(locked_ex_bak);
   }
@@ -257,8 +264,8 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
   catch (ParseError& pe)
   {
     // cleanup
-    if (rof->_expSymbol)
-      rof->_expSymbol->locked(locked_ex_bak);
+    if (sid != Expression::nid)
+      ctx.getSymbol(sid).locked(locked_ex_bak);
     vt.safety(safety_vt_bak);
     vt.locked(locked_vt_bak);
     ctx.execEnd();
@@ -266,8 +273,8 @@ Executable * FORALLStatement::parse_clause(Parser& p, Context& ctx, FORALLStatem
       delete ss;
     throw;
   }
-  if (rof->_expSymbol)
-    rof->_expSymbol->locked(locked_ex_bak);
+  if (sid != Expression::nid)
+    ctx.getSymbol(sid).locked(locked_ex_bak);
   vt.safety(safety_vt_bak);
   vt.locked(locked_vt_bak);
   ctx.execEnd();
@@ -302,9 +309,6 @@ FORALLStatement * FORALLStatement::parse(Parser& p, Context& ctx)
     t = p.pop();
     if (t->code == ')')
       throw ParseError(EXC_PARSE_MM_PARENTHESIS, t);
-    /* retrieve the symbol name for a variable expression, that is required to
-     * point to the target table when processing the clause of the statement */
-    s->_expSymbol = s->_exp->symbol();
     /* check the type if defined */
     const Type& exp_type = s->_exp->type(ctx);
     if (exp_type == Type::NO_TYPE)

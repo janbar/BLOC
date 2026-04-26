@@ -38,11 +38,11 @@ class Parser;
 class VariableExpression : public Expression
 {
 private:
-  const Symbol& _symbol;
+  unsigned _id;
 
 public:
   virtual ~VariableExpression() { }
-  explicit VariableExpression(const Symbol& symbol) : Expression(), _symbol(symbol) { }
+  explicit VariableExpression(const Symbol& symbol) : Expression(), _id(symbol.id()) { }
 
   const Type& type(Context& ctx) const override;
 
@@ -50,7 +50,7 @@ public:
 
   Value& value(Context& ctx) const override
   {
-    Value& val = ctx.loadVariable(_symbol);
+    Value& val = ctx.loadVariable(_id);
     /* a pointer must be dereferenced */
     if (val.type() != Type::POINTER)
       return val;
@@ -59,16 +59,16 @@ public:
 
   bool isVarName() const override { return true; }
 
-  const Symbol * symbol() const override { return &_symbol; }
+  unsigned symbolId() const override { return _id; }
 
   std::string unparse(Context& ctx) const override
   {
-    return _symbol.name();
+    return ctx.getSymbol(_id).name();
   }
 
   std::string toString(Context& ctx) const override
   {
-    return std::string("variable ").append(_symbol.name());
+    return std::string("variable ").append(ctx.getSymbol(_id).name());
   }
 
   std::string typeName(Context& ctx) const override;
@@ -81,7 +81,7 @@ public:
    */
   Value& store(Context& ctx, Value&& val) const
   {
-    return ctx.storeVariable(_symbol, std::move(val));
+    return ctx.storeVariable(_id, std::move(val));
   }
 
   /**
@@ -94,7 +94,7 @@ public:
    */
   void store(Context& d_ctx, Context& s_ctx, Expression * s_exp) const
   {
-    d_ctx.storeVariable(_symbol, std::move(s_exp->value(s_ctx)));
+    d_ctx.storeVariable(_id, std::move(s_exp->value(s_ctx)));
   }
 
   /**
@@ -105,12 +105,12 @@ public:
    */
   Value& load(Context& ctx) const
   {
-    return ctx.loadVariable(_symbol);
+    return ctx.loadVariable(_id);
   }
 
   void clear(Context& ctx)
   {
-    ctx.clearVariable(_symbol);
+    ctx.clearVariable(_id);
   }
 
   static VariableExpression * parse(Parser& p, Context& ctx, TokenPtr& token);

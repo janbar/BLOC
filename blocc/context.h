@@ -45,6 +45,10 @@ public:
   Context& operator=(const Context&) = delete;
   Context(int fd_out, int fd_err);
 
+  Context * clone();
+
+  Context * clone(int fd_out, int fd_err);
+
   /**
    * Purge the context including all symbols and storage pool.
    * Any executables previously built with the context will no longer work.
@@ -71,9 +75,9 @@ public:
     return nullptr;
   }
 
-  Symbol * getSymbol(unsigned id)
+  Symbol& getSymbol(unsigned id)
   {
-    return _storage_pool[id].symbol;
+    return *_storage_pool[id].symbol;
   }
 
   void parsingBegin();
@@ -93,7 +97,8 @@ public:
   /**
    * Register symbol of tuple type
    */
-  Symbol& registerSymbol(const std::string& name, const TupleDecl::Decl& decl, Type::TypeLevel level);
+  Symbol& registerSymbol(const std::string& name, const TupleDecl::Decl& decl,
+                         Type::TypeLevel level);
 
   /**
    * Returns the pointer to the value bound to the given name, or null.
@@ -105,41 +110,41 @@ public:
   {
     const Symbol * symbol = findSymbol(symbolName);
     if (symbol)
-      return &loadVariable(*symbol);
+      return &loadVariable(symbol->id());
     return nullptr;
   }
 
   /**
    * Returns the value bound to the given symbol.
-   * @param symbol      the symbol
+   * @param id          the symbol id
    * @return            the value
    */
-  Value& loadVariable(const Symbol& symbol)
+  Value& loadVariable(unsigned id)
   {
-    return _storage_pool[symbol.id()].value;
+    return _storage_pool[id].value;
   }
 
   /**
    * Clear the value bound to the given symbol.
-   * @param symbol      the symbol
+   * @param id          the symbol id
    */
-  void clearVariable(const Symbol& symbol)
+  void clearVariable(unsigned id)
   {
-    _storage_pool[symbol.id()].value = Value();
+    _storage_pool[id].value = Value();
   }
 
   /**
    * Bind the given value to the given symbol.
    * Note that values are swapped, therefore the passed value will contain the
    * payload of the old bound value.
-   * @param symbol      the symbol
+   * @param id          the symbol id
    * @param value       the value
    * @return            the bound value
    */
-  Value& storeVariable(const Symbol& symbol, Value&& e);
+  Value& storeVariable(unsigned id, Value&& e);
 
   void describeSymbol(const std::string& name);
-  void describeSymbol(const Symbol& symbol);
+  void describeSymbol(unsigned id);
 
   void dumpVariables();
 
@@ -328,14 +333,34 @@ private:
   struct MemorySlot
   {
     Value value;
+    /* use pointer to make it invariant within a container */
     Symbol * symbol;
+
     ~MemorySlot() { delete symbol; }
-    explicit MemorySlot(const Symbol& s) : value(s), symbol(new Symbol(s)) { }
-    explicit MemorySlot(Symbol&& s) : value(s), symbol(new Symbol(std::move(s))) { }
-    MemorySlot(const MemorySlot& m) = delete;
-    MemorySlot& operator=(MemorySlot& m) = delete;
-    MemorySlot(MemorySlot&& m) noexcept
-    : value(std::move(m.value)), symbol(m.symbol) { m.symbol = nullptr; }
+
+    explicit MemorySlot(const Symbol& s)
+    : value(s)
+    , symbol(new Symbol(s)) { }
+
+    explicit MemorySlot(Symbol&& s)
+    : value(s)
+    , symbol(new Symbol(std::move(s))) { }
+
+    explicit MemorySlot(const MemorySlot& m)
+    : value(std::move(m.value.clone().to_lvalue(true)))
+    , symbol(new Symbol(*m.symbol)) { }
+
+    MemorySlot& operator=(const MemorySlot& m)
+    {
+      value = std::move(m.value.clone().to_lvalue(true));
+      symbol = new Symbol(*m.symbol);
+      return *this;
+    }
+
+    explicit MemorySlot(MemorySlot&& m) noexcept
+    : value(std::move(m.value))
+    , symbol(m.symbol) { m.symbol = nullptr; }
+
     MemorySlot& operator=(MemorySlot&& m) noexcept
     {
       if (this == &m)

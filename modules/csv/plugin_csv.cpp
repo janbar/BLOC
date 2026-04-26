@@ -338,7 +338,7 @@ bloc::Value * CSVPlugin::executeMethod(
     bloc::Collection * c = v.collection();
     for (std::string& f : data)
       c->push_back(bloc::Value(new bloc::Literal(f)));
-    ctx.storeVariable(*args[1]->symbol(), std::move(v));
+    ctx.storeVariable(args[1]->symbolId(), std::move(v));
     return new bloc::Value(bloc::Bool(next));
   }
 

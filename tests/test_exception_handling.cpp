@@ -137,7 +137,7 @@ TEST_CASE("unstacking on exception")
   ctx.purge();
   Executable * e;
   Symbol& a1 = ctx.registerSymbol("$1", Type::INTEGER);
-  ctx.storeVariable(a1, Value(Integer(100)));
+  ctx.storeVariable(a1.id(), Value(Integer(100)));
   ctx.reset(
           "brk=$1*2, cnt=0;\n"
           "for i in 1 to $1 loop\n"

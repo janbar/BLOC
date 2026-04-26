@@ -86,8 +86,9 @@ const Statement * FORStatement::doit(Context& ctx) const
     }
     _data.iterator = &(_var->store(ctx, std::move(vb)));
     /* value is type safe in the loop body */
-    _data.safety_bak = _var->symbol()->safety();
-    _var->symbol()->safety(true);
+    Symbol& vs = ctx.getSymbol(_var->symbolId());
+    _data.safety_bak = vs.safety();
+    vs.safety(true);
     ctx.stackControl(this);
   }
   else
@@ -98,7 +99,7 @@ const Statement * FORStatement::doit(Context& ctx) const
         (_data.step < 0 && nxt < _data.min))
     {
       /* restore the safety state of the variable */
-      _var->symbol()->safety(_data.safety_bak);
+      ctx.getSymbol(_var->symbolId()).safety(_data.safety_bak);
       ctx.unstackControl();
       return _next;
     }
@@ -112,7 +113,7 @@ const Statement * FORStatement::doit(Context& ctx) const
   catch (...)
   {
     /* restore the safety state of the variable */
-    _var->symbol()->safety(_data.safety_bak);
+    ctx.getSymbol(_var->symbolId()).safety(_data.safety_bak);
     throw;
   }
   if (!ctx.stopCondition())
@@ -123,7 +124,7 @@ const Statement * FORStatement::doit(Context& ctx) const
     return this;
   }
   /* restore the safety state of the variable */
-  _var->symbol()->safety(_data.safety_bak);
+  ctx.getSymbol(_var->symbolId()).safety(_data.safety_bak);
   ctx.breakCondition(false);
   ctx.unstackControl();
   return _next;
@@ -133,7 +134,7 @@ void FORStatement::unparse(Context& ctx, FILE * out) const
 {
   fputs(Statement::KEYWORDS[keyword()], out);
   fputc(' ', out);
-  fputs(_var->symbol()->name().c_str(), out);
+  fputs(ctx.getSymbol(_var->symbolId()).name().c_str(), out);
   fputc(' ', out);
   fputs(KEYWORDS[STMT_IN], out);
   fputc(' ', out);
@@ -175,7 +176,7 @@ Executable * FORStatement::parse_clause(Parser& p, Context& ctx, FORStatement * 
   ctx.execBegin(rof);
   std::list<const Statement*> statements;
   /* get symbol non-const */
-  Symbol& vt = *ctx.getSymbol(rof->_var->symbol()->id());
+  Symbol& vt = ctx.getSymbol(rof->_var->symbolId());
   /* iterator must be protected against type change */
   bool safety_bak = vt.safety();
   vt.safety(true);

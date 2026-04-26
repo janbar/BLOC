@@ -31,10 +31,10 @@ const Type& VariableExpression::type(Context& ctx) const
 {
   if (ctx.parsing())
     /* return the type registered in the context with this id */
-    return *(ctx.getSymbol(_symbol.id()));
+    return ctx.getSymbol(_id);
 
   /* return the type of the stored expression */
-  Value& val = ctx.loadVariable(_symbol);
+  Value& val = ctx.loadVariable(_id);
   /* a pointer must be dereferenced */
   if (val.type() != Type::POINTER)
     return val.type();
@@ -45,11 +45,11 @@ const TupleDecl::Decl& VariableExpression::tuple_decl(Context& ctx) const
 {
   if (ctx.parsing())
     /* return the decl registered in the context with this id */
-    return ctx.getSymbol(_symbol.id())->tuple_decl();
+    return ctx.getSymbol(_id).tuple_decl();
   else
   {
     /* return the decl of the stored expression */
-    Value& z = ctx.loadVariable(_symbol);
+    Value& z = ctx.loadVariable(_id);
     if (z.isNull())
       return TupleDecl::no_decl;
     if (z.type() != Type::POINTER)

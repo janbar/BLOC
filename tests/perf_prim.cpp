@@ -15,7 +15,7 @@ TEST_CASE("perf 10000 prims")
 {
   Executable * e;
   Symbol& a1 = ctx.registerSymbol("$1", Type::INTEGER);
-  ctx.storeVariable(a1, Value(Integer((10000))));
+  ctx.storeVariable(a1.id(), Value(Integer((10000))));
   ctx.reset(
           "cnt=0;\nfor i in 1 to $1 loop\nb=true;\n"
           "for j in 2 to i/2 asc loop\nif i%j == 0 then b=false; break; end if;\n"

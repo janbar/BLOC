@@ -180,7 +180,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
           case PLUGIN_INOUT:
           {
             /* must be symbolic variable, not read-only, and with same type */
-            if (!args[a]->isVarName() || args[a]->symbol()->locked() ||
+            if (!args[a]->isVarName() || ctx.getSymbol(args[a]->symbolId()).locked() ||
                     !ParseExpression::typeChecking(args[a], m_arg_type, p, ctx))
               found = false;
             else

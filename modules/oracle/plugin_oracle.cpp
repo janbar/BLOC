@@ -515,7 +515,7 @@ bloc::Value * OraclePlugin::executeMethod(
     if (!h->fetch(&t, found))
       throw RuntimeError(EXC_RT_USER_S, h->errmsg());
     if (found)
-      ctx.storeVariable(*args[0]->symbol(), bloc::Value(t));
+      ctx.storeVariable(args[0]->symbolId(), bloc::Value(t));
     return new bloc::Value(bloc::Bool(found));
   }
 

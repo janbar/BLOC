@@ -38,7 +38,7 @@ LETStatement::~LETStatement()
 const Statement * LETStatement::doit(Context& ctx) const
 {
   /* assign variable */
-  if (ctx.loadVariable(*_var.symbol()).type() != Type::POINTER)
+  if (ctx.loadVariable(_var.symbolId()).type() != Type::POINTER)
   {
     /* ASSIGNMENT */
     _var.store(ctx, ctx, _exp);
@@ -48,9 +48,9 @@ const Statement * LETStatement::doit(Context& ctx) const
   {
     /* The pointed-to value will be updated directly,
        so integrity checks must be performed here */
-    if (_var.symbol()->locked())
-      throw RuntimeError(EXC_RT_CONST_VIOLATION_S, _var.symbol()->name().c_str());
-    Value& ptd = ctx.loadVariable(*_var.symbol()).deref_value();
+    if (ctx.getSymbol(_var.symbolId()).locked())
+      throw RuntimeError(EXC_RT_CONST_VIOLATION_S, ctx.getSymbol(_var.symbolId()).name().c_str());
+    Value& ptd = ctx.loadVariable(_var.symbolId()).deref_value();
     Value& val = _exp->value(ctx); /* execute expression */
     /* values MUST be of the same type */
     if (val.type() != ptd.type())
@@ -65,7 +65,7 @@ const Statement * LETStatement::doit(Context& ctx) const
 
 void LETStatement::unparse(Context&ctx, FILE * out) const
 {
-  fputs(_var.symbol()->name().c_str(), out);
+  fputs(ctx.getSymbol(_var.symbolId()).name().c_str(), out);
   fputs(" = ", out);
   fputs(_exp->unparse(ctx).c_str(), out);
   unparse_next(ctx, out);

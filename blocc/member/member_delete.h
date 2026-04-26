@@ -43,7 +43,7 @@ public:
   /* it is an accessor method */
   bool isVarName() const override { return _exp->isVarName(); }
 
-  const Symbol * symbol() const override { return _exp->symbol(); }
+  unsigned symbolId() const override { return _exp->symbolId(); }
 
   const TupleDecl::Decl& tuple_decl(Context& ctx) const override { return _exp->tuple_decl(ctx); }
 

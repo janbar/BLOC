@@ -180,7 +180,7 @@ int main(int argc, char **argv) {
     try
     {
       const bloc::Symbol& c_sym = ctx.registerSymbol(std::string("$ARG"), c_arg->table_type());
-      ctx.storeVariable(c_sym, bloc::Value(c_arg));
+      ctx.storeVariable(c_sym.id(), bloc::Value(c_arg));
     }
     catch (bloc::Error& ee)
     {

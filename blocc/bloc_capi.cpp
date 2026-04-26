@@ -123,7 +123,7 @@ bloc_ctx_store_variable(bloc_context *ctx, const bloc_symbol *symbol, bloc_value
   try
   {
     reinterpret_cast<bloc::Context*>(ctx)->storeVariable(
-            *reinterpret_cast<const bloc::Symbol*>(symbol),
+            reinterpret_cast<const bloc::Symbol*>(symbol)->id(),
             std::move(*reinterpret_cast<bloc::Value*>(v)));
     return bloc_true;
   }
@@ -144,7 +144,7 @@ bloc_value*
 bloc_ctx_load_variable(bloc_context *ctx, const bloc_symbol *symbol)
 {
   bloc::Value& v = reinterpret_cast<bloc::Context*>(ctx)->loadVariable(
-          *reinterpret_cast<const bloc::Symbol*>(symbol));
+          reinterpret_cast<const bloc::Symbol*>(symbol)->id());
   return reinterpret_cast<bloc_value*>(&v);
 }
 

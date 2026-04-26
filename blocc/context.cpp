@@ -91,6 +91,30 @@ Context::~Context()
   }
 }
 
+Context * Context::clone()
+{
+  Context * other = new Context(::fileno(_sout), ::fileno(_serr));
+  /* copy flags */
+  other->_flags = _flags;
+  /* copy table of symbols */
+  other->_storage_pool.reserve(_storage_pool.size());
+  for (const MemorySlot& e : _storage_pool)
+    other->_storage_pool.push_back(e);
+  return other;
+}
+
+Context * Context::clone(int fd_out, int fd_err)
+{
+  Context * other = new Context(fd_out, fd_err);
+  /* copy flags */
+  other->_flags = _flags;
+  /* copy table of symbols */
+  other->_storage_pool.reserve(_storage_pool.size());
+  for (const MemorySlot& e : _storage_pool)
+    other->_storage_pool.push_back(e);
+  return other;
+}
+
 void Context::purge()
 {
   returnCondition(false);
@@ -211,15 +235,15 @@ Symbol& Context::registerSymbol(const std::string& name, const TupleDecl::Decl& 
       break;
     }
   }
-  /* stacking old symbol */
+  /* back up old symbol */
   _backed_symbols.push_back(*s);
   s->upgrade(decl, level);
   return *s;
 }
 
-Value& Context::storeVariable(const Symbol& symbol, Value&& e)
+Value& Context::storeVariable(unsigned id, Value&& e)
 {
-  MemorySlot& slot = _storage_pool[symbol.id()];
+  MemorySlot& slot = _storage_pool[id];
   if (slot.symbol->locked())
     throw RuntimeError(EXC_RT_CONST_VIOLATION_S, slot.symbol->name().c_str());
   if (slot.value.type() == e.type())
@@ -266,7 +290,7 @@ void Context::describeSymbol(const std::string& name)
   std::transform(_name.begin(), _name.end(), _name.begin(), ::toupper);
   Symbol * s = findSymbol(_name);
   if (s != nullptr)
-    describeSymbol(*s);
+    describeSymbol(s->id());
   else if (_sout)
   {
     fprintf(_sout, "%s is undefined.\n", _name.c_str());
@@ -274,15 +298,15 @@ void Context::describeSymbol(const std::string& name)
   }
 }
 
-void Context::describeSymbol(const Symbol& symbol)
+void Context::describeSymbol(unsigned id)
 {
   if (!_sout)
     return;
-  Value& var = loadVariable(symbol);
+  Value& var = loadVariable(id);
 
-  fprintf(_sout, "%04x: %s is ", symbol.id(), symbol.name().c_str());
+  fprintf(_sout, "%04x: %s is ", id, getSymbol(id).name().c_str());
   if (var.type() == Type::NO_TYPE)
-    fprintf(_sout, "%s\n", symbol.typeName().c_str());
+    fprintf(_sout, "%s\n", getSymbol(id).typeName().c_str());
   else
   {
     fputs(var.toString().c_str(), _sout);
@@ -320,7 +344,7 @@ void Context::describeSymbol(const Symbol& symbol)
 void Context::dumpVariables()
 {
   for (MemorySlot& e : _storage_pool)
-    describeSymbol(*e.symbol);
+    describeSymbol(e.symbol->id());
 }
 
 FunctorManager& Context::functorManager()
@@ -486,8 +510,8 @@ Context::Context(const Context& ctx)
  * Make a shallow clone.
  * This is a lazy copy of child context, used only for runtime.
  * The level of recursion starts from 1.
- * @param ctx context
- * @param recursion level of recursion
+ * @param ctx         context
+ * @param recursion   level of recursion
  */
 Context::Context(const Context& ctx, uint8_t recursion)
 : _root(ctx._root)

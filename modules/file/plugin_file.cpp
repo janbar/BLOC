@@ -438,7 +438,7 @@ bloc::Value * FilePlugin::executeMethod(
       }
     }
     /* INOUT */
-    ctx.storeVariable(*args[0]->symbol(), bloc::Value(str));
+    ctx.storeVariable(args[0]->symbolId(), bloc::Value(str));
     return new bloc::Value(bloc::Integer(r));
   }
 
@@ -454,7 +454,7 @@ bloc::Value * FilePlugin::executeMethod(
     if (n >= 0)
     {
       /* INOUT */
-      ctx.storeVariable(*args[0]->symbol(), bloc::Value(new bloc::Literal(buf, n)));
+      ctx.storeVariable(args[0]->symbolId(), bloc::Value(new bloc::Literal(buf, n)));
     }
     return new bloc::Value(bloc::Bool(n < 0 ? false : true));
   }
@@ -557,7 +557,7 @@ bloc::Value * FilePlugin::executeMethod(
       }
     }
     /* INOUT */
-    ctx.storeVariable(*args[0]->symbol(), bloc::Value(raw));
+    ctx.storeVariable(args[0]->symbolId(), bloc::Value(raw));
     return new bloc::Value(bloc::Integer(r));
   }
 

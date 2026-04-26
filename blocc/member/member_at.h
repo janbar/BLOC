@@ -43,7 +43,7 @@ public:
   Value& value(Context& ctx) const override;
 
   /* it could relate an accessor */
-  const Symbol * symbol() const override { return _exp->symbol(); }
+  unsigned symbolId() const override { return _exp->symbolId(); }
 
   const TupleDecl::Decl& tuple_decl(Context& ctx) const override;
 

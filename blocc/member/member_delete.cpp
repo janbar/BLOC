@@ -89,10 +89,11 @@ MemberDELETEExpression * MemberDELETEExpression::parse(Parser& p, Context& ctx, 
 {
   std::vector<Expression*> args;
   TokenPtr t = p.pop();
+  if (exp->symbolId() != Expression::nid)
   {
-    const Symbol * s = exp->symbol();
-    if (s && s->locked())
-      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, s->name().c_str(), t);
+    const Symbol& s = ctx.getSymbol(exp->symbolId());
+    if (s.locked())
+      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, s.name().c_str(), t);
   }
 
   if (t->code != '(')

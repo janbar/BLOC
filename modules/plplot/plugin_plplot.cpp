@@ -1299,8 +1299,8 @@ bloc::Value * PLPLOTPlugin::executeMethod(
     if (h->minmax2dgrid(vz.data, nx, ny, &zmax, &zmin))
     {
       /* INOUT */
-      ctx.storeVariable(*args[3]->symbol(), bloc::Value(bloc::Numeric(zmax)));
-      ctx.storeVariable(*args[4]->symbol(), bloc::Value(bloc::Numeric(zmin)));
+      ctx.storeVariable(args[3]->symbolId(), bloc::Value(bloc::Numeric(zmax)));
+      ctx.storeVariable(args[4]->symbolId(), bloc::Value(bloc::Numeric(zmin)));
       return new bloc::Value(bloc::Bool(true));
     }
     return new bloc::Value(bloc::Bool(false));

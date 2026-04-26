@@ -73,8 +73,8 @@ INPUTExpression * INPUTExpression::parse(Parser& p, Context& ctx)
     if (!args.back()->isVarName() ||
             !ParseExpression::typeChecking(args.back(), Type::LITERAL, p, ctx))
       throw ParseError(EXC_PARSE_FUNC_ARG_TYPE_S, KEYWORDS[FUNC_INPUT], t);
-    if (args.back()->symbol()->locked())
-      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, args.back()->symbol()->name().c_str(), t);
+    if (ctx.getSymbol(args.back()->symbolId()).locked())
+      throw ParseError(EXC_PARSE_CONST_VIOLATION_S, ctx.getSymbol(args.back()->symbolId()).name().c_str(), t);
     if (p.front()->code == Parser::Chain)
     {
       t = p.pop();

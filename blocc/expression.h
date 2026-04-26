@@ -48,6 +48,8 @@ class Expression
 
 public:
 
+  static constexpr unsigned nid = (-1);
+
   virtual ~Expression() { }
 
   Expression() { }
@@ -74,10 +76,10 @@ public:
   virtual bool isVarName() const { return false; }
 
   /**
-   * Returns the source symbol allowing access to the value pointed to by
-   * an expression. Defaut none.
+   * Returns the symbol id allowing access to the value pointed to by
+   * an expression, else the constant nid.
    */
-  virtual const Symbol * symbol() const { return nullptr; }
+  virtual unsigned symbolId() const { return nid; }
 
   virtual const TupleDecl::Decl& tuple_decl(Context& ctx) const
   {

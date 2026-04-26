@@ -33,19 +33,19 @@ namespace bloc
 const Statement * LETNStatement::doit(Context& ctx) const
 {
   /* initialize or reset variable */
-  if (ctx.loadVariable(*_var.symbol()).type() != Type::POINTER)
+  if (ctx.loadVariable(_var.symbolId()).type() != Type::POINTER)
   {
     /* INITIALIZE */
-    ctx.storeVariable(*_var.symbol(), std::move(Value(_typ)));
+    ctx.storeVariable(_var.symbolId(), std::move(Value(_typ)));
     return _next;
   }
   else
   {
     /* The pointed-to value will be updated directly,
        so integrity checks must be performed here */
-    if (_var.symbol()->locked())
-      throw RuntimeError(EXC_RT_CONST_VIOLATION_S, _var.symbol()->name().c_str());
-    Value& ptd = ctx.loadVariable(*_var.symbol()).deref_value();
+    if (ctx.getSymbol(_var.symbolId()).locked())
+      throw RuntimeError(EXC_RT_CONST_VIOLATION_S, ctx.getSymbol(_var.symbolId()).name().c_str());
+    Value& ptd = ctx.loadVariable(_var.symbolId()).deref_value();
     /* values MUST be of the same type */
     if (_typ != ptd.type())
       throw RuntimeError(EXC_RT_TYPE_MISMATCH_S, ptd.typeName().c_str());
@@ -56,7 +56,7 @@ const Statement * LETNStatement::doit(Context& ctx) const
 
 void LETNStatement::unparse(Context&ctx, FILE * out) const
 {
-  fputs(_var.symbol()->name().c_str(), out);
+  fputs(ctx.getSymbol(_var.symbolId()).name().c_str(), out);
   fputs(":", out);
   if (_typ.level() > 0)
     fputs("table", out);

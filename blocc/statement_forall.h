@@ -49,7 +49,6 @@ private:
   VariableExpression * _var = nullptr;
   Expression * _exp = nullptr;
   Executable * _exec = nullptr;
-  const Symbol * _expSymbol = nullptr; // not freeable
   enum { AUTO = 0, ASC, DESC } _order = AUTO;
 
   mutable struct RT

@@ -337,7 +337,7 @@ bloc::Value * SQLITE3Plugin::executeMethod(
     bloc::Tuple * t = nullptr;
     int r = h->fetch(&t);
     if (r == 1)
-      ctx.storeVariable(*args[0]->symbol(), bloc::Value(t));
+      ctx.storeVariable(args[0]->symbolId(), bloc::Value(t));
     return new bloc::Value(bloc::Bool(r));
   }
 

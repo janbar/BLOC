@@ -238,7 +238,7 @@ bloc::Value * SYSPlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     bloc::Value out(new bloc::TabChar());
     bool success = bloc::Bool(h->execinout(*a0.literal(), nullptr, *out.tabchar(), *a2.integer()));
-    ctx.storeVariable(*args[1]->symbol(), std::move(out));
+    ctx.storeVariable(args[1]->symbolId(), std::move(out));
     return new bloc::Value(success);
   }
 
@@ -255,7 +255,7 @@ bloc::Value * SYSPlugin::executeMethod(
     const char * input = (a1.isNull() ? nullptr : a1.literal()->c_str());
     bloc::Value out(new bloc::TabChar());
     bool success = bloc::Bool(h->execinout(*a0.literal(), input, *out.tabchar(), *a3.integer()));
-    ctx.storeVariable(*args[2]->symbol(), std::move(out));
+    ctx.storeVariable(args[2]->symbolId(), std::move(out));
     return new bloc::Value(success);
   }
 
