@@ -34,6 +34,7 @@ namespace bloc
 {
 
 class Statement;
+class Controller;
 class FunctorManager;
 
 class Context
@@ -164,14 +165,28 @@ public:
   /* Control and stack                                                      */
   /*========================================================================*/
 
-  void stackControl(const Statement * s) { _controlstack.stack(s); }
-
-  const Statement * topControl()
+  void stackControl(const Controller * stmt, void * data)
   {
-    return _controlstack.empty() ? nullptr : _controlstack.top();
+    _controlstack.stack({stmt, data});
   }
 
-  void unstackControl() { _controlstack.unstack(); }
+  /**
+   * @return the statement having the control
+   */
+  const Controller * topControl()
+  {
+    return _controlstack.empty() ? nullptr : _controlstack.top().stmt;
+  }
+
+  /**
+   * @return the payload of control
+   */
+  void * topControlData()
+  {
+    return _controlstack.empty() ? nullptr : _controlstack.top().data;
+  }
+
+  void unstackControl();
 
   size_t execLevel() const { return _execstack.size(); }
 
@@ -370,7 +385,15 @@ private:
   std::vector<MemorySlot> _storage_pool;
 
   /* stack of looping statement */
-  Stack<const Statement*> _controlstack;
+  struct Control
+  {
+    /* the statement that takes control */
+    const Controller * stmt;
+    /* the opaque data held by the statement */
+    void * data;
+  };
+
+  Stack<Control> _controlstack;
 
   /* stack of block statement */
   Stack<const Statement*> _execstack;

@@ -43,10 +43,34 @@ FORALLStatement::~FORALLStatement()
     delete _var;
 }
 
+void FORALLStatement::finalizeControl(Context& ctx, void * data) const
+{
+  RT * _data = reinterpret_cast<RT*>(data);
+
+  /* restore the state of the iterator variable */
+  Symbol& vs = ctx.getSymbol(_var->symbolId());
+  ctx.loadVariable(vs.id()).swap(Value(_data->it_type_bak).to_lvalue(true));
+  vs.safety(_data->it_safety_bak);
+  vs.locked(_data->it_locked_bak);
+  if (_exp->symbolId() != Expression::nid)
+  {
+    /* restore the state of the symbol */
+    ctx.getSymbol(_exp->symbolId()).locked(_data->ex_locked_bak);
+  }
+  else
+  {
+    /* delete temporary storage */
+    delete _data->target;
+  }
+
+  delete _data;
+}
+
 const Statement * FORALLStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
+    RT * data = new RT();
     Value& val = _exp->value(ctx);
     if (val.isNull() || val.collection()->size() == 0)
       return _next;
@@ -59,29 +83,29 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     /* setup fetching order */
     if (_order == DESC)
     {
-      _data.step = -1;
-      _data.index = val.collection()->size()-1;
+      data->step = -1;
+      data->index = val.collection()->size()-1;
     }
     else
     {
-      _data.step = 1;
-      _data.index = 0;
+      data->step = 1;
+      data->index = 0;
     }
     /* setup fetched target */
     if (_exp->symbolId() != Expression::nid)
     {
       /* target is sustainable and accessible by a symbol, so point to it */
-      _data.target = &val;
+      data->target = &val;
       /* the symbol must be protected in the body loop */
       Symbol& es = ctx.getSymbol(_exp->symbolId());
-      _data.ex_locked_bak = es.locked();
+      data->ex_locked_bak = es.locked();
       es.locked(true);
     }
     else if (!val.lvalue())
     {
       /* the target value is temporary and it must be preserved during the
        * loop execution, so move it in private stack */
-      _data.target = new Value(std::move(val.to_lvalue(true)));
+      data->target = new Value(std::move(val.to_lvalue(true)));
     }
     else
     {
@@ -89,93 +113,44 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     }
     /* backup the state of the variable used as iterator; it will be restored
      * at end */
-    _data.it_safety_bak = vs.safety();
-    _data.it_locked_bak = vs.locked();
-    _data.it_type_bak = ctx.loadVariable(vs.id()).type();
+    data->it_safety_bak = vs.safety();
+    data->it_locked_bak = vs.locked();
+    data->it_type_bak = ctx.loadVariable(vs.id()).type();
 
     /* fetch first item: make a pointer to the element value */
-    make_pointer(_data.target->collection(), _data.index,
+    make_pointer(data->target->collection(), data->index,
               ctx.loadVariable(vs.id())).to_lvalue(true);
     vs.safety(true);
     /* iterator inherits constness of the target */
-    vs.locked(_data.ex_locked_bak);
-    ctx.stackControl(this);
+    vs.locked(data->ex_locked_bak);
+    ctx.stackControl(this, data);
   }
   else
   {
-    _data.index += _data.step;
-    if (_data.index < 0 || _data.index >= _data.target->collection()->size())
+    RT * data = reinterpret_cast<RT*>(ctx.topControlData());
+    data->index += data->step;
+    if (data->index < 0 || data->index >= data->target->collection()->size())
     {
-      /* restore the state of the iterator variable; the value is cleared */
-      Symbol& vs = ctx.getSymbol(_var->symbolId());
-      ctx.loadVariable(vs.id()).swap(Value(_data.it_type_bak).to_lvalue(true));
-      vs.safety(_data.it_safety_bak);
-      vs.locked(_data.it_locked_bak);
-      if (_exp->symbolId() != Expression::nid)
-      {
-        /* restore the state of the target symbol */
-        ctx.getSymbol(_exp->symbolId()).locked(_data.ex_locked_bak);
-      }
-      else
-      {
-        /* free the temporary value, which is stacked here */
-        delete _data.target;
-      }
       ctx.unstackControl();
       return _next;
     }
     else
     {
       /* fetch current item: make a pointer to the element value */
-      make_pointer(_data.target->collection(), _data.index,
+      make_pointer(data->target->collection(), data->index,
                 ctx.loadVariable(_var->symbolId())).to_lvalue(true);
     }
   }
-  try
-  {
-    /* it should run with the given context */
-    _exec->run(ctx, _exec->statements());
-  }
-  catch (...)
-  {
-    /* restore the state of the iterator variable */
-    Symbol& vs = ctx.getSymbol(_var->symbolId());
-    ctx.loadVariable(vs.id()).swap(Value(_data.it_type_bak).to_lvalue(true));
-    vs.safety(_data.it_safety_bak);
-    vs.locked(_data.it_locked_bak);
-    if (_exp->symbolId() != Expression::nid)
-    {
-      /* restore the state of the symbol */
-      ctx.getSymbol(_exp->symbolId()).locked(_data.ex_locked_bak);
-    }
-    else
-    {
-      /* delete temporary storage */
-      delete _data.target;
-    }
-    throw;
-  }
+
+  /* it should run with the given context, and will throw on error */
+  _exec->run(ctx, _exec->statements());
+
   if (!ctx.stopCondition())
     return this;
   if (ctx.continueCondition())
   {
     ctx.continueCondition(false);
     return this;
-  }
-  /* restore the state of the iterator variable */
-  Symbol& vs = ctx.getSymbol(_var->symbolId());
-  ctx.loadVariable(vs.id()).swap(Value(_data.it_type_bak).to_lvalue(true));
-  vs.safety(_data.it_safety_bak);
-  vs.locked(_data.it_locked_bak);
-  if (_exp->symbolId() != Expression::nid)
-  {
-    /* restore the state of the symbol */
-    ctx.getSymbol(_exp->symbolId()).locked(_data.ex_locked_bak);
-  }
-  else
-  {
-    /* delete temporary storage */
-    delete _data.target;
   }
   ctx.breakCondition(false);
   ctx.unstackControl();

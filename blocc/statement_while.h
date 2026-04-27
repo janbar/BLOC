@@ -40,7 +40,7 @@ class Executable;
  * The syntax is:
  * while {boolean expression} loop [statement ...] end loop
  */
-class WHILEStatement : public Statement
+class WHILEStatement : public Controller
 {
 private:
   Expression * exp = nullptr;
@@ -51,7 +51,9 @@ private:
 public:
   virtual ~WHILEStatement();
 
-  WHILEStatement() : Statement(STMT_WHILE) { }
+  WHILEStatement() : Controller(STMT_WHILE) { }
+
+  void finalizeControl(Context& ctx, void * data) const override;
 
   const Statement * doit(Context& ctx) const override;
 

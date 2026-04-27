@@ -406,6 +406,13 @@ void Context::dumpFunctors()
 /* Control and stack                                                      */
 /**************************************************************************/
 
+void Context::unstackControl()
+{
+  const Control& c = _controlstack.top();
+  c.stmt->finalizeControl(*this, c.data);
+  _controlstack.unstack();
+}
+
 void Context::saveReturned(Value& ret)
 {
   if (_returned)
@@ -433,8 +440,8 @@ Value * Context::dropReturned()
 void Context::onRuntimeError()
 {
   /* purge control stack */
-  while (!_controlstack.empty() && _controlstack.top()->level() >= execLevel())
-    _controlstack.unstack();
+  while (!_controlstack.empty() && _controlstack.top().stmt->level() >= execLevel())
+    unstackControl();
   /* purge temporary allocations */
   purgeWorkingMemory();
 }

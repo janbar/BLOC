@@ -43,7 +43,7 @@ class Collection;
  *     [statement ...]
  * end loop
  */
-class FORALLStatement : public Statement
+class FORALLStatement : public Controller
 {
 private:
   VariableExpression * _var = nullptr;
@@ -51,7 +51,7 @@ private:
   Executable * _exec = nullptr;
   enum { AUTO = 0, ASC, DESC } _order = AUTO;
 
-  mutable struct RT
+  struct RT
   {
     Value * target = nullptr;
     Integer index = 0;
@@ -60,7 +60,7 @@ private:
     bool it_safety_bak = false;
     bool it_locked_bak = false;
     bool ex_locked_bak = false;
-  } _data;
+  };
 
   static Value& make_pointer(Collection * tgt, unsigned i, Value& itr) noexcept;
 
@@ -69,7 +69,9 @@ private:
 public:
   virtual ~FORALLStatement();
 
-  FORALLStatement() : Statement(STMT_FORALL) { }
+  FORALLStatement() : Controller(STMT_FORALL) { }
+
+  void finalizeControl(Context& ctx, void * data) const override;
 
   const Statement * doit(Context& ctx) const override;
 

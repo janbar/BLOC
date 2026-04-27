@@ -39,11 +39,15 @@ WHILEStatement::~WHILEStatement()
     delete _exec;
 }
 
+void WHILEStatement::finalizeControl(Context&, void*) const
+{
+}
+
 const Statement * WHILEStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
-    ctx.stackControl(this);
+    ctx.stackControl(this, nullptr);
   }
   Value& val = exp->value(ctx);
   if (!val.isNull() && *val.boolean())

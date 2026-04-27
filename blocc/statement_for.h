@@ -44,7 +44,7 @@ class Executable;
  *     [statement ...]
  * end loop
  */
-class FORStatement : public Statement
+class FORStatement : public Controller
 {
 private:
   VariableExpression * _var = nullptr;
@@ -54,21 +54,23 @@ private:
   Executable * _exec = nullptr;
   enum { AUTO = 0, ASC, DESC } _order = AUTO;
 
-  mutable struct RT
+  struct RT
   {
     Integer min = 0;
     Integer max = 0;
     Integer step = 1;
     Value * iterator = nullptr;
     bool safety_bak = false;
-  } _data;
+  };
 
   static Executable * parse_clause(Parser& p, Context& ctx, FORStatement * rof);
 
 public:
   virtual ~FORStatement();
 
-  FORStatement() : Statement(STMT_FOR) { }
+  FORStatement() : Controller(STMT_FOR) { }
+
+  void finalizeControl(Context& ctx, void * data) const override;
 
   const Statement * doit(Context& ctx) const override;
 

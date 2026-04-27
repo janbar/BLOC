@@ -46,10 +46,21 @@ FORStatement::~FORStatement()
     delete _var;
 }
 
+void FORStatement::finalizeControl(Context& ctx, void * data) const
+{
+  RT * _data = reinterpret_cast<RT*>(data);
+
+  /* restore the safety state of the variable */
+  ctx.getSymbol(_var->symbolId()).safety(_data->safety_bak);
+
+  delete _data;
+}
+
 const Statement * FORStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
+    RT * data = new RT();
     Integer s = 1;
     Value& vb = _expBeg->value(ctx);
     if (vb.isNull())
@@ -72,50 +83,42 @@ const Statement * FORStatement::doit(Context& ctx) const
     {
       if (_order == DESC)
         return _next;
-      _data.min = b;
-      _data.max = e;
-      _data.step = s;
+      data->min = b;
+      data->max = e;
+      data->step = s;
     }
     else
     {
       if (_order == ASC && e != b)
         return _next;
-      _data.min = e;
-      _data.max = b;
-      _data.step = -s;
+      data->min = e;
+      data->max = b;
+      data->step = -s;
     }
-    _data.iterator = &(_var->store(ctx, std::move(vb)));
+    data->iterator = &(_var->store(ctx, std::move(vb)));
     /* value is type safe in the loop body */
     Symbol& vs = ctx.getSymbol(_var->symbolId());
-    _data.safety_bak = vs.safety();
+    data->safety_bak = vs.safety();
     vs.safety(true);
-    ctx.stackControl(this);
+    ctx.stackControl(this, data);
   }
   else
   {
+    RT * data = reinterpret_cast<RT*>(ctx.topControlData());
     /* var is type safe, so it can be read/write without care */
-    Integer nxt = *_data.iterator->integer() + _data.step;
-    if ((_data.step > 0 && nxt > _data.max) ||
-        (_data.step < 0 && nxt < _data.min))
+    Integer nxt = *(data->iterator->integer()) + data->step;
+    if ((data->step > 0 && nxt > data->max) ||
+        (data->step < 0 && nxt < data->min))
     {
-      /* restore the safety state of the variable */
-      ctx.getSymbol(_var->symbolId()).safety(_data.safety_bak);
       ctx.unstackControl();
       return _next;
     }
-    *_data.iterator->integer() = nxt;
+    *(data->iterator->integer()) = nxt;
   }
-  try
-  {
-    /* it should run with the given context */
-    _exec->run(ctx, _exec->statements());
-  }
-  catch (...)
-  {
-    /* restore the safety state of the variable */
-    ctx.getSymbol(_var->symbolId()).safety(_data.safety_bak);
-    throw;
-  }
+
+  /* it should run with the given context, and will throw on error */
+  _exec->run(ctx, _exec->statements());
+
   if (!ctx.stopCondition())
     return this;
   if (ctx.continueCondition())
@@ -123,8 +126,6 @@ const Statement * FORStatement::doit(Context& ctx) const
     ctx.continueCondition(false);
     return this;
   }
-  /* restore the safety state of the variable */
-  ctx.getSymbol(_var->symbolId()).safety(_data.safety_bak);
   ctx.breakCondition(false);
   ctx.unstackControl();
   return _next;

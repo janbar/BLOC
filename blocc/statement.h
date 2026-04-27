@@ -148,6 +148,17 @@ private:
   void delete_next();
 };
 
+
+class Controller : public Statement
+{
+public:
+
+  Controller(STATEMENT keyword) : Statement(keyword) { }
+  virtual ~Controller() = default;
+
+  virtual void finalizeControl(Context& ctx, void * data) const = 0;
+};
+
 }
 
 #endif /* STATEMENT_H_ */
