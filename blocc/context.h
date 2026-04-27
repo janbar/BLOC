@@ -158,11 +158,6 @@ public:
    */
   FunctorManager& functorManager();
 
-  /**
-   * Create a child context from this
-   */
-  Context * createChild();
-
   void dumpFunctors();
 
   /*========================================================================*/
@@ -440,7 +435,8 @@ private:
   uint8_t _recursion = 0;
   friend class Functor;
   explicit Context(const Context& ctx);
-  Context(const Context& ctx, uint8_t recursion);
+  Context * createChild() const;
+  Context * createChildRuntime(uint8_t recursion) const;
 };
 
 }

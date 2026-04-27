@@ -103,19 +103,17 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
   {
     if (ctx.execLevel() > 0)
       throw ParseError(EXC_PARSE_OTHER_S, "A function cannot be defined in nested block.");
-    FunctorPtr fct(new Functor());
     TokenPtr t = p.pop();
     if (t->code != TOKEN_KEYWORD)
       throw ParseError(EXC_PARSE_OTHER_S, "name required for FUNCTION.", t);
     /* check if keyword is reserved */
     if (p.reservedKeyword(t->text))
       throw ParseError(EXC_PARSE_RESERVED_WORD_S, t->text.c_str(), t);
+    FunctorPtr fct(new Functor());
     fct->name = t->text;
     std::transform(fct->name.begin(), fct->name.end(), fct->name.begin(), ::toupper);
-
-    /* create the private context of the functor as child context */
-    fct->ctx = ctx.createChild();
     /* parsing mode is always enabled for the private context */
+    fct->initializeContext(ctx);
     fct->ctx->parsingBegin();
 
     t = p.pop();

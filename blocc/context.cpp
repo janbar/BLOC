@@ -96,10 +96,12 @@ Context * Context::clone()
   Context * other = new Context(::fileno(_sout), ::fileno(_serr));
   /* copy flags */
   other->_flags = _flags;
-  /* copy table of symbols */
+  /* clone table of symbols */
   other->_storage_pool.reserve(_storage_pool.size());
   for (const MemorySlot& e : _storage_pool)
     other->_storage_pool.push_back(e);
+  /* clone functor manager */
+  other->_fctm = new FunctorManager(*_fctm);
   return other;
 }
 
@@ -108,10 +110,12 @@ Context * Context::clone(int fd_out, int fd_err)
   Context * other = new Context(fd_out, fd_err);
   /* copy flags */
   other->_flags = _flags;
-  /* copy table of symbols */
+  /* clone table of symbols */
   other->_storage_pool.reserve(_storage_pool.size());
   for (const MemorySlot& e : _storage_pool)
     other->_storage_pool.push_back(e);
+  /* clone functor manager */
+  other->_fctm = new FunctorManager(*_fctm);
   return other;
 }
 
@@ -194,7 +198,7 @@ Symbol& Context::registerSymbol(const std::string& name, const Type& type)
       break;
     }
   }
-  /* stacking old symbol */
+  /* back up old symbol */
   _backed_symbols.push_back(*s);
   s->upgrade(type);
   return *s;
@@ -355,11 +359,6 @@ FunctorManager& Context::functorManager()
   return *(_root->_fctm);
 }
 
-Context * Context::createChild()
-{
-  return new Context(*this);
-}
-
 void Context::dumpFunctors()
 {
   if (!_fctm || !_sout)
@@ -493,8 +492,7 @@ void Context::trusted(bool b)
 }
 
 /**
- * Make a child clone.
- * It is an empty shell of root context.
+ * Clone as child: It is an empty shell of root context.
  * @param ctx context
  */
 Context::Context(const Context& ctx)
@@ -507,25 +505,28 @@ Context::Context(const Context& ctx)
 }
 
 /**
- * Make a shallow clone.
- * This is a lazy copy of child context, used only for runtime.
- * The level of recursion starts from 1.
- * @param ctx         context
- * @param recursion   level of recursion
+ * Make a child context from this.
  */
-Context::Context(const Context& ctx, uint8_t recursion)
-: _root(ctx._root)
-, _ts_init(ctx._ts_init)
-, _sout(ctx._sout)
-, _serr(ctx._serr)
-, _flags(ctx._flags)
-, _recursion(recursion)
+Context * Context::createChild() const
+{
+  return new Context(*this);
+}
+
+/**
+ * Make a runtime context from this with the given recursion level.
+ * The table of symbol is duplicated with empty values.
+ * @param recursion   level of recursion (>=1)
+ */
+Context * Context::createChildRuntime(uint8_t recursion) const
 {
   assert(recursion > 0);
+  Context * runtime = new Context(*this);
+  runtime->_recursion = recursion;
   /* copy table of symbols with new empty values */
-  _storage_pool.reserve(ctx._storage_pool.size());
-  for (const MemorySlot& e : ctx._storage_pool)
-    _storage_pool.push_back(MemorySlot(*(e.symbol)));
+  runtime->_storage_pool.reserve(_storage_pool.size());
+  for (const MemorySlot& e : _storage_pool)
+    runtime->_storage_pool.push_back(MemorySlot(*(e.symbol)));
+  return runtime;
 }
 
 }

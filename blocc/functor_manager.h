@@ -47,6 +47,8 @@ struct Functor
   : name(name), params(params) { }
   ~Functor();
 
+  void initializeContext(const Context& parent);
+
   /* A runtime context is cached after use. It will be reused for the
    * next call, thus avoiding a new cloning of the prestine context.
    * The env factory reuses cached contexts or creates a new one.
@@ -56,7 +58,7 @@ struct Functor
 
   class Env
   {
-    friend struct Functor;
+    friend class Functor;
   public:
     Context& context() { return *ctx; }
     ~Env() { if (ctx) functor.ctx_cache.push_front(ctx); }
@@ -90,6 +92,16 @@ class FunctorManager
 public:
   FunctorManager() = default;
   ~FunctorManager() = default;
+
+  explicit FunctorManager(const FunctorManager& fctm)
+  : _declarations(fctm._declarations), _backed(fctm._backed) { }
+
+  FunctorManager& operator=(const FunctorManager& fctm)
+  {
+    this->_declarations = fctm._declarations;
+    this->_backed = fctm._backed;
+    return *this;
+  }
 
   typedef std::forward_list<FunctorPtr> container;
   typedef container::iterator entry;

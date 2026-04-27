@@ -42,6 +42,11 @@ Functor::~Functor()
   name.clear();
 }
 
+void Functor::initializeContext(const Context& parent)
+{
+  ctx = parent.createChild();
+}
+
 Functor::Env Functor::createEnv(Context& caller, const std::vector<Expression*>& pvals) const
 {
   uint8_t r = caller.recursion();
@@ -51,7 +56,7 @@ Functor::Env Functor::createEnv(Context& caller, const std::vector<Expression*>&
   Context * _ctx;
   if (ctx_cache.empty())
   {
-    _ctx = new Context(*(ctx), r + 1);
+    _ctx = ctx->createChildRuntime(r + 1);
     _ctx->trace(caller.trace());
   }
   else
