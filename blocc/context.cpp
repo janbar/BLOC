@@ -106,6 +106,9 @@ void Context::purge()
   _storage_pool.clear();
   /* reset trace mode */
   _trace = false;
+  /* reset parsing state */
+  _parsing = false;
+  _backed_symbols.clear();
 }
 
 /**************************************************************************/
