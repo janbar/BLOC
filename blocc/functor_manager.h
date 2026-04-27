@@ -20,6 +20,7 @@
 #define FUNCTOR_MANAGER_H_
 
 #include "expression.h"
+#include "context.h"
 
 #include <string>
 #include <memory>
@@ -43,45 +44,19 @@ struct Functor
   const Statement * body = nullptr;   /* statement (begin ... end) */
 
   Functor() { };
-  explicit Functor(const std::string& name, const std::vector<Symbol>& params)
-  : name(name), params(params) { }
   ~Functor();
 
-  void initializeContext(const Context& parent);
-
-  /* A runtime context is cached after use. It will be reused for the
-   * next call, thus avoiding a new cloning of the prestine context.
-   * The env factory reuses cached contexts or creates a new one.
-   * The env destructor returns its context to the cache.
-   */
-  mutable std::forward_list<Context*> ctx_cache;
-
-  class Env
+  void initializeContext(const Context& parent)
   {
-    friend class Functor;
-  public:
-    Context& context() { return *ctx; }
-    ~Env() { if (ctx) functor.ctx_cache.push_front(ctx); }
-    Env(Env&& e) noexcept : functor(e.functor), ctx(e.ctx) { e.ctx = nullptr; }
+    if (ctx)
+      delete ctx;
+    ctx = parent.createChild();
+  }
 
-    Env(const Env& e) = delete;
-    Env& operator=(const Env& e) = delete;
-
-  private:
-    Env(const Functor& functor, Context * ctx) : functor(functor), ctx(ctx) { }
-    const Functor& functor;
-    Context * ctx;
-  };
-
-  /**
-   * Env/Context factory for body runtime.
-   * Note that size of `pvals` must be equal to the size of `params`.
-   * The recursion depth will be incremented in the returned Env/Context.
-   * @param caller the context in which the call is made
-   * @param pvals the list of expressions passed as parameters
-   * @return the `Env` for body runtime
-   */
-  Env createEnv(Context& caller, const std::vector<Expression*>& pvals) const;
+  Context * createChildRuntime(uint8_t recursion)
+  {
+    return ctx->createChildRuntime(recursion);
+  }
 };
 
 typedef std::shared_ptr<Functor> FunctorPtr;
@@ -90,47 +65,131 @@ class FunctorManager
 {
 
 public:
+
+  static constexpr unsigned nid = (unsigned)(-1);
+
   FunctorManager() = default;
   ~FunctorManager() = default;
 
-  explicit FunctorManager(const FunctorManager& fctm)
-  : _declarations(fctm._declarations), _backed(fctm._backed) { }
-
-  FunctorManager& operator=(const FunctorManager& fctm)
+  explicit FunctorManager(const FunctorManager& fm)
   {
-    this->_declarations = fctm._declarations;
-    this->_backed = fctm._backed;
+    // don't copy the cache of context
+    for (const Entry& e : fm._declarations)
+      _declarations.push_back(Entry(e.functor));
+  }
+
+  FunctorManager& operator=(const FunctorManager& fm)
+  {
+    // don't copy the cache of context
+    for (const Entry& e : fm._declarations)
+      _declarations.push_back(Entry(e.functor));
     return *this;
   }
 
-  typedef std::forward_list<FunctorPtr> container;
-  typedef container::iterator entry;
+  struct Entry
+  {
+    /* the shareable functor */
+    FunctorPtr functor;
+    /* the context cache */
+    std::forward_list<Context*> ctx_cache;
+
+    Entry(FunctorPtr _functor) : functor(_functor) { }
+
+    explicit Entry(const Entry&) = delete;
+    Entry& operator =(const Entry&) = delete;
+
+    ~Entry() { clearCache(); }
+
+    Entry(Entry&& e) noexcept
+    {
+      functor.swap(e.functor);
+      ctx_cache.swap(e.ctx_cache);
+    }
+
+    void clearCache()
+    {
+      for (Context*c : ctx_cache)
+        delete c;
+      ctx_cache.clear();
+    }
+  };
 
   /**
-   * Find entry for the given declaration.
+   * Find id for the given declaration.
    * @param name The name of the declaration
    * @param param_count The parameters count of the declaration
-   * @param found_entry out parameter to receive the found entry
-   * @return true if entry is found, else false
+   * @return the found id, else nid
    */
-  bool findDeclaration(const std::string& name, unsigned param_count, entry& found_entry);
+  unsigned findDeclaration(const std::string& name, unsigned param_count);
 
   /**
    * Returns true if a declaration with the given name exists.
    * @param name The name of the declaration
    * @return true if the given name exists, else false
    */
-  bool exists(const std::string& name) const;
+  bool nameExists(const std::string& name) const;
 
-  container reportDeclarations() const;
+  typedef std::vector<Entry> container;
 
-  entry createOrReplace(const std::string& name, const std::vector<Symbol>& params);
+  const container& declarations() const
+  {
+    return _declarations;
+  }
+
+  Entry& createOrReplace(const std::string& name, const std::vector<Symbol>& params);
 
   void rollback();
 
+  Entry& getDeclaration(unsigned id)
+  {
+    return _declarations[id];
+  }
+
+  /* A runtime context is cached after use. It will be reused for the
+   * next call, thus avoiding a new cloning of the prestine context.
+   * The env factory reuses cached contexts or creates a new one.
+   * The env destructor returns its context to the cache.
+   */
+  class Env
+  {
+    FunctorManager::Entry& _entry;
+    Context * _ctx;
+
+  public:
+
+    Env(FunctorManager::Entry& entry, Context * ctx)
+    : _entry(entry), _ctx(ctx) { }
+
+    Env(const Env& e) = delete;
+    Env& operator=(const Env& e) = delete;
+
+    ~Env()
+    {
+      // recycle the context
+      if (_ctx)
+        _entry.ctx_cache.push_front(_ctx);
+    }
+
+    Env(Env&& e) noexcept : _entry(e._entry), _ctx(e._ctx) { e._ctx = nullptr; }
+
+    Functor& functor() { return *_entry.functor; }
+    Context& context() { return *_ctx; }
+  };
+
+  /**
+   * Context factory for body runtime.
+   * The size of `pvals` must be equal to the size of functor `params`.
+   * The recursion depth will be incremented in the returned Env/Context.
+   * @param caller the context in which the call is made
+   * @param id the entry id
+   * @param pvals the list of expressions passed as parameters
+   * @return the `Env` for body runtime
+   */
+  Env createEnv(Context& caller, unsigned id, const std::vector<Expression*>& pvals);
+
 private:
   container _declarations;
-  container::value_type _backed;
+  FunctorPtr _backed;
 };
 
 }

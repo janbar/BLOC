@@ -22,16 +22,13 @@
 #include "expression_variable.h"
 #include "debug.h"
 
+#include <cassert>
+
 namespace bloc
 {
 
 Functor::~Functor()
 {
-  while (!ctx_cache.empty())
-  {
-    delete ctx_cache.front();
-    ctx_cache.pop_front();
-  }
   if (body)
     delete body;
   body = nullptr;
@@ -42,105 +39,96 @@ Functor::~Functor()
   name.clear();
 }
 
-void Functor::initializeContext(const Context& parent)
+unsigned FunctorManager::findDeclaration(const std::string& name, unsigned param_count)
 {
-  ctx = parent.createChild();
+  unsigned id = 0;
+  for (const Entry& e : _declarations)
+  {
+    if (e.functor->name == name && e.functor->params.size() == param_count)
+      return id;
+    ++id;
+  }
+  return nid;
 }
 
-Functor::Env Functor::createEnv(Context& caller, const std::vector<Expression*>& pvals) const
+bool FunctorManager::nameExists(const std::string& name) const
 {
-  uint8_t r = caller.recursion();
-  if (r == RECURSION_LIMIT)
-    throw RuntimeError(EXC_RT_RECURSION_LIMIT);
-
-  Context * _ctx;
-  if (ctx_cache.empty())
+  for (const Entry& e : _declarations)
   {
-    _ctx = ctx->createChildRuntime(r + 1);
-    _ctx->trace(caller.trace());
-  }
-  else
-  {
-    _ctx = ctx_cache.front();
-    ctx_cache.pop_front();
-    _ctx->recursion(r + 1);
-    _ctx->trace(caller.trace());
-    _ctx->returnCondition(false);
-  }
-  /* bind parameter values ​​to variables for all symbols */
-  for (int i = 0; i < params.size(); ++i)
-    VariableExpression(params[i]).store(*_ctx, caller, pvals[i]);
-
-  return Env(*this, _ctx);
-}
-
-bool FunctorManager::findDeclaration(const std::string& name, unsigned param_count, entry& found_entry)
-{
-  for (entry e = _declarations.begin(); e != _declarations.end(); ++e)
-  {
-    if ((*e)->name == name && (*e)->params.size() == param_count)
-    {
-      found_entry = e;
-      return true;
-    }
-  }
-  return false;
-}
-
-bool FunctorManager::exists(const std::string& name) const
-{
-  for (const FunctorPtr& fp : _declarations)
-  {
-    if (fp->name == name)
+    if (e.functor->name == name)
       return true;
   }
   return false;
 }
 
-FunctorManager::container FunctorManager::reportDeclarations() const
-{
-  /* reverse order: last -> first */
-  container v;
-  for (const FunctorPtr& fe : _declarations)
-    v.push_front(fe);
-  return v;
-}
-
-FunctorManager::entry FunctorManager::createOrReplace(const std::string& name, const std::vector<Symbol>& params)
+FunctorManager::Entry& FunctorManager::createOrReplace(const std::string& name, const std::vector<Symbol>& params)
 {
   _backed.reset();
-  for (entry e = _declarations.begin(); e != _declarations.end(); ++e)
+  for (Entry& e : _declarations)
   {
-    if ((*e)->name == name && (*e)->params.size() == params.size())
+    if (e.functor->name == name && e.functor->params.size() == params.size())
     {
-      /* backup current declaration */
-      _backed.swap((*e));
+      /* back up current declaration */
+      _backed.swap(e.functor);
       return e;
     }
   }
-  _declarations.push_front(FunctorPtr(new Functor(name, params)));
-  return _declarations.begin();
+  _declarations.push_back(Entry(FunctorPtr(new Functor())));
+  return _declarations.back();
 }
 
 void FunctorManager::rollback()
 {
+  if (_declarations.empty())
+    return;
   if (_backed)
   {
     /* revert last change, restoring the backed up */
-    for (FunctorPtr& fp : _declarations)
+    if (_declarations.back().functor->name == _backed->name &&
+            _declarations.back().functor->params.size() == _backed->params.size())
     {
-      if (fp->name == _backed->name && fp->params.size() == _backed->params.size())
-      {
-        fp.swap(_backed);
-        return;
-      }
+      _declarations.back().functor.swap(_backed);
+      return;
     }
   }
   else
   {
     /* remove last created */
-    _declarations.pop_front();
+    _declarations.pop_back();
   }
+}
+
+FunctorManager::Env FunctorManager::createEnv(Context& caller, unsigned id, const std::vector<Expression*>& pvals)
+{
+  uint8_t r = caller.recursion();
+  if (r == RECURSION_LIMIT)
+    throw RuntimeError(EXC_RT_RECURSION_LIMIT);
+
+  Entry& entry = getDeclaration(id);
+
+  Context * _ctx;
+  if (entry.ctx_cache.empty())
+  {
+    _ctx = entry.functor->createChildRuntime(r + 1);
+    _ctx->trace(caller.trace());
+  }
+  else
+  {
+    _ctx = entry.ctx_cache.front();
+    entry.ctx_cache.pop_front();
+    _ctx->recursion(r + 1);
+    _ctx->trace(caller.trace());
+    _ctx->returnCondition(false);
+  }
+
+  assert(entry.functor->params.size() == pvals.size());
+
+  /* bind parameter values ​​to variables for all symbols */
+  unsigned i = 0;
+  for (const Symbol& symbol : entry.functor->params)
+    VariableExpression(symbol).store(*_ctx, caller, pvals[i++]);
+
+  return Env(entry, _ctx);
 }
 
 }

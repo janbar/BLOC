@@ -40,10 +40,12 @@ FUNCTIONStatement::~FUNCTIONStatement()
 
 const Statement * FUNCTIONStatement::doit(Context& ctx) const
 {
-  FunctorManager::entry fe;
-  if (!ctx.functorManager().findDeclaration(_functor->name, _functor->params.size(), fe))
+  unsigned id = ctx.functorManager().findDeclaration(_functor->name, _functor->params.size());
+  if (id == FunctorManager::nid)
     throw RuntimeError(EXC_RT_INTERNAL_ERROR_S, _functor->name.c_str());
-  *fe = _functor;
+  FunctorManager::Entry& e = ctx.functorManager().getDeclaration(id);
+  e.functor = _functor;
+  e.clearCache();
   return _next;
 }
 
@@ -208,12 +210,12 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     /* before parsing the body, declare itself to allow recursion.
      * the previous declaration is backed up, and should be restored when
      * throwing any exception */
-    FunctorManager::entry fe = ctx.functorManager().createOrReplace(fct->name, fct->params);
+    FunctorManager::Entry& fe = ctx.functorManager().createOrReplace(fct->name, fct->params);
     rollback = true;
-    fe->swap(fct);
+    fe.functor.swap(fct);
     /* parse body or throws */
-    (*fe)->body = BEGINStatement::parse(p, *((*fe)->ctx));
-    return new FUNCTIONStatement(*fe);
+    fe.functor->body = BEGINStatement::parse(p, *(fe.functor->ctx));
+    return new FUNCTIONStatement(fe.functor);
   }
   catch (ParseError& pe)
   {

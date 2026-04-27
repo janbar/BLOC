@@ -81,7 +81,7 @@ Context::~Context()
   purge();
 
   /* only the root context own file descriptors,
-   * therefore a clone should not close any of them */
+   * therefore a child should not close any of them */
   if (_root == this)
   {
     if (_serr && _serr != _sout)
@@ -353,7 +353,7 @@ void Context::dumpVariables()
 
 FunctorManager& Context::functorManager()
 {
-  /* nota: _root is never null */
+  /* only the root context owns functor manager */
   if (_root->_fctm == nullptr)
     _root->_fctm = new FunctorManager();
   return *(_root->_fctm);
@@ -363,11 +363,11 @@ void Context::dumpFunctors()
 {
   if (!_fctm || !_sout)
     return;
-  for (const FunctorPtr& func : _fctm->reportDeclarations())
+  for (const FunctorManager::Entry& e : _fctm->declarations())
   {
-    fprintf(_sout, "%s (", func->name.c_str());
+    fprintf(_sout, "%s (", e.functor->name.c_str());
     bool n = false;
-    for (const bloc::Symbol& p : func->params)
+    for (const bloc::Symbol& p : e.functor->params)
     {
       if (n)
         fputc(',', _sout);
@@ -388,14 +388,14 @@ void Context::dumpFunctors()
       n = true;
     }
     fputs(") returns ", _sout);
-    if (func->returns.level() > 0)
+    if (e.functor->returns.level() > 0)
       fputs("table", _sout);
     else
     {
-      if (func->returns.major() == Type::COMPLEX && func->returns.minor() != 0)
-        fputs(PluginManager::instance().plugged(func->returns.minor()).interface.name, _sout);
+      if (e.functor->returns.major() == Type::COMPLEX && e.functor->returns.minor() != 0)
+        fputs(PluginManager::instance().plugged(e.functor->returns.minor()).interface.name, _sout);
       else
-        fputs(func->returns.typeName().c_str(), _sout);
+        fputs(e.functor->returns.typeName().c_str(), _sout);
     }
     fputc('\n', _sout);
     fflush(_sout);
@@ -499,8 +499,9 @@ void Context::trusted(bool b)
 }
 
 /**
- * Clone as child: It is an empty shell of root context.
- * @param ctx context
+ * Clone as child. It is an empty shell of root context.
+ * Child never owns functor manager, but uses the parent's.
+ * @param ctx the parent context
  */
 Context::Context(const Context& ctx)
 : _root(ctx._root)

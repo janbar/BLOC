@@ -38,20 +38,17 @@ class Parser;
 class FunctorExpression : public Expression
 {
 private:
-  FunctorManager::entry _fentry;
+  unsigned _id;
   std::vector<Expression*> _args;
 
 public:
 
   virtual ~FunctorExpression();
 
-  FunctorExpression(const FunctorManager::entry& functor, std::vector<Expression*>&& args)
-  : Expression(), _fentry(functor), _args(std::move(args)) { }
+  FunctorExpression(unsigned id, std::vector<Expression*>&& args)
+  : Expression(), _id(id), _args(std::move(args)) { }
 
-  const Type& type(Context& ctx) const override
-  {
-    return (*_fentry)->returns;
-  }
+  const Type& type(Context& ctx) const override;
 
   Value& value(Context& ctx) const override;
 
