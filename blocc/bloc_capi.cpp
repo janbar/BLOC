@@ -29,6 +29,7 @@
 #include "collection.h"
 #include "tuple.h"
 #include "value.h"
+#include "debug.h"
 
 #define to_bool(a) (a == bloc_true ? true : false)
 
@@ -83,6 +84,12 @@ void
 bloc_deinit_plugins() { bloc::PluginManager::destroy(); }
 
 void
+bloc_debug(int level)
+{
+  bloc::DBGLevel(level);
+}
+
+void
 bloc_free_context(bloc_context *ctx)
 {
   if (ctx)
@@ -93,6 +100,20 @@ bloc_context*
 bloc_create_context(int fd_out, int fd_err)
 {
   return reinterpret_cast<bloc_context*>(new bloc::Context(fd_out, fd_err));
+}
+
+bloc_context*
+bloc_clone_context(bloc_context *ctx)
+{
+  bloc::Context * clone = reinterpret_cast<bloc::Context*>(ctx)->clone();
+  return reinterpret_cast<bloc_context*>(clone);
+}
+
+bloc_context*
+bloc_clone_context2(bloc_context *ctx, int fd_out, int fd_err)
+{
+  bloc::Context * clone = reinterpret_cast<bloc::Context*>(ctx)->clone(fd_out, fd_err);
+  return reinterpret_cast<bloc_context*>(clone);
 }
 
 void
@@ -567,7 +588,29 @@ bloc_execute(bloc_executable *exec)
 {
   try
   {
-    return (reinterpret_cast<bloc::Executable*>(exec)->run() == 0 ? bloc_true : bloc_false);
+    if (reinterpret_cast<bloc::Executable*>(exec)->run() == 0)
+      return bloc_true;
+    else
+      return bloc_false;
+  }
+  catch (bloc::RuntimeError& re)
+  {
+    bloc_error_set(re.what(), re.no);
+    return bloc_false;
+  }
+}
+
+bloc_bool
+bloc_execute2(bloc_context *ctx, bloc_executable *exec)
+{
+  try
+  {
+    if (reinterpret_cast<bloc::Executable*>(exec)->run(
+            *reinterpret_cast<bloc::Context*>(ctx),
+            reinterpret_cast<bloc::Executable*>(exec)->statements()) == 0)
+      return bloc_true;
+    else
+      return bloc_false;
   }
   catch (bloc::RuntimeError& re)
   {

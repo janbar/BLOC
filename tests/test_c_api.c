@@ -1,9 +1,17 @@
 #include <blocc/bloc_capi.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int main(int argc, char** argv)
 {
+  if (argc > 1)
+  {
+    /* enable debug */
+    if (strncmp("--debug", argv[1], 8) == 0 || strncmp("-d", argv[1], 3) == 0)
+      bloc_debug(3);
+  }
+
   bloc_context* ctx = bloc_create_context(fileno(stdout), fileno(stderr));
 
   printf("BLOC version    = %s\n", bloc_version());
@@ -129,15 +137,19 @@ int main(int argc, char** argv)
     bloc_ctx_store_variable(ctx, sym_1, tmp_1);
     bloc_free_value(tmp_1);
 
+    bloc_executable * x1 = bloc_parse_executable(ctx,
+            "function pout(i) return undefined is\n"
+            " begin put i \" \"; return null; end;");
     bloc_executable * x = bloc_parse_executable(ctx,
-          "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
-          "for j in 2 to i/2+1 loop\nif i%j == 0 then b=false; break; end if;\n"
-          "end loop;\nif b then put i \" \"; cnt=cnt+1; end if;\nend loop;\nreturn cnt;");
-    if (x)
+            "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
+            "for j in 2 to i/2+1 loop\nif i%j == 0 then b=false; break; end if;\n"
+            "end loop;\nif b then pout(i); cnt=cnt+1; end if;\n"
+            "end loop;\nreturn cnt;");
+    if (x1 && x)
     {
       printf("exec     =\n");
       fflush(stdout);
-      if (!bloc_execute(x))
+      if (!bloc_execute(x1) || !bloc_execute(x))
       {
         printf("ERROR: %s\n", bloc_strerror());
       }
@@ -156,6 +168,83 @@ int main(int argc, char** argv)
           printf("\nERROR: no return\n");
         }
       }
+
+      /* test execute within context clone */
+      bloc_context * ctx2 = bloc_clone_context(ctx);
+
+      /* override the functor in ctx2: it shouldn't run by x */
+      bloc_executable * x2 = bloc_parse_executable(ctx2,
+            "function pout(i) return undefined is\n"
+            " begin put i \",\"; return null; end;");
+
+      printf("exec_2   =\n");
+      fflush(stdout);
+      if (!bloc_execute2(ctx2, x2) || !bloc_execute2(ctx2, x))
+      {
+        printf("ERROR: %s\n", bloc_strerror());
+      }
+      else
+      {
+        /* test the initial context */
+        bloc_value * r = bloc_drop_returned(ctx);
+        if (r)
+        {
+          printf("\nERROR: initial context is tainted\n");
+          bloc_free_value(r);
+        }
+
+        bloc_value * r2 = bloc_drop_returned(ctx2);
+        if (r2)
+        {
+          int64_t * val;
+          bloc_integer(r2, &val);
+          printf("\nreturn   = %ld\n", (long) *val);
+          bloc_free_value(r2);
+        }
+        else
+        {
+          printf("\nERROR: no return\n");
+        }
+      }
+
+      /* reset the stop condition (return) of context ctx2,
+       * therefore I can execute again */
+      bloc_reset_stop(ctx2);
+
+      bloc_executable * x3 = bloc_parse_executable(ctx2,
+            "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
+            "for j in 2 to i/2+1 loop\nif i%j == 0 then b=false; break; end if;\n"
+            "end loop;\nif b then pout(i); cnt=cnt+1; end if;\n"
+            "end loop;\nreturn cnt;");
+
+      printf("exec_3   =\n");
+      fflush(stdout);
+      if (!bloc_execute2(ctx2, x3))
+      {
+        printf("ERROR: %s\n", bloc_strerror());
+      }
+      else
+      {
+        bloc_value * r3 = bloc_drop_returned(ctx2);
+        if (r3)
+        {
+          int64_t * val;
+          bloc_integer(r3, &val);
+          printf("\nreturn   = %ld\n", (long) *val);
+          bloc_free_value(r3);
+        }
+        else
+        {
+          printf("\nERROR: no return\n");
+        }
+      }
+
+      if (x3)
+        bloc_free_executable(x3);
+      if (x2)
+        bloc_free_executable(x2);
+      bloc_free_context(ctx2);
+      bloc_free_executable(x1);
       bloc_free_executable(x);
     }
     else

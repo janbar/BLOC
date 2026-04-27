@@ -137,6 +137,13 @@ bloc_clear_plugin_permissions();
 LIBBLOC_API void
 bloc_deinit_plugins();
 
+/**
+ * Set the level of debug logging.
+ * @param level the level
+ */
+LIBBLOC_API void
+bloc_debug(int level);
+
 /* */
 
 
@@ -157,6 +164,28 @@ bloc_free_context(bloc_context *ctx);
  */
 LIBBLOC_API bloc_context*
 bloc_create_context(int fd_out, int fd_err);
+
+/**
+ * Make a clone of `bloc_context`, i.e for a new thread.
+ * The file IO are duplicated from the original context.
+ * The returned context must be released with `bloc_free_context()`.
+ * @param ctx the original context
+ * @return pointer to a new `bloc_context`, or NULL on failure
+ */
+LIBBLOC_API bloc_context*
+bloc_clone_context(bloc_context *ctx);
+
+/**
+ * Make a clone of `bloc_context`, i.e for a new thread, and using
+ * dedicated file IO.
+ * The returned context must be released with `bloc_free_context()`.
+ * @param ctx the original context
+ * @param fd_out file descriptor used for standard output
+ * @param fd_err file descriptor used for error output
+ * @return pointer to a new `bloc_context`, or NULL on failure
+ */
+LIBBLOC_API bloc_context*
+bloc_clone_context2(bloc_context *ctx, int fd_out, int fd_err);
 
 /**
  * Purge context state: free temporary data and reset transient state.
@@ -572,12 +601,21 @@ LIBBLOC_API void
 bloc_free_executable(bloc_executable *exec);
 
 /**
- * Run the given executable.
+ * Run the given executable within the parse context.
  * @param exec the executable to run
  * @return `bloc_true` on success, `bloc_false` on failure
  */
 LIBBLOC_API bloc_bool
 bloc_execute(bloc_executable *exec);
+
+/**
+ * Run the given executable within the given context (clone).
+ * @param ctx the context
+ * @param exec the executable to run
+ * @return `bloc_true` on success, `bloc_false` on failure
+ */
+LIBBLOC_API bloc_bool
+bloc_execute2(bloc_context *ctx, bloc_executable *exec);
 
 /**
  * Retrieve and take ownership of the last returned value from the context.

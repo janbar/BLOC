@@ -72,6 +72,10 @@ All pointers returned by the API are owned by the caller unless the function doc
 
   The compatibility level of the library.
 
+- **`void bloc_debug(int level);`**
+
+  Configure the level of debug logging. Default none.
+
 ---
 
 ## Plugin Management
@@ -103,6 +107,16 @@ All pointers returned by the API are owned by the caller unless the function doc
 - **`void bloc_ctx_purge(bloc_context *ctx);`**
 
   Purge temporary context state and reset transient data.
+
+- **`bloc_context* bloc_clone_context(bloc_context *ctx);`**
+
+  Clone an existing context for thread processing, or repeating processing.
+  The file IO are duplicated from the original context.
+
+- **`bloc_context* bloc_clone_context2(bloc_context *ctx, int fd_out, int fd_err);`**
+
+  Clone an existing context for thread processing, or repeating processing.
+  The new context uses the the given file IO.
 
 - **`bloc_symbol* bloc_ctx_register_symbol(bloc_context *ctx, const char *name, bloc_type type);`**
 
@@ -286,6 +300,11 @@ Each fills an out-parameter with a pointer to the internal data (or NULL for a n
 
   Run the executable. Returns `bloc_true` on success.
 
+- **`bloc_bool bloc_execute2(bloc_context * ctx, bloc_executable *exec);`**
+
+  Run the executable with the given context (the parsing context, or a clone). Returns `bloc_true` on success.
+  It allows to run an executable in a particular thread or in a loop, without need to parse the source for each instance.
+
 - **`bloc_value* bloc_drop_returned(bloc_context *ctx);`**
 
   Retrieve and take ownership of the last returned result; returned value must be freed with `bloc_free_value()`.
@@ -296,7 +315,7 @@ Each fills an out-parameter with a pointer to the internal data (or NULL for a n
 
 - **`void bloc_reset_stop(bloc_context *ctx);`**
 
-  Reset the stop condition of the context.
+  Reset the context stop condition, which is held after an execution of the statement 'return'.
 
 ---
 
