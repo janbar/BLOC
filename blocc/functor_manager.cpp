@@ -109,7 +109,7 @@ FunctorManager::Env FunctorManager::createEnv(Context& caller, unsigned id, cons
   Context * _ctx;
   if (entry.ctx_cache.empty())
   {
-    _ctx = entry.functor->createChildRuntime(r + 1);
+    _ctx = entry.functor->ctx->createChildRuntime(this, r + 1);
     _ctx->trace(caller.trace());
   }
   else

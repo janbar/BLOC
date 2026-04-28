@@ -43,20 +43,8 @@ struct Functor
   Context * ctx = nullptr;            /* required parse context */
   const Statement * body = nullptr;   /* statement (begin ... end) */
 
-  Functor() { };
+  Functor() { }
   ~Functor();
-
-  void initializeContext(const Context& parent)
-  {
-    if (ctx)
-      delete ctx;
-    ctx = parent.createChild();
-  }
-
-  Context * createChildRuntime(uint8_t recursion)
-  {
-    return ctx->createChildRuntime(recursion);
-  }
 };
 
 typedef std::shared_ptr<Functor> FunctorPtr;
@@ -187,7 +175,16 @@ public:
    */
   Env createEnv(Context& caller, unsigned id, const std::vector<Expression*>& pvals);
 
+  void setRoot(Context * ctx) { _root = ctx; }
+  Context * getRoot() { return _root; }
+
+  Context * createChildContext(Context& ctx)
+  {
+    return ctx.createChild(this);
+  }
+
 private:
+  Context * _root = nullptr;
   container _declarations;
   FunctorPtr _backed;
 };

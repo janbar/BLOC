@@ -456,10 +456,10 @@ private:
   uint8_t _flags = 0;
 
   uint8_t _recursion = 0;
-  friend struct Functor;
+  friend class FunctorManager;
   explicit Context(const Context& ctx);
-  Context * createChild() const;
-  Context * createChildRuntime(uint8_t recursion) const;
+  Context * createChild(FunctorManager * fm) const;
+  Context * createChildRuntime(FunctorManager * fm, uint8_t recursion) const;
 };
 
 }

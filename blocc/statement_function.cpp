@@ -115,7 +115,7 @@ FUNCTIONStatement * FUNCTIONStatement::parse(Parser& p, Context& ctx)
     fct->name = t->text;
     std::transform(fct->name.begin(), fct->name.end(), fct->name.begin(), ::toupper);
     /* parsing mode is always enabled for the private context */
-    fct->initializeContext(ctx);
+    fct->ctx = ctx.functorManager().createChildContext(ctx);
     fct->ctx->parsingBegin();
 
     t = p.pop();

@@ -102,6 +102,7 @@ Context * Context::clone()
     other->_storage_pool.push_back(e);
   /* clone functor manager */
   other->_fctm = new FunctorManager(*_fctm);
+  other->_fctm->setRoot(other);
   return other;
 }
 
@@ -116,6 +117,7 @@ Context * Context::clone(int fd_out, int fd_err)
     other->_storage_pool.push_back(e);
   /* clone functor manager */
   other->_fctm = new FunctorManager(*_fctm);
+  other->_fctm->setRoot(other);
   return other;
 }
 
@@ -125,15 +127,20 @@ void Context::purge()
   if (_returned)
     delete _returned;
   _returned = nullptr;
-  if (_fctm)
+
+  if (_fctm && _fctm->getRoot() == this)
     delete _fctm;
   _fctm = nullptr;
+
   /* clear temporary pool */
   _temporary_storage.purge();
+
   /* clear storage pool */
   _storage_pool.clear();
+
   /* reset trace mode */
   _trace = false;
+
   /* reset parsing state */
   _parsing = false;
   _backed_symbols.clear();
@@ -353,10 +360,13 @@ void Context::dumpVariables()
 
 FunctorManager& Context::functorManager()
 {
-  /* only the root context owns functor manager */
-  if (_root->_fctm == nullptr)
-    _root->_fctm = new FunctorManager();
-  return *(_root->_fctm);
+  /* only a root context owns the functor manager */
+  if (_fctm == nullptr)
+  {
+    _fctm = new FunctorManager();
+    _fctm->setRoot(this);
+  }
+  return *_fctm;
 }
 
 void Context::dumpFunctors()
@@ -499,8 +509,7 @@ void Context::trusted(bool b)
 }
 
 /**
- * Clone as child. It is an empty shell of root context.
- * Child never owns functor manager, but uses the parent's.
+ * Make an empty shell of context.
  * @param ctx the parent context
  */
 Context::Context(const Context& ctx)
@@ -514,21 +523,26 @@ Context::Context(const Context& ctx)
 
 /**
  * Make a child context from this.
+ * @param fm          functor manager
  */
-Context * Context::createChild() const
+Context * Context::createChild(FunctorManager * fm) const
 {
-  return new Context(*this);
+  Context * child = new Context(*this);
+  child->_fctm = fm;
+  return child;
 }
 
 /**
  * Make a runtime context from this with the given recursion level.
  * The table of symbol is duplicated with empty values.
+ * @param fm          functor manager
  * @param recursion   level of recursion (>=1)
  */
-Context * Context::createChildRuntime(uint8_t recursion) const
+Context * Context::createChildRuntime(FunctorManager * fm, uint8_t recursion) const
 {
   assert(recursion > 0);
   Context * runtime = new Context(*this);
+  runtime->_fctm = fm;
   runtime->_recursion = recursion;
   /* copy table of symbols with new empty values */
   runtime->_storage_pool.reserve(_storage_pool.size());
