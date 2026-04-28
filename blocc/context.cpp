@@ -100,9 +100,12 @@ Context * Context::clone()
   other->_storage_pool.reserve(_storage_pool.size());
   for (const MemorySlot& e : _storage_pool)
     other->_storage_pool.push_back(e);
-  /* clone functor manager */
-  other->_fctm = new FunctorManager(*_fctm);
-  other->_fctm->setRoot(other);
+  if (_fctm)
+  {
+    /* clone functor manager */
+    other->_fctm = new FunctorManager(*_fctm);
+    other->_fctm->setRoot(other);
+  }
   return other;
 }
 
@@ -115,9 +118,12 @@ Context * Context::clone(int fd_out, int fd_err)
   other->_storage_pool.reserve(_storage_pool.size());
   for (const MemorySlot& e : _storage_pool)
     other->_storage_pool.push_back(e);
-  /* clone functor manager */
-  other->_fctm = new FunctorManager(*_fctm);
-  other->_fctm->setRoot(other);
+  if (_fctm)
+  {
+    /* clone functor manager */
+    other->_fctm = new FunctorManager(*_fctm);
+    other->_fctm->setRoot(other);
+  }
   return other;
 }
 
