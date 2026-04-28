@@ -75,14 +75,14 @@ public:
   {
     // don't copy the cache of context
     for (const Entry& e : fm._declarations)
-      _declarations.push_back(Entry(e.functor));
+      _declarations.emplace_back(Entry(e.functor));
   }
 
   FunctorManager& operator=(const FunctorManager& fm)
   {
     // don't copy the cache of context
     for (const Entry& e : fm._declarations)
-      _declarations.push_back(Entry(e.functor));
+      _declarations.emplace_back(Entry(e.functor));
     return *this;
   }
 
@@ -93,7 +93,7 @@ public:
     /* the context cache */
     std::forward_list<Context*> ctx_cache;
 
-    Entry(FunctorPtr _functor) : functor(_functor) { }
+    explicit Entry(const FunctorPtr& _functor) : functor(_functor) { }
 
     explicit Entry(const Entry&) = delete;
     Entry& operator =(const Entry&) = delete;

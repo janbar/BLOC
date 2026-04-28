@@ -73,7 +73,7 @@ FunctorManager::Entry& FunctorManager::createOrReplace(const std::string& name, 
       return e;
     }
   }
-  _declarations.push_back(Entry(FunctorPtr(new Functor())));
+  _declarations.emplace_back(Entry(FunctorPtr(new Functor())));
   return _declarations.back();
 }
 
