@@ -456,7 +456,7 @@ private:
   uint8_t _flags = 0;
 
   uint8_t _recursion = 0;
-  friend class Functor;
+  friend struct Functor;
   explicit Context(const Context& ctx);
   Context * createChild() const;
   Context * createChildRuntime(uint8_t recursion) const;
