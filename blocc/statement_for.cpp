@@ -60,7 +60,6 @@ const Statement * FORStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
-    RT * data = new RT();
     Integer s = 1;
     Value& vb = _expBeg->value(ctx);
     if (vb.isNull())
@@ -77,30 +76,31 @@ const Statement * FORStatement::doit(Context& ctx) const
       if (s < 1)
         throw RuntimeError(EXC_RT_OUT_OF_RANGE);
     }
+    RT data;
     Integer b = *vb.integer();
     Integer e = *ve.integer();
     if (e > b)
     {
       if (_order == DESC)
         return _next;
-      data->min = b;
-      data->max = e;
-      data->step = s;
+      data.min = b;
+      data.max = e;
+      data.step = s;
     }
     else
     {
       if (_order == ASC && e != b)
         return _next;
-      data->min = e;
-      data->max = b;
-      data->step = -s;
+      data.min = e;
+      data.max = b;
+      data.step = -s;
     }
-    data->iterator = &(_var->store(ctx, std::move(vb)));
+    data.iterator = &(_var->store(ctx, std::move(vb)));
     /* value is type safe in the loop body */
     Symbol& vs = ctx.getSymbol(_var->symbolId());
-    data->safety_bak = vs.safety();
+    data.safety_bak = vs.safety();
     vs.safety(true);
-    ctx.stackControl(this, data);
+    ctx.stackControl(this, new RT(data));
   }
   else
   {

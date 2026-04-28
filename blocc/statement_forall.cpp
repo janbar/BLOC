@@ -70,7 +70,6 @@ const Statement * FORALLStatement::doit(Context& ctx) const
 {
   if (this != ctx.topControl())
   {
-    RT * data = new RT();
     Value& val = _exp->value(ctx);
     if (val.isNull() || val.collection()->size() == 0)
       return _next;
@@ -80,32 +79,33 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     Symbol& vs = ctx.getSymbol(_var->symbolId());
     if (vs.safety())
       throw RuntimeError(EXC_RT_NOT_IMPLEMENTED);
+    RT data;
     /* setup fetching order */
     if (_order == DESC)
     {
-      data->step = -1;
-      data->index = val.collection()->size()-1;
+      data.step = -1;
+      data.index = val.collection()->size()-1;
     }
     else
     {
-      data->step = 1;
-      data->index = 0;
+      data.step = 1;
+      data.index = 0;
     }
     /* setup fetched target */
     if (_exp->symbolId() != Expression::nid)
     {
       /* target is sustainable and accessible by a symbol, so point to it */
-      data->target = &val;
+      data.target = &val;
       /* the symbol must be protected in the body loop */
       Symbol& es = ctx.getSymbol(_exp->symbolId());
-      data->ex_locked_bak = es.locked();
+      data.ex_locked_bak = es.locked();
       es.locked(true);
     }
     else if (!val.lvalue())
     {
       /* the target value is temporary and it must be preserved during the
        * loop execution, so move it in private stack */
-      data->target = new Value(std::move(val.to_lvalue(true)));
+      data.target = new Value(std::move(val.to_lvalue(true)));
     }
     else
     {
@@ -113,17 +113,17 @@ const Statement * FORALLStatement::doit(Context& ctx) const
     }
     /* backup the state of the variable used as iterator; it will be restored
      * at end */
-    data->it_safety_bak = vs.safety();
-    data->it_locked_bak = vs.locked();
-    data->it_type_bak = ctx.loadVariable(vs.id()).type();
+    data.it_safety_bak = vs.safety();
+    data.it_locked_bak = vs.locked();
+    data.it_type_bak = ctx.loadVariable(vs.id()).type();
 
     /* fetch first item: make a pointer to the element value */
-    make_pointer(data->target->collection(), data->index,
+    make_pointer(data.target->collection(), data.index,
               ctx.loadVariable(vs.id())).to_lvalue(true);
     vs.safety(true);
     /* iterator inherits constness of the target */
-    vs.locked(data->ex_locked_bak);
-    ctx.stackControl(this, data);
+    vs.locked(data.ex_locked_bak);
+    ctx.stackControl(this, new RT(data));
   }
   else
   {
