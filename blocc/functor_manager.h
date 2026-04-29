@@ -56,23 +56,13 @@ public:
 
   static constexpr unsigned nid = (unsigned)(-1);
 
-  FunctorManager() = default;
+  FunctorManager(Context& root) : _root(root) { }
   ~FunctorManager() = default;
 
-  explicit FunctorManager(const FunctorManager& fm)
-  {
-    // don't copy the cache of context
-    for (const Entry& e : fm._declarations)
-      _declarations.emplace_back(Entry(e.functor));
-  }
+  explicit FunctorManager(const FunctorManager&) = delete;
+  FunctorManager& operator=(const FunctorManager&) = delete;
 
-  FunctorManager& operator=(const FunctorManager& fm)
-  {
-    // don't copy the cache of context
-    for (const Entry& e : fm._declarations)
-      _declarations.emplace_back(Entry(e.functor));
-    return *this;
-  }
+  void reset(const FunctorManager& rm);
 
   struct Entry
   {
@@ -175,16 +165,15 @@ public:
    */
   Env createEnv(Context& caller, unsigned id, const std::vector<Expression*>& pvals);
 
-  void setRoot(Context * ctx) { _root = ctx; }
-  Context * getRoot() { return _root; }
+  Context * getRoot() { return &_root; }
 
-  Context * createChildContext(Context& ctx)
+  Context * createChildShell(Context& ctx)
   {
-    return ctx.createChild(this);
+    return ctx.createChildShell(_root);
   }
 
 private:
-  Context * _root = nullptr;
+  Context& _root;
   container _declarations;
   FunctorPtr _backed;
 };

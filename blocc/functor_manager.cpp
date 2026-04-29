@@ -39,6 +39,17 @@ Functor::~Functor()
   name.clear();
 }
 
+void FunctorManager::reset(const FunctorManager& fm)
+{
+  if (&fm == this)
+    return;
+  _backed.reset();
+  _declarations.clear();
+  // don't copy the cache of context
+  for (const Entry& e : fm._declarations)
+    _declarations.emplace_back(Entry(e.functor));
+}
+
 unsigned FunctorManager::findDeclaration(const std::string& name, unsigned param_count)
 {
   unsigned id = 0;
@@ -109,7 +120,7 @@ FunctorManager::Env FunctorManager::createEnv(Context& caller, unsigned id, cons
   Context * _ctx;
   if (entry.ctx_cache.empty())
   {
-    _ctx = entry.functor->ctx->createChildRuntime(this, r + 1);
+    _ctx = entry.functor->ctx->createChildRuntime(_root, r + 1);
     _ctx->trace(caller.trace());
   }
   else

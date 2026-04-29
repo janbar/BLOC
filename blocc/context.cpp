@@ -57,6 +57,7 @@ Context::Context()
     _sout = ::fdopen(d, "w");
     _serr = _sout;
   }
+  _fctm = new FunctorManager(*this);
 }
 
 Context::Context(int fd_out, int fd_err)
@@ -74,11 +75,22 @@ Context::Context(int fd_out, int fd_err)
     if (d >= 0)
       _serr = ::fdopen(d, "w");
   }
+  _fctm = new FunctorManager(*this);
 }
 
 Context::~Context()
 {
-  purge();
+  if (_returned)
+    delete _returned;
+  _returned = nullptr;
+
+  if (_fctm->getRoot() == this)
+    delete _fctm;
+  _fctm = nullptr;
+
+  _temporary_storage.purge();
+  _storage_pool.clear();
+  _backed_symbols.clear();
 
   /* only the root context own file descriptors,
    * therefore a child should not close any of them */
@@ -91,7 +103,7 @@ Context::~Context()
   }
 }
 
-Context * Context::clone()
+Context * Context::clone() const
 {
   Context * other = new Context(::fileno(_sout), ::fileno(_serr));
   /* copy flags */
@@ -100,16 +112,12 @@ Context * Context::clone()
   other->_storage_pool.reserve(_storage_pool.size());
   for (const MemorySlot& e : _storage_pool)
     other->_storage_pool.push_back(e);
-  if (_fctm)
-  {
-    /* clone functor manager */
-    other->_fctm = new FunctorManager(*_fctm);
-    other->_fctm->setRoot(other);
-  }
+  /* clone functor declarations */
+  other->_fctm->reset(*_fctm);
   return other;
 }
 
-Context * Context::clone(int fd_out, int fd_err)
+Context * Context::clone(int fd_out, int fd_err) const
 {
   Context * other = new Context(fd_out, fd_err);
   /* copy flags */
@@ -118,12 +126,8 @@ Context * Context::clone(int fd_out, int fd_err)
   other->_storage_pool.reserve(_storage_pool.size());
   for (const MemorySlot& e : _storage_pool)
     other->_storage_pool.push_back(e);
-  if (_fctm)
-  {
-    /* clone functor manager */
-    other->_fctm = new FunctorManager(*_fctm);
-    other->_fctm->setRoot(other);
-  }
+  /* clone functor declarations */
+  other->_fctm->reset(*_fctm);
   return other;
 }
 
@@ -134,9 +138,12 @@ void Context::purge()
     delete _returned;
   _returned = nullptr;
 
-  if (_fctm && _fctm->getRoot() == this)
+  /* reset the root manager */
+  if (_fctm->getRoot() == this)
+  {
     delete _fctm;
-  _fctm = nullptr;
+    _fctm = new FunctorManager(*this);
+  }
 
   /* clear temporary pool */
   _temporary_storage.purge();
@@ -364,17 +371,6 @@ void Context::dumpVariables()
     describeSymbol(e.symbol->id());
 }
 
-FunctorManager& Context::functorManager()
-{
-  /* only a root context owns the functor manager */
-  if (_fctm == nullptr)
-  {
-    _fctm = new FunctorManager();
-    _fctm->setRoot(this);
-  }
-  return *_fctm;
-}
-
 void Context::dumpFunctors()
 {
   if (!_fctm || !_sout)
@@ -529,26 +525,26 @@ Context::Context(const Context& ctx)
 
 /**
  * Make a child context from this.
- * @param fm          functor manager
+ * @param root        the instance root
  */
-Context * Context::createChild(FunctorManager * fm) const
+Context * Context::createChildShell(Context& root) const
 {
   Context * child = new Context(*this);
-  child->_fctm = fm;
+  child->_fctm = root._fctm;
   return child;
 }
 
 /**
  * Make a runtime context from this with the given recursion level.
  * The table of symbol is duplicated with empty values.
- * @param fm          functor manager
+ * @param root        the instance root
  * @param recursion   level of recursion (>=1)
  */
-Context * Context::createChildRuntime(FunctorManager * fm, uint8_t recursion) const
+Context * Context::createChildRuntime(Context& root, uint8_t recursion) const
 {
   assert(recursion > 0);
   Context * runtime = new Context(*this);
-  runtime->_fctm = fm;
+  runtime->_fctm = root._fctm;
   runtime->_recursion = recursion;
   /* copy table of symbols with new empty values */
   runtime->_storage_pool.reserve(_storage_pool.size());

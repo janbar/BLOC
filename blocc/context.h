@@ -26,7 +26,6 @@
 
 #include <string>
 #include <forward_list>
-#include <map>
 #include <algorithm>
 #include <chrono>
 
@@ -46,9 +45,9 @@ public:
   Context& operator=(const Context&) = delete;
   Context(int fd_out, int fd_err);
 
-  Context * clone();
+  Context * clone() const;
 
-  Context * clone(int fd_out, int fd_err);
+  Context * clone(int fd_out, int fd_err) const;
 
   /**
    * Purge the context including all symbols and storage pool.
@@ -157,7 +156,7 @@ public:
   /**
    * Returns the root manager of this
    */
-  FunctorManager& functorManager();
+  FunctorManager& functorManager() { return *_fctm; }
 
   void dumpFunctors();
 
@@ -458,8 +457,8 @@ private:
   uint8_t _recursion = 0;
   friend class FunctorManager;
   explicit Context(const Context& ctx);
-  Context * createChild(FunctorManager * fm) const;
-  Context * createChildRuntime(FunctorManager * fm, uint8_t recursion) const;
+  Context * createChildShell(Context& root) const;
+  Context * createChildRuntime(Context& root, uint8_t recursion) const;
 };
 
 }
