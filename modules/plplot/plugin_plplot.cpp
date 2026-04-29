@@ -1830,7 +1830,13 @@ bloc::Value * PLPLOTPlugin::executeMethod(
 
 void PLPLOT::Handle::reset()
 {
-  close();
+  if (_pls)
+  {
+    _pls->spause(0);
+    delete _pls;
+    _pls = nullptr;
+  }
+
   _pls = new plstream((PLINT)_nx, (PLINT)_ny, _device.c_str(), _filename.c_str());
   _pls->spause(_paused);
   /* load customized colors */
@@ -1870,12 +1876,7 @@ bool PLPLOT::Handle::init(const std::string& args)
 
 bool PLPLOT::Handle::close()
 {
-  if (_pls)
-  {
-    _pls->spause(0);
-    delete _pls;
-    _pls = nullptr;
-  }
+  reset();
   return true;
 }
 
