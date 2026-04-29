@@ -11,6 +11,26 @@ TestingContext ctx;
 
 using namespace bloc;
 
+TEST_CASE("clone with purge")
+{
+  Executable * e;
+  ctx.reset("a = \"Hello World!\";");
+  e = ctx.parse();
+  REQUIRE( e->run() == 0 );
+  REQUIRE( *(ctx.loadVariable("A")->literal()) == "Hello World!" );
+
+  bloc::Context * ctx_clone1 = ctx.clone();
+
+  // try running e within context 1, after the purge of source context
+  ctx.purge();
+
+  REQUIRE( bloc::Executable::run(*ctx_clone1, e->statements()) == 0);
+  REQUIRE( *(ctx_clone1->loadVariable("A")->literal()) == "Hello World!" );
+
+  delete ctx_clone1;
+  delete e;
+}
+
 TEST_CASE("clone with functor")
 {
   ctx.purge();
@@ -46,7 +66,7 @@ TEST_CASE("clone with functor")
   delete e;
 }
 
-TEST_CASE("clone with purge")
+TEST_CASE("clone with functor and purge")
 {
   Executable * e;
   ctx.reset("a = round(func(100),6);");
