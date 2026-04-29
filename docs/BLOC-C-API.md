@@ -1,7 +1,7 @@
 BLOC C API
 ==========
 
-2025-11
+2026-04
 
 This document summarizes the public C API exposed in `blocc/bloc_capi.h`.
 
@@ -302,8 +302,9 @@ Each fills an out-parameter with a pointer to the internal data (or NULL for a n
 
 - **`bloc_bool bloc_execute2(bloc_context * ctx, bloc_executable *exec);`**
 
-  Run the executable with the given context (the parsing context, or a clone). Returns `bloc_true` on success.
-  It allows to run an executable in a particular thread or in a loop, without need to parse the source for each instance.
+  Run the executable with the given context, cloned from the original context. Returns `bloc_true` on success.
+  It allows to run an executable in a particular thread, without need to parse the source for each instance.
+  Note the context must be a clone of the original parsing context. Calling this with an invalid context results in undefined behavior.
 
 - **`bloc_value* bloc_drop_returned(bloc_context *ctx);`**
 
