@@ -19,7 +19,7 @@
 #ifndef BLOC_CAPI_H
 #define BLOC_CAPI_H
 
-#include "declspec.h"
+#include <blocc/declspec.h>
 
 #include <stdio.h>
 #include <stdint.h>
