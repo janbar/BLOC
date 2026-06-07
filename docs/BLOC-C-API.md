@@ -256,7 +256,7 @@ Each fills an out-parameter with a pointer to the internal data (or NULL for a n
 
   Returns the number of items in an array/table.
 
-- **`bloc_bool bloc_array_item(bloc_array *array, unsigned index,** bloc_value **v);`
+- **`bloc_bool bloc_array_item(bloc_array *array, unsigned index,** bloc_value **v);`**
 
   Retrieve the item at `index` (0-based). On success `*v` is set to the internal item value pointer.
 
