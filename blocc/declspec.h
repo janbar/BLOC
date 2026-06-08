@@ -1,5 +1,5 @@
-#ifndef DECLSPEC_H_
-#define DECLSPEC_H_
+#ifndef DECLSPEC_BLOCC_H_
+#define DECLSPEC_BLOCC_H_
 
 #if (defined(_WIN32) || defined(_WIN64) || defined(_M_ARM64))
 #define LIBBLOC_MSWIN
@@ -25,4 +25,4 @@
 #define LIBBLOC_API LIBBLOC_DLL_IMPORT
 #endif
 
-#endif /* DECLSPEC_H_ */
+#endif /* DECLSPEC_BLOCC_H_ */
