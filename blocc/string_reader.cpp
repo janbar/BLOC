@@ -25,10 +25,19 @@ namespace bloc
 
 int StringReader::read(Parser *, char * buf, int max_size)
 {
-  size_t r = (max_size  > _text.size() - _pos ? _text.size() - _pos : max_size);
-  ::memcpy(buf, &_text[_pos], r);
-  _pos += r;
-  return (int) r;
+  int c = 0;
+  std::string::iterator p = _text.begin() + _pos;
+  while (p != _text.end() && c < max_size)
+  {
+    ++_pos;
+    // discard cr to fix source formated msdos
+    if (*p != '\r')
+      buf[c++] = *p;
+    if (*p == '\n')
+      break;
+    ++p;
+  }
+  return c;
 }
 
 }
