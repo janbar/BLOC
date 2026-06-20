@@ -566,7 +566,7 @@ bloc_free_executable(bloc_executable *exec)
 }
 
 bloc_executable*
-bloc_parse_executable(bloc_context *ctx, const char *text)
+bloc_parse_executable(bloc_context *ctx, const char *text, bloc_parsing_position *pos)
 {
   try
   {
@@ -578,6 +578,11 @@ bloc_parse_executable(bloc_context *ctx, const char *text)
   }
   catch (bloc::ParseError& pe)
   {
+    if (pos)
+    {
+      pos->lno = pe.token->line;
+      pos->pno = pe.token->column;
+    }
     bloc_error_set(pe.what(), pe.no);
     return nullptr;
   }

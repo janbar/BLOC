@@ -78,6 +78,14 @@ typedef struct {
 } bloc_pair;
 
 /**
+ * The structure representing a parsing position on error.
+ */
+typedef struct {
+  int lno;
+  int pno;
+} bloc_parsing_position;
+
+/**
  * Returns a human-readable string describing the last error.
  * The returned string is owned by the library and must not be freed.
  * @return pointer to an error message string, or NULL if no error
@@ -591,7 +599,7 @@ bloc_evaluate_expression(bloc_context *ctx, bloc_expression *e);
  * @return pointer to a new `bloc_executable`, or NULL on failure
  */
 LIBBLOC_API bloc_executable*
-bloc_parse_executable(bloc_context *ctx, const char *text);
+bloc_parse_executable(bloc_context *ctx, const char *text, bloc_parsing_position *pos);
 
 /**
  * Free a `bloc_executable` previously created by `bloc_parse_executable()`.

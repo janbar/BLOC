@@ -139,12 +139,14 @@ int main(int argc, char** argv)
 
     bloc_executable * x1 = bloc_parse_executable(ctx,
             "function pout(i) return undefined is\n"
-            " begin put i \" \"; return null; end;");
+            " begin put i \" \"; return null; end;",
+                                                 NULL);
     bloc_executable * x = bloc_parse_executable(ctx,
             "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
             "for j in 2 to i/2+1 loop\nif i%j == 0 then b=false; break; end if;\n"
             "end loop;\nif b then pout(i); cnt=cnt+1; end if;\n"
-            "end loop;\nreturn cnt;");
+            "end loop;\nreturn cnt;",
+                                                NULL);
     if (x1 && x)
     {
       printf("exec     =\n");
@@ -209,7 +211,8 @@ int main(int argc, char** argv)
       /* override the functor in ctx2 */
       bloc_executable * x2 = bloc_parse_executable(ctx2,
             "function pout(i) return undefined is\n"
-            " begin put i \",\"; return null; end;");
+            " begin put i \",\"; return null; end;",
+                                                   NULL);
 
       printf("exec_3   =\n");
       fflush(stdout);
@@ -248,7 +251,8 @@ int main(int argc, char** argv)
     x = bloc_parse_executable(ctx,
           "cnt=0;\nfor i in 2 to $1 loop\nb=true;\n"
           "for j in 2 to i/2+1 loop\nif i%j == 0 then b=false; break; end if;\n"
-          "end loop;\nif b then put i \" \"; cnt=cnt+1; end if;\nend loop;\nreturn cnt;");
+          "end loop;\nif b then put i \" \"; cnt=cnt+1; end if;\nend loop;\nreturn cnt;",
+                              NULL);
     if (!x)
     {
       printf("exec_err = %s\n", bloc_strerror());
@@ -259,7 +263,7 @@ int main(int argc, char** argv)
       bloc_free_executable(x);
     }
 
-    x = bloc_parse_executable(ctx, "begin do 1/0; end;");
+    x = bloc_parse_executable(ctx, "begin do 1/0; end;", NULL);
     if (x)
     {
       if (!bloc_execute(x))
@@ -279,7 +283,7 @@ int main(int argc, char** argv)
 
     bloc_ctx_purge(ctx);
     x = bloc_parse_executable(ctx,
-          "a=tab(10, tab(5, tup(1234, 1.234, true, \"abcdefgh\")));");
+          "a=tab(10, tab(5, tup(1234, 1.234, true, \"abcdefgh\")));", NULL);
     if (x)
     {
       if (bloc_execute(x))
