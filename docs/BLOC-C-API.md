@@ -40,7 +40,7 @@ All pointers returned by the API are owned by the caller unless the function doc
   *struct { bloc_type_major major; unsigned ndim; }*
 
   **ndim** is the number of array dimensions (0 for scalar).
-  
+
 - **`bloc_bool`** : char (use `bloc_true` / `bloc_false`)
 - **`bloc_pair`** : The structure represents a complex number
 
@@ -288,9 +288,10 @@ Each fills an out-parameter with a pointer to the internal data (or NULL for a n
 
   Evaluate `e` in `ctx` and return the value (it is owned by the library and must not be freed).
 
-- **`bloc_executable* bloc_parse_executable(bloc_context *ctx, const char *text);`**
+- **`bloc_executable* bloc_parse_executable(bloc_context *ctx, const char *text, bloc_parsing_position *pos);`**
 
   Parse an executable/script from `text`. Returned pointer must be freed with `bloc_free_executable()`.
+  If the pointer `pos` is not NULL, the parsing position is returned on error.
 
 - **`void bloc_free_executable(bloc_executable *exec);`**
 
