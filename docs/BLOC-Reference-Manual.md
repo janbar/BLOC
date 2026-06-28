@@ -591,15 +591,15 @@ Binary operators comprise [Arithmetic Operators](#arithmetic-operators), [Bitwis
 
 BLOC supports the following arithmetic operators:
 
-| Symbol               | Operation      |
-|:--------------------:| -------------- |
-| **+**                | addition       |
-| **-**                | subtraction    |
-| **\***               | multiplication |
-| **/**                | division       |
-| **\*\*** , **power** | exponentiation |
-| **%**                | modulo         |
-| **-**                | unary minus    |
+| Symbol             | Operation      |
+|:------------------:|:-------------- |
+| `+`                | addition       |
+| `-`                | subtraction    |
+| `*`                | multiplication |
+| `/`                | division       |
+| `**` , `power`     | exponentiation |
+| `%`                | modulo         |
+| `-`                | unary minus    |
 
 The arithmetic operators work as follows: If both operands are integers, the operation is performed over integers and the result is an integer. Otherwise, if one operands is float, then other is converted to float, the operation is performed following the machine's rules for floating-point arithmetic (usually the IEEE 754 standard), and the result is a decimal.
 
@@ -613,12 +613,12 @@ BLOC supports the following bitwise operators:
 
 | Symbol | Operation         |
 |:------:|:----------------- |
-| **&**  | bitwise AND       |
-| **\|** | bitwise OR        |
-| **^**  | bitwise XOR       |
-| **\~** | unary bitwise NOT |
-| **<<** | left shift bit    |
-| **>>** | right shift bit   |
+| `&`    | bitwise AND       |
+| `\|`   | bitwise OR        |
+| `^`    | bitwise XOR       |
+| `~`    | unary bitwise NOT |
+| `<<`   | left shift bit    |
+| `>>`   | right shift bit   |
 
 All bitwise operations are applicable only with integers, operate on all bits of those integers, and result in an integer.
 Both right and left shifts fill the vacant bits with zeros. Negative displacements shift to the other direction; displacements with absolute values equal to or higher than the number of bits in an integer result in zero (as all bits are shifted out).
@@ -629,23 +629,23 @@ BLOC provides some automatic conversions between some types and representations 
 
 All arithmetic operations applied to mixed numbers (integers and floats) convert the integer operand to a float. This implicit conversion is always performed without loss of information:
 
-- 5 / 2.0 => the decimal 2.5
+- 5 `/` 2.0 => the decimal 2.5
 
-- 5 ** 0.5 => the decimal 2.5
+- 5 `**` 0.5 => the decimal 2.23606797749979
 
 Integer division never converts integer operands to floats:
 
-- 5 / 2 => the integer 2
+- 5 `/` 2 => the integer 2
 
 Bitwise operators can only be used with integer operands.
 
-- 5.0 << 2 => will raise an error
+- 5.0 `<<` 2 => will raise an error
 
-- int(5.0) << 2 => the integer 20
+- int(5.0) `<<` 2 => the integer 20
 
 In a conversion from integer to float, if the integer value has an exact representation as a float, that is the result. Otherwise, the conversion gets the nearest higher or the nearest lower representable value. This kind of conversion never fails.
 
-- 9223372036854775807 + 0.0 => the decimal 9.223372036854776e+18
+- 9223372036854775807 `+` 0.0 => the decimal 9.223372036854776e+18
 
 - num(9223372036854775807) => the decimal 9.223372036854776e+18
 
@@ -655,15 +655,15 @@ The explicit conversion from float to integer (built-in function *int*) checks t
 
 BLOC supports the following relational operators:
 
-| Symbol      | Operation                  |
-|:-----------:|:-------------------------- |
-| **==**      | equality                   |
-| **!=**      | inequality                 |
-| **<**       | less than                  |
-| **<=**      | less or equal              |
-| **>**       | greater than               |
-| **>=**      | greater or equal           |
-| **matches** | matches regular expression |
+| Symbol    | Operation                  |
+|:---------:|:-------------------------- |
+| `==`      | equality                   |
+| `!=`      | inequality                 |
+| `<`       | less than                  |
+| `<=`      | less or equal              |
+| `>`       | greater than               |
+| `>=`      | greater or equal           |
+| `matches` | matches regular expression |
 
 These operators result in false, true or null if one of the operands is null.
 
@@ -675,12 +675,12 @@ The *matches* operator is applicable only with string operands.
 
 BLOC supports the following logical operators:
 
-| Symbol  | Operation            |
-|:-------:| -------------------- |
-| **and** | logical AND          |
-| **or**  | logical OR           |
-| **xor** | logical exclusive OR |
-| **not** | logical negation NOT |
+| Symbol         | Operation            |
+|:--------------:|:-------------------- |
+| `and` , `&&`   | logical AND          |
+| `or` , `\|\|`  | logical OR           |
+| `xor`          | logical exclusive OR |
+| `not` , `!`    | logical negation NOT |
 
 **(null OR true)** is always true; **(null AND false)** is always false.
 
