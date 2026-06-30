@@ -116,7 +116,7 @@ All pointers returned by the API are owned by the caller unless the function doc
 - **`bloc_context* bloc_clone_context2(bloc_context *ctx, int fd_out, int fd_err);`**
 
   Clone an existing context for thread processing, or repeating processing.
-  The new context uses the the given file IO.
+  The new context uses the given file IO.
 
 - **`bloc_symbol* bloc_ctx_register_symbol(bloc_context *ctx, const char *name, bloc_type type);`**
 
