@@ -96,6 +96,7 @@ Module oracle for BLOC
 %{_libdir}/libbloc_sys.so.*
 %{_libdir}/libbloc_utf8.so.*
 %{_libdir}/libbloc_crypto.so.*
+%{_libdir}/libbloc_regex.so.*
 
 %files -n bloc-devel
 %doc docs/BLOC-C-API.md
