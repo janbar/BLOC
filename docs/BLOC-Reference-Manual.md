@@ -1,7 +1,7 @@
-BLOC 2.8 Reference Manual
+BLOC 2.9 Reference Manual
 =========================
 
-2026-02
+2026-07
 
 ## Table of contents
 

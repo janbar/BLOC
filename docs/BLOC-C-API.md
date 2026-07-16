@@ -1,7 +1,7 @@
 BLOC C API
 ==========
 
-2026-04
+2026-07
 
 This document summarizes the public C API exposed in `blocc/bloc_capi.h`.
 
