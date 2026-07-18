@@ -27,6 +27,7 @@
 
 #include <string>
 #include <list>
+#include <cstddef>
 
 namespace bloc
 {
@@ -167,7 +168,6 @@ BEGINStatement * BEGINStatement::parse(Parser& p, Context& ctx)
   std::list<const Statement*> statements;
   try
   {
-    bool end = false;
     TokenPtr t;
     for (;;)
     {

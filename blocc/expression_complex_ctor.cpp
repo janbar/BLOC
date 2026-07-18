@@ -23,6 +23,8 @@
 #include "parser.h"
 #include "debug.h"
 
+#include <cstddef>
+
 namespace bloc
 {
 
@@ -96,7 +98,7 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
 
     /* else find the right constructor */
     bool fid = false;
-    for (int m = 0; m < plug.interface.ctors_count; ++m)
+    for (unsigned m = 0; m < plug.interface.ctors_count; ++m)
     {
       const PLUGIN_CTOR& ctor = plug.interface.ctors[m];
       fid = true;
@@ -104,7 +106,7 @@ ComplexCTORExpression * ComplexCTORExpression::parse(Parser& p, Context& ctx, un
       {
         bool found = true;
         /* check arguments list */
-        int a = 0;
+        unsigned a = 0;
         while (found && a < ctor.args_count)
         {
           /* the expected type */

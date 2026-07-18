@@ -92,6 +92,7 @@
 #include "parser.h"
 
 #include <cstring>
+#include <cstddef>
 
 namespace bloc
 {
@@ -139,7 +140,7 @@ std::string BuiltinExpression::unparse(Context& ctx) const
     break;
   default:
     sb.append("(");
-    for (int i = 0; i < _args.size(); ++i)
+    for (size_t i = 0; i < _args.size(); ++i)
     {
       if (i > 0)
         sb.append(1, Parser::Chain).append(1, ' ');
@@ -152,7 +153,7 @@ std::string BuiltinExpression::unparse(Context& ctx) const
 
 int BuiltinExpression::findKeyword(const std::string& s)
 {
-  for (int i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
+  for (size_t i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
   {
     if (strcmp(KEYWORDS[i], s.c_str()) == 0)
       return i;
@@ -163,7 +164,7 @@ int BuiltinExpression::findKeyword(const std::string& s)
 std::set<std::string> BuiltinExpression::keywordSet()
 {
   std::set<std::string> lst;
-  for (int i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
+  for (size_t i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
     if (KEYWORDS[i][0] != '\0')
       lst.insert(KEYWORDS[i]);
   return lst;

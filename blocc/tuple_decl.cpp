@@ -20,6 +20,7 @@
 #include "plugin_manager.h"
 
 #include <cstdint>
+#include <cstddef>
 
 namespace bloc
 {
@@ -30,7 +31,7 @@ std::string TupleDecl::Decl::tupleName() const
 {
   std::string sb;
   sb.append(1, '{');
-  for (int i = 0; i < this->size(); ++i)
+  for (size_t i = 0; i < this->size(); ++i)
   {
     if (i > 0)
       sb.append(1, ',');

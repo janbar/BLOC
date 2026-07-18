@@ -44,7 +44,7 @@ Value& MemberDELETEExpression::value(Context& ctx) const
     /* collection */
     Collection * rv = val.collection();
     Integer p = *a0.integer();
-    if (p < 0 || p >= rv->size())
+    if (p < 0 || size_t(p) >= rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
     rv->erase(rv->begin() + p);
     return val;
@@ -57,7 +57,7 @@ Value& MemberDELETEExpression::value(Context& ctx) const
   {
     Literal * rv = val.literal();
     Integer p = *a0.integer();
-    if (p < 0 || p >= rv->size())
+    if (p < 0 || size_t(p) >= rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
     if (_exp->isConst())
     {
@@ -74,7 +74,7 @@ Value& MemberDELETEExpression::value(Context& ctx) const
   {
     TabChar * rv = val.tabchar();
     Integer p = *a0.integer();
-    if (p < 0 || p >= rv->size())
+    if (p < 0 || size_t(p) >= rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
     rv->erase(rv->begin() + p);
     return val;

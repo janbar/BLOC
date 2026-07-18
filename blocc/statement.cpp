@@ -20,6 +20,7 @@
 #include "parser.h"
 
 #include <cstring>
+#include <cstddef>
 
 namespace bloc
 {
@@ -109,7 +110,7 @@ int Statement::findKeyword(const std::string& s)
 std::set<std::string> Statement::keywordSet()
 {
   std::set<std::string> lst;
-  for (int i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
+  for (size_t i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
     if (KEYWORDS[i][0] != '\0')
       lst.insert(KEYWORDS[i]);
   return lst;

@@ -44,7 +44,7 @@ Value& MemberINSERTExpression::value(Context& ctx) const
     Collection * rv = val.collection();
     const Type& rv_type = rv->table_type();
     Integer p = *a0.integer();
-    if (p < 0 || p > rv->size())
+    if (p < 0 || size_t(p) > rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
     const Type& a1_type = a1.type();
     /* collection */
@@ -169,7 +169,7 @@ Value& MemberINSERTExpression::value(Context& ctx) const
   {
     Literal * rv = val.literal();
     Integer p = *a0.integer();
-    if (p < 0 || p > rv->size())
+    if (p < 0 || size_t(p) > rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
     if (a1.isNull())
       return val;
@@ -207,7 +207,7 @@ Value& MemberINSERTExpression::value(Context& ctx) const
   {
     TabChar * rv = val.tabchar();
     Integer p = *a0.integer();
-    if (p < 0 || p > rv->size())
+    if (p < 0 || size_t(p) > rv->size())
       throw RuntimeError(EXC_RT_INDEX_RANGE_S, a0.toString().c_str());
     if (a1.isNull())
       return val;

@@ -24,6 +24,7 @@
 #include "blocc/collection.h"
 #include "debug.h"
 
+#include <cstddef>
 #include <cassert>
 #include <cinttypes>
 #include <cmath>
@@ -448,7 +449,7 @@ std::string Value::readableComplex(Complex& c)
 std::string Value::readableTuple(Tuple &c)
 {
   std::string sb;
-  for (int i = 0; i < c.size(); ++i)
+  for (size_t i = 0; i < c.size(); ++i)
   {
     if (i > 0)
       sb.append(", ");

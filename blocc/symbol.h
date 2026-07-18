@@ -45,9 +45,9 @@ public:
 
   Symbol(Symbol&& s) noexcept
   : Type(s._major, s._minor, s._level)
-  , _decl(std::move(s._decl))
   , _id(s._id)
   , _name(std::move(s._name))
+  , _decl(std::move(s._decl))
   , _safety(s._safety)
   , _locked(s._locked)
   { }
@@ -59,9 +59,9 @@ public:
     Type::_major = s._major;
     Type::_minor = s._minor;
     Type::_level = s._level;
-    _decl = std::move(s._decl);
     _id = s._id;
     _name = std::move(s._name);
+    _decl = std::move(s._decl);
     _safety = s._safety;
     _locked = s._locked;
     return *this;

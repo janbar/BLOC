@@ -28,6 +28,7 @@
 #include "debug.h"
 
 #include <string>
+#include <cstddef>
 #include <cassert>
 
 namespace bloc
@@ -129,7 +130,7 @@ const Statement * FORALLStatement::doit(Context& ctx) const
   {
     RT * data = reinterpret_cast<RT*>(ctx.topControlData());
     data->index += data->step;
-    if (data->index < 0 || data->index >= data->target->collection()->size())
+    if (data->index < 0 || size_t(data->index) >= data->target->collection()->size())
     {
       ctx.unstackControl();
       return _next;

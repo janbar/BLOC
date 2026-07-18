@@ -19,6 +19,8 @@
 #include "exception_runtime.h"
 #include "debug.h"
 
+#include <cstddef>
+
 namespace bloc
 {
 
@@ -69,7 +71,7 @@ RuntimeError::THROWABLE RuntimeError::THROWABLES[] =
 
 EXC_RT RuntimeError::findThrowable(const std::string& keyword)
 {
-  for (int i = 0; i < (sizeof(THROWABLES) / sizeof(THROWABLE)); ++i)
+  for (size_t i = 0; i < (sizeof(THROWABLES) / sizeof(THROWABLE)); ++i)
   {
     if (keyword == THROWABLES[i].keyword)
       return THROWABLES[i].no;

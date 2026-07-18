@@ -34,6 +34,7 @@
 #include "debug.h"
 
 #include <cstring>
+#include <cstddef>
 #include <cassert>
 
 namespace bloc
@@ -58,7 +59,7 @@ std::string MemberExpression::unparse(Context& ctx) const
   std::string sb(_exp->unparse(ctx).append(1, OPERATOR));
   sb.append(KEYWORDS[_builtin]);
   sb.append("(");
-  for (int i = 0; i < _args.size(); ++i)
+  for (size_t i = 0; i < _args.size(); ++i)
   {
     if (i > 0)
       sb.append(1, Parser::Chain).append(1, ' ');
@@ -70,7 +71,7 @@ std::string MemberExpression::unparse(Context& ctx) const
 
 int MemberExpression::findBuiltinKeyword(const std::string& s)
 {
-  for (int i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
+  for (size_t i = 0; i < (sizeof (KEYWORDS) / sizeof (char*)); ++i)
   {
     if (strcmp(KEYWORDS[i], s.c_str()) == 0)
       return i;

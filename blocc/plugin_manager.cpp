@@ -22,6 +22,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <cstddef>
 
 #if defined(LIBBLOC_MSWIN)
 #include "win32/dlfcn.h"
@@ -154,7 +155,7 @@ bool PluginManager::bannedPlugin(const std::string& name)
 unsigned PluginManager::registerModule(void* dlhandle)
 {
   /* check for already registered dlhandle */
-  for (int id = 0; id < _modules.size(); ++id)
+  for (size_t id = 0; id < _modules.size(); ++id)
   {
     if (_modules[id].dlhandle == dlhandle)
     {

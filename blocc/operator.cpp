@@ -18,6 +18,8 @@
 
 #include "operator.h"
 
+#include <cstddef>
+
 namespace bloc
 {
 
@@ -35,7 +37,7 @@ const char * Operator::OPVALS[] = {
 std::set<Operator::OP> Operator::operatorSet()
 {
   std::set<OP> lst;
-  for (int i = 0; i < (sizeof (OPVALS) / sizeof (char*)); ++i)
+  for (size_t i = 0; i < (sizeof (OPVALS) / sizeof (char*)); ++i)
     if (OPVALS[i][0] != '\0')
       lst.insert((OP)i);
   return lst;

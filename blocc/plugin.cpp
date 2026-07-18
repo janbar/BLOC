@@ -19,6 +19,7 @@
 #include "plugin.h"
 
 #include <cstring>
+#include <cstddef>
 #include <cassert>
 
 namespace bloc
@@ -60,7 +61,7 @@ make_decl(PLUGIN_DECL decl_def, Type::TypeMinor type_id)
   TupleDecl::Decl decl;
   unsigned len = ::strlen(decl_def);
   unsigned cnt = 1;
-  for (int i = 0; i < len && cnt < TUPLE_MAX_ITEMS; ++i)
+  for (unsigned i = 0; i < len && cnt < TUPLE_MAX_ITEMS; ++i)
   {
     Type::TypeMajor m = __match_type_code__[(unsigned char) decl_def[i]];
     /* assumptions:

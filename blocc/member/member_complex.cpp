@@ -97,7 +97,7 @@ std::string MemberMETHODExpression::unparse(Context& ctx) const
   else
     sb.append(KEYWORDS[_builtin]);
   sb.append("(");
-  for (int i = 0; i < _args.size(); ++i)
+  for (size_t i = 0; i < _args.size(); ++i)
   {
     if (i > 0)
       sb.append(1, Parser::Chain).append(1, ' ');
@@ -145,7 +145,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
     bool f_name = false; /* a method exists with this name */
     int f_sc = 0; /* the highest score */
     int f_no = 0; /* the index of the first method with the highest score */
-    for (int m = 0; m < plug.interface.method_count; ++m)
+    for (unsigned m = 0; m < plug.interface.method_count; ++m)
     {
       const PLUGIN_METHOD& method = plug.interface.methods[m];
       if (method.name != m_name)
@@ -157,7 +157,7 @@ MemberMETHODExpression * MemberMETHODExpression::parse(Parser& p, Context& ctx, 
         int match = 2 * method.args_count; /* the best score: 2 pts per arg */
         int score = 0;
         /* check arguments list */
-        for (int a = 0; found && a < method.args_count; ++a)
+        for (unsigned a = 0; found && a < method.args_count; ++a)
         {
           /* the expected type */
           Type m_arg_type = plugin::make_type(method.args[a].type, type_id);
