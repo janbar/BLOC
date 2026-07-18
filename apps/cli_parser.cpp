@@ -35,6 +35,7 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <cstddef>
 #include <algorithm> // std::find
 #include <set>
 
@@ -68,7 +69,7 @@ static void unload_readline();
 static char * rl_line = nullptr;
 #endif
 
-#define PRINTBUF(buf,len,sout) for(int ii=0; ii<len; ++ii) fputc(buf[ii], sout)
+#define PRINTBUF(buf,len,sout) for(size_t ii=0; ii<len; ++ii) fputc(buf[ii], sout)
 
 enum CMD
 {
@@ -389,7 +390,7 @@ int ReadInput::read(bloc::Parser * p, char * buf, int max_size)
   {
     /* a static variable to store the read position */
     static char * rl_pos = nullptr;
-    unsigned n = 0;
+    int n = 0;
     if (rl_pos)
     {
       if (*rl_pos)
