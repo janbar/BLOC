@@ -22,7 +22,7 @@
 
 #include <cstring>
 #include <string>
-#include <regex>
+#include <cstddef>
 #include <cassert>
 
 /*
@@ -388,7 +388,7 @@ bloc::Value * DatePlugin::executeMethod(
     int64_t add = *a0.integer();
     std::string * in = a1.literal();
     int unit = -1;
-    for (int i = 0; i < (sizeof(date::time_units) / sizeof(const char*)); ++i)
+    for (int i = 0; size_t(i) < (sizeof(date::time_units) / sizeof(const char*)); ++i)
     {
       if (*in != date::time_units[i])
         continue;
@@ -439,7 +439,7 @@ bloc::Value * DatePlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     std::string * in = a0.literal();
     int unit = -1;
-    for (int i = 0; i < (sizeof(date::time_units) / sizeof(const char*)); ++i)
+    for (int i = 0; size_t(i) < (sizeof(date::time_units) / sizeof(const char*)); ++i)
     {
       if (*in != date::time_units[i])
         continue;

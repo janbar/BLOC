@@ -22,7 +22,8 @@
 #include <blocc/collection.h>
 #include <blocc/tuple.h>
 #include <blocc/debug.h>
-#include <string.h>
+#include <cstring>
+#include <cstddef>
 #include <cassert>
 
 #define PLUGIN_TEXT_MAXLEN   0x0ffff
@@ -422,7 +423,7 @@ bloc::Value * MariaDBPlugin::executeMethod(
   case MariaDB::Header:
   {
     bloc::Collection * c = nullptr;
-    int r = h->header(&c);
+    (void) h->header(&c);
     return new bloc::Value(c);
   }
 
@@ -503,7 +504,7 @@ void MariaDB::Handle::bind_args(Bindings& bindings, bloc::Tuple& args)
 {
   static const char b1 = 1; /* to bind value true */
   static const char b0 = 0; /* to bind value false */
-  int i = 0;
+  size_t i = 0;
   for (MYSQL_BIND& bind : bindings())
   {
     if (args.size() > i)
@@ -1079,7 +1080,7 @@ int MariaDB::Handle::header(bloc::Collection ** hd)
   unsigned column_count = mysql_num_fields(prepare_meta_result);
 
   /* fetch metadata of the result set */
-  for (int i = 0; i < column_count; ++i)
+  for (unsigned i = 0; i < column_count; ++i)
   {
     MYSQL_FIELD * field = mysql_fetch_field(prepare_meta_result);
     std::vector<bloc::Value> t;
@@ -1153,7 +1154,7 @@ int MariaDB::Handle::fetch(bloc::Tuple ** row)
     _stmt_decl.resize(column_count);
 
     /* fetch metadata of the result set */
-    int i = 0;
+    unsigned i = 0;
     for (MYSQL_BIND& bind : _stmt_rs())
     {
       MYSQL_FIELD * field = mysql_fetch_field(prepare_meta_result);
@@ -1237,7 +1238,7 @@ int MariaDB::Handle::fetch(bloc::Tuple ** row)
     throw RuntimeError(EXC_RT_USER_S, mysql_error(_db));
 
   std::vector<bloc::Value> t;
-  int i = 0;
+  unsigned i = 0;
   for (MYSQL_BIND& bind : _stmt_rs())
   {
     switch (bind.buffer_type)

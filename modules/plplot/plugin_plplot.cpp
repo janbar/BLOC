@@ -666,7 +666,7 @@ TabA<double> col2taba(bloc::Collection& col, size_t n)
       throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
     tab.at(i) = *v.numeric();
   }
-  return std::move(tab);
+  return tab;
 }
 
 TabA<bool> col2tabab(bloc::Collection& col, size_t n)
@@ -681,7 +681,7 @@ TabA<bool> col2tabab(bloc::Collection& col, size_t n)
       throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
     tab.at(i) = *v.boolean();
   }
-  return std::move(tab);
+  return tab;
 }
 
 TabA<int> col2tabai(bloc::Collection& col, size_t n)
@@ -696,7 +696,7 @@ TabA<int> col2tabai(bloc::Collection& col, size_t n)
       throw RuntimeError(EXC_RT_OTHER_S, "Value cannot be null.");
     tab.at(i) = (int) *v.integer();
   }
-  return std::move(tab);
+  return tab;
 }
 
 template<class T>
@@ -764,7 +764,7 @@ TabZ<double> col2tabz(bloc::Collection& col, size_t x, size_t y)
       tab.at(ix, iy) = (*v.numeric());
     }
   }
-  return std::move(tab);
+  return tab;
 }
 
 /**

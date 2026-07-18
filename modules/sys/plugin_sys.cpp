@@ -24,6 +24,7 @@
 #include <cstdlib>
 #include <cassert>
 #include <cstring>
+#include <cstddef>
 #include <cstdio>
 #include <list>
 #include <chrono>
@@ -230,7 +231,6 @@ bloc::Value * SYSPlugin::executeMethod(
   case sys::Exec1:
   {
     bloc::Value& a0 = args[0]->value(ctx);
-    bloc::Value& a1 = args[1]->value(ctx);
     bloc::Value& a2 = args[2]->value(ctx);
     if (a0.isNull() || a2.isNull())
       return new bloc::Value(bloc::Value::type_boolean);
@@ -246,7 +246,6 @@ bloc::Value * SYSPlugin::executeMethod(
   {
     bloc::Value& a0 = args[0]->value(ctx);
     bloc::Value& a1 = args[1]->value(ctx);
-    bloc::Value& a2 = args[2]->value(ctx);
     bloc::Value& a3 = args[3]->value(ctx);
     if (a0.isNull() || a3.isNull())
       return new bloc::Value(bloc::Value::type_boolean);
@@ -371,10 +370,10 @@ int sys::ExecBuffer::write(const char * data, int len)
 
   while (rest > 0)
   {
-    int n = (rest > CHUNKLEN ? CHUNKLEN : rest);
+    int n = (size_t(rest) > CHUNKLEN ? CHUNKLEN : rest);
     rest -= n;
 
-    if (_tail >= n)
+    if (_tail >= size_t(n))
     {
       /* the tail of last chunk is large enough to hold the read data */
       ::memcpy(_chunks.back() + CHUNKLEN - _tail, data, n);

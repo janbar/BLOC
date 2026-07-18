@@ -22,6 +22,7 @@
 
 #include <regex>
 #include <iterator>
+#include <cstddef>
 
 /*
  * Create the module REGEXPlugin
@@ -217,7 +218,7 @@ void regex::Handle::search(const std::string& str, bloc::Collection& subs)
 {
   std::smatch sub;
   std::regex_search(str, sub, _regex);
-  for (int i = 0; i < sub.size(); ++i)
+  for (size_t i = 0; i < sub.size(); ++i)
   {
     bloc::Tuple::container_t items;
     items.push_back(bloc::Value(bloc::Integer(std::distance(str.begin(), sub[i].first))));

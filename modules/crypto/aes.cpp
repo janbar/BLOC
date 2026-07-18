@@ -98,7 +98,7 @@ static void KeyExpansion(const AES_params* params, uint8_t* RoundKey, const uint
   }
 
   // All other round keys are found from the previous round keys.
-  for (i = params->nk; i < params->nb * (params->nr + 1); ++i)
+  for (i = params->nk; i < (unsigned)(params->nb) * (params->nr + 1); ++i)
   {
     unsigned j, k;
     uint8_t tempa[4]; // Used for the column/row operations

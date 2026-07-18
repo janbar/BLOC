@@ -22,7 +22,8 @@
 #include <blocc/collection.h>
 #include <blocc/tuple.h>
 #include <blocc/debug.h>
-#include <string.h>
+#include <cstring>
+#include <cstddef>
 #include <cassert>
 
 #define PLUGIN_TEXT_MAXLEN   0x0ffff
@@ -105,10 +106,6 @@ static PLUGIN_ARG connect2_args[]  = {
 
 static PLUGIN_ARG string_args[]  = {
   { PLUGIN_IN,    { "L", 0 } }, // string
-};
-
-static PLUGIN_ARG bool_args[]  = {
-  { PLUGIN_IN,    { "B", 0 } }, // boolean
 };
 
 static PLUGIN_ARG stmt_args[]  = {
@@ -501,7 +498,7 @@ bloc::Value * OraclePlugin::executeMethod(
   case Oracle::Header:
   {
     bloc::Collection * c = nullptr;
-    int r = h->header(&c);
+    (void) h->header(&c);
     return new bloc::Value(c);
   }
 
@@ -559,7 +556,7 @@ void Oracle::Handle::Bindings::clear()
 
 int Oracle::Handle::bind_args(Bindings& bindings, bloc::Tuple& args)
 {
-  int i = 0;
+  size_t i = 0;
   for (BindVar& bind : bindings())
   {
     if (args.size() > i)

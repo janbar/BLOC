@@ -215,7 +215,7 @@ struct Handle {
   int seek_end(int64_t s);
   int64_t position();
   int flush();
-  int readln(char * buf, unsigned n);
+  int readln(char * buf, int n);
 };
 
 /**
@@ -450,7 +450,7 @@ bloc::Value * FilePlugin::executeMethod(
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
 
     char buf[BLOC_FILE_BUFSZ]; /* max length */
-    int n = file->readln(buf, sizeof(buf));
+    int n = file->readln(buf, BLOC_FILE_BUFSZ);
     if (n >= 0)
     {
       /* INOUT */
@@ -721,7 +721,7 @@ int file::Handle::flush()
   return ::fflush(_file);
 }
 
-int file::Handle::readln(char * buf, unsigned n)
+int file::Handle::readln(char * buf, int n)
 {
   int c = 0, r = 0;
   while (r < n &&  c != '\n')

@@ -327,7 +327,6 @@ bloc::Value * CSVPlugin::executeMethod(
   case csv::Deserialize:
   {
     bloc::Value& a0 = args[0]->value(ctx);
-    bloc::Value& a1 = args[1]->value(ctx);
     if (a0.isNull() || !args[1]->isVarName())
       throw RuntimeError(EXC_RT_OTHER_S, "Invalid arguments.");
     /* processing data */
