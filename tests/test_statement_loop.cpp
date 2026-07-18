@@ -74,7 +74,7 @@ TEST_CASE("for loop")
 TEST_CASE("Safety reset on broken for loop")
 {
   ctx.purge();
-  Executable * e;
+  Executable * e = nullptr;
   ctx.reset(
     "for i in 0 to 1 loop break; end loop;\n"
     "i=\"OK\";\n"
@@ -134,7 +134,7 @@ TEST_CASE("forall loop")
 TEST_CASE("Safety reset on broken forall loop")
 {
   ctx.purge();
-  Executable * e;
+  Executable * e = nullptr;
   ctx.reset(
     "forall i in tab(2,0) loop break; end loop;\n"
     "i=\"OK\";\n"

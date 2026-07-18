@@ -36,7 +36,7 @@ TEST_CASE("tuple item 0")
 
 TEST_CASE("tuple item out at parse time")
 {
-  Expression * e;
+  Expression * e = nullptr;
   ctx.reset("tup(\"abcd\", 1234, 0.123, raw(16, 0x20), true)@6");
   REQUIRE_NOTHROW( (e = ctx.parseExpression()) );
   delete e;
