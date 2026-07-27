@@ -1,0 +1,40 @@
+name: build-ubuntu-latest
+
+on:
+  push:
+    branches: [ "main", "devel" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+  GIT_URL: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+  GIT_REVISION: $GITHUB_SHA
+  WORKSPACE: $GITHUB_WORKSPACE
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake git build-essential \
+            libreadline-dev libplplot-dev libsqlite3-dev libmariadb-dev
+
+    - name: Checkout repository
+      run: |
+        git clone ${{env.GIT_URL}} ${{env.WORKSPACE}}
+        cd ${{env.WORKSPACE}}
+        git checkout --detach ${{env.GIT_REVISION}}
+        git submodule update --init --depth 1 --recursive
+
+    - name: Configure CMake
+      run: cmake -B ${{env.WORKSPACE}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTING=ON
+
+    - name: Build
+      run: cmake --build ${{env.WORKSPACE}}/build --parallel 4
+
+    - name: Test
+      run: cd ${{env.WORKSPACE}}/build && ctest -C ${{env.BUILD_TYPE}}
