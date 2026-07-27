@@ -147,14 +147,14 @@ The error handler is called only for regular compilation or runtime errors. It i
 Some types have methods to manipulate values in place. They help improve code readability, or even efficiency.
 
 - **string, bytes, table**
-  - **concat**(...)
-  - **delete**(...)
-  - **put**(...)
-  - **insert**(...)
-  - **at**(...)
+  - **concat**( element | typeof )
+  - **delete**( pos )
+  - **put**( pos , element )
+  - **insert**( pos , element | typeof )
+  - **at**( pos )
   - **count**()
 - **tuple**
-  - **set@** {rank} (...)
+  - **set@** {rank} ( typeof )
   - **count**()
 
 These methods can all be called using syntactic sugar, i.e :
@@ -332,7 +332,7 @@ BLOC supports an almost conventional set of statements, similar to those in othe
 
 ## Blocks
 
-A block is a list of statements, which are executed sequentially. Blocks can be protected by an exception clause; on error control returns to the exception-routine, else to the parent block.
+A block is a list of statements delimited by the keywords `begin` and `end`. Blocks can be protected by an exception clause; on error control returns to the exception-routine, else to the parent block.
 
 The interceptable errors are limited to the following:
 
