@@ -1,0 +1,47 @@
+name: build-riscv64-latest
+
+on:
+  push:
+    branches: [ "main", "devel" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+  GIT_URL: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+  GIT_REVISION: $GITHUB_SHA
+  WORKSPACE: $GITHUB_WORKSPACE
+  BUILD_ARCH: riscv64
+
+jobs:
+  build:
+    runs-on: debian-crossbuild-latest
+
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake git build-essential \
+            crossbuild-essential-riscv64 \
+            libreadline-dev:${{env.BUILD_ARCH}} libplplot-dev:${{env.BUILD_ARCH}} \
+            libsqlite3-dev:${{env.BUILD_ARCH}} libmariadb-dev:${{env.BUILD_ARCH}}
+
+    - name: Checkout repository
+      run: |
+        git clone ${{env.GIT_URL}} ${{env.WORKSPACE}}
+        cd ${{env.WORKSPACE}}
+        git checkout --detach ${{env.GIT_REVISION}}
+        git submodule update --init --depth 1 --recursive
+
+    - name: Configure CMake
+      run: |
+        cmake -B ${{env.WORKSPACE}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTING=ON \
+          -DCMAKE_SYSTEM_PROCESSOR=${{env.BUILD_ARCH}} -DCMAKE_SYSTEM_NAME=Linux \
+          -DCMAKE_C_COMPILER=/usr/bin/${{env.BUILD_ARCH}}-linux-gnu-gcc \
+          -DCMAKE_CXX_COMPILER=/usr/bin/${{env.BUILD_ARCH}}-linux-gnu-g++
+
+    - name: Build
+      run: cmake --build ${{env.WORKSPACE}}/build --parallel 4
+
+    - name: Test
+      run: cd ${{env.WORKSPACE}}/build && ctest -C ${{env.BUILD_TYPE}}
