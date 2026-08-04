@@ -23,8 +23,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y cmake git build-essential \
             crossbuild-essential-riscv64 \
-            libreadline-dev:${{env.BUILD_ARCH}} libplplot-dev:${{env.BUILD_ARCH}} \
-            libsqlite3-dev:${{env.BUILD_ARCH}} libmariadb-dev:${{env.BUILD_ARCH}}
+            libreadline-dev:riscv64 libsqlite3-dev:riscv64 libmariadb-dev:riscv64
 
     - name: Checkout repository
       run: |

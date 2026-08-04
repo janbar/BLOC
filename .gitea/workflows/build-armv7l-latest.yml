@@ -1,0 +1,46 @@
+name: build-armv7l-latest
+
+on:
+  push:
+    branches: [ "main", "devel" ]
+  pull_request:
+    branches: [ "main" ]
+
+env:
+  BUILD_TYPE: Release
+  GIT_URL: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY
+  GIT_REVISION: $GITHUB_SHA
+  WORKSPACE: $GITHUB_WORKSPACE
+  BUILD_ARCH: armv7l
+
+jobs:
+  build:
+    runs-on: debian-crossbuild-latest
+
+    steps:
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake git build-essential \
+          crossbuild-essential-armhf \
+          libreadline-dev:armhf libsqlite3-dev:armhf libmariadb-dev:armhf
+
+    - name: Checkout repository
+      run: |
+        git clone ${{env.GIT_URL}} ${{env.WORKSPACE}}
+        cd ${{env.WORKSPACE}}
+        git checkout --detach ${{env.GIT_REVISION}}
+        git submodule update --init --depth 1 --recursive
+
+    - name: Configure CMake
+      run: |
+        cmake -B ${{env.WORKSPACE}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DBUILD_TESTING=ON \
+          -DCMAKE_SYSTEM_PROCESSOR=${{env.BUILD_ARCH}} -DCMAKE_SYSTEM_NAME=Linux \
+          -DCMAKE_C_COMPILER=/usr/bin/arm-linux-gnueabihf-gcc \
+          -DCMAKE_CXX_COMPILER=/usr/bin/arm-linux-gnueabihf-g++
+
+    - name: Build
+      run: cmake --build ${{env.WORKSPACE}}/build --parallel 4
+
+    - name: Test
+      run: cd ${{env.WORKSPACE}}/build && ctest -C ${{env.BUILD_TYPE}}
