@@ -5,7 +5,6 @@
 #include <cmath>
 
 #include <test.h>
-#include <hashvalue.c>
 
 TestingContext ctx;
 

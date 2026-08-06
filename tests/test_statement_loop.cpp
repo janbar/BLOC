@@ -4,7 +4,6 @@
 #include <climits>
 
 #include <test.h>
-#include <hashvalue.c>
 #include <blocc/exception_parse.h>
 
 #include "blocc/exception_runtime.h"

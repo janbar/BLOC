@@ -4,7 +4,6 @@
 #include <climits>
 
 #include <test.h>
-#include <hashvalue.c>
 
 TestingContext ctx;
 
