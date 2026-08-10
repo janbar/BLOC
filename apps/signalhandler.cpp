@@ -22,7 +22,7 @@
 #include <sys/socket.h>
 #include <cstring>
 
-SignalHandler::cb_t SignalHandler::_cb = { .fct = nullptr, .hdl = nullptr };
+SignalHandler::cb_t SignalHandler::_cb = { };
 
 bool SignalHandler::catchSignal(int signal)
 {
