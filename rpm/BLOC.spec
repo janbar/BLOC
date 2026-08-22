@@ -3,7 +3,7 @@
 #
 
 Name:           BLOC
-Version:        2.9.3
+Version:        2.9.4
 Release:        0
 Summary:        A modular interpreter based on PL syntax
 License:        GPL-3.0-or-later
