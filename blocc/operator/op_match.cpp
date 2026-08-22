@@ -24,9 +24,17 @@
 #include <blocc/context.h>
 #include <blocc/debug.h>
 
+#ifdef USE_STL_REGEX
+#include <regex>
+#define NSRE std
+#else
+#define BOOST_REGEX_STANDALONE
+#include <boost/regex.hpp>
+#define NSRE boost
+#endif
+
 #include <cmath>
 #include <climits>
-#include <regex>
 
 namespace bloc
 {
@@ -57,10 +65,10 @@ Value& OpMATCHExpression::value(Context& ctx) const
 
   try
   {
-    Value val(Bool(std::regex_match(*a1.literal(), std::regex(*a2.literal()))));
+    Value val(Bool(NSRE::regex_match(*a1.literal(), NSRE::regex(*a2.literal()))));
     return LVAL2(val, a1, a2);
   }
-  catch (std::regex_error& re)
+  catch (NSRE::regex_error& re)
   {
     throw RuntimeError(EXC_RT_OTHER_S, re.what());
   }

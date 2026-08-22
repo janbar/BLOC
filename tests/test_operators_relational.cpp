@@ -574,3 +574,35 @@ TEST_CASE("operator COMPARE string")
   REQUIRE( e->value(ctx).isNull() );
   delete e;
 }
+
+TEST_CASE("operator MATCHES string")
+{
+  Expression * e;
+
+  ctx.reset("\"first.last@learnxinyminutes.com\" matches \"[\\\\w.+-]+@[\\\\w.-]+\\\\.[\\\\w.-]+\"");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == true );
+  delete e;
+  ctx.reset("\"first.last:learnxinyminutes.com\" matches \"[\\\\w.+-]+@[\\\\w.-]+\\\\.[\\\\w.-]+\"");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("\"http://www.groovy-lang.org/usergroups.html\" matches \"[\\\\w]+:\\\\/\\\\/[^\\\\/\\\\s?#]+[^\\\\s?#]+(?:\\\\?[^\\\\s#]*)?(?:#[^\\\\s]*)?\"");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == true );
+  delete e;
+  ctx.reset("\"http:www.groovy-lang.org:usergroups.html\" matches \"[\\\\w]+:\\\\/\\\\/[^\\\\/\\\\s?#]+[^\\\\s?#]+(?:\\\\?[^\\\\s#]*)?(?:#[^\\\\s]*)?\"");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+
+  ctx.reset("\"10.25.10.46\" matches \"(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\\\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\"");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == true );
+  delete e;
+  ctx.reset("\"10.2C.10.46\" matches \"(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\\\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9])\"");
+  e = ctx.parseExpression();
+  REQUIRE( *(e->value(ctx).boolean()) == false );
+  delete e;
+}

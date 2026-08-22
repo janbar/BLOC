@@ -27,6 +27,8 @@ set(VERSION_PATCH "3")
 set (BLOC_LIB_VERSION "${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH}")
 set (BLOC_LIB_SOVERSION "${VERSION_MAJOR}.${VERSION_MINOR}")
 
+option(USE_STL_REGEX "Using regex provided by the standard library" OFF)
+
 add_subdirectory (blocc)
 add_subdirectory (apps)
 add_subdirectory (msgdb)

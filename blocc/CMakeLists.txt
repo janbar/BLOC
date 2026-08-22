@@ -152,6 +152,12 @@ else()
   target_link_libraries (blocc m dl)
 endif()
 
+if (NOT USE_STL_REGEX)
+  target_include_directories (blocc PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty")
+else ()
+  add_definitions ("-DUSE_STL_REGEX")
+endif ()
+
 set_target_properties(blocc PROPERTIES
   VERSION "${BLOC_LIB_VERSION}"
   SOVERSION "${BLOC_LIB_SOVERSION}"
