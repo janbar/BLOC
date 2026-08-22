@@ -20,7 +20,15 @@
 #include <blocc/collection.h>
 #include <blocc/tuple.h>
 
+#ifdef USE_STL_REGEX
 #include <regex>
+#define NSRE std
+#else
+#define BOOST_REGEX_STANDALONE
+#include <boost/regex.hpp>
+#define NSRE boost
+#endif
+
 #include <iterator>
 #include <cstddef>
 
@@ -61,7 +69,7 @@ static PLUGIN_CTOR ctors[] =
 
 enum Method
 {
-  Search = 0, Replace,
+  Search = 0, Replace, Tokens,
 };
 
 /**********************************************************************/
@@ -85,25 +93,30 @@ static PLUGIN_METHOD methods[] =
 {
   { Search,         "search",         { "IIL", 1 },     1, search_args,
           "Attempts to match the regular expression to any part of a string,\n"
-          "and returns a table of tuple containing the matched sequences:\n"
+          "and returns a table of tuple containing the sub-matches:\n"
           "{ Position, Length, Sequence that matched }" },
   { Replace,        "replace",        { "L", 0 },       2, replace_args,
           "Replaces occurrences of the regular expression with formatted\n"
           "replacement string.\n"
           "1: target string\n"
           "2: the regex replacement format string" },
+  { Tokens,         "tokens",         { "IIL", 1 },     1, search_args,
+          "Search every match of a regular expression within a string,\n"
+          "and returns a table of tuple containing the matches:\n"
+          "{ Position, Length, Sequence that matched }" },
 };
 
 /**
  * The state of file handle
  */
 struct Handle {
-  std::regex _regex;
+  NSRE::regex _regex;
 
   ~Handle() { }
   Handle() : _regex() { }
   Handle(const Handle& h) : _regex(h._regex) { }
 
+  void tokens(const std::string& str, bloc::Collection& subs);
   void search(const std::string& str, bloc::Collection& subs);
   void replace(const std::string& str, const std::string& format, bloc::Literal& out);
 };
@@ -134,10 +147,10 @@ void * REGEXPlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vec
       {
         try
         {
-          std::regex rx(*a0.literal());
+          NSRE::regex rx(*a0.literal());
           regx->_regex.swap(rx);
         }
-        catch (std::regex_error& re)
+        catch (NSRE::regex_error& re)
         {
           throw RuntimeError(EXC_RT_OTHER_S, re.what());
         }
@@ -208,29 +221,55 @@ bloc::Value * REGEXPlugin::executeMethod(
     return new bloc::Value(r);
   }
 
+  case regex::Tokens:
+  {
+    bloc::Value& a0 = args[0]->value(ctx);
+    if (a0.isNull())
+      return new bloc::Value(static_cast<bloc::Collection*>(nullptr));
+    bloc::Collection * c = new bloc::Collection(bloc::Type(bloc::Type::ROWTYPE).levelUp());
+    regx->tokens(*a0.literal(), *c);
+    return new bloc::Value(c);
+  }
+
   default:
     break;
   }
   return nullptr;
 }
 
-void regex::Handle::search(const std::string& str, bloc::Collection& subs)
+void regex::Handle::tokens(const std::string& str, bloc::Collection& subs)
 {
-  std::smatch sub;
-  std::regex_search(str, sub, _regex);
-  for (size_t i = 0; i < sub.size(); ++i)
+  NSRE::sregex_token_iterator it(str.cbegin(), str.cend(), _regex);
+  NSRE::sregex_token_iterator end;
+  for (; it != end; ++it)
   {
     bloc::Tuple::container_t items;
-    items.push_back(bloc::Value(bloc::Integer(std::distance(str.begin(), sub[i].first))));
-    items.push_back(bloc::Value(bloc::Integer(std::distance(sub[i].first, sub[i].second))));
-    items.push_back(bloc::Value(new bloc::Literal(sub[i].str())));
+    items.push_back(bloc::Value(bloc::Integer(std::distance(str.begin(), it->first))));
+    items.push_back(bloc::Value(bloc::Integer(std::distance(it->first, it->second))));
+    items.push_back(bloc::Value(new bloc::Literal(it->str())));
     subs.push_back(bloc::Value(new bloc::Tuple(std::move(items))));
+  }
+}
+
+void regex::Handle::search(const std::string& str, bloc::Collection& subs)
+{
+  NSRE::smatch sub;
+  if (NSRE::regex_search(str, sub, _regex))
+  {
+    for (size_t i = 0; i < sub.size(); ++i)
+    {
+      bloc::Tuple::container_t items;
+      items.push_back(bloc::Value(bloc::Integer(std::distance(str.begin(), sub[i].first))));
+      items.push_back(bloc::Value(bloc::Integer(std::distance(sub[i].first, sub[i].second))));
+      items.push_back(bloc::Value(new bloc::Literal(sub[i].str())));
+      subs.push_back(bloc::Value(new bloc::Tuple(std::move(items))));
+    }
   }
 }
 
 void regex::Handle::replace(const std::string& str, const std::string& format, std::string& out)
 {
-  std::regex_replace(std::back_inserter(out), str.begin(), str.end(), _regex, format);
+  NSRE::regex_replace(std::back_inserter(out), str.begin(), str.end(), _regex, format);
 }
 
 } /* namespace import */

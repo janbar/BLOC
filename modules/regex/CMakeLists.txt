@@ -12,6 +12,12 @@ add_library (bloc_regex SHARED ${bloc_regex_SOURCES})
 add_dependencies(bloc_regex blocc)
 target_link_libraries(bloc_regex blocc)
 
+if (NOT USE_STL_REGEX)
+  target_include_directories(bloc_regex PRIVATE "${PROJECT_SOURCE_DIR}/3rdparty")
+else ()
+  add_definitions ("-DUSE_STL_REGEX")
+endif ()
+
 set_target_properties(bloc_regex PROPERTIES
   SOVERSION ${BLOC_LIB_SOVERSION}
 )
