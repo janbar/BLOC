@@ -18,6 +18,8 @@ if(MSVC)
   include(MSVCRuntime)
   set(MSVC_DYNAMIC_RUNTIME 1)
   configure_msvc_runtime()
+elseif (CMAKE_SYSTEM_NAME STREQUAL "CYGWIN")
+  add_definitions("-D_GNU_SOURCE")
 endif()
 
 # set lib version here
