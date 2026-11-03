@@ -603,9 +603,15 @@ int MariaDB::Handle::open(const std::string& host,
                         unsigned port)
 {
   _db = mysql_init(_db);
+  /* enable SSL without verify cert */
+  my_bool ssl_enforce = 1;
+  mysql_optionsv(_db, MYSQL_OPT_SSL_ENFORCE, &ssl_enforce);
+  my_bool verify_cert = 0;
+  mysql_optionsv(_db, MYSQL_OPT_SSL_VERIFY_SERVER_CERT, &verify_cert);
   if (!mysql_real_connect(_db, host.c_str(), user.c_str(), password.c_str(),
                              dbname.c_str(), port, 0, 0))
   {
+    _errmsg.assign(mysql_error(_db));
     return 0;
   }
   return 1;
@@ -1001,6 +1007,8 @@ int MariaDB::Handle::exec(const std::string& str, bloc::Tuple& args)
         unbind_args(bindings);
       }
     }
+    else
+      _errmsg.assign(mysql_error(_db));
     mysql_stmt_close(stmt);
   }
   return r;
