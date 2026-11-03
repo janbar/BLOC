@@ -26,7 +26,7 @@ FIND_PATH( MARIADB_INCLUDE_DIRS mysql.h
 )
 
 FIND_LIBRARY( MARIADB_LIBRARY
-  NAMES mariadb mariadbclient libmariadb libmariadbclient
+  NAMES mariadbclient
   PATHS
   "C:/Program Files/MiariaDB/lib"
   "C:/MariaDB/lib"
