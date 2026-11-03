@@ -26,10 +26,11 @@ FIND_PATH( MYSQL_INCLUDE_DIRS mysql.h
 )
 
 FIND_LIBRARY( MYSQL_LIBRARY
-  NAMES mysql mysqlclient libmysql libmysqlclient
+  NAMES mysqlclient
   PATHS
   "C:/Program Files/MySQL/lib"
   "C:/MySQL/lib"
+  PATH_SUFFIXES mysql
   DOC "Specify the mysql library here."
 )
 
