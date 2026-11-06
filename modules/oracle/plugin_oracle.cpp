@@ -26,10 +26,14 @@
 #include <cstddef>
 #include <cassert>
 
-#define PLUGIN_TEXT_MAXLEN   0x0ffff
-#define PLUGIN_TEXT_INILEN   0x00fff
-#define PLUGIN_BLOB_MAXLEN   0x10000
-#define PLUGIN_BLOB_INILEN   0x01000
+#define PLUGIN_TEXT_MAXLEN          0x0ffff
+#define PLUGIN_TEXT_INILEN          0x00fff
+#define PLUGIN_BLOB_MAXLEN          0x10000
+#define PLUGIN_BLOB_INILEN          0x01000
+
+#define PLUGIN_DATE_FORMAT          "YYYY-MM-DD\"T\"HH24:MI:SS"
+#define PLUGIN_TIMESTAMP_FORMAT     "YYYY-MM-DD\"T\"HH24:MI:SS.FF"
+#define PLUGIN_TIMESTAMP_TZ_FORMAT  "YYYY-MM-DD\"T\"HH24:MI:SS.FFTZH:TZM"
 
 /*
  * Create the module OracleImport
@@ -263,6 +267,21 @@ void OraclePlugin::declareInterface(PLUGIN_INTERFACE * interface)
   interface->methods = Oracle::methods;
   interface->ctors_count = sizeof(Oracle::ctors) / sizeof(PLUGIN_CTOR);
   interface->ctors = Oracle::ctors;
+
+  /* setup nls formats */
+#if defined(LIBBLOC_MSWIN)
+  std::string buf;
+  buf.assign("NLS_DATE_FORMAT").append("=").append(PLUGIN_DATE_FORMAT);
+  _putenv(buf.c_str());
+  buf.assign("NLS_TIMESTAMP_FORMAT").append("=").append(PLUGIN_TIMESTAMP_FORMAT);
+  _putenv(buf.c_str());
+  buf.assign("NLS_TIMESTAMP_TZ_FORMAT").append("=").append(PLUGIN_TIMESTAMP_TZ_FORMAT);
+  _putenv(buf.c_str());
+#else
+  ::setenv("NLS_DATE_FORMAT", PLUGIN_DATE_FORMAT, 1);
+  ::setenv("NLS_TIMESTAMP_FORMAT", PLUGIN_TIMESTAMP_FORMAT, 1);
+  ::setenv("NLS_TIMESTAMP_TZ_FORMAT", PLUGIN_TIMESTAMP_TZ_FORMAT, 1);
+#endif
 }
 
 void * OraclePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vector<bloc::Expression*>& args)
@@ -1033,18 +1052,13 @@ int Oracle::Handle::fetch(bloc::Tuple ** row, bool& found)
     case DPI_NATIVE_TYPE_TIMESTAMP:
       {
         char buf[48];
+        dpiQueryInfo queryInfo;
+        if (dpiStmt_getQueryInfo(_stmt, pos, &queryInfo) < 0)
+          return onError();
+
         if (data->value.asTimestamp.fsecond == 0)
         {
-          if (data->value.asTimestamp.tzHourOffset == 0 &&
-                  data->value.asTimestamp.tzMinuteOffset == 0)
-            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02dZ",
-                    data->value.asTimestamp.year,
-                    data->value.asTimestamp.month,
-                    data->value.asTimestamp.day,
-                    data->value.asTimestamp.hour,
-                    data->value.asTimestamp.minute,
-                    data->value.asTimestamp.second);
-          else
+          if (queryInfo.typeInfo.oracleTypeNum == DPI_ORACLE_TYPE_TIMESTAMP_TZ)
             snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d%+03d:%02d",
                     data->value.asTimestamp.year,
                     data->value.asTimestamp.month,
@@ -1054,20 +1068,18 @@ int Oracle::Handle::fetch(bloc::Tuple ** row, bool& found)
                     data->value.asTimestamp.second,
                     data->value.asTimestamp.tzHourOffset,
                     data->value.asTimestamp.tzMinuteOffset);
-        }
-        else
-        {
-          if (data->value.asTimestamp.tzHourOffset == 0 &&
-                  data->value.asTimestamp.tzMinuteOffset == 0)
-            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d.%06uZ",
+          else
+            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d",
                     data->value.asTimestamp.year,
                     data->value.asTimestamp.month,
                     data->value.asTimestamp.day,
                     data->value.asTimestamp.hour,
                     data->value.asTimestamp.minute,
-                    data->value.asTimestamp.second,
-                    data->value.asTimestamp.fsecond);
-          else
+                    data->value.asTimestamp.second);
+        }
+        else
+        {
+          if (queryInfo.typeInfo.oracleTypeNum == DPI_ORACLE_TYPE_TIMESTAMP_TZ)
             snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d.%06u%+03d:%02d",
                     data->value.asTimestamp.year,
                     data->value.asTimestamp.month,
@@ -1078,6 +1090,15 @@ int Oracle::Handle::fetch(bloc::Tuple ** row, bool& found)
                     data->value.asTimestamp.fsecond,
                     data->value.asTimestamp.tzHourOffset,
                     data->value.asTimestamp.tzMinuteOffset);
+          else
+            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d.%06u",
+                    data->value.asTimestamp.year,
+                    data->value.asTimestamp.month,
+                    data->value.asTimestamp.day,
+                    data->value.asTimestamp.hour,
+                    data->value.asTimestamp.minute,
+                    data->value.asTimestamp.second,
+                    data->value.asTimestamp.fsecond);
         }
         t.push_back(bloc::Value(new bloc::Literal(buf)));
       }
