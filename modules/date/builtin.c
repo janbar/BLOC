@@ -75,6 +75,7 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
   const char *ex;
   size_t len;
   int want_century = 0, century = 0, relyear = 0;
+  int zh = 0;
   while (*f)
   {
     if (*f != '%')
@@ -230,6 +231,11 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
       adj = 1900;
       want_century = 0;
       goto numeric_digits;
+    case 'z':
+      dest = &zh;
+      w = 2;
+      adj = 0;
+      goto numeric_digits;
     case '%':
       if (*s++ != '%') return 0;
       break;
@@ -237,7 +243,7 @@ char *__strptime(const char *s, const char *f, struct tm *tm)
       return 0;
     }
     continue;
-    
+
 numeric_range:
     if (!isdigit(*s)) return 0;
     *dest = 0;
@@ -277,5 +283,6 @@ symbolic_range:
     if (want_century & 2) tm->tm_year += century * 100 - 1900;
     else if (tm->tm_year <= 68) tm->tm_year += 100;
   }
+  tm->tm_hour -= zh;
   return (char *)s;
 }

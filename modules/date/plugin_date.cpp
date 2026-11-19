@@ -173,11 +173,16 @@ struct Handle {
 };
 
 static const char * ISO8601UTC = "%Y-%m-%dT%H:%M:%SZ";
+static const char * VARIANTUTC = "%Y-%m-%d %H:%M:%SZ";
 static unsigned ISO8601UTC_LEN = 20;
 static const char * ISO8601LOC = "%Y-%m-%dT%H:%M:%S";
+static const char * VARIANTLOC = "%Y-%m-%d %H:%M:%S";
 static unsigned ISO8601LOC_LEN = 19;
 static const char * ISODATE = "%Y-%m-%d";
 static unsigned ISODATE_LEN = 10;
+static const char * ISO8601WTZ = "%Y-%m-%dT%H:%M:%S%z";
+static const char * VARIANTWTZ = "%Y-%m-%d %H:%M:%S%z";
+static unsigned ISO8601WTZ_LEN = 22;
 
 } /* namespace date */
 
@@ -207,18 +212,43 @@ void * DatePlugin::createObject(int ctor_id, bloc::Context& ctx, const std::vect
       {
         bloc::Literal * str = a0.literal();
         const char * format;
-        if (str->size() == date::ISO8601UTC_LEN)
-          format = date::ISO8601UTC;
+        bool gmt;
+        if (str->size() >= date::ISO8601WTZ_LEN)
+        {
+          gmt = true;
+          if (str->at(10) == 'T')
+            format = date::ISO8601WTZ;
+          else
+            format = date::VARIANTWTZ;
+        }
+        else if (str->size() == date::ISO8601UTC_LEN &&
+                str->back() == 'Z')
+        {
+          gmt = true;
+          if (str->at(10) == 'T')
+            format = date::ISO8601UTC;
+          else
+            format = date::VARIANTUTC;
+        }
         else if (str->size() == date::ISO8601LOC_LEN)
-          format = date::ISO8601LOC;
+        {
+          gmt = false;
+          if (str->at(10) == 'T')
+            format = date::ISO8601LOC;
+          else
+            format = date::VARIANTLOC;
+        }
         else if (str->size() == date::ISODATE_LEN)
+        {
+          gmt = false;
           format = date::ISODATE;
+        }
         else
           throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
         if (strptime(str->c_str(), format, &_tm) == nullptr)
           throw RuntimeError(EXC_RT_OTHER_S, "Invalid date format.");
         time_t tt;
-        if (format == date::ISO8601UTC)
+        if (gmt)
           tt = timegm(&_tm); /* utc time */
         else
           tt = mktime(&_tm); /* local time */
