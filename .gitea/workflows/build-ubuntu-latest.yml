@@ -21,7 +21,7 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y cmake git build-essential \
-            libreadline-dev libsqlite3-dev libmariadb-dev
+            libreadline-dev libsqlite3-dev libmariadb-dev libpq-dev
         sudo apt-get install -y --no-install-recommends libplplot-dev
 
     - name: Checkout repository

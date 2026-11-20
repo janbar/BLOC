@@ -8,7 +8,8 @@ Build-Depends: cmake,
                libsqlite3-dev,
                libreadline-dev,
                libplplot-dev,
-               libmariadb-dev
+               libmariadb-dev,
+               libpq-dev
 Standards-Version: 3.9.8
 Homepage: https://github.com/janbar/BLOC
 
@@ -45,3 +46,8 @@ Package: bloc-module-oracle
 Architecture: any
 Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
 Description: Module oracle for BLOC.
+
+Package: bloc-module-postgresql
+Architecture: any
+Depends: bloc, ${shlibs:Depends}, ${misc:Depends}
+Description: Module postgresql for BLOC.
