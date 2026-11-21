@@ -617,6 +617,17 @@ int Oracle::Handle::bind_args(Bindings& bindings, bloc::Tuple& args)
         else
           dpiData_setDouble(bind.data, *v.numeric());
         break;
+      case Type::IMAGINARY:
+        bind.otype = DPI_ORACLE_TYPE_NUMBER;
+        bind.ntype = DPI_NATIVE_TYPE_DOUBLE;
+        if (dpiConn_newVar(_conn, bind.otype, bind.ntype,
+                           1, 0, 0, 0, nullptr, &bind.var, &bind.data) < 0)
+          return onError();
+        if (v.isNull())
+          dpiData_setNull(bind.data);
+        else
+          dpiData_setDouble(bind.data, v.imaginary()->a);
+        break;
       case Type::LITERAL:
         bind.otype = DPI_ORACLE_TYPE_VARCHAR;
         bind.ntype = DPI_NATIVE_TYPE_BYTES;
