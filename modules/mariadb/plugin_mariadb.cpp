@@ -204,6 +204,7 @@ struct Handle {
     static void free_buffer(MYSQL_BIND& b);
   };
 
+  bool _stmt_async = false;
   Bindings _stmt_rs;
   bloc::TupleDecl::Decl _stmt_decl;
 
@@ -927,6 +928,9 @@ int MariaDB::Handle::close()
 
 int MariaDB::Handle::query(const std::string& str, bloc::Collection ** rs)
 {
+  if (_stmt_async)
+    throw RuntimeError(EXC_RT_OTHER_S, "Asynchronous query is in progress");
+
   int r = 0;
   MYSQL_STMT * stmt = mysql_stmt_init(_db);
   if (stmt)
@@ -944,6 +948,9 @@ int MariaDB::Handle::query(const std::string& str, bloc::Collection ** rs)
 
 int MariaDB::Handle::query(const std::string& str, bloc::Tuple& args, bloc::Collection ** rs)
 {
+  if (_stmt_async)
+    throw RuntimeError(EXC_RT_OTHER_S, "Asynchronous query is in progress");
+
   int r = 0;
   MYSQL_STMT * stmt = mysql_stmt_init(_db);
   if (stmt)
@@ -977,6 +984,9 @@ int MariaDB::Handle::query(const std::string& str, bloc::Tuple& args, bloc::Coll
 
 int MariaDB::Handle::exec(const std::string& str)
 {
+  if (_stmt_async)
+    throw RuntimeError(EXC_RT_OTHER_S, "Asynchronous query is in progress");
+
   int r = 0;
   MYSQL_STMT * stmt = mysql_stmt_init(_db);
   if (stmt)
@@ -993,6 +1003,9 @@ int MariaDB::Handle::exec(const std::string& str)
 
 int MariaDB::Handle::exec(const std::string& str, bloc::Tuple& args)
 {
+  if (_stmt_async)
+    throw RuntimeError(EXC_RT_OTHER_S, "Asynchronous query is in progress");
+
   int r = 0;
   MYSQL_STMT * stmt = mysql_stmt_init(_db);
   if (stmt)
@@ -1047,6 +1060,7 @@ int MariaDB::Handle::execute(bloc::Tuple& args)
   {
     _stmt_rs.reset(0);
     mysql_stmt_free_result(_stmt);
+    _stmt_async = false;
   }
   /* bind arguments */
   Bindings bindings(mysql_stmt_param_count(_stmt));
@@ -1058,7 +1072,10 @@ int MariaDB::Handle::execute(bloc::Tuple& args)
     /* bind the buffers */
     if (!mysql_stmt_bind_param(_stmt, bindings.data()) &&
             !mysql_stmt_execute(_stmt))
+    {
+      _stmt_async = true;
       r = 1;
+    }
     else
       _errmsg.assign(mysql_error(_db));
     unbind_args(bindings);
@@ -1074,9 +1091,13 @@ int MariaDB::Handle::execute()
   {
     _stmt_rs.reset(0);
     mysql_stmt_free_result(_stmt);
+    _stmt_async = false;
   }
   if (!mysql_stmt_execute(_stmt))
+  {
+    _stmt_async = true;
     return 1;
+  }
   _errmsg.assign(mysql_error(_db));
   return 0;
 }
@@ -1152,7 +1173,7 @@ int MariaDB::Handle::header(bloc::Collection ** hd)
 
 int MariaDB::Handle::fetch(bloc::Tuple ** row)
 {
-  if (_stmt == nullptr)
+  if (_stmt == nullptr || _stmt_async == false)
     throw RuntimeError(EXC_RT_OTHER_S, "No query in progress");
   /* initialize bindinds */
   if (_stmt_rs.empty())
@@ -1249,7 +1270,10 @@ int MariaDB::Handle::fetch(bloc::Tuple ** row)
 
   int status = mysql_stmt_fetch(_stmt);
   if (status == MYSQL_NO_DATA)
+  {
+    _stmt_async = false;
     return 0;
+  }
   if (status == 1)
     throw RuntimeError(EXC_RT_USER_S, mysql_error(_db));
 
@@ -1424,6 +1448,7 @@ int MariaDB::Handle::finalize()
   }
   mysql_stmt_close(_stmt);
   _stmt = nullptr;
+  _stmt_async = false;
   return 1;
 }
 
