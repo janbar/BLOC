@@ -605,6 +605,9 @@ int SQLITE3::Handle::bind(bloc::Tuple& args)
       case Type::NUMERIC:
         sqlite3_bind_double(_stmt, i, *v.numeric());
         break;
+      case Type::IMAGINARY:
+        sqlite3_bind_double(_stmt, i, v.imaginary()->a);
+        break;
       case Type::LITERAL:
         sqlite3_bind_text(_stmt, i, v.literal()->c_str(), v.literal()->size(), SQLITE_STATIC);
         break;
