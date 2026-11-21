@@ -537,6 +537,14 @@ void MariaDB::Handle::bind_args(Bindings& bindings, bloc::Tuple& args)
         else
           bind.buffer = v.numeric();
         break;
+      case Type::IMAGINARY:
+        bind.buffer_type = MYSQL_TYPE_DOUBLE;
+        bind.buffer_length = 0;
+        if (v.isNull())
+          bind.buffer = nullptr;
+        else
+          bind.buffer = &(v.imaginary()->a);
+        break;
       case Type::LITERAL:
         bind.buffer_type = MYSQL_TYPE_STRING;
         if (v.isNull())
