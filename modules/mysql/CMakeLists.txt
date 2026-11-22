@@ -11,6 +11,11 @@ file(GLOB bloc_mysql_SOURCES plugin_mysql.cpp)
 file(GLOB bloc_mysql_HEADERS plugin_mysql.h)
 
 find_package(MySQL QUIET)
+if(NOT MYSQL_FOUND)
+  include(FindPkgConfig)
+  pkg_check_modules(MYSQL QUIET mysqlclient)
+endif()
+
 if(MYSQL_FOUND)
   message(STATUS "Found mysql ${MYSQL_INCLUDE_DIRS}")
   include_directories(${MYSQL_INCLUDE_DIRS})

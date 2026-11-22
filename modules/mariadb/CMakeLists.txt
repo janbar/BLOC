@@ -11,6 +11,11 @@ file(GLOB bloc_mariadb_SOURCES plugin_mariadb.cpp)
 file(GLOB bloc_mariadb_HEADERS plugin_mariadb.h)
 
 find_package(MariaDB QUIET)
+if(NOT MARIADB_FOUND)
+  include(FindPkgConfig)
+  pkg_check_modules(MARIADB QUIET mariadb)
+endif()
+
 if(MARIADB_FOUND)
   message(STATUS "Found mariadb ${MARIADB_INCLUDE_DIRS}")
   include_directories(${MARIADB_INCLUDE_DIRS})

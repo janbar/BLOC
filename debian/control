@@ -3,6 +3,7 @@ Section: devel
 Priority: optional
 Maintainer: janbar <jlbarriere68@gmail.com>
 Build-Depends: cmake,
+               pkg-config,
                git,
                debhelper (>= 9.0.0),
                libsqlite3-dev,

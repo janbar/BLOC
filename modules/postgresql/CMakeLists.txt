@@ -11,6 +11,11 @@ file(GLOB bloc_postgresql_SOURCES plugin_postgresql.cpp)
 file(GLOB bloc_postgresql_HEADERS plugin_postgresql.h)
 
 find_package(PostgreSQL QUIET)
+if(NOT PostgreSQL_FOUND)
+  include(FindPkgConfig)
+  pkg_check_modules(PostgreSQL QUIET libpq)
+endif()
+
 if(PostgreSQL_FOUND)
   message(STATUS "Found postgresql ${PostgreSQL_INCLUDE_DIRS}")
   include_directories(${PostgreSQL_INCLUDE_DIRS})
