@@ -92,4 +92,10 @@ Truncate time to the calendar.
 trunc(string IN) returns object
 Truncate the calendar to a specific unit.
 Unit could by among minute, hour, day, month, or year.
+
+string() returns string
+Formats calendar time according to ISO format string.
+
+stringutc() returns string
+Formats calendar time UTC according to ISO format string.
 ```

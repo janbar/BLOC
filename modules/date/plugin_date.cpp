@@ -46,7 +46,7 @@ enum Method
 {
   Format = 0, Unixtime, Iso8601, Iso8601utc, Isodate, Difftime,
   Day, Month, Year, Hour, Minute, Second, Weekday, Yearday,
-  Add, Add_unit, Trunc, Trunc_unit
+  Add, Add_unit, Trunc, Trunc_unit, String, Stringutc
 };
 
 /**********************************************************************/
@@ -152,6 +152,10 @@ static PLUGIN_METHOD methods[] =
   { Trunc_unit, "trunc",        { "O", 0 },     1, trunc_args,
           "Truncate the calendar to a specific unit."
           "\nUnit could by among minute, hour, day, month, or year." },
+  { String,     "string",       { "L", 0 },     0, nullptr,
+          "Formats calendar time according to ISO format string." },
+  { Stringutc,  "stringutc",    { "L", 0 },     0, nullptr,
+          "Formats calendar time UTC according to ISO format string." },
 };
 
 /**
@@ -451,6 +455,25 @@ bloc::Value * DatePlugin::executeMethod(
     return new bloc::Value(new bloc::Complex(object_this));
   }
 
+  case date::Second:
+    return new bloc::Value(Integer(dd->_tm.tm_sec));
+  case date::Minute:
+    return new bloc::Value(Integer(dd->_tm.tm_min));
+  case date::Hour:
+    return new bloc::Value(Integer(dd->_tm.tm_hour));
+  case date::Day:
+    return new bloc::Value(Integer(dd->_tm.tm_mday));
+  case date::Month:
+    return new bloc::Value(Integer(dd->_tm.tm_mon + 1));
+  case date::Year:
+    return new bloc::Value(Integer(dd->_tm.tm_year + 1900));
+  case date::Weekday:
+    /* the int value follows the ISO-8601 standard, from 1 (monday) to 7 (sunday) */
+    return new bloc::Value(Integer((dd->_tm.tm_wday == 0 ? 7 : dd->_tm.tm_wday)));
+  case date::Yearday:
+    /* [ 1 - 366 ] */
+    return new bloc::Value(Integer(dd->_tm.tm_yday + 1));
+
   case date::Trunc:
   {
     /* trunc day */
@@ -496,24 +519,22 @@ bloc::Value * DatePlugin::executeMethod(
     return new bloc::Value(new bloc::Complex(object_this));
   }
 
-  case date::Second:
-    return new bloc::Value(Integer(dd->_tm.tm_sec));
-  case date::Minute:
-    return new bloc::Value(Integer(dd->_tm.tm_min));
-  case date::Hour:
-    return new bloc::Value(Integer(dd->_tm.tm_hour));
-  case date::Day:
-    return new bloc::Value(Integer(dd->_tm.tm_mday));
-  case date::Month:
-    return new bloc::Value(Integer(dd->_tm.tm_mon + 1));
-  case date::Year:
-    return new bloc::Value(Integer(dd->_tm.tm_year + 1900));
-  case date::Weekday:
-    /* the int value follows the ISO-8601 standard, from 1 (monday) to 7 (sunday) */
-    return new bloc::Value(Integer((dd->_tm.tm_wday == 0 ? 7 : dd->_tm.tm_wday)));
-  case date::Yearday:
-    /* [ 1 - 366 ] */
-    return new bloc::Value(Integer(dd->_tm.tm_yday + 1));
+  case date::String:
+  {
+     char buf[64];
+     size_t n = strftime(buf, 64, "%Y-%m-%d %H:%M:%S", &dd->_tm);
+     return new bloc::Value(new bloc::Literal(buf, n));
+  }
+
+  case date::Stringutc:
+  {
+     char buf[64];
+     struct tm _tm;
+     time_t tt = mktime(&dd->_tm);
+     gmtime_r(&tt, &_tm);
+     size_t n = strftime(buf, 64, "%Y-%m-%d %H:%M:%SZ", &_tm);
+     return new bloc::Value(new bloc::Literal(buf, n));
+  }
 
   }
   return nullptr;
