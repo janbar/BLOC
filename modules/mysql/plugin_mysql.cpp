@@ -813,11 +813,11 @@ int MySQL::Handle::fetchall(MYSQL_STMT * stmt, bloc::Collection ** rs)
             case MYSQL_TIMESTAMP_DATETIME:
               /* iso8601 date and time */
               if (ts->second_part == 0)
-                snprintf(buf, 20, "%04d-%02d-%02dT%02d:%02d:%02d",
+                snprintf(buf, 20, "%04d-%02d-%02d %02d:%02d:%02d",
                          ts->year, ts->month, ts->day,
                          ts->hour, ts->minute, ts->second);
               else
-                snprintf(buf, 27, "%04d-%02d-%02dT%02d:%02d:%02d.%06u",
+                snprintf(buf, 27, "%04d-%02d-%02d %02d:%02d:%02d.%06u",
                          ts->year, ts->month, ts->day,
                          ts->hour, ts->minute, ts->second,
                          (unsigned)(ts->second_part));
@@ -1345,11 +1345,11 @@ int MySQL::Handle::fetch(bloc::Tuple ** row)
         case MYSQL_TIMESTAMP_DATETIME:
           /* iso8601 date and time */
           if (ts->second_part == 0)
-            snprintf(buf, 20, "%04d-%02d-%02dT%02d:%02d:%02d",
+            snprintf(buf, 20, "%04d-%02d-%02d %02d:%02d:%02d",
                      ts->year, ts->month, ts->day,
                      ts->hour, ts->minute, ts->second);
           else
-            snprintf(buf, 27, "%04d-%02d-%02dT%02d:%02d:%02d.%06u",
+            snprintf(buf, 27, "%04d-%02d-%02d %02d:%02d:%02d.%06u",
                      ts->year, ts->month, ts->day,
                      ts->hour, ts->minute, ts->second,
                      (unsigned)(ts->second_part));
