@@ -26,14 +26,9 @@
 #include <cstddef>
 #include <cassert>
 
-#define PLUGIN_TEXT_MAXLEN          0x0ffff
-#define PLUGIN_TEXT_INILEN          0x00fff
-#define PLUGIN_BLOB_MAXLEN          0x10000
-#define PLUGIN_BLOB_INILEN          0x01000
-
-#define PLUGIN_DATE_FORMAT          "YYYY-MM-DD\"T\"HH24:MI:SS"
-#define PLUGIN_TIMESTAMP_FORMAT     "YYYY-MM-DD\"T\"HH24:MI:SS.FF"
-#define PLUGIN_TIMESTAMP_TZ_FORMAT  "YYYY-MM-DD\"T\"HH24:MI:SS.FFTZH:TZM"
+#define PLUGIN_DATE_FORMAT          "YYYY-MM-DD HH24:MI:SS"
+#define PLUGIN_TIMESTAMP_FORMAT     "YYYY-MM-DD HH24:MI:SS.FF"
+#define PLUGIN_TIMESTAMP_TZ_FORMAT  "YYYY-MM-DD HH24:MI:SS.FFTZH"
 
 /*
  * Create the module OracleImport
@@ -1070,17 +1065,16 @@ int Oracle::Handle::fetch(bloc::Tuple ** row, bool& found)
         if (data->value.asTimestamp.fsecond == 0)
         {
           if (queryInfo.typeInfo.oracleTypeNum == DPI_ORACLE_TYPE_TIMESTAMP_TZ)
-            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d%+03d:%02d",
+            snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d%+03d",
                     data->value.asTimestamp.year,
                     data->value.asTimestamp.month,
                     data->value.asTimestamp.day,
                     data->value.asTimestamp.hour,
                     data->value.asTimestamp.minute,
                     data->value.asTimestamp.second,
-                    data->value.asTimestamp.tzHourOffset,
-                    data->value.asTimestamp.tzMinuteOffset);
+                    data->value.asTimestamp.tzHourOffset);
           else
-            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d",
+            snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d",
                     data->value.asTimestamp.year,
                     data->value.asTimestamp.month,
                     data->value.asTimestamp.day,
@@ -1091,25 +1085,24 @@ int Oracle::Handle::fetch(bloc::Tuple ** row, bool& found)
         else
         {
           if (queryInfo.typeInfo.oracleTypeNum == DPI_ORACLE_TYPE_TIMESTAMP_TZ)
-            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d.%06u%+03d:%02d",
+            snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d.%06u%+03d",
                     data->value.asTimestamp.year,
                     data->value.asTimestamp.month,
                     data->value.asTimestamp.day,
                     data->value.asTimestamp.hour,
                     data->value.asTimestamp.minute,
                     data->value.asTimestamp.second,
-                    data->value.asTimestamp.fsecond,
-                    data->value.asTimestamp.tzHourOffset,
-                    data->value.asTimestamp.tzMinuteOffset);
+                    data->value.asTimestamp.fsecond/1000,
+                    data->value.asTimestamp.tzHourOffset);
           else
-            snprintf(buf, sizeof(buf), "%04d-%02d-%02dT%02d:%02d:%02d.%06u",
+            snprintf(buf, sizeof(buf), "%04d-%02d-%02d %02d:%02d:%02d.%06u",
                     data->value.asTimestamp.year,
                     data->value.asTimestamp.month,
                     data->value.asTimestamp.day,
                     data->value.asTimestamp.hour,
                     data->value.asTimestamp.minute,
                     data->value.asTimestamp.second,
-                    data->value.asTimestamp.fsecond);
+                    data->value.asTimestamp.fsecond/1000);
         }
         t.push_back(bloc::Value(new bloc::Literal(buf)));
       }
