@@ -15,7 +15,7 @@ jobs:
     - name: Add more dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y \
+        sudo apt-get install -y cmake git pkg-config \
             libreadline-dev libsqlite3-dev libmariadb-dev libpq-dev
         sudo apt-get install -y --no-install-recommends libplplot-dev
 
